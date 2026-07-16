@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aamapp}
+      POSTGRES_USER: ${POSTGRES_USER:-aamapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aamapp_dev_change_me}
+      TZ: ${TZ:-Asia/Jakarta}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aamapp} -d ${POSTGRES_DB:-aamapp}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
+      - UPLOAD_ROOT=/data/uploads
+    volumes:
+      - uploads_data:/data/uploads
+    # TIDAK memetakan port keluar — hanya diakses via nginx frontend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE=/api
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+  uploads_data:

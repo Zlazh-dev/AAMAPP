@@ -1,0 +1,60 @@
+import { APIRequestContext, Browser, request as pwRequest } from '@playwright/test';
+
+/**
+ * Helper login (T15.9 / §12.17e): login via API POST /api/auth/login,
+ * lalu tulis token ke localStorage sebelum spec membuka halaman —
+ * BUKAN mengetik form login di tiap spec.
+ *
+ * Kredensial admin: default seed (backend/src/seed/seed.service.ts)
+ * — bisa ditimpa lewat env ADMIN_EMAIL / ADMIN_PASSWORD agar konsisten
+ * dengan konfigurasi .env proyek.
+ */
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+
+export interface LoginResult {
+  accessToken: string;
+  user: { id: number; name: string; email: string; roles: string[] };
+}
+
+/** Login via API (tanpa browser) — dipakai utk storageState & data setup. */
+export async function apiLogin(
+  request: APIRequestContext,
+  email: string,
+  password: string,
+): Promise<LoginResult> {
+  const res = await request.post('/api/auth/login', {
+    data: { email, password },
+  });
+  if (!res.ok()) {
+    throw new Error(
+      `Login API gagal (${res.status()}) utk ${email}: ${await res.text()}`,
+    );
+  }
+  return res.json();
+}
+
+/**
+ * Buat storageState (localStorage token) utk sebuah akun, tanpa menyentuh
+ * UI form login. Dipakai di awal spec via `page.addInitScript` + goto,
+ * ATAU langsung set localStorage setelah `page.goto('/')` pertama kali
+ * (localStorage butuh origin yang sudah dimuat).
+ */
+export async function loginAs(
+  page: import('@playwright/test').Page,
+  email: string,
+  password: string,
+): Promise<LoginResult> {
+  const result = await apiLogin(page.request, email, password);
+  // Origin harus sudah dimuat sebelum localStorage bisa ditulis.
+  await page.goto('/login');
+  await page.evaluate((token) => {
+    localStorage.setItem('aamapp_token', token);
+  }, result.accessToken);
+  return result;
+}
+
+/** Login sbg admin seed (peran tetap; dipakai paling sering di gelombang 1). */
+export async function loginAsAdmin(page: import('@playwright/test').Page) {
+  return loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+}

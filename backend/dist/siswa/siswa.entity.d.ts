@@ -1,0 +1,34 @@
+import { Kelas } from '../kelas/kelas.entity';
+export type SiswaStatus = 'aktif' | 'nonaktif';
+export type JenisKelamin = 'L' | 'P';
+export declare class Siswa {
+    id: number;
+    nama: string;
+    nis: string;
+    nisn: string | null;
+    jenisKelamin: JenisKelamin;
+    tempatLahir: string | null;
+    tanggalLahir: Date | null;
+    agama: string | null;
+    statusDalamKeluarga: string | null;
+    anakKe: number | null;
+    alamat: string | null;
+    telepon: string | null;
+    sekolahAsal: string | null;
+    diterimaDiKelas: string | null;
+    diterimaTanggal: Date | null;
+    namaAyah: string | null;
+    pekerjaanAyah: string | null;
+    namaIbu: string | null;
+    pekerjaanIbu: string | null;
+    namaWali: string | null;
+    alamatWali: string | null;
+    teleponWali: string | null;
+    pekerjaanWali: string | null;
+    fotoUrl: string;
+    kelasId: number | null;
+    kelas: Kelas | null;
+    status: SiswaStatus;
+    createdAt: Date;
+    updatedAt: Date;
+}

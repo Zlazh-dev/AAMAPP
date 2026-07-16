@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Playwright (e2e test artifacts — do NOT commit)
+frontend/test-results/
+frontend/e2e-report/
+frontend/playwright-report/
+frontend/blob-report/
+
+# OS
+.DS_Store
+Thumbs.db

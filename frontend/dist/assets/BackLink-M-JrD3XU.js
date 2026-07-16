@@ -1,0 +1,1 @@
+import{j as e,L as i}from"./index-Bwk5-t4E.js";function r({to:t,label:a="Kembali",className:s=""}){return e.jsxs(i,{to:t,className:["inline-flex items-center gap-1 text-sm text-aam-text-muted hover:text-aam-text transition-colors",s].join(" "),children:[e.jsx("span",{className:"material-symbols-outlined",style:{fontSize:"1.125rem"},children:"arrow_back"}),a]})}export{r as B};

@@ -1,0 +1,137 @@
+import { SafeUser } from '../api/client';
+
+export interface MenuItem {
+  label: string;
+  /** Path tujuan ketika baris diklik di sidebar. */
+  path: string;
+  icon: string;
+  badgeKey?: 'pendingUsers';
+}
+
+export interface MenuGroup {
+  area: string;
+  label: string;
+  items: MenuItem[];
+}
+
+/**
+ * Leaf menu item — baris sidebar final yang punya path spesifik.
+ * (Pakai tipe ini saat render dan saat cari active selection.)
+ */
+export interface MenuLeaf {
+  /** Path final */
+  path: string;
+  /** Icon & label dari leaf itu sendiri */
+  icon: string;
+  label: string;
+  /** Badge key (jika ada) */
+  badgeKey?: 'pendingUsers';
+}
+
+// Menu per area per §6.1.B (urutan tetap) — SIDEBAR DATAR v0.12.0
+const MENU_GROUPS: Record<string, MenuGroup> = {
+  admin: {
+    area: 'admin',
+    label: 'ADMIN',
+    items: [
+      { label: 'Dashboard', path: '/admin', icon: 'dashboard' },
+      { label: 'Data Orang', path: '/admin/orang', icon: 'groups' },
+      { label: 'Kelas', path: '/admin/kelas', icon: 'meeting_room' },
+      { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
+      { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
+    ],
+  },
+  kurikulum: {
+    area: 'kurikulum',
+    label: 'KURIKULUM',
+    items: [
+      { label: 'Dashboard', path: '/kurikulum', icon: 'dashboard' },
+      { label: 'Mata Pelajaran', path: '/kurikulum/mapel', icon: 'book' },
+      { label: 'Penugasan', path: '/kurikulum/penugasan', icon: 'assignment_ind' },
+      { label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month' },
+    ],
+  },
+  kesiswaan: {
+    area: 'kesiswaan',
+    label: 'KESISWAAN',
+    items: [{ label: 'Dashboard', path: '/kesiswaan', icon: 'dashboard' }],
+  },
+  guru: {
+    area: 'guru',
+    label: 'GURU',
+    items: [{ label: 'Dashboard', path: '/guru', icon: 'dashboard' }],
+  },
+  kepsek: {
+    area: 'kepsek',
+    label: 'KEPSEK',
+    items: [{ label: 'Dashboard', path: '/kepsek', icon: 'dashboard' }],
+  },
+  tu: {
+    area: 'tu',
+    label: 'TU',
+    items: [{ label: 'Rekap Guru', path: '/tu', icon: 'dashboard' }],
+  },
+};
+
+// Order per §6.1.B: Admin → Kurikulum → Kesiswaan → Guru → Kepsek → TU
+const AREA_ORDER = ['admin', 'kurikulum', 'kesiswaan', 'guru', 'kepsek', 'tu'];
+
+export function getMenuForUser(user: SafeUser): MenuGroup[] {
+  const groups: MenuGroup[] = [];
+  for (const area of AREA_ORDER) {
+    if (user.roles.includes(area as any)) {
+      groups.push(MENU_GROUPS[area]);
+    }
+  }
+  return groups;
+}
+
+/**
+ * Ambil path "home" untuk user berdasarkan peran pertama yang cocok dengan urutan AREA_ORDER.
+ * Fallback ke /profil jika tidak ada peran yang cocok.
+ */
+export function getHomePath(user: SafeUser): string {
+  for (const area of AREA_ORDER) {
+    if (user.roles.includes(area as any)) {
+      const group = MENU_GROUPS[area];
+      if (group && group.items.length > 0) {
+        return group.items[0].path;
+      }
+    }
+  }
+  return '/profil';
+}
+
+/**
+ * Cari leaf menu yang sedang aktif di lokasi tertentu.
+ * - Kalau path sama persis dengan item → return item.
+ * - Kalau path dimulai dengan `${item.path}/` → return item (prefix match).
+ *
+ * Return null bila tidak ditemukan.
+ */
+export function findActiveLeaf(
+  groups: MenuGroup[],
+  pathname: string,
+): MenuLeaf | null {
+  let best: MenuLeaf | null = null;
+  let bestLen = -1;
+
+  for (const group of groups) {
+    for (const item of group.items) {
+      const matches =
+        pathname === item.path ||
+        (item.path !== '/' && pathname.startsWith(`${item.path}/`));
+      if (matches && item.path.length > bestLen) {
+        best = {
+          path: item.path,
+          icon: item.icon,
+          label: item.label,
+          badgeKey: item.badgeKey,
+        };
+        bestLen = item.path.length;
+      }
+    }
+  }
+
+  return best;
+}
