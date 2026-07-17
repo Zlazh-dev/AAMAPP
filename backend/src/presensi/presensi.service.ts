@@ -13,6 +13,7 @@ import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
 import { Penugasan } from '../kurikulum/penugasan.entity';
 import { KalenderLibur } from '../kurikulum/kalender-libur.entity';
 import { Siswa } from '../siswa/siswa.entity';
+import { Kelas } from '../kelas/kelas.entity';
 import { Guru } from '../guru/guru.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { AuditService } from '../audit/audit.service';
@@ -47,6 +48,8 @@ export class PresensiService {
     private readonly liburRepo: Repository<KalenderLibur>,
     @InjectRepository(Siswa)
     private readonly siswaRepo: Repository<Siswa>,
+    @InjectRepository(Kelas)
+    private readonly kelasRepo: Repository<Kelas>,
     @InjectRepository(Guru)
     private readonly guruRepo: Repository<Guru>,
     @InjectRepository(TahunAjaran)
@@ -272,6 +275,109 @@ export class PresensiService {
     });
 
     return { ok: true, presensiSesiId: sesi.id, ringkasan: ringkas };
+  }
+
+  /**
+   * GET /api/guru/kelas/rekap-presensi?kelasId=&dari=&sampai=&page=&limit=
+   * Rekap per siswa: Σ H/S/I/A/T atas sesi TERLAKSANA saja dalam rentang.
+   * Sesi tanpa roster (jadwal ada tapi tak pernah disimpan) TIDAK dihitung
+   * sama sekali untuk siswa manapun — LEFT JOIN semantics (F2-SPEC #8):
+   * NULL = tidak tercatat, bukan alpha. Berpaginasi per siswa (§12.16).
+   */
+  async rekapPresensi(params: {
+    kelasId: number;
+    dari: string;
+    sampai: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+
+    const [siswaRows, totalSiswa] = await this.siswaRepo.findAndCount({
+      where: { kelasId: params.kelasId, status: 'aktif' },
+      order: { nama: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    if (siswaRows.length === 0) {
+      return {
+        kelasId: params.kelasId,
+        dari: params.dari,
+        sampai: params.sampai,
+        data: [],
+        total: totalSiswa,
+        page,
+        limit,
+      };
+    }
+
+    // Satu query batch: semua presensi_siswa milik sesi TERLAKSANA
+    // (jadwal kelas ini) dalam rentang tanggal — anti N+1 (F2-SPEC #7).
+    const siswaIds = siswaRows.map((s) => s.id);
+    const rows = await this.siswaPresRepo
+      .createQueryBuilder('ps')
+      .innerJoin('ps.presensiSesi', 'sesi')
+      .innerJoin('sesi.jadwalKbm', 'j')
+      .innerJoin('j.penugasan', 'p')
+      .where('p.kelasId = :kelasId', { kelasId: params.kelasId })
+      .andWhere('sesi.tanggal BETWEEN :dari AND :sampai', {
+        dari: params.dari,
+        sampai: params.sampai,
+      })
+      .andWhere('ps.siswaId IN (:...siswaIds)', { siswaIds })
+      .select('ps.siswaId', 'siswaId')
+      .addSelect('ps.status', 'status')
+      .addSelect('COUNT(*)', 'cnt')
+      .groupBy('ps.siswaId')
+      .addGroupBy('ps.status')
+      .getRawMany();
+
+    const rekapMap = new Map<number, Record<string, number>>();
+    for (const r of rows as any[]) {
+      const sid = parseInt(r.siswaId, 10);
+      const rekap = rekapMap.get(sid) ?? { H: 0, S: 0, I: 0, A: 0, T: 0 };
+      rekap[r.status as string] = parseInt(r.cnt, 10);
+      rekapMap.set(sid, rekap);
+    }
+
+    return {
+      kelasId: params.kelasId,
+      dari: params.dari,
+      sampai: params.sampai,
+      data: siswaRows.map((s) => {
+        const rekap = rekapMap.get(s.id);
+        return {
+          siswaId: s.id,
+          nama: s.nama,
+          nis: s.nis,
+          // NULL bila siswa TIDAK PERNAH tercatat sama sekali di rentang ini
+          // (semua sesi kelasnya belum ada roster) — F2-SPEC #8.
+          rekap: rekap ?? null,
+        };
+      }),
+      total: totalSiswa,
+      page,
+      limit,
+    };
+  }
+
+  /** Cek apakah guru adalah wali kelas tsb (untuk RBAC rekap). */
+  async isWaliKelas(guruId: number, kelasId: number): Promise<boolean> {
+    const kelas = await this.kelasRepo.findOne({ where: { id: kelasId } });
+    return !!kelas && kelas.waliGuruId === guruId;
+  }
+
+  /** Sama seperti isWaliKelas tapi mulai dari userId sesi login. */
+  async isWaliKelasByUserId(
+    userId: number | undefined,
+    kelasId: number,
+  ): Promise<boolean> {
+    if (!userId) return false;
+    const guru = await this.guruRepo.findOne({ where: { userId } });
+    if (!guru) return false;
+    return this.isWaliKelas(guru.id, kelasId);
   }
 
   /** GET /api/admin/presensi-siswa?kelasId=&tanggal= — matriks batch. */

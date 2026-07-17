@@ -5,6 +5,7 @@ import { PresensiSiswa } from './presensi-siswa.entity';
 import { PresensiService } from './presensi.service';
 import {
   GuruPresensiController,
+  GuruKelasRekapController,
   AdminPresensiController,
 } from './presensi.controller';
 import { AuditModule } from '../audit/audit.module';
@@ -14,6 +15,7 @@ import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
 import { Penugasan } from '../kurikulum/penugasan.entity';
 import { KalenderLibur } from '../kurikulum/kalender-libur.entity';
 import { Siswa } from '../siswa/siswa.entity';
+import { Kelas } from '../kelas/kelas.entity';
 import { Guru } from '../guru/guru.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { Pengaturan } from '../pengaturan/pengaturan.entity';
@@ -27,6 +29,7 @@ import { Pengaturan } from '../pengaturan/pengaturan.entity';
       Penugasan,
       KalenderLibur,
       Siswa,
+      Kelas,
       Guru,
       TahunAjaran,
       Pengaturan,
@@ -35,7 +38,11 @@ import { Pengaturan } from '../pengaturan/pengaturan.entity';
     ]),
     AuditModule,
   ],
-  controllers: [GuruPresensiController, AdminPresensiController],
+  controllers: [
+    GuruPresensiController,
+    GuruKelasRekapController,
+    AdminPresensiController,
+  ],
   providers: [PresensiService],
   exports: [PresensiService],
 })

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -57,6 +58,40 @@ export class GuruPresensiController {
     @Body() dto: SimpanRosterDto,
   ) {
     return this.svc.simpanRoster(req, jadwalId, dto);
+  }
+}
+
+/** F2 — rekap presensi per kelas (wali kelas | admin). */
+@Controller('api/guru/kelas')
+@UseGuards(SessionAuthGuard, RolesGuard)
+export class GuruKelasRekapController {
+  constructor(private readonly svc: PresensiService) {}
+
+  @Get('rekap-presensi')
+  @Roles('guru', 'admin')
+  async rekapPresensi(
+    @Req() req: Request,
+    @Query('kelasId', ParseIntPipe) kelasId: number,
+    @Query('dari') dari: string,
+    @Query('sampai') sampai: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const roles = (req as any).user?.roles ?? [];
+    if (!Array.isArray(roles) || !roles.includes('admin')) {
+      const userId = (req as any).user?.id ?? req.session?.userId;
+      const isWali = await this.svc.isWaliKelasByUserId(userId, kelasId);
+      if (!isWali) {
+        throw new ForbiddenException('Anda bukan wali kelas ini');
+      }
+    }
+    return this.svc.rekapPresensi({
+      kelasId,
+      dari,
+      sampai,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    });
   }
 }
 

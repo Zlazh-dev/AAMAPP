@@ -14,6 +14,8 @@ import { Mapel } from './kurikulum/mapel.entity';
 import { Penugasan } from './kurikulum/penugasan.entity';
 import { JadwalKbm } from './kurikulum/jadwal-kbm.entity';
 import { KalenderLibur } from './kurikulum/kalender-libur.entity';
+import { PresensiSesi } from './presensi/presensi-sesi.entity';
+import { PresensiSiswa } from './presensi/presensi-siswa.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -29,8 +31,6 @@ import { KurikulumModule } from './kurikulum/kurikulum.module';
 import { ImportModule } from './import/import.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { PresensiModule } from './presensi/presensi.module';
-import { PresensiSesi } from './presensi/presensi-sesi.entity';
-import { PresensiSiswa } from './presensi/presensi-siswa.entity';
 import { SessionAuthGuard } from './common/session-auth.guard';
 
 @Module({
