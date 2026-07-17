@@ -28,23 +28,28 @@
 - Git: aktif sejak 2026-07-17 (commit `0cd29b8`); planner commit tiap
   tugas lolos review.
 
-## ARMADA (update 2026-07-17b — Antigravity kena limit → diganti KIRO, satu)
+## ARMADA (update 2026-07-17c — hanya 2 Antigravity; Kiro/Roo/Cline DIBUANG)
 
-- **Kiro** = executor kode UTAMA (satu; menggantikan 2 Antigravity).
-  **Roo Code** = executor kode pembantu (paralel, wilayah folder terpisah).
-  **Cline** = dokumentasi baca-saja SAJA (terlemah — jangan beri tugas kode).
-- Paralel aman: kontrak dikunci planner di `briefs/F2-SPEC.md` → Kiro &
-  Roo kerja di FOLDER berbeda. Titik file bersama (client.ts/App.tsx/
-  menu.ts/app.module.ts) dipegang KIRO. Aturan klaim-tugas & anti-timpa
-  tetap berlaku.
+- **Antigravity-IDE** (executor A) + **Antigravity-v2.0** (executor B) =
+  satu-satunya executor. Kiro/Roo/Cline tidak dipakai lagi.
+- **F2 BACKEND SUDAH SELESAI** (ditulis planner + rekap dari Antigravity;
+  semua endpoint live & ter-guard). Sisa F2 = FRONTEND.
+- Titik file bersama frontend (`client.ts`/`App.tsx`/`menu.ts`) dipegang
+  Antigravity-IDE. Antigravity-v2.0 hanya folder halaman baru.
 
 ## PAPAN TUGAS
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Kiro | executor UTAMA | `briefs/F2-SPEC.md` + `briefs/AGENT-1.md` | BACKLINK-ADAPTIF-MOBILE (sisa UX) → **F2 BACKEND** → **F2 FRONTEND GURU** + wiring | assign-siswa ✅ sudah; lanjut backlink lalu F2 |
-| Roo Code | executor pembantu | `briefs/F2-SPEC.md` | **F2 FRONTEND ADMIN** (frontend/src/pages/admin/presensi) — folder terpisah | mulai (kontrak terkunci; JANGAN sentuh client.ts/App.tsx/menu.ts) |
-| Cline | dokumentasi | `briefs/F2-SPEC.md` | update docs/API-REFERENCE + KAMUS-DATA dgn kontrak F2 | boleh mulai |
+| Antigravity-IDE | executor A | `briefs/F2-SPEC.md` + `briefs/AGENT-1.md` | **F2 FRONTEND GURU** (`frontend/src/pages/guru/` KbmHariIni+Roster) + wiring client.ts/App.tsx/menu.ts + BACKLINK-ADAPTIF-MOBILE | mulai (backend kontrak live) |
+| Antigravity-v2.0 | executor B | `briefs/F2-SPEC.md` | **F2 FRONTEND ADMIN** (`frontend/src/pages/admin/presensi/` matriks) — folder itu SAJA, jangan sentuh client.ts/App.tsx/menu.ts (lapor komponen+method → A yang wire) | mulai |
+| ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
+
+**BACKEND F2 LIVE (kontrak untuk frontend):** `GET /api/guru/kbm?tanggal=`
+• `GET|POST|PATCH /api/guru/kbm/:jadwalId/roster` •
+`GET /api/guru/kelas/rekap-presensi?kelasId=&dari=&sampai=` •
+`GET /api/admin/presensi-siswa?kelasId=&tanggal=`. Bentuk respons di
+`briefs/F2-SPEC.md`.
 
 **Catatan temuan (2026-07-17):** npm audit — backend 26 vuln (7 HIGH),
 frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1
