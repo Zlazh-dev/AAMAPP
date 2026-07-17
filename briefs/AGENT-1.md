@@ -115,6 +115,38 @@ tak berguna utk kelas kosong). Backend siap: `PATCH /api/admin/siswa/:id
 
 DoD: perilaku sesuai + spec baru hijau + suite penuh hijau + laporan.
 
+## TUGAS BERIKUTNYA — BACKLINK-ADAPTIF-MOBILE (KEPUTUSAN USER: tombol Kembali di bawah utk mobile)
+
+Keputusan user (zona jempol): di MOBILE, teks kecil "← Kembali" di ATAS
+halaman sulit dijangkau → ganti jadi TOMBOL full-width "← Kembali[ ke
+<seksi>]" (≥48px) di PALING BAWAH konten. Desktop tetap tautan teks di
+atas.
+
+**Perbaikan (komponen bersama — ubah SEKALI, berlaku semua halaman):**
+1. Jadikan `BackLink` (frontend/src/components/BackLink.tsx) ADAPTIF, atau
+   pindahkan tanggung jawab ke `PageContainer` via prop (mis.
+   `backTo="/admin/orang/guru"` + `backLabel="Data Orang"`):
+   - DESKTOP (≥md): tautan teks "← Kembali" di atas (seperti sekarang;
+     `hidden md:...`).
+   - MOBILE (<md): TIDAK ada teks atas; render tombol full-width
+     "← Kembali[ ke <seksi>]" (≥48px) sebagai elemen TERAKHIR konten
+     halaman. Bila halaman punya bar sticky bawah (mis. bar seleksi),
+     tombol Kembali duduk DI ATAS bar itu (pakai PageContainer bottomBar
+     agar tak tertutup).
+2. **Terapkan ke semua sub-halaman** yang kini memakai BackLink atas
+   (detail guru/siswa/kelas/akun, sub-pengaturan, hub, import wizard step,
+   dst.).
+3. **PENGECUALIAN — jangan diubah/dobel:** halaman FORM (sudah punya
+   Simpan/Batal sticky; "Batal" = jalan kembali) dan halaman SaveSuccess
+   (punya tombol sendiri). Wizard: tombol "Kembali" antar-langkah tetap.
+4. **Spec e2e** (project mobile 375): buka detail (mis. detail kelas atau
+   sub-pengaturan) → tombol "Kembali" ada di bawah & TERLIHAT → tap →
+   mendarat di halaman induk. Desktop project: tautan atas tetap ada.
+5. Jalankan SELURUH suite (harus tetap hijau + spec baru).
+
+DoD: perilaku adaptif benar di semua sub-halaman + spec baru hijau +
+suite penuh hijau + laporan. Kerjakan SETELAH FIX-ASSIGN-SISWA-KELAS.
+
 ## HUTANG KECIL (SUDAH SELESAI — arsip)
 - `npm run build` di `frontend/` → tempel ringkasan daftar chunk + ukuran
   di laporan (§12.15d — hutang dari T16; main bundle harus ~257KB,

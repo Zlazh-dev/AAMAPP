@@ -32,7 +32,7 @@
 
 | Agent | Tool | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-MENU-ADMIN ✅ • FIX-ASSIGN-SISWA-KELAS | SEC-1 ✅ + menu-admin ✅ (43 pass/2 skip); LANJUT assign-siswa |
+| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-ASSIGN-SISWA-KELAS → BACKLINK-ADAPTIF-MOBILE | SEC-1+menu-admin ✅; 2 bug UX antre (assign siswa, tombol kembali bawah) |
 | AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 ✅ • OPS-5 ✅ (.env.example + runbook bootstrap) | SELESAI — idle/menunggu tugas baru |
 | AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 ✅ • RISET-F4 ✅ | SELESAI — riset F2/F3/F4/F6 lengkap; sisa RISET-F5 opsional |
 

@@ -1858,6 +1858,16 @@ final di tail dokumen ini; poin 12 & 15 menunggu QA user).
    (Data Orang → daftar Guru); seksi kumpulan alat = HUB kartu
    (Pengaturan, Laporan). Badge antrean menempel di entri utama. Setiap
    sub-halaman punya ← BackLink ke halaman utama seksinya.
+   **BACKLINK ADAPTIF (KEPUTUSAN USER 2026-07-17 — zona jempol):** di
+   MOBILE jangan pakai teks kecil "← Kembali" di ATAS (sulit dijangkau
+   jempol) — ganti dengan TOMBOL full-width "← Kembali[ ke <seksi>]"
+   (≥48px) di PALING BAWAH konten halaman. Di DESKTOP tetap tautan teks
+   di atas (mouse, pojok kiri-atas nyaman). Terapkan lewat komponen
+   bersama (BackLink/PageContainer adaptif). PENGECUALIAN: halaman FORM
+   (sudah punya bar Simpan/Batal sticky — "Batal" = jalan kembali; jangan
+   tambah tombol kembali lagi) dan halaman SaveSuccess (sudah punya tombol
+   sendiri). Bila halaman punya bar sticky bawah lain, tombol Kembali
+   duduk di ATAS bar itu (tidak tertutup; pakai PageContainer bottomBar).
 3. **LARANGAN DERETAN TOMBOL (v0.12.1, KEPUTUSAN USER).** Maks SATU
    tombol aksi terlihat per halaman (aksi utama); sisanya masuk ⋮
    (destruktif merah paling bawah). Header detail = "Edit" + ⋮ berisi
