@@ -37,12 +37,15 @@
   wired oleh PLANNER (executor IDE tinggalkan kode rusak → planner
   perbaiki + wire). Sisa: verifikasi end-to-end (QA user) + polish
   (lihat catatan di bawah).
-- **Polish F2 tertunda (untuk QA/tugas kecil berikutnya):** RosterPage
-  belum pakai UnsavedGuard + simpan pakai DOM-hack (ganti ke state/toast);
-  admin masih pakai `presensiLocalApi.ts` (pindah ke `api.*` client.ts,
-  hapus file lokal); kelas Tailwind non-standar (`bg-muted`,`border-input`,
-  `text-primary`) render tak berstyle → samakan ke token `aam-*`; label
-  status 'T' = "Terlambat" → konfirmasi vs §7.2 R-07.
+- **F2-ADMIN-POLISH (AG-2) SELESAI & DITERIMA** (commit `09fb2c9`):
+  admin presensi pakai `api.*` resmi, `presensiLocalApi.ts` dihapus;
+  verifikasi planner tsc bersih + e2e 47 pass. Review workflow 39-agen →
+  **6 temuan (2 blocker: race respons basi matriks; kepsek/kesiswaan 403
+  saat klik sesi)** → ronde **F2-ADMIN-FIX2** ditulis di
+  `briefs/AGENT-2.md`.
+- **BACKLINK-ADAPTIF (AG-1)**: WIP ter-commit sebagai checkpoint
+  `c5e29f5` — BELUM direview planner; AG-1 belum lapor. e2e hijau dgn
+  tree ini, tapi jangan tandai selesai sebelum laporan + review.
 - Titik file bersama frontend (`client.ts`/`App.tsx`/`menu.ts`) dipegang
   PLANNER/Antigravity-IDE. Antigravity-v2.0 hanya folder halaman baru.
 
@@ -50,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F2-SPEC.md` + `briefs/AGENT-1.md` | **F2 FRONTEND GURU** (`frontend/src/pages/guru/` KbmHariIni+Roster) + wiring client.ts/App.tsx/menu.ts + BACKLINK-ADAPTIF-MOBILE | mulai (backend kontrak live) |
-| Antigravity-v2.0 | executor B | `briefs/F2-SPEC.md` | **F2 FRONTEND ADMIN** (`frontend/src/pages/admin/presensi/` matriks) — folder itu SAJA, jangan sentuh client.ts/App.tsx/menu.ts (lapor komponen+method → A yang wire) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **BACKLINK-ADAPTIF-MOBILE** — WIP di tree (checkpoint `c5e29f5`); WAJIB lapor di AGENT-1.md utk review planner | menunggu laporan |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | **F2-ADMIN-FIX2** — perbaiki 6 temuan review (2 blocker) di `frontend/src/pages/admin/presensi/`; rincian file:baris di dokumen tugas | siap mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **BACKEND F2 LIVE (kontrak untuk frontend):** `GET /api/guru/kbm?tanggal=`

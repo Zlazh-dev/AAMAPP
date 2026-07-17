@@ -5,7 +5,70 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF — F2-ADMIN-POLISH (rapikan halaman admin presensi)
+## TUGAS AKTIF — F2-ADMIN-FIX2 (perbaiki temuan review; wilayah sama: `frontend/src/pages/admin/presensi/` SAJA)
+
+Konteks: F2-ADMIN-POLISH DITERIMA (commit `09fb2c9`). Review planner
+(workflow 39-agen + verifikasi adversarial) menemukan 6 cacat nyata di
+kedua file. Perbaiki SEMUA. Jangan sentuh client.ts/App.tsx/menu.ts/
+backend — semua perbaikan cukup di folder wilayahmu.
+
+**BLOCKER:**
+1. **Race respons basi** — `MatriksPresensiSiswaPage.tsx:75-91`: effect
+   `[kelasId, tanggal]` → `loadMatriks()` tanpa guard pembatalan; ganti
+   filter cepat = respons lama bisa menimpa data baru (matriks kelas A
+   tampil berlabel kelas B). Terapkan pola `let cancelled = false` + cek
+   sebelum setiap setState — pola ini SUDAH ada di file kembaranmu
+   `RosterDetailSheet.tsx:72-94`, tinggal tiru. Pastikan skeleton loading
+   juga tidak dimatikan oleh request lama.
+2. **Kepsek/kesiswaan selalu 403 saat klik sesi** —
+   `MatriksPresensiSiswaPage.tsx:192` (tr desktop) & `:225` (card mobile):
+   baris bisa diklik semua role, padahal `GET/PATCH /guru/kbm/:id/roster`
+   hanya `@Roles('guru','admin')` → kepsek/kesiswaan: sheet terbuka
+   sekejap → 403 → toast → tertutup. KEPUTUSAN PLANNER (kontrak F2-SPEC
+   tetap; JANGAN ubah backend): ambil role dari `useAuth()`
+   (`frontend/src/app/AuthContext.tsx`); hanya **admin** yang bisa klik
+   baris/buka RosterDetailSheet. Untuk kepsek/kesiswaan baris jadi
+   read-only: tanpa cursor-pointer/chevron/hover, dan JANGAN panggil
+   `getGuruKbmRoster`. Ringkasan H/S/I/A/T di matriks tetap tampil (itu
+   memang hak baca mereka).
+
+**MINOR:**
+3. `RosterDetailSheet.tsx:84-87` — `.catch` load roster tidak cek
+   `cancelled` (`.then`/`.finally` sudah): tutup sheet saat request
+   in-flight lalu gagal → toast nyasar + `onClose()` basi. Tambah
+   `if (cancelled) return;` di awal `.catch`.
+4. **Toast error bisa kosong** — `MatriksPresensiSiswaPage.tsx:86` &
+   `RosterDetailSheet.tsx:85`: `err.body?.message` tanpa fallback →
+   respons non-JSON (mis. 502 proxy) = toast merah tanpa teks. Samakan
+   dgn pola benar di `RosterDetailSheet.tsx:130`:
+   `err.body?.message || 'Gagal memuat …'`.
+5. **Rollover tengah malam WIB** — `RosterDetailSheet.tsx:200` + prop
+   `hariIni` dibekukan parent (`MatriksPresensiSiswaPage.tsx:254`): sheet
+   dibuka sebelum jam 00:00, disimpan sesudahnya → server 400 "wajib
+   alasan" tapi textarea alasan tak pernah muncul. Fix: hitung ulang
+   `todayWIB()` di dalam `handleSave` (jangan andalkan prop), dan bila
+   server membalas 400 wajib-alasan, TAMPILKAN textarea alasan (jangan
+   hanya toast).
+6. **Tanggal bisa dikosongkan** — `MatriksPresensiSiswaPage.tsx:135-140`:
+   clear input date → `tanggal=''` terkirim, server diam-diam fallback ke
+   hari ini (data "hari ini" tampil berlabel kosong), dan PATCH dgn
+   `tanggal:''` pasti 400 (@IsDateString). Fix: guard `if (!tanggal)
+   return;` di effect + saat onChange menghasilkan `''` reset ke
+   `todayWIB()`; jangan buka sheet saat tanggal kosong.
+7. **Escape tidak menutup sheet** — `RosterDetailSheet.tsx`: semua overlay
+   proyek lain (ConfirmDialog.tsx:57-64, AdaptiveSelect, PageMenu) tutup
+   via Esc. Tambah handler Esc → `onClose()` **dengan syarat**: hanya bila
+   `!saving` DAN tidak ada perubahan status yang belum disimpan (SPEC-KANON
+   anti-bug: dialog ber-input dirty dilarang tertutup Esc begitu saja).
+   Bila dirty, Esc diabaikan.
+
+Verifikasi (DoD): `npx tsc --noEmit` bersih • `docker compose up -d
+--build frontend` sukses • e2e tetap hijau • uji browser: ganti
+kelas/tanggal cepat (tak ada data nyasar), clear tanggal (tak crash/
+tak kirim kosong), Esc (tutup saat bersih, diam saat dirty). Append
+laporan di `## LAPORAN`.
+
+## ARSIP — F2-ADMIN-POLISH (SELESAI, diterima planner — commit 09fb2c9)
 
 Konteks: F2 sudah live (backend + frontend guru + wiring). Halaman admin
 buatanmu (`MatriksPresensiSiswaPage.tsx`, `RosterDetailSheet.tsx`) masih
