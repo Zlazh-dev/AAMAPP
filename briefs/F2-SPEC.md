@@ -65,23 +65,24 @@ tiap mutasi; WIB (wib.util.ts).
   (guru wali|admin) → rekap per siswa (Σ H/S/I/A/T atas sesi TERLAKSANA;
   LEFT JOIN, NULL=tidak tercatat), berpaginasi.
 
-## PEMBAGIAN WILAYAH (2026-07-17b — Kiro utama + Roo pembantu; JANGAN saling sentuh)
-- **KIRO → BACKEND F2 + FRONTEND F2 GURU + wiring**:
-  (a) seluruh `backend/src/presensi/**` (entity, dto, service, controller,
-  module) + daftarkan di `backend/src/app.module.ts`;
-  (b) `frontend/src/pages/guru/**` (KbmHariIniPage daftar sesi, RosterPage
-  grid presensi <30 dtk, §15.6);
-  (c) PEMILIK perubahan `frontend/src/api/client.ts`, `App.tsx`, `menu.ts`
-  untuk SEMUA route F2 (guru + admin — termasuk mendaftarkan halaman
-  admin buatan Roo). Urutan: BACKLINK-ADAPTIF-MOBILE (sisa UX di
-  briefs/AGENT-1.md) → backend F2 → frontend F2 guru → wire route admin.
-- **Roo Code → FRONTEND F2 ADMIN**: `frontend/src/pages/admin/presensi/**`
-  (matriks presensi siswa, §15.3) — BUAT FILE HALAMAN di folder itu SAJA;
-  JANGAN sentuh client.ts/App.tsx/menu.ts/backend. Lapor nama komponen +
-  path + daftar method API yang dibutuhkan → KIRO yang wire route+client.
-- **Cline → docs**: update `docs/API-REFERENCE.md` + `docs/KAMUS-DATA.md`
-  dgn kontrak & entitas F2 di atas (baca-saja kode; tulis docs). Boleh
-  mulai kapan saja (kontrak sudah final di file ini).
+## PEMBAGIAN WILAYAH (2026-07-17c — FINAL; hanya 2 Antigravity)
+> ✅ BACKEND F2 SUDAH SELESAI & LIVE (planner + AG-1: semua endpoint,
+> tabel, e2e 47 pass). Sisa = FRONTEND.
+- **Antigravity-IDE (executor A) → FRONTEND F2 GURU + WIRING + backlink**:
+  (a) `frontend/src/pages/guru/**` (KbmHariIniPage daftar sesi hari ini,
+  RosterPage grid presensi H/S/I/A/T <30 dtk, §15.6);
+  (b) PEMILIK perubahan `frontend/src/api/client.ts`, `App.tsx`, `menu.ts`
+  untuk SEMUA route F2 (guru + admin — termasuk mendaftarkan halaman admin
+  buatan executor B);
+  (c) lalu BACKLINK-ADAPTIF-MOBILE (sisa UX di briefs/AGENT-1.md).
+  "KIRO" di versi lama dokumen = dibaca **Antigravity-IDE**.
+- **Antigravity-v2.0 (executor B) → FRONTEND F2 ADMIN**:
+  `frontend/src/pages/admin/presensi/**` (matriks presensi siswa, §15.3)
+  — BUAT FILE HALAMAN di folder itu SAJA; JANGAN sentuh client.ts/App.tsx/
+  menu.ts/backend. Lapor nama komponen + path + daftar method API yang
+  dibutuhkan → Antigravity-IDE yang wire route+client.
+- Docs (API-REFERENCE/KAMUS-DATA) diurus planner bila perlu — Cline tidak
+  dipakai lagi.
 
 ## Aturan wajib (semua): §12.15 lazy • §12.16 filter+paginasi level DB +
 anti N+1 + anti DTO-drift + cache SWR • §12.17 e2e (spec: simpan roster,
