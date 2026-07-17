@@ -43,22 +43,59 @@ export function KelasDetailPage() {
   const [pindahProgress, setPindahProgress] = useState<{ done: number; total: number; failed: string[] } | null>(null);
   const [pindahProcessing, setPindahProcessing] = useState(false);
 
+  // FIX-ASSIGN-SISWA-KELAS: total siswa di SELURUH sistem (utk logika empty-state)
+  const [totalSiswaSistem, setTotalSiswaSistem] = useState(0);
+
+  // Assign siswa-eksisting ke kelas ini (picker multi-select searchable)
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [assignSearch, setAssignSearch] = useState('');
+  const [assignDebounced, setAssignDebounced] = useState('');
+  const [assignOptions, setAssignOptions] = useState<Siswa[]>([]);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [assignSelected, setAssignSelected] = useState<Set<number>>(new Set());
+  const [assignProgress, setAssignProgress] = useState<{ done: number; total: number; failed: string[] } | null>(null);
+  const [assignProcessing, setAssignProcessing] = useState(false);
+
   useEffect(() => {
     loadAll();
   }, [id]);
+
+  // Debounce pencarian di picker assign
+  useEffect(() => {
+    const t = setTimeout(() => setAssignDebounced(assignSearch), 300);
+    return () => clearTimeout(t);
+  }, [assignSearch]);
+
+  // Muat opsi siswa saat picker dibuka / pencarian berubah
+  useEffect(() => {
+    if (!assignOpen || !kelas) return;
+    let cancelled = false;
+    setAssignLoading(true);
+    api.adminGetSiswa({ q: assignDebounced || undefined, limit: 50 })
+      .then((res) => {
+        if (cancelled) return;
+        // Kecualikan siswa yang sudah jadi anggota kelas INI (bukan kelas lain —
+        // assign ke kelas lain = pindah, sengaja tetap ditampilkan+berlabel).
+        setAssignOptions(res.data.filter((s) => s.kelasId !== kelas.id));
+      })
+      .finally(() => { if (!cancelled) setAssignLoading(false); });
+    return () => { cancelled = true; };
+  }, [assignOpen, assignDebounced, kelas]);
 
   const loadAll = async () => {
     setLoading(true);
     try {
       const kelasId = parseInt(id!, 10);
-      const [k, siswa, guru, allKelas] = await Promise.all([
+      const [k, siswa, guru, allKelas, siswaSistem] = await Promise.all([
         api.adminGetKelasById(kelasId),
         api.adminGetSiswa({ kelasId, limit: 500 }),
         api.adminGetGuru({ status: 'aktif', limit: 200 }),
         api.adminGetKelas({ limit: 200 }),
+        api.adminGetSiswa({ limit: 1 }),
       ]);
       setKelas(k);
       setSiswaList(siswa.data);
+      setTotalSiswaSistem(siswaSistem.total);
       setSelectedGuruId(k.waliGuruId);
       setGuruOptions(guru.data.map((g) => ({
         value: g.id,
@@ -159,6 +196,49 @@ export function KelasDetailPage() {
     }
   };
 
+  const toggleAssign = (siswaId: number) => {
+    setAssignSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(siswaId)) next.delete(siswaId);
+      else next.add(siswaId);
+      return next;
+    });
+  };
+
+  const openAssign = () => {
+    setAssignSearch('');
+    setAssignDebounced('');
+    setAssignSelected(new Set());
+    setAssignProgress(null);
+    setAssignOpen(true);
+  };
+
+  const handleAssign = async () => {
+    if (!kelas || assignSelected.size === 0) return;
+    const ids = Array.from(assignSelected);
+    setAssignProcessing(true);
+    setAssignProgress({ done: 0, total: ids.length, failed: [] });
+    const failed: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        await api.adminUpdateSiswa(ids[i], { kelasId: kelas.id });
+      } catch (err: any) {
+        const s = assignOptions.find((x) => x.id === ids[i]);
+        failed.push(s?.nama || `ID ${ids[i]}`);
+      }
+      setAssignProgress({ done: i + 1, total: ids.length, failed });
+    }
+    setAssignProcessing(false);
+    if (failed.length === 0) {
+      show('success', `${ids.length} siswa berhasil ditugaskan ke ${kelas.nama}`);
+      setAssignOpen(false);
+      setAssignSelected(new Set());
+      loadAll();
+    } else {
+      show('error', `${failed.length} siswa gagal ditugaskan: ${failed.join(', ')}`);
+    }
+  };
+
   const handleDelete = async () => {
     setDeleting(true);
     try {
@@ -250,15 +330,21 @@ export function KelasDetailPage() {
 
       {/* Daftar siswa anggota */}
       <Card icon="diversity_3" className="p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 gap-2">
           <h3 className="text-sm font-semibold text-aam-text">
             Anggota Kelas ({siswaList.length})
           </h3>
-          {selectedSiswa.size > 0 && (
-            <Button size="sm" onClick={() => setPindahOpen(true)} icon="swap_horiz">
-              Pindahkan ({selectedSiswa.size})
+          <div className="flex items-center gap-2">
+            {selectedSiswa.size > 0 && (
+              <Button size="sm" variant="secondary" onClick={() => setPindahOpen(true)} icon="swap_horiz">
+                Pindahkan ({selectedSiswa.size})
+              </Button>
+            )}
+            {/* FIX-ASSIGN-SISWA-KELAS: selalu tersedia, baik kelas kosong maupun terisi */}
+            <Button size="sm" onClick={openAssign} icon="person_add">
+              Assign Siswa
             </Button>
-          )}
+          </div>
         </div>
 
         {siswaList.length === 0 ? (
@@ -267,9 +353,15 @@ export function KelasDetailPage() {
               group_off
             </span>
             <p className="mt-2 text-sm text-aam-text-muted">Belum ada siswa di kelas ini</p>
-            <Button size="sm" className="mt-3" onClick={() => navigate('/admin/orang/siswa/baru')} icon="person_add">
-              Tambah Siswa
-            </Button>
+            {totalSiswaSistem > 0 ? (
+              <Button size="sm" className="mt-3" onClick={openAssign} icon="person_add">
+                Assign Siswa
+              </Button>
+            ) : (
+              <Button size="sm" className="mt-3" onClick={() => navigate('/admin/orang/siswa/baru')} icon="person_add">
+                Tambah Siswa
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-1">
@@ -436,6 +528,115 @@ export function KelasDetailPage() {
                       icon="swap_horiz"
                     >
                       Pindahkan
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </>,
+        document.body,
+      )}
+
+      {/* Assign siswa-eksisting bottom sheet */}
+      {assignOpen && createPortal(
+        <>
+          <div
+            className="fixed inset-0 z-[9999] bg-black/50 animate-fade-in"
+            onClick={() => !assignProcessing && setAssignOpen(false)}
+          />
+          <div
+            className="fixed z-[10000] left-0 right-0 bottom-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            </div>
+            <div className="px-5 pb-4">
+              <h3 className="text-base font-semibold text-aam-text mb-2">Assign Siswa ke {kelas.nama}</h3>
+
+              {assignProgress ? (
+                <div className="py-4">
+                  <p className="text-sm text-aam-text mb-2">
+                    Memproses: {assignProgress.done}/{assignProgress.total}
+                  </p>
+                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-aam-green transition-all"
+                      style={{ width: `${(assignProgress.done / assignProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  {assignProgress.failed.length > 0 && (
+                    <p className="mt-2 text-xs text-red-600">
+                      Gagal: {assignProgress.failed.join(', ')}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-aam-text-muted mb-3">
+                    Cari siswa yang sudah ada di sistem lalu tugaskan ke kelas ini.
+                    Siswa yang sedang berada di kelas lain akan DIPINDAH.
+                  </p>
+                  <div className="relative mb-3">
+                    <span
+                      className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-aam-text-muted pointer-events-none"
+                      style={{ fontSize: '1.125rem' }}
+                    >
+                      search
+                    </span>
+                    <input
+                      type="text"
+                      value={assignSearch}
+                      onChange={(e) => setAssignSearch(e.target.value)}
+                      placeholder="Cari nama / NIS / NISN..."
+                      className="w-full pl-10 pr-3 py-3 text-sm border border-aam-border rounded-md outline-none focus:border-aam-green focus:ring-1 focus:ring-aam-green/30 min-h-[48px]"
+                    />
+                  </div>
+                  <div className="max-h-[40vh] overflow-y-auto border border-aam-border rounded-md divide-y divide-aam-border/50">
+                    {assignLoading ? (
+                      <p className="px-3 py-6 text-sm text-aam-text-muted text-center">Memuat...</p>
+                    ) : assignOptions.length === 0 ? (
+                      <p className="px-3 py-6 text-sm text-aam-text-muted text-center">Tidak ada hasil</p>
+                    ) : (
+                      assignOptions.map((s) => (
+                        <label
+                          key={s.id}
+                          className="flex items-center gap-3 px-3 py-2.5 min-h-[48px] cursor-pointer hover:bg-gray-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={assignSelected.has(s.id)}
+                            onChange={() => toggleAssign(s.id)}
+                            className="w-5 h-5 cursor-pointer flex-shrink-0"
+                          />
+                          <span className="flex-1 min-w-0">
+                            <span className="block text-sm font-medium text-aam-text truncate">{s.nama}</span>
+                            <span className="block text-xs text-aam-text-muted">NIS: {s.nis}</span>
+                          </span>
+                          <Badge variant={s.kelas ? 'gray' : 'yellow'}>
+                            {s.kelas ? s.kelas.nama : 'Belum ada kelas'}
+                          </Badge>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  <div className="flex gap-2 mt-4">
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => setAssignOpen(false)}
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      className="flex-1"
+                      onClick={handleAssign}
+                      disabled={assignSelected.size === 0}
+                      loading={assignProcessing}
+                      icon="person_add"
+                    >
+                      Assign ({assignSelected.size})
                     </Button>
                   </div>
                 </>

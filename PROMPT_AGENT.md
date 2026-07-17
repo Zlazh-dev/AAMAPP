@@ -28,13 +28,28 @@
 - Git: aktif sejak 2026-07-17 (commit `0cd29b8`); planner commit tiap
   tugas lolos review.
 
+## ARMADA (update 2026-07-17 — build sampai FULL, 3 executor kode paralel)
+
+- **Antigravity-1** = executor kode A (kuat). **Antigravity-2** = executor
+  kode B (kuat). **Roo Code** = executor kode C (bagus). **Cline** =
+  dokumentasi baca-saja SAJA (terlemah — jangan beri tugas kode).
+- Paralel aman: kontrak dikunci planner di `briefs/F2-SPEC.md` → tiap
+  executor kerja di FOLDER berbeda. Titik file bersama dipegang SATU
+  agent. Aturan klaim-tugas & anti-timpa tetap berlaku.
+
 ## PAPAN TUGAS
 
-| Agent | Tool | Dokumen tugas | Tugas aktif | Status |
+| Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-ASSIGN-SISWA-KELAS → BACKLINK-ADAPTIF-MOBILE | SEC-1+menu-admin ✅; 2 bug UX antre (assign siswa, tombol kembali bawah) |
-| AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 ✅ • OPS-5 ✅ (.env.example + runbook bootstrap) | SELESAI — idle/menunggu tugas baru |
-| AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 ✅ • RISET-F4 ✅ | SELESAI — riset F2/F3/F4/F6 lengkap; sisa RISET-F5 opsional |
+| Antigravity-1 | executor A | `briefs/AGENT-1.md` | **F2 BACKEND** (backend/src/presensi + app.module) — `briefs/F2-SPEC.md` | mulai segera (kontrak terkunci) |
+| Antigravity-2 | executor B | `briefs/AGENT-2B.md` | FIX-ASSIGN-SISWA-KELAS → BACKLINK-ADAPTIF-MOBILE → **F2 FRONTEND GURU** + wiring | 2 bug UX dulu, lalu F2 guru |
+| Roo Code | executor C | `briefs/AGENT-3.md` | **F2 FRONTEND ADMIN** (frontend/src/pages/admin/presensi) — `briefs/F2-SPEC.md` | mulai (kontrak terkunci; jangan sentuh client.ts/App.tsx/menu.ts) |
+| Cline | dokumentasi | `briefs/AGENT-2.md` | update docs/API-REFERENCE + KAMUS-DATA dgn kontrak F2 | boleh mulai |
+
+> Catatan: bug UX (assign-siswa, backlink) DIPINDAH ke Antigravity-2 (agar
+> Antigravity-1 fokus backend F2 tanpa tabrakan frontend). Brief 2 bug itu
+> ada di `briefs/AGENT-1.md` — Antigravity-2 kerjakan dari sana dulu, lalu
+> F2 frontend guru.
 
 **Catatan temuan (2026-07-17):** npm audit — backend 26 vuln (7 HIGH),
 frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1

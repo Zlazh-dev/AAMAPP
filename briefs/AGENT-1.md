@@ -13,7 +13,19 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF — SEC-1 (hardening keamanan pra-produksi)
+## ⚠️ ROUTING BARU (2026-07-17) — armada 3 executor kode
+
+- **Antigravity-1 (kamu, executor A):** tugas aktif = **F2 BACKEND**. Baca
+  `briefs/F2-SPEC.md` bagian "Antigravity-1 → BACKEND F2". Mulai segera.
+  SEC-1 & FIX-MENU-ADMIN di bawah = SUDAH SELESAI (arsip).
+- **Antigravity-2 (executor B):** kerjakan 2 bug UX di file INI
+  (FIX-ASSIGN-SISWA-KELAS + BACKLINK-ADAPTIF-MOBILE) DULU, lalu
+  `briefs/F2-SPEC.md` bagian "FRONTEND F2 GURU".
+- **Roo (executor C):** `briefs/F2-SPEC.md` bagian "FRONTEND F2 ADMIN".
+- Semua: klaim tugas sebelum mulai; wilayah folder terpisah; APPEND
+  laporan; JANGAN sentuh file titik-bersama milik agent lain.
+
+## [ARSIP] TUGAS AKTIF — SEC-1 (hardening keamanan pra-produksi) — SELESAI
 
 > ✅ BLOKIR HILANG (planner 2026-07-17): `docs/HARDENING-CHECKLIST.md`
 > SUDAH ADA & diverifikasi planner (6 item, format lengkap). LANJUTKAN
@@ -368,6 +380,11 @@ lain (termasuk `rbac-negatif.spec.ts` yang memverifikasi peran
 ini bersifat satu-arah, aman).
 
 Tidak ada bug/keputusan lain yang perlu planner. FIX-MENU-ADMIN selesai.
+
+---
+
+### [AGENT-1] FIX-ASSIGN-SISWA-KELAS — DIKERJAKAN (2026-07-17 13:47)
+
 
 
 
