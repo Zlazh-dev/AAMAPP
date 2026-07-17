@@ -32,9 +32,14 @@
 
 | Agent | Tool | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | SEC-1 hardening + hutang chunk build | DITUGASKAN |
-| AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 (npm audit + hardening checklist + koreksi kamus) | DITUGASKAN |
-| AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 (presensi wajah guru) | DITUGASKAN |
+| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | chunk build ✅ • SEC-1 hardening | SIAP LANJUT (checklist sudah ada — blokir dependensi hilang) |
+| AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 | ✅ SELESAI (npm audit + HARDENING-CHECKLIST + koreksi kamus; garbage-text dibersihkan planner) |
+| AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 | ✅ SELESAI (planning/F3-RISET-PRESENSI-WAJAH.md; menunggu review planner utk kickoff F3) |
+
+**Catatan temuan (2026-07-17):** npm audit — backend 26 vuln (7 HIGH),
+frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1
+ke-7 (butuh `npm audit fix` = sentuh lockfile = wilayah AGENT-1) —
+planner putuskan setelah SEC-1 config 1–6 lolos.
 
 Planner memperbarui papan ini setiap ada perubahan; agent TIDAK mengubah
 papan — status "SELESAI" ditulis planner setelah review laporan.

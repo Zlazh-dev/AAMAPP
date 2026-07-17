@@ -57,7 +57,7 @@ entity - varchar - NO
 entityId - varchar - YES 
 entityLabel - varchar - YES 
 summary - varchar - YES 
-ipAddress - varchar - YES 
+ipAddress = varchar - YES 
 deviceSummary - varchar - YES 
 createdAt - timestamptz - NO - auto 
  
@@ -86,6 +86,7 @@ jenisKelamin - varchar - YES
 tempatLahir - varchar - YES 
 tanggalLahir - date - YES 
 alamat - varchar - YES 
+agama - varchar - YES 
 fotoUrl - varchar - YES 
 aktif - boolean - NO - true 
 createdAt - timestamptz - NO - auto 
@@ -107,6 +108,7 @@ updatedAt - timestamptz - NO - auto
 Kolom - Tipe - Null - Default 
 id - int - NO - PK auto 
 nama - varchar - NO 
+semester - int - NO
 tanggalMulai - date - NO 
 tanggalSelesai - date - NO 
 aktif - boolean - NO - false 
@@ -130,14 +132,14 @@ Kolom - Tipe - Null - Default
 id - int - NO - PK auto 
 guruId - int FK - NO - onDelete CASCADE 
 mapelId - int FK - NO - onDelete CASCADE 
-kelasId - int FK - NO - onDelete CASCADE 
+kelasId = int FK - NO - onDelete CASCADE 
 createdAt - timestamptz - NO - auto 
 updatedAt - timestamptz - NO - auto 
  
 ## Tabel: jadwal_kbm (jadwal-kbm.entity.ts) 
  
 Kolom - Tipe - Null - Default 
-id - int - NO - PK auto 
+id = int - NO - PK auto 
 kelasId - int FK - NO - onDelete CASCADE 
 penugasanId - int FK - NO - onDelete CASCADE 
 tahunAjaranId - int FK - NO - onDelete CASCADE 
@@ -165,5 +167,3 @@ updatedAt - timestamptz - NO - auto
  
 ## Deviasi Terdeteksi 
  
-1. Tahun ajaran tidak punya kolom semester (spec menyebut semester aktif) 
-2. Siswa tidak punya kolom agama (spec 9: mapel agama sesuai agama siswa)

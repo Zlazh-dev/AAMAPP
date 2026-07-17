@@ -1,1 +1,0 @@
-import{j as p}from"./index-Bwk5-t4E.js";const o={xl:"max-w-[1280px]",lg:"max-w-[1024px]",md:"max-w-[768px]",sm:"max-w-[640px]"};function e({size:x="xl",className:a="",bottomBar:m=!1,children:s}){return p.jsx("div",{className:["w-full mx-auto p-4 md:p-6",m?"pb-24 md:pb-6":"",o[x],a].join(" "),children:s})}export{e as P};
