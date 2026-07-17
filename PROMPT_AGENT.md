@@ -32,9 +32,9 @@
 
 | Agent | Tool | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-MENU-ADMIN → FIX-ASSIGN-SISWA-KELAS | DITUGASKAN (SEC-1 ✅; 2 bug UX antre) |
-| AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 | ✅ SELESAI (npm audit + HARDENING-CHECKLIST + koreksi kamus; garbage-text dibersihkan planner) |
-| AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 | ✅ SELESAI (planning/F3-RISET-PRESENSI-WAJAH.md; menunggu review planner utk kickoff F3) |
+| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-MENU-ADMIN ✅ • FIX-ASSIGN-SISWA-KELAS | SEC-1 ✅ + menu-admin ✅ (43 pass/2 skip); LANJUT assign-siswa |
+| AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 ✅ • OPS-5 ✅ (.env.example + runbook bootstrap) | SELESAI — idle/menunggu tugas baru |
+| AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 ✅ • RISET-F4 ✅ | SELESAI — riset F2/F3/F4/F6 lengkap; sisa RISET-F5 opsional |
 
 **Catatan temuan (2026-07-17):** npm audit — backend 26 vuln (7 HIGH),
 frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1
