@@ -41,6 +41,66 @@ konsisten, tsc bersih, verifikasi browser + laporan di `## LAPORAN`.
 
 ## LAPORAN
 <!-- AGENT-2 append di bawah baris ini. Jangan hapus entri lama. -->
+
+## KLAIM TUGAS — F2-ADMIN-POLISH
+DIKERJAKAN (17:55) — Antigravity-2 (executor B). Mengganti presensiLocalApi.ts
+ke method resmi client.ts, merapikan styling ke token aam-*, menghapus
+presensiLocalApi.ts. Wilayah tulis: HANYA frontend/src/pages/admin/presensi/.
+
+### [Antigravity-2] F2-ADMIN-POLISH — SELESAI (2026-07-17 18:05)
+
+**Wilayah dihormati**: HANYA menulis di `frontend/src/pages/admin/presensi/`.
+Tidak menyentuh `client.ts`/`App.tsx`/`menu.ts`/backend.
+
+**Perubahan:**
+1. [MatriksPresensiSiswaPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx) —
+   import `getMatriksPresensiSiswa`/tipe dari `./presensiLocalApi` diganti
+   ke `api.getMatriksPresensiSiswa` + `ApiError` resmi dari
+   `../../../api/client`. Tipe respons diturunkan via
+   `Awaited<ReturnType<typeof api.getMatriksPresensiSiswa>>` (client.ts
+   belum meng-export interface bernama untuk endpoint ini, hanya
+   inline-typed — jadi ini cara paling aman tanpa duplikasi shape manual).
+2. [RosterDetailSheet.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx) —
+   diganti ke `api.getGuruKbmRoster({ jadwalId, tanggal })` dan
+   `api.koreksiGuruKbmRoster({ jadwalId, body })` + tipe resmi
+   `GuruRosterResponse`/`GuruRosterSiswaEntry`/`StatusPresensi` dari
+   client.ts (identik dengan yang dipakai `pages/guru/RosterPage.tsx`).
+   Ditambah guard double-submit eksplisit (`if (!detail || saving) return`)
+   dan pesan error inline dari `ApiError.body?.message` (menangani 400/403
+   dari backend saat alasan kosong pada koreksi tanggal lampau).
+3. Styling sudah memakai token `aam-*` sejak awal (Card/Badge/PageContainer
+   /min-h-[48px]) — audit ulang confirm TIDAK ada kelas non-standar
+   (`bg-muted`/`border-input`/`text-primary`/`divide-muted`) di folder ini;
+   sesuai `grep` sebelum mengerjakan. Tidak ada perubahan styling tambahan
+   diperlukan.
+4. **File dihapus**: `frontend/src/pages/admin/presensi/presensiLocalApi.ts`
+   (helper sementara, sudah tidak dipakai).
+
+**Verifikasi:**
+- `npx tsc -b --noEmit` (frontend) — bersih, 0 error.
+- `docker compose up -d --build frontend` — build sukses, image
+  `MatriksPresensiSiswaPage-BXXQ61sj.js` (10.74 kB) muncul di output vite,
+  kontainer `aamapp-frontend-1` & `aamapp-backend-1` Recreated + Started.
+- `npm run test:e2e` — **47 passed, 2 skipped** (skip pra-ada: butuh
+  GOOGLE_CLIENT_ID & tidak terkait tugas ini). Termasuk
+  `e2e/gelombang2/presensi-siswa.spec.ts` yang eksplisit menguji alur
+  matriks admin + koreksi dgn alasan — SEMUA lulus:
+  - "Simpan roster, baca kembali, matriks admin, dan koreksi admin dgn alasan" ✅
+  - "Rekap presensi kelas berpaginasi menghitung H/S/I/A/T dari sesi TERLAKSANA" ✅
+  - "Guru non-pemilik & non-admin ditolak 403 saat simpan roster sesi orang lain" ✅
+
+**DoD terpenuhi**: presensiLocalApi.ts terhapus ✅, admin pakai client.ts
+resmi ✅, styling konsisten (sudah sesuai sejak awal) ✅, tsc bersih ✅,
+build docker sukses ✅, e2e hijau ✅.
+
+Verifikasi manual browser (`/admin/presensi-siswa` klik interaktif) tidak
+dilakukan langsung oleh saya (tidak ada akses browser interaktif di sesi
+ini) — namun cakupan e2e Playwright di atas menguji jalur yang sama end-
+to-end (login → matriks admin → buka sheet koreksi → submit dgn alasan),
+jadi risiko regresi sangat rendah. Menunggu review planner bila perlu
+verifikasi visual tambahan.
+
+
 - [ ] Ops-1 - Telah diselesaikan (lapor di scratch/agent2-ops1-report.md)
 - [x] Ops-2 - Telah diselesaikan (lapor di bagian di bawah)
 - [ ] Ops-3 - Belum dikerjakan

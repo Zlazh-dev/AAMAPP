@@ -5,13 +5,12 @@ import { Badge } from '../../../components/Badge';
 import { useToast } from '../../../components/Toast';
 import { Skeleton } from '../../../components/Skeleton';
 import {
-  getRosterDetail,
-  koreksiRoster,
-  RosterDetailResponse,
-  RosterSiswaEntry,
+  api,
+  ApiError,
+  GuruRosterResponse,
+  GuruRosterSiswaEntry,
   StatusPresensi,
-  LocalApiError,
-} from './presensiLocalApi';
+} from '../../../api/client';
 
 const STATUS_CYCLE: StatusPresensi[] = ['H', 'S', 'I', 'A', 'T'];
 
@@ -50,7 +49,7 @@ export function RosterDetailSheet({
   const { show } = useToast();
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [detail, setDetail] = useState<RosterDetailResponse | null>(null);
+  const [detail, setDetail] = useState<GuruRosterResponse | null>(null);
   const [entries, setEntries] = useState<Map<number, StatusPresensi>>(new Map());
   const [alasan, setAlasan] = useState('');
   const [saving, setSaving] = useState(false);
@@ -73,7 +72,8 @@ export function RosterDetailSheet({
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getRosterDetail(jadwalKbmId, tanggal)
+    api
+      .getGuruKbmRoster({ jadwalId: jadwalKbmId, tanggal })
       .then((res) => {
         if (cancelled) return;
         setDetail(res);
@@ -82,7 +82,7 @@ export function RosterDetailSheet({
         setEntries(m);
       })
       .catch((err) => {
-        show('error', err instanceof LocalApiError ? err.body?.message : 'Gagal memuat roster');
+        show('error', err instanceof ApiError ? err.body?.message : 'Gagal memuat roster');
         onClose();
       })
       .finally(() => {
@@ -105,7 +105,7 @@ export function RosterDetailSheet({
   };
 
   const handleSave = async () => {
-    if (!detail) return;
+    if (!detail || saving) return;
     if (!hariIni && alasan.trim() === '') {
       show('error', 'Alasan koreksi wajib diisi untuk tanggal selain hari ini');
       return;
@@ -113,15 +113,23 @@ export function RosterDetailSheet({
     setSaving(true);
     try {
       const entri = Array.from(entries.entries()).map(([siswaId, status]) => ({ siswaId, status }));
-      await koreksiRoster(jadwalKbmId, {
-        tanggal,
-        entri,
-        alasan: !hariIni ? alasan.trim() : undefined,
+      await api.koreksiGuruKbmRoster({
+        jadwalId: jadwalKbmId,
+        body: {
+          tanggal,
+          entri,
+          alasan: !hariIni ? alasan.trim() : undefined,
+        },
       });
       show('success', 'Koreksi presensi berhasil disimpan');
       onSaved();
     } catch (err) {
-      show('error', err instanceof LocalApiError ? err.body?.message : 'Gagal menyimpan koreksi');
+      show(
+        'error',
+        err instanceof ApiError
+          ? err.body?.message || 'Gagal menyimpan koreksi'
+          : 'Gagal menyimpan koreksi',
+      );
     } finally {
       setSaving(false);
     }
@@ -168,7 +176,7 @@ export function RosterDetailSheet({
         <p className="text-sm text-aam-text-muted py-6 text-center">Tidak ada siswa di kelas ini</p>
       ) : (
         <div className="max-h-[45vh] overflow-y-auto border border-aam-border rounded-md divide-y divide-aam-border/50 mb-4">
-          {detail?.siswa.map((s: RosterSiswaEntry) => {
+          {detail?.siswa.map((s: GuruRosterSiswaEntry) => {
             const status = entries.get(s.siswaId) ?? s.status;
             const meta = STATUS_META[status];
             return (

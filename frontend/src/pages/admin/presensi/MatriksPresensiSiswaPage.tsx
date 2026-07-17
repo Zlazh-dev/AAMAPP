@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { api, Kelas } from '../../../api/client';
+import { api, ApiError, Kelas } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Badge } from '../../../components/Badge';
@@ -7,13 +7,10 @@ import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageContainer } from '../../../components/PageContainer';
 import { AdaptiveSelect } from '../../../components/AdaptiveSelect';
-import {
-  getMatriksPresensiSiswa,
-  MatriksPresensiSiswaResponse,
-  SesiMatriksRow,
-  LocalApiError,
-} from './presensiLocalApi';
 import { RosterDetailSheet } from './RosterDetailSheet';
+
+type MatriksPresensiSiswaResponse = Awaited<ReturnType<typeof api.getMatriksPresensiSiswa>>;
+type SesiMatriksRow = MatriksPresensiSiswaResponse['sesi'][number];
 
 /** WIB "hari ini" dalam format YYYY-MM-DD (tanpa parsing offset — util lokal
  *  ringan; halaman guru/lain di proyek ini pakai `wib.util.ts` di backend,
@@ -83,10 +80,10 @@ export function MatriksPresensiSiswaPage() {
   const loadMatriks = async () => {
     setLoadingMatriks(true);
     try {
-      const res = await getMatriksPresensiSiswa(Number(kelasId), tanggal);
+      const res = await api.getMatriksPresensiSiswa(Number(kelasId), tanggal);
       setData(res);
     } catch (err) {
-      show('error', err instanceof LocalApiError ? err.body?.message : 'Gagal memuat matriks presensi');
+      show('error', err instanceof ApiError ? err.body?.message : 'Gagal memuat matriks presensi');
       setData(null);
     } finally {
       setLoadingMatriks(false);
