@@ -21,3 +21,6 @@ Thumbs.db
 # Build artifacts
 backend/dist/
 frontend/dist/
+
+# Stray backups
+*.backup
