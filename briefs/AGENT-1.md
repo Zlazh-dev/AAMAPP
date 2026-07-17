@@ -78,6 +78,43 @@ mapel/penugasan/jadwal. Route sudah mengizinkan (RequireRole
 DoD: menu Kurikulum tampil utk admin + menu-admin.spec hijau + suite
 penuh hijau + laporan di LAPORAN. Kecil — kerjakan sebelum hal lain.
 
+## TUGAS BERIKUTNYA — FIX-ASSIGN-SISWA-KELAS (bug UX dari user)
+
+Bug: `KelasDetailPage.tsx` — saat kelas KOSONG (siswaList.length===0)
+menampilkan tombol "Tambah Siswa" yang navigasi ke `/admin/orang/siswa/baru`
+(BUAT siswa baru). Salah: alur nyata = siswa sudah ada (dari import),
+tinggal DITUGASKAN ke kelas. Juga TIDAK ADA fitur assign siswa-eksisting
+ke kelas (yang ada hanya "Pindahkan" = keluarkan anggota ke kelas lain,
+tak berguna utk kelas kosong). Backend siap: `PATCH /api/admin/siswa/:id
+{kelasId}` (loop, pola sama dgn pindah-multi).
+
+**Perbaikan (keputusan user):**
+1. **Aksi "Assign Siswa ke Kelas Ini"** (selalu ada di kartu Anggota,
+   baik kelas kosong maupun terisi): buka BottomSheet/dialog picker
+   multi-select siswa yang `kelasId != kelas ini` (searchable via
+   `GET /api/admin/siswa?q=`; server-side, patuh §12.16). TIAP opsi
+   diberi label kelas SAAT INI ("Belum ada kelas" atau "7B") agar
+   assign-yang-berarti-memindah TERLIHAT jelas (bukan silent move).
+   Konfirmasi → loop `PATCH /api/admin/siswa/:id {kelasId: kelas.id}`
+   dgn progress + laporan gagal per item (POLA persis pindah-multi yang
+   sudah ada) → refresh daftar anggota.
+2. **Logika empty-state (persis maksud user):**
+   - Kelas kosong DAN ada siswa lain di sistem (total siswa > 0) →
+     tombol utama = **"Assign Siswa"** (buka picker no.1).
+   - Kelas kosong DAN NOL siswa di seluruh sistem → tombol = **"Tambah
+     Siswa"** (navigate `/admin/orang/siswa/baru`). Cek total via
+     `GET /api/admin/siswa?limit=1` → baca `total`.
+   - Kelas terisi → daftar anggota + "Pindahkan" (keluar, sudah ada) +
+     aksi "Assign Siswa" (masuk, baru) tetap tersedia.
+3. **Spec e2e** `kelas-assign-siswa.spec.ts`: seed 2 siswa tanpa kelas +
+   1 kelas kosong → buka detail kelas → "Assign Siswa" → pilih 2 → simpan
+   → keduanya jadi anggota (verifikasi UI + API kelasId). Plus kasus nol
+   siswa sistem → tombol "Tambah Siswa" muncul.
+4. Selaras §15.3 ("tombol tambah siswa ke kelas" dimaknai ASSIGN-eksisting,
+   bukan create-baru) — planner akan sinkronkan SPEC-KANON.
+
+DoD: perilaku sesuai + spec baru hijau + suite penuh hijau + laporan.
+
 ## HUTANG KECIL (SUDAH SELESAI — arsip)
 - `npm run build` di `frontend/` → tempel ringkasan daftar chunk + ukuran
   di laporan (§12.15d — hutang dari T16; main bundle harus ~257KB,
@@ -255,6 +292,50 @@ selesai.
 
 ---
 
-### [AGENT-1] FIX-MENU-ADMIN — DIKERJAKAN (2026-07-17 13:24)
+### [AGENT-1] FIX-MENU-ADMIN — SELESAI (2026-07-17 13:29)
+
+**Root cause dikonfirmasi**: `getMenuForUser`
+([menu.ts](file:///d:/Codeproject/AAMAPP/frontend/src/app/menu.ts)) hanya
+menambah grup menu bila `user.roles.includes(area)` — admin (peran
+`['admin']`) tidak literally punya peran `'kurikulum'`, jadi grup
+KURIKULUM tak pernah dirender di sidebar walau route
+`/kurikulum/jadwal` dkk. sudah eksplisit mengizinkan admin
+(`RequireRole roles={['kurikulum','admin']}` di
+[App.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/app/App.tsx)).
+
+**Perbaikan** — [menu.ts](file:///d:/Codeproject/AAMAPP/frontend/src/app/menu.ts):
+- Tambah konstanta `ADMIN_EXTRA_AREAS = ['kurikulum']` (komentar
+  menjelaskan cara menambah area lain begitu halaman fasenya jadi —
+  kesiswaan/guru/kepsek/tu sengaja TIDAK dimasukkan, masih placeholder
+  dashboard kosong, sesuai keputusan user di brief).
+- `getMenuForUser`: untuk user dengan peran `admin`, grup di
+  `ADMIN_EXTRA_AREAS` ikut ditambahkan ke hasil selain grup yang
+  memang dimiliki via `roles.includes()` — dengan guard `hasRole ||
+  isAdminExtra` per-area di loop `AREA_ORDER` yang sama, jadi urutan
+  §6.1B (Admin → Kurikulum → …) otomatis terjaga dan tidak ada
+  duplikasi grup bila admin kelak juga diberi peran `kurikulum`
+  eksplisit.
+- `getHomePath` & `findActiveLeaf` tidak diubah — keduanya sudah bekerja
+  generik di atas hasil `getMenuForUser`/grup manapun, tidak perlu
+  logika superuser terpisah.
+
+**Spec baru** —
+[frontend/e2e/gelombang2/menu-admin.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/menu-admin.spec.ts):
+login admin → assert label grup "KURIKULUM" tampil di sidebar → klik
+link "Jadwal KBM" → assert mendarat di `/kurikulum/jadwal` dengan
+heading "Jadwal KBM" ter-render (bukan blank/403) → assert item
+"Mata Pelajaran" & "Penugasan" (grup Kurikulum lainnya) juga tampil,
+membuktikan seluruh grup ikut muncul bukan cuma satu item.
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose down -v`
+→ `up -d --build` → `npm run test:e2e` penuh: **43 passed, 2 skipped**
+(skip pre-existing, tak terkait — sama seperti laporan SEC-1
+sebelumnya). `menu-admin.spec.ts` hijau, tidak ada regresi di spec
+lain (termasuk `rbac-negatif.spec.ts` yang memverifikasi peran
+`kurikulum` NON-admin tetap TIDAK melihat menu admin — jadi perubahan
+ini bersifat satu-arah, aman).
+
+Tidak ada bug/keputusan lain yang perlu planner. FIX-MENU-ADMIN selesai.
+
 
 

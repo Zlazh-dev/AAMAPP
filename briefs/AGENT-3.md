@@ -75,33 +75,33 @@ RISET DARI KODE + spec (baca BAGIAN: SPEC-KANON §6.5 izin/libur/cutoff,
 dengan bukti file:baris (kode) + kutipan § (spec):
 
 1. **Izin guru + pengganti:** alur ajukan → approve (Admin ATAU Kepsek,
-   §8.2) → KBM "guru berhalangan" → pengganti mengisi roster (kaitan ke
-   presensi F2/F3). Usulan entitas izin + status; siapa boleh approve.
+    §8.2) → KBM "guru berhalangan" → pengganti mengisi roster (kaitan ke
+    presensi F2/F3). Usulan entitas izin + status; siapa boleh approve.
 2. **Alpha/libur OTOMATIS (turunan, §6.5):** cutoff WIB → guru ada KBM
-   tanpa presensi tanpa izin = ALPHA; tanpa KBM = LIBUR; KBM lewat tanpa
-   roster = KOSONG. Petakan sumber datanya (jadwal_kbm + kalender_libur +
-   presensi F2/F3 + izin) — semua TURUNAN, bukan kolom statis. Ini
-   ketergantungan besar ke F2/F3 (riset di planning/F2, F3).
+    tanpa presensi tanpa izin = ALPHA; tanpa KBM = LIBUR; KBM lewat tanpa
+    roster = KOSONG. Petakan sumber datanya (jadwal_kbm + kalender_libur +
+    presensi F2/F3 + izin) — semua TURUNAN, bukan kolom statis. Ini
+    ketergantungan besar ke F2/F3 (riset di planning/F2, F3).
 3. **Koreksi presensi + verifikasi pending (§6.6, §8.2):** admin koreksi
-   presensi manual NIP pending; audit.
+    presensi manual NIP pending; audit.
 4. **Dashboard (§6.6):** kartu agregat guru (H/T/I/A/Libur), KBM
-   (terlaksana/kosong), siswa hari ini; feed realtime; "perlu perhatian".
-   Query agregat apa yang dibutuhkan (patuh §12.16 — level DB).
+    (terlaksana/kosong), siswa hari ini; feed realtime; "perlu perhatian".
+    Query agregat apa yang dibutuhkan (patuh §12.16 — level DB).
 5. **Laporan + export (§6.6):** HUB laporan → sub-halaman (harian guru %,
-   per-KBM keterlaksanaan, siswa per mapel/kelas). Export Excel/PDF
-   berkop — identifikasi library (exceljs sudah ada utk import; PDF?
-   §12.15 lazy/berat). Usulan, bukan keputusan.
+    per-KBM keterlaksanaan, siswa per mapel/kelas). Export Excel/PDF
+    berkop — identifikasi library (exceljs sudah ada utk import; PDF?
+    §12.15 lazy/berat). Usulan, bukan keputusan.
 6. **Rekap TU (§10):** rekap presensi harian guru → basis gaji (hitung di
-   LUAR sistem) + export; peran `tu` (§8.2). Kaitan ke presensi harian
-   guru F3.
+    LUAR sistem) + export; peran `tu` (§8.2). Kaitan ke presensi harian
+    guru F3.
 7. **Area Kepsek (§8.2):** BACA-SEMUA dashboard & laporan; approve izin
-   guru; nama/NIP dari profil_sekolah utk dokumen cetak.
+    guru; nama/NIP dari profil_sekolah utk dokumen cetak.
 8. **Pola WAJIB (kutip kode):** RBAC (admin/kepsek/tu + baca-saja lintas
-   peran pola kehadiran-guru), audit, cache SWR, lazy, komponen v0.12.x,
-   §12.16 agregasi level DB, §12.17 e2e.
+    peran pola kehadiran-guru), audit, cache SWR, lazy, komponen v0.12.x,
+    §12.16 agregasi level DB, §12.17 e2e.
 9. **USULAN (utk PLANNER):** entitas (izin, koreksi/verifikasi;
-   presensi_harian_guru diasumsikan dari F3) +relasi+onDelete; endpoint +
-   RBAC; halaman UI (§15.3/15.5/15.7); **DAFTAR PERTANYAAN TERBUKA**.
+    presensi_harian_guru diasumsikan dari F3) +relasi+onDelete; endpoint +
+    RBAC; halaman UI (§15.3/15.5/15.7); **DAFTAR PERTANYAAN TERBUKA**.
 
 DoD: `planning/F4-RISET-IZIN-LAPORAN.md` ADA (verifikasi sebelum lapor) +
 laporan `[AGENT-RISET] RISET-F4` di LAPORAN. Bila suatu § tak termuat di
@@ -112,3 +112,6 @@ konteks, laporkan bagian yang belum terjawab — jangan mengarang.
 [AGENT-RISET-F3] 2026-07-16T22:24:00+07:00 — ✅ SELESAI
 - File riset dibuat: planning/F3-RISET-PRESENSI-WAJAH.md
 - Isi: arsitektur wajah (client-side @vladmandic/human, server-side cosine similarity), dua permukaan kamera (kiosk 1:N vs HP 1:1), geofence (HANYA jalur HP), status & jalur gagal (check-in/out dari jam_presensi, 3× gagal → manual NIP → PENDING), privasi/retensi (embedding biometrik, hapus saat guru nonaktif), pola wajib (RolesGuard guru, token perangkat beda dari session, audit, DTO, dynamic-import berat, paginasi/rate limiting, mock embedding untuk e2e), usulan entitas (guru.faceEmbedding, device_kiosk, presensi_harian_guru), endpoint RBAC (/api/guru/presensi-scan, /admin/presensi-guru/harian, manual, device-kiosk CRUD), halaman UI (tambah tab Kiosk di /admin/perangkat, enrollment di /admin/wajah, tombol besar di /guru, tab Harian/Verifikasi Pending di /admin/presensi-guru), pertanyaan terbuka (ambang cosine, level liveness, retensi, jumlah pose, perilaku offline kiosk, presensi HP tanpa geofence, toleransi waktu)
+[AGENT-RISET-F4] 2026-07-17T06:29:00+07:00 — ✅ SELESAI
+- File riset dibuat: planning/F4-RISET-IZIN-LAPORAN.md
+- Isi: izin guru + pengganti (alur ajukan→approve→guru berhalangan→pengganti), alpha/libur otomatis (turunan dari jadwal_kbm+kalender_libur+presensi+izin, bukan kolom statis), koreksi presensi+verifikasi pending (manual NIP→PENDING→setujui, audit), dashboard (kartu agregat guru/KBM/siswa, feed realtime, perlu perhatian, query agregat level DB), laporan+export (HUB laporan→sub-halaman harian guru%/per-KBM keterlaksanaan/siswa per mapel/kelas, export Excel/PDF berkop, exceljs sudah ada, PDF perlu library + lazy loading), rekap TU (basis gaji dari presensi harian guru F3, export luar sistem, peran tu), area kepsek (BACA-SEMUA dashboard/laporan, approve izin, nama/NIP dari profil_sekolah), pola wajib (RBAC kehadiran-guru, audit, cache SWR, lazy, komponen v0.12.x, agregasi level DB, e2e Playwright), usulan entitas (izin_guru), endpoint RBAC (/api/izin/guru CRUD + setujui/tolak, hanya admin/kepsek), halaman UI (form izinkan guru, HUB admin/kepsek dengan tab status, detail izin, dashboard diperbarui, HUB laporan dengan sub-halaman, halaman rekap TU), pertanyaan terbuka (jenis izin, sistem pengganti otomatis, batas waktu ajukan izin, persetujuan multi-level, lampiran izin, notifikasi, export PDF library, rekap TU frekuensi, akses kepsek, koreksi presensi batas waktu)

@@ -62,4 +62,12 @@ Operasional:
 - [ ] Semua service healthy 
 - [ ] Login admin berhasil 
 - [ ] Aplikasi bisa diakses 
-- [ ] User test per peran dibuat
+- [ ] User test per peran dibuat 
+ 
+## ⛔ Bootstrap Skema (WAJIB sebelum deploy pertama)
+Karena di production `synchronize` OFF & belum ada migration, deploy ke DB kosong TIDAK membuat tabel.
+Dokumentasikan prosedur first-run yang aman: deploy sekali dengan
+`NODE_ENV=development` (agar synchronize membentuk skema + seed
+admin+pengaturan jalan) → verifikasi tabel terbentuk → ganti ke
+`NODE_ENV=production` untuk operasi normal. Tandai bahwa migration
+tooling resmi menyusul di fase F8.

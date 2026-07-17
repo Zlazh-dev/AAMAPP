@@ -32,7 +32,7 @@
 
 | Agent | Tool | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-MENU-ADMIN (bug: admin tak lihat menu Kurikulum) | DITUGASKAN (SEC-1 ✅ selesai sebelumnya) |
+| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | FIX-MENU-ADMIN → FIX-ASSIGN-SISWA-KELAS | DITUGASKAN (SEC-1 ✅; 2 bug UX antre) |
 | AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 | ✅ SELESAI (npm audit + HARDENING-CHECKLIST + koreksi kamus; garbage-text dibersihkan planner) |
 | AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 | ✅ SELESAI (planning/F3-RISET-PRESENSI-WAJAH.md; menunggu review planner utk kickoff F3) |
 
