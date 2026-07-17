@@ -61,10 +61,10 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     area: 'guru',
     label: 'GURU',
     items: [
-      { label: 'Dashboard', path: '/guru', icon: 'dashboard' },
       { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
     ],
   },
+
   kepsek: {
     area: 'kepsek',
     label: 'KEPSEK',

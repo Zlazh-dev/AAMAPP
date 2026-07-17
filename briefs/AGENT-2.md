@@ -1,3 +1,44 @@
+# DOKUMEN AGENT-2 (Antigravity-v2.0) — AAMAPP
+
+> Kamu executor kode B. Wilayah TULIS: `frontend/src/pages/admin/presensi/**`
+> (halaman admin buatanmu). JANGAN sentuh `client.ts`/`App.tsx`/`menu.ts`
+> (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
+> di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
+
+## TUGAS AKTIF — F2-ADMIN-POLISH (rapikan halaman admin presensi)
+
+Konteks: F2 sudah live (backend + frontend guru + wiring). Halaman admin
+buatanmu (`MatriksPresensiSiswaPage.tsx`, `RosterDetailSheet.tsx`) masih
+memakai helper sementara `presensiLocalApi.ts`. Method RESMI kini sudah
+ada di `frontend/src/api/client.ts`:
+- `api.getMatriksPresensiSiswa(kelasId, tanggal)` → matriks sesi.
+- `api.getGuruKbmRoster({ jadwalId, tanggal })` → roster detail satu sesi.
+- `api.koreksiGuruKbmRoster({ jadwalId, body })` → PATCH koreksi (admin
+  boleh pasca-cutoff; `body.alasan` WAJIB bila tanggal ≠ hari ini).
+
+Kerjakan:
+1. Ganti SEMUA import & pemanggilan dari `./presensiLocalApi` di
+   `MatriksPresensiSiswaPage.tsx` & `RosterDetailSheet.tsx` → pakai
+   `api.*` dari `../../../api/client` (tipe respons juga dari client:
+   mis. `GuruRosterResponse`, `StatusPresensi`). Sesuaikan bentuk data.
+2. HAPUS file `frontend/src/pages/admin/presensi/presensiLocalApi.ts`.
+3. Samakan styling ke token proyek `aam-*` (buang kelas Tailwind
+   non-standar `bg-muted`,`border-input`,`text-primary`,`divide-muted`
+   yang render tak berstyle). Ikuti pola halaman guru RosterPage
+   (BackLink adaptif, Card, Badge variant hijau/kuning/merah, PageContainer
+   size, min-h-[44px] target sentuh).
+4. RosterDetailSheet (koreksi admin): dialog/bottom-sheet adaptif
+   (§15.0), input alasan WAJIB bila tanggal ≠ hari ini (backend menolak
+   403/400 bila kosong — tangani pesannya inline), guard double-submit,
+   feedback toast.
+5. Verifikasi: `npx tsc --noEmit` bersih (frontend) + `docker compose up
+   -d --build frontend` sukses + buka `/admin/presensi-siswa` di browser
+   → matriks tampil, klik sesi → sheet koreksi jalan. Suite e2e tetap
+   hijau.
+
+DoD: presensiLocalApi.ts terhapus, admin pakai client.ts resmi, styling
+konsisten, tsc bersih, verifikasi browser + laporan di `## LAPORAN`.
+
 ## LAPORAN
 <!-- AGENT-2 append di bawah baris ini. Jangan hapus entri lama. -->
 - [ ] Ops-1 - Telah diselesaikan (lapor di scratch/agent2-ops1-report.md)

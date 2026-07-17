@@ -1,120 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { api } from '../../api/client';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { api, GuruRosterResponse, StatusPresensi } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
+import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Skeleton } from '../../components/Skeleton';
+import { BackLink } from '../../components/BackLink';
+import { useToast } from '../../components/Toast';
+
+const STATUS_CYCLE: StatusPresensi[] = ['H', 'S', 'I', 'A', 'T'];
+
+const STATUS_META: Record<StatusPresensi, { label: string; variant: 'green' | 'blue' | 'yellow' | 'red' | 'purple' }> = {
+  H: { label: 'Hadir', variant: 'green' },
+  S: { label: 'Sakit', variant: 'blue' },
+  I: { label: 'Izin', variant: 'yellow' },
+  A: { label: 'Alpha', variant: 'red' },
+  T: { label: 'Terlambat', variant: 'purple' },
+};
 
 /**
- * Guru: RosterPage - Grid presensi siswa untuk satu sesi KBM
- * Menampilkan dan mengelola presensi siswa untuk jadwal KBM spesifik pada tanggal tertentu
- * Status siswa: H (Hadir), S (Sakit), I (Izin), A (Alpha), T (Terlambat)
+ * Guru: RosterPage — grid presensi siswa untuk satu sesi KBM (F2).
+ * Klik status siswa untuk cycle H→S→I→A→T→H. Simpan via POST roster.
  */
 export function RosterPage() {
   const { jadwalId } = useParams<{ jadwalId: string }>();
   const [searchParams] = useSearchParams();
-  const tanggalFromUrl = searchParams.get('tanggal') || '';
-  
+  const navigate = useNavigate();
+  const { show } = useToast();
+  const tanggal = searchParams.get('tanggal') || '';
+
   const [loading, setLoading] = useState(true);
-  const [tanggal, setTanggal] = useState<string>(tanggalFromUrl);
-  const [data, setData] = useState<{ 
-    jadwalKbmId: number;
-    tanggal: string;
-    kelas: string | null;
-    mapel: string | null;
-    tersimpan: boolean;
-    siswa: Array<{
-      siswaId: number;
-      nama: string;
-      nis: string;
-      status: 'H' | 'S' | 'I' | 'A' | 'T';
-    }>
-  } | null>(null);
-  const [statusMap, setStatusMap] = useState<Map<number, 'H' | 'S' | 'I' | 'A' | 'T'>>(new Map());
+  const [data, setData] = useState<GuruRosterResponse | null>(null);
+  const [statusMap, setStatusMap] = useState<Map<number, StatusPresensi>>(new Map());
   const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
-    if (jadwalId && tanggalFromUrl) {
+    if (jadwalId && tanggal) {
       loadRoster();
     }
-  }, [jadwalId, tanggalFromUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jadwalId, tanggal]);
 
   const loadRoster = async () => {
     if (!jadwalId || !tanggal) return;
-    
     setLoading(true);
     try {
       const result = await api.getGuruKbmRoster({ jadwalId: Number(jadwalId), tanggal });
       setData(result);
-      
-      // Initialize statusMap dari data yang diterima
-      const map = new Map<number, 'H' | 'S' | 'I' | 'A' | 'T'>();
-      result.siswa.forEach(siswa => {
-        map.set(siswa.siswaId, siswa.status as 'H' | 'S' | 'I' | 'A' | 'T');
-      });
+      const map = new Map<number, StatusPresensi>();
+      result.siswa.forEach((s) => map.set(s.siswaId, s.status));
       setStatusMap(map);
+      setDirty(false);
     } catch (err) {
       console.error('Failed to load roster data:', err);
+      show('error', 'Gagal memuat data roster');
       setData(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTanggalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
-    setTanggal(newDate);
-    // Reload data ketika tanggal berubah
-    if (jadwalId && newDate) {
-      loadRoster();
-    }
-  };
-
-  const handleStatusChange = (siswaId: number, status: 'H' | 'S' | 'I' | 'A' | 'T') => {
+  const cycleStatus = (siswaId: number) => {
     setStatusMap((prev) => {
       const next = new Map(prev);
-      next.set(siswaId, status);
+      const cur = next.get(siswaId) ?? 'H';
+      const idx = STATUS_CYCLE.indexOf(cur);
+      next.set(siswaId, STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length]);
       return next;
     });
-    setData((prev) => (prev ? { ...prev, tersimpan: false } : prev));
+    setDirty(true);
   };
 
   const handleSave = async () => {
     if (!jadwalId || !tanggal || !data) return;
-    
     setSaving(true);
     try {
-      const entri = Array.from(statusMap.entries()).map(([siswaId, status]) => ({
-        siswaId,
-        status
-      }));
-      
+      const entri = Array.from(statusMap.entries()).map(([siswaId, status]) => ({ siswaId, status }));
       await api.postGuruKbmRoster({
         jadwalId: Number(jadwalId),
-        body: {
-          tanggal,
-          entri
-        }
+        body: { tanggal, entri },
       });
-      
-      // Update state untuk menandakan data tersimpan
-      setData(prev => prev ? { ...prev, tersimpan: true } : null);
-      
-      // Tampilkan feedback sukses sementara
-      const originalText = document.querySelector('.save-button span')?.textContent;
-      const saveButton = document.querySelector('.save-button');
-      if (saveButton) {
-        saveButton.innerHTML = '<span class="material-symbols-outlined">check</span> Disimpan!';
-        setTimeout(() => {
-          if (saveButton && originalText !== undefined) {
-            saveButton.innerHTML = `<span class="material-symbols-outlined">save</span> ${originalText}`;
-          }
-        }, 2000);
-      }
+      show('success', 'Presensi berhasil disimpan');
+      setData((prev) => (prev ? { ...prev, tersimpan: true } : null));
+      setDirty(false);
     } catch (err) {
       console.error('Failed to save roster:', err);
-      alert('Gagal menyimpan presensi. Silakan coba lagi.');
+      show('error', 'Gagal menyimpan presensi. Silakan coba lagi.');
     } finally {
       setSaving(false);
     }
@@ -122,39 +95,14 @@ export function RosterPage() {
 
   if (loading || !jadwalId || !tanggal) {
     return (
-      <PageContainer size="xl">
+      <PageContainer size="lg" bottomBar>
         <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
           Roster Presensi
         </h2>
-        <div className="mb-6">
-          <div className="flex items-center gap-3">
-            <label className="block text-sm font-medium text-aam-text mb-2">
-              Tanggal
-            </label>
-            <input
-              type="date"
-              value={tanggal}
-              onChange={handleTanggalChange}
-              className="ml-4 px-3 py-2 border border-input bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        </div>
-        <div className="text-center py-8">
-          {loading ? (
-            <>
-              <Skeleton className="h-20 w-full rounded-md" />
-              <p className="mt-2 text-sm text-aam-text-muted">Memuat data...</p>
-            </>
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '3rem' }}>
-                error
-              </span>
-              <p className="mt-3 text-sm text-aam-text-muted">
-                Gagal memuat data roster. Silakan periksa jadwal dan tanggal.
-              </p>
-            </>
-          )}
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full rounded-md" />
+          ))}
         </div>
       </PageContainer>
     );
@@ -162,23 +110,11 @@ export function RosterPage() {
 
   if (!data) {
     return (
-      <PageContainer size="xl">
+      <PageContainer size="lg">
+        <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4 hidden md:inline-flex" />
         <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
           Roster Presensi
         </h2>
-        <div className="mb-6">
-          <div className="flex items-center gap-3">
-            <label className="block text-sm font-medium text-aam-text mb-2">
-              Tanggal
-            </label>
-            <input
-              type="date"
-              value={tanggal}
-              onChange={handleTanggalChange}
-              className="ml-4 px-3 py-2 border border-input bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </div>
-        </div>
         <div className="text-center py-8">
           <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '3rem' }}>
             error
@@ -191,161 +127,90 @@ export function RosterPage() {
     );
   }
 
-  const statusLabels: Record<'H' | 'S' | 'I' | 'A' | 'T', { label: string; color: string }> = {
-    H: { label: 'Hadir', color: 'text-green-600' },
-    S: { label: 'Sakit', color: 'text-blue-600' },
-    I: { label: 'Izin', color: 'text-yellow-600' },
-    A: { label: 'Alpha', color: 'text-red-600' },
-    T: { label: 'Terlambat', color: 'text-orange-600' },
-  };
-
   return (
-    <PageContainer size="xl">
-      <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
-        Roster Presensi
-      </h2>
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <label className="block text-sm font-medium text-aam-text mb-2">
-            Tanggal
-          </label>
-          <input
-            type="date"
-            value={tanggal}
-            onChange={handleTanggalChange}
-            className="ml-4 px-3 py-2 border border-input bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <span className="text-sm text-aam-text-muted">
-            {data.kelas} • {data.mapel}
-          </span>
+    <PageContainer size="lg" bottomBar>
+      <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4 hidden md:inline-flex" />
+
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
+            Roster Presensi
+          </h2>
+          <p className="text-xs text-aam-text-muted mt-0.5">
+            {data.mapel} • {data.kelas} • {new Date(data.tanggal).toLocaleDateString('id-ID')}
+          </p>
         </div>
-      </div>
-      
-      {/* Info jadwal dan status penyimpanan */}
-      <div className="mb-4 p-3 bg-muted rounded-md">
-        <p className="text-sm text-aam-text-muted">
-          Jadwal: {data.jadwalKbmId} | Kelas: {data.kelas} | Mapel: {data.mapel}
-        </p>
         {data.tersimpan ? (
-          <p className="mt-1 text-sm text-green-600 font-medium">
-            Data terakhir tersimpan
-          </p>
+          <Badge variant="green">Tersimpan</Badge>
         ) : (
-          <p className="mt-1 text-sm text-yellow-600 font-medium">
-            Ada perubahan yang belum disimpan
-          </p>
+          <Badge variant="yellow">Belum disimpan</Badge>
         )}
       </div>
-      
-      {/* Grid siswa */}
-      <div className="space-y-3">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-muted">
-            <thead className="bg-muted">
-              <tr>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-aam-text-muted uppercase tracking-wider">
-                  No
-                </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-aam-text-muted uppercase tracking-wider">
-                  NIS
-                </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-aam-text-muted uppercase tracking-wider">
-                  Nama Siswa
-                </th>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-aam-text-muted uppercase tracking-wider">
-                  Status Presensi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-muted">
-              {data.siswa.map((siswa, index) => (
-                <tr key={siswa.siswaId} className="hover:bg-muted/50">
-                  <td className="px-4 py-3 text-sm text-aam-text">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-aam-text font-mono">
-                    {siswa.nis}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-aam-text font-medium">
-                    {siswa.nama}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center space-x-3">
-                      {(['H', 'S', 'I', 'A', 'T'] as const).map((status) => (
-                        <label
-                          key={status}
-                          className={`flex items-center gap-2 cursor-pointer select-none ${
-                            statusMap.get(siswa.siswaId) === status
-                              ? 'font-medium text-aam-text'
-                              : 'text-aam-text-muted'
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            checked={statusMap.get(siswa.siswaId) === status}
-                            onChange={() => handleStatusChange(siswa.siswaId, status as 'H' | 'S' | 'I' | 'A' | 'T')}
-                            className="h-4 w-4 text-primary rounded focus:ring-primary"
-                            aria-label={statusLabels[status].label}
-                          />
-                          <span className={`text-sm font-mono ${statusLabels[status].color}`}>
-                            {statusLabels[status].label}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Ringkasan status */}
-        <div className="mt-4 p-3 bg-muted rounded-md">
-          <p className="text-sm font-medium text-aam-text mb-2">
-            Ringkasan Status
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {(['H', 'S', 'I', 'A', 'T'] as const).map((status) => {
-              const count = Array.from(statusMap.values()).filter(s => s === status).length;
-              return (
-                <div key={status} className={`flex items-center gap-2 ${statusLabels[status].color}`}>
-                  <span className={`material-symbols-outlined`}>
-                    {status === 'H' ? 'check_circle' : 
-                     status === 'S' ? 'hospital' : 
-                     status === 'I' ? 'person_add' : 
-                     status === 'A' ? 'person_off' : 
-                     'access_time'}
+
+      <p className="text-xs text-aam-text-muted mb-3">
+        Klik status siswa untuk mengubah (Hadir → Sakit → Izin → Alpha → Terlambat).
+      </p>
+
+      <Card icon="groups" className="p-0 overflow-hidden mb-4">
+        <div className="divide-y divide-aam-border/50">
+          {data.siswa.map((s, index) => {
+            const status = statusMap.get(s.siswaId) ?? s.status;
+            const meta = STATUS_META[status];
+            return (
+              <button
+                key={s.siswaId}
+                type="button"
+                onClick={() => cycleStatus(s.siswaId)}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 min-h-[56px] text-left hover:bg-gray-50 transition-colors"
+              >
+                <span className="min-w-0 flex items-center gap-3">
+                  <span className="text-xs text-aam-text-muted w-6 shrink-0">{index + 1}.</span>
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium text-aam-text truncate">{s.nama}</span>
+                    <span className="block text-xs text-aam-text-muted">NIS: {s.nis}</span>
                   </span>
-                  <span>{count} {statusLabels[status].label}</span>
-                </div>
-              );
-            })}
-          </div>
+                </span>
+                <Badge variant={meta.variant}>{meta.label}</Badge>
+              </button>
+            );
+          })}
         </div>
-      </div>
-      
-      {/* Tombol aksi */}
-      <div className="mt-6 flex justify-end">
-        <Button
-          variant="secondary"
-          size="lg"
-          onClick={() => {
-            // Navigasi kembali ke KBM hari ini
-            window.history.back();
-          }}
-        >
-          Kembali
+      </Card>
+
+      {/* Ringkasan status */}
+      <Card icon="summarize" className="p-4 mb-4">
+        <p className="text-sm font-medium text-aam-text mb-2">Ringkasan</p>
+        <div className="grid grid-cols-5 gap-2 text-center text-xs">
+          {STATUS_CYCLE.map((status) => {
+            const count = Array.from(statusMap.values()).filter((s) => s === status).length;
+            return (
+              <div key={status}>
+                <p className="text-lg font-semibold text-aam-text">{count}</p>
+                <p className="text-aam-text-muted">{STATUS_META[status].label}</p>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Desktop: tombol inline. Mobile: sticky bottom bar (§BACKLINK-ADAPTIF-MOBILE pola bottomBar) */}
+      <div className="hidden md:flex justify-end gap-3">
+        <Button variant="secondary" size="md" onClick={() => navigate('/guru/kbm')} disabled={saving}>
+          Batal
         </Button>
-        <Button
-          variant="primary"
-          size="lg"
-          className="save-button ml-3"
-          onClick={handleSave}
-          disabled={saving}
-        >
-          <span className="material-symbols-outlined mr-2">save</span>
+        <Button variant="primary" size="md" onClick={handleSave} loading={saving} icon="save">
           Simpan Presensi
+        </Button>
+      </div>
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-aam-border p-3 z-30 flex gap-2"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        <Button variant="secondary" size="lg" onClick={() => navigate('/guru/kbm')} disabled={saving} className="flex-1">
+          Batal
+        </Button>
+        <Button variant="primary" size="lg" onClick={handleSave} loading={saving} icon="save" className="flex-1">
+          Simpan
         </Button>
       </div>
     </PageContainer>

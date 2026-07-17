@@ -282,6 +282,55 @@ export interface JadwalKbm {
   updatedAt: string;
 }
 
+// ============ F2: GURU KBM & PRESENSI SISWA TYPES ============
+
+export type StatusPresensi = 'H' | 'S' | 'I' | 'A' | 'T';
+
+export interface GuruKbmSesi {
+  jadwalKbmId: number;
+  mapel: string;
+  kelas: string;
+  jamMulai: string;
+  jamSelesai: string;
+  sesiKe: number;
+  status: 'TERLAKSANA' | 'BELUM';
+}
+
+export interface GuruKbmResponse {
+  tanggal: string;
+  sesi: GuruKbmSesi[];
+}
+
+export interface GuruRosterSiswaEntry {
+  siswaId: number;
+  nama: string;
+  nis: string;
+  status: StatusPresensi;
+}
+
+export interface GuruRosterResponse {
+  jadwalKbmId: number;
+  tanggal: string;
+  kelas: string;
+  mapel: string;
+  tersimpan: boolean;
+  siswa: GuruRosterSiswaEntry[];
+}
+
+export interface GuruRekapPresensiEntry {
+  siswaId: number;
+  nama: string;
+  nis: string;
+  rekap: Record<StatusPresensi, number> | null;
+}
+
+export interface GuruRekapPresensiResponse {
+  data: GuruRekapPresensiEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 // ============ CACHE LAYER (§12.16c — stale-while-revalidate) ============
 
 const CACHE_MAX = 50; // LRU cap ±50 entri
@@ -986,6 +1035,30 @@ export const api = {
   // --- Kurikulum: Dashboard counts (T15) ---
   getKurikulumDashboard: () =>
     request<{ mapelCount: number; penugasanCount: number; jadwalCount: number; taAktif: TahunAjaran | null }>(`/kurikulum/dashboard`),
+
+  // --- Guru: KBM & Roster Presensi (F2) ---
+  getGuruKbm: (params: { tanggal: string }) =>
+    request<GuruKbmResponse>(`/guru/kbm?tanggal=${encodeURIComponent(params.tanggal)}`),
+
+  getGuruKbmRoster: (params: { jadwalId: number; tanggal: string }) =>
+    request<GuruRosterResponse>(`/guru/kbm/${params.jadwalId}/roster?tanggal=${encodeURIComponent(params.tanggal)}`),
+
+  postGuruKbmRoster: (params: { jadwalId: number; body: { tanggal: string; entri: { siswaId: number; status: StatusPresensi }[] } }) =>
+    request<{ ok: boolean; presensiSesiId: number; ringkasan: Record<string, number> }>(
+      `/guru/kbm/${params.jadwalId}/roster`,
+      { method: 'POST', body: JSON.stringify(params.body) },
+    ),
+
+  // --- Guru: Rekap presensi kelas (F2, wali kelas) ---
+  getGuruKelasRekapPresensi: (params: { kelasId: number; dari: string; sampai: string; page?: number; limit?: number }) => {
+    const search = new URLSearchParams();
+    search.set('kelasId', String(params.kelasId));
+    search.set('dari', params.dari);
+    search.set('sampai', params.sampai);
+    if (params.page) search.set('page', String(params.page));
+    if (params.limit) search.set('limit', String(params.limit));
+    return request<GuruRekapPresensiResponse>(`/guru/kelas/rekap-presensi?${search.toString()}`);
+  },
 };
 
 export { ApiError };

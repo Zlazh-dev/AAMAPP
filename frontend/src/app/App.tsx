@@ -172,10 +172,11 @@ const routes: RouteObject[] = [
           // Kesiswaan placeholder
           { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan']}><Lazy><PlaceholderPage title="Dashboard Kesiswaan" icon="dashboard" /></Lazy></RequireRole> },
 
-          // Guru placeholder + Presensi F2
-          { path: '/guru', element: <RequireRole roles={['guru']}><Lazy><PlaceholderPage title="Dashboard Guru" icon="dashboard" /></Lazy></RequireRole> },
+          // Guru: KBM & Presensi (F2)
+          { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
           { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
+
 
           // Admin: Presensi Siswa (F2 monitor)
           { path: '/admin/presensi-siswa', element: <RequireRole roles={['admin','kepsek','kesiswaan']}><Lazy><MatriksPresensiSiswaPage /></Lazy></RequireRole> },
