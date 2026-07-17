@@ -1,0 +1,42 @@
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { PresensiSesi } from './presensi-sesi.entity';
+import { PresensiSiswa } from './presensi-siswa.entity';
+import { PresensiService } from './presensi.service';
+import {
+  GuruPresensiController,
+  AdminPresensiController,
+} from './presensi.controller';
+import { AuditModule } from '../audit/audit.module';
+import { Session } from '../sessions/session.entity';
+import { User } from '../users/user.entity';
+import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
+import { Penugasan } from '../kurikulum/penugasan.entity';
+import { KalenderLibur } from '../kurikulum/kalender-libur.entity';
+import { Siswa } from '../siswa/siswa.entity';
+import { Guru } from '../guru/guru.entity';
+import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
+import { Pengaturan } from '../pengaturan/pengaturan.entity';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([
+      PresensiSesi,
+      PresensiSiswa,
+      JadwalKbm,
+      Penugasan,
+      KalenderLibur,
+      Siswa,
+      Guru,
+      TahunAjaran,
+      Pengaturan,
+      Session,
+      User,
+    ]),
+    AuditModule,
+  ],
+  controllers: [GuruPresensiController, AdminPresensiController],
+  providers: [PresensiService],
+  exports: [PresensiService],
+})
+export class PresensiModule {}
