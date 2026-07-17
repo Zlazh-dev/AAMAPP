@@ -32,10 +32,19 @@
 
 - **Antigravity-IDE** (executor A) + **Antigravity-v2.0** (executor B) =
   satu-satunya executor. Kiro/Roo/Cline tidak dipakai lagi.
-- **F2 BACKEND SUDAH SELESAI** (ditulis planner + rekap dari Antigravity;
-  semua endpoint live & ter-guard). Sisa F2 = FRONTEND.
+- **F2 SELESAI (backend + frontend + wiring), build & typecheck bersih,
+  app load 200.** Frontend guru (KbmHariIni+Roster) & admin (matriks)
+  wired oleh PLANNER (executor IDE tinggalkan kode rusak → planner
+  perbaiki + wire). Sisa: verifikasi end-to-end (QA user) + polish
+  (lihat catatan di bawah).
+- **Polish F2 tertunda (untuk QA/tugas kecil berikutnya):** RosterPage
+  belum pakai UnsavedGuard + simpan pakai DOM-hack (ganti ke state/toast);
+  admin masih pakai `presensiLocalApi.ts` (pindah ke `api.*` client.ts,
+  hapus file lokal); kelas Tailwind non-standar (`bg-muted`,`border-input`,
+  `text-primary`) render tak berstyle → samakan ke token `aam-*`; label
+  status 'T' = "Terlambat" → konfirmasi vs §7.2 R-07.
 - Titik file bersama frontend (`client.ts`/`App.tsx`/`menu.ts`) dipegang
-  Antigravity-IDE. Antigravity-v2.0 hanya folder halaman baru.
+  PLANNER/Antigravity-IDE. Antigravity-v2.0 hanya folder halaman baru.
 
 ## PAPAN TUGAS
 
