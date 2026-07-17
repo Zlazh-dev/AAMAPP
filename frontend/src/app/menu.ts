@@ -76,10 +76,26 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
 // Order per §6.1.B: Admin → Kurikulum → Kesiswaan → Guru → Kepsek → TU
 const AREA_ORDER = ['admin', 'kurikulum', 'kesiswaan', 'guru', 'kepsek', 'tu'];
 
+/**
+ * FIX-MENU-ADMIN (keputusan user — admin = superuser): admin melihat
+ * grup ADMIN + grup area fungsional yang HALAMANNYA SUDAH ADA (bukan
+ * placeholder dashboard kosong). Saat ini hanya `kurikulum` yang punya
+ * halaman nyata (mapel/penugasan/jadwal). Tambahkan area lain ke array
+ * ini begitu fasenya jadi (kesiswaan/guru/kepsek/tu masih placeholder).
+ */
+const ADMIN_EXTRA_AREAS = ['kurikulum'];
+
 export function getMenuForUser(user: SafeUser): MenuGroup[] {
   const groups: MenuGroup[] = [];
+  const isAdmin = user.roles.includes('admin' as any);
   for (const area of AREA_ORDER) {
-    if (user.roles.includes(area as any)) {
+    const hasRole = user.roles.includes(area as any);
+    // Admin superuser: selain grup miliknya sendiri, tampilkan juga
+    // area fungsional di ADMIN_EXTRA_AREAS walau admin tidak punya
+    // peran itu secara eksplisit. Dedup otomatis via `hasRole` di atas
+    // (kalau admin juga punya peran area tsb, tidak double-push).
+    const isAdminExtra = isAdmin && ADMIN_EXTRA_AREAS.includes(area);
+    if (hasRole || isAdminExtra) {
       groups.push(MENU_GROUPS[area]);
     }
   }
