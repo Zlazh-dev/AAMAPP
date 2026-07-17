@@ -34,7 +34,7 @@ export function PersetujuanPage() {
   };
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/akun" />
       <h2 className="text-lg font-heading font-semibold text-aam-text mt-3 mb-4">
         Persetujuan Pendaftaran

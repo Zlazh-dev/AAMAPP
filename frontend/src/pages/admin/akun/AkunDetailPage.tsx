@@ -79,7 +79,7 @@ export function AkunDetailPage() {
   const isSelf = user.id === currentUser?.id;
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/akun" />
 
       {/* Header */}

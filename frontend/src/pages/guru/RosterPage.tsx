@@ -111,7 +111,7 @@ export function RosterPage() {
   if (!data) {
     return (
       <PageContainer size="lg">
-        <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4 hidden md:inline-flex" />
+        <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4" mobileButton={false} />
         <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
           Roster Presensi
         </h2>
@@ -129,7 +129,7 @@ export function RosterPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4 hidden md:inline-flex" />
+      <BackLink to="/guru/kbm" label="Kembali ke KBM Hari Ini" className="mb-4" mobileButton={false} />
 
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -137,8 +137,9 @@ export function RosterPage() {
             Roster Presensi
           </h2>
           <p className="text-xs text-aam-text-muted mt-0.5">
-            {data.mapel} • {data.kelas} • {new Date(data.tanggal).toLocaleDateString('id-ID')}
+            {data.mapel ?? '—'} • {data.kelas ?? '—'} • {new Date(data.tanggal).toLocaleDateString('id-ID')}
           </p>
+
         </div>
         {data.tersimpan ? (
           <Badge variant="green">Tersimpan</Badge>

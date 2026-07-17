@@ -76,7 +76,7 @@ export function GuruDetailPage() {
   ];
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/orang/guru" />
 
       {/* Header */}

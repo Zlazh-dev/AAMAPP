@@ -359,7 +359,7 @@ export function PengaturanLiburPage() {
 
   return (
     <PageContainer size="lg" bottomBar={selected.size > 0}>
-      <BackLink to="/admin/pengaturan" />
+      <BackLink to="/admin/pengaturan" mobileButton={selected.size === 0} />
       <div className="flex items-start justify-between gap-3 mt-4 mb-1 flex-wrap">
         <div>
           <h2 className="text-lg font-heading font-semibold text-aam-text mb-1">Kalender Libur</h2>

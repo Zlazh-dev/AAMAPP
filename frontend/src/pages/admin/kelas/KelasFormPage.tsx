@@ -107,7 +107,7 @@ export function KelasFormPage() {
 
   return (
     <PageContainer size="md" bottomBar>
-      <BackLink to={isEdit ? `/admin/kelas/${id}` : '/admin/kelas'} />
+      <BackLink to={isEdit ? `/admin/kelas/${id}` : '/admin/kelas'} mobileButton={false} />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">

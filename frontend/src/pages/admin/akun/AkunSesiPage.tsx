@@ -39,7 +39,7 @@ export function AkunSesiPage() {
   };
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="xl" bottomBar>
       <BackLink to="/admin/akun" />
       {/* Page header */}
       <div className="flex items-center justify-between gap-3 mb-4">

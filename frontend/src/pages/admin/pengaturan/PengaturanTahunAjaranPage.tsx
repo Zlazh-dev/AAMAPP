@@ -77,7 +77,7 @@ export function PengaturanTahunAjaranPage() {
   }
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/pengaturan" />
       <div className="flex items-center justify-between mt-4 mb-1 flex-wrap gap-2">
         <h2 className="text-lg font-heading font-semibold text-aam-text">Tahun Ajaran</h2>

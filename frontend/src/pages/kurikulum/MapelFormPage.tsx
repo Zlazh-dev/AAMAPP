@@ -83,7 +83,7 @@ export function MapelFormPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="md" bottomBar>
-        <BackLink to="/kurikulum/mapel" />
+        <BackLink to="/kurikulum/mapel" mobileButton={false} />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">
           {isEdit ? 'Edit Mata Pelajaran' : 'Tambah Mata Pelajaran'}
         </h2>

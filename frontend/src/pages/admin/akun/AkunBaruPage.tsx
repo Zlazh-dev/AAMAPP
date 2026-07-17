@@ -41,7 +41,7 @@ export function AkunBaruPage() {
 
   return (
     <PageContainer size="lg">
-      <BackLink to="/admin/akun" />
+      <BackLink to="/admin/akun" mobileButton={false} />
       <h2 className="text-lg font-heading font-semibold text-aam-text mt-3 mb-4">Tambah Akun</h2>
 
       <form onSubmit={handleSubmit}>

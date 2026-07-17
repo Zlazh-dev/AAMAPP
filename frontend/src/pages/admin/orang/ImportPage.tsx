@@ -101,7 +101,7 @@ export function ImportPage() {
   ];
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/orang/guru" />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">

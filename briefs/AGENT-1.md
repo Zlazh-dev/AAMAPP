@@ -552,3 +552,47 @@ laporan sebelumnya di file ini) — termasuk 3 test baru
 Tidak ada bug aplikasi tersisa. **Menunggu klarifikasi planner** soal
 ambiguitas penamaan "KIRO" vs "Antigravity-1" di F2-SPEC.md sebelum
 lanjut ke porsi frontend F2 guru + wiring client.ts/App.tsx/menu.ts.
+
+## LAPORAN — BACKLINK-ADAPTIF-MOBILE (selesai)
+
+**DIKERJAKAN**: BACKLINK-ADAPTIF-MOBILE (lanjutan setelah F2 frontend
+guru + wiring, sesuai instruksi planner terbaru — "KIRO" = Antigravity-IDE).
+
+**Perubahan**:
+- `frontend/src/components/BackLink.tsx` — dijadikan self-adaptive:
+  - Desktop (≥md): tautan teks kecil "← Kembali" di atas halaman
+    (perilaku lama, tidak berubah).
+  - Mobile (<md, default `mobileButton=true`): teks atas disembunyikan
+    (`hidden md:inline-flex`), digantikan tombol full-width ≥48px yang
+    MELAYANG (`position: fixed`) di paling bawah viewport — selalu
+    terjangkau ibu jari tanpa scroll, tanpa perlu reorder JSX per halaman.
+  - Prop `mobileButton={false}` untuk opt-out pada halaman yang sudah
+    punya sticky bar sendiri (form Simpan/Batal, halaman dengan bottom
+    action bar kondisional) agar tidak dobel/bentrok.
+- Diterapkan `mobileButton={false}` pada semua halaman FORM & halaman
+  dengan sticky bar sendiri: RosterPage (×2), MapelFormPage,
+  PenugasanFormPage (×3), PengaturanTahunAjaranFormPage, SiswaFormPage,
+  KelasFormPage, GuruFormPage, AkunBaruPage, AkunEditPage,
+  PengaturanLiburPage (kondisional: `selected.size === 0`).
+- Ditambahkan prop `bottomBar` pada `PageContainer` di seluruh halaman
+  detail/hub/list/wizard yang memakai BackLink default (adaptif), supaya
+  padding bawah konten memberi ruang utk tombol mengambang: GuruDetailPage,
+  SiswaDetailPage, KelasDetailPage, PersetujuanPage, PersetujuanDetailPage,
+  AkunSesiPage, AkunDetailPage, AkunAktivitasPage, ImportPage,
+  WaliKelasPage, PengaturanTahunAjaranPage, PengaturanSekolahPage,
+  PengaturanLokasiPage, PengaturanKkmPage, PengaturanJamPage.
+- E2E baru: `frontend/e2e/gelombang2/backlink-adaptif.spec.ts` (desktop)
+  + `backlink-adaptif.mobile.spec.ts` (mobile viewport project) —
+  verifikasi tombol mengambang tampil & berfungsi di mobile, halaman
+  form tidak menampilkan tombol dobel, dan tautan teks desktop tetap
+  berfungsi seperti semula.
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose up -d
+--build` (rebuild backend+frontend image) → semua container Healthy/Up.
+**Full suite Playwright**: `50 passed, 2 skipped` (skip pre-existing,
+sama seperti laporan sebelumnya di file ini — butuh `GOOGLE_CLIENT_ID`)
+— termasuk 3 test baru BackLink adaptif hijau, tidak ada regresi di 47
+test lain (termasuk 3 test F2 presensi-siswa).
+
+Tidak ada bug tersisa. Menunggu tugas berikutnya dari planner.
+

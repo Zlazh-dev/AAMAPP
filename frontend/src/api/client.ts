@@ -311,8 +311,8 @@ export interface GuruRosterSiswaEntry {
 export interface GuruRosterResponse {
   jadwalKbmId: number;
   tanggal: string;
-  kelas: string;
-  mapel: string;
+  kelas: string | null;
+  mapel: string | null;
   tersimpan: boolean;
   siswa: GuruRosterSiswaEntry[];
 }
@@ -1035,30 +1035,7 @@ export const api = {
   // --- Kurikulum: Dashboard counts (T15) ---
   getKurikulumDashboard: () =>
     request<{ mapelCount: number; penugasanCount: number; jadwalCount: number; taAktif: TahunAjaran | null }>(`/kurikulum/dashboard`),
-
-  // --- Guru: KBM & Roster Presensi (F2) ---
-  getGuruKbm: (params: { tanggal: string }) =>
-    request<GuruKbmResponse>(`/guru/kbm?tanggal=${encodeURIComponent(params.tanggal)}`),
-
-  getGuruKbmRoster: (params: { jadwalId: number; tanggal: string }) =>
-    request<GuruRosterResponse>(`/guru/kbm/${params.jadwalId}/roster?tanggal=${encodeURIComponent(params.tanggal)}`),
-
-  postGuruKbmRoster: (params: { jadwalId: number; body: { tanggal: string; entri: { siswaId: number; status: StatusPresensi }[] } }) =>
-    request<{ ok: boolean; presensiSesiId: number; ringkasan: Record<string, number> }>(
-      `/guru/kbm/${params.jadwalId}/roster`,
-      { method: 'POST', body: JSON.stringify(params.body) },
-    ),
-
-  // --- Guru: Rekap presensi kelas (F2, wali kelas) ---
-  getGuruKelasRekapPresensi: (params: { kelasId: number; dari: string; sampai: string; page?: number; limit?: number }) => {
-    const search = new URLSearchParams();
-    search.set('kelasId', String(params.kelasId));
-    search.set('dari', params.dari);
-    search.set('sampai', params.sampai);
-    if (params.page) search.set('page', String(params.page));
-    if (params.limit) search.set('limit', String(params.limit));
-    return request<GuruRekapPresensiResponse>(`/guru/kelas/rekap-presensi?${search.toString()}`);
-  },
 };
+
 
 export { ApiError };

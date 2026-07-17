@@ -59,7 +59,7 @@ export function WaliKelasPage() {
   };
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="xl" bottomBar>
       <BackLink to="/kurikulum/penugasan" />
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <div className="min-w-0">

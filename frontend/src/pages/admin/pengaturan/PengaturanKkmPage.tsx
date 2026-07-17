@@ -74,7 +74,7 @@ export function PengaturanKkmPage() {
 
   return (
     <UnsavedGuard dirty={dirty}>
-      <PageContainer size="sm">
+      <PageContainer size="sm" bottomBar>
         <BackLink to="/admin/pengaturan" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">KKM (Kriteria Ketuntasan Minimal)</h2>
         <p className="text-xs text-aam-text-muted mb-6">Nilai KKM global untuk semua mapel</p>

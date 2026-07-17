@@ -89,7 +89,7 @@ export function PengaturanJamPage() {
 
   return (
     <UnsavedGuard dirty={dirty}>
-      <PageContainer size="md">
+      <PageContainer size="md" bottomBar>
         <BackLink to="/admin/pengaturan" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Jam Presensi</h2>
         <p className="text-xs text-aam-text-muted mb-6">Jam masuk, pulang, toleransi keterlambatan, dan cutoff</p>

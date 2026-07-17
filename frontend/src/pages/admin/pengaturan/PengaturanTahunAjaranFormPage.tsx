@@ -59,7 +59,7 @@ export function PengaturanTahunAjaranFormPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="sm">
-        <BackLink to="/admin/pengaturan/tahun-ajaran" />
+        <BackLink to="/admin/pengaturan/tahun-ajaran" mobileButton={false} />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Tambah Tahun Ajaran</h2>
         <p className="text-xs text-aam-text-muted mb-6">Buat tahun ajaran dan semester baru</p>
 

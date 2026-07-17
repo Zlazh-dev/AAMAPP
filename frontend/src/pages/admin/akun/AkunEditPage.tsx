@@ -78,7 +78,7 @@ export function AkunEditPage() {
 
   return (
     <PageContainer size="lg">
-      <BackLink to={`/admin/akun/${id}`} />
+      <BackLink to={`/admin/akun/${id}`} mobileButton={false} />
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">Edit Akun</h2>
         <PageMenu

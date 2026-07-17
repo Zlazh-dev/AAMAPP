@@ -122,7 +122,7 @@ export function GuruFormPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to={isEdit ? `/admin/orang/guru/${id}` : '/admin/orang/guru'} />
+      <BackLink to={isEdit ? `/admin/orang/guru/${id}` : '/admin/orang/guru'} mobileButton={false} />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">

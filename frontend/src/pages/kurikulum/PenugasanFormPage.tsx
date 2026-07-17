@@ -89,7 +89,7 @@ export function PenugasanFormPage() {
   if (loading) {
     return (
       <PageContainer size="md">
-        <BackLink to="/kurikulum/penugasan" />
+        <BackLink to="/kurikulum/penugasan" mobileButton={false} />
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -99,7 +99,7 @@ export function PenugasanFormPage() {
   if (!taAktif) {
     return (
       <PageContainer size="md">
-        <BackLink to="/kurikulum/penugasan" />
+        <BackLink to="/kurikulum/penugasan" mobileButton={false} />
         <Card className="p-8 text-center mt-4">
           <span className="material-symbols-outlined text-aam-text-muted mb-3" style={{ fontSize: '3rem' }}>
             calendar_off
@@ -119,7 +119,7 @@ export function PenugasanFormPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="md" bottomBar>
-        <BackLink to="/kurikulum/penugasan" />
+        <BackLink to="/kurikulum/penugasan" mobileButton={false} />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">
           Tambah Penugasan
         </h2>

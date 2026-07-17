@@ -266,7 +266,7 @@ export function KelasDetailPage() {
   if (!kelas) return null;
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" bottomBar>
       <BackLink to="/admin/kelas" />
 
       {/* Header */}
