@@ -444,6 +444,111 @@ selesai. Lanjut BACKLINK-ADAPTIF-MOBILE.
 
 ### [AGENT-1] BACKLINK-ADAPTIF-MOBILE — DIKERJAKAN (2026-07-17 14:02)
 
+> Dialihkan oleh routing baru (lihat header file ini, "ROUTING BARU
+> 2026-07-17"): tugas BACKLINK-ADAPTIF-MOBILE kini milik **Antigravity-2**.
+> Saya BERHENTI mengerjakan ini (belum menyentuh file apapun terkait —
+> baru membaca brief) dan beralih ke **F2 BACKEND** sesuai instruksi baru.
 
+---
 
+### [AGENT-1] F2 BACKEND — SELESAI (2026-07-17 15:39)
 
+**Catatan penting sebelum detail — AMBIGUITAS PENAMAAN wilayah di
+`briefs/F2-SPEC.md`:** Saya diminta baca bagian "Antigravity-1 →
+BACKEND F2", tapi F2-SPEC.md hanya punya bagian **"KIRO → BACKEND F2 +
+FRONTEND F2 GURU + wiring"** — tidak ada bagian bernama "Antigravity-1".
+Saya ASUMSIKAN "KIRO" di F2-SPEC.md = alias/nama lama untuk saya
+(Antigravity-1), karena tidak ada executor lain yang disebut di header
+routing file ini. **Saya kerjakan HANYA porsi BACKEND** (murni
+`backend/src/presensi/**` + registrasi `app.module.ts`) sesuai kalimat
+literal instruksi ("tugas aktif = F2 BACKEND"), dan BELUM menyentuh
+`frontend/src/pages/guru/**` ataupun `client.ts`/`App.tsx`/`menu.ts`
+(porsi "FRONTEND F2 GURU + wiring" yang menurut F2-SPEC.md juga masuk
+wilayah "KIRO"). **Mohon konfirmasi planner**: apakah saya lanjut ke
+porsi frontend guru + wiring itu juga, atau itu sudah dialihkan ke
+executor lain di bawah nama berbeda? Berhenti di titik ini menunggu
+jawaban — tidak menebak scope lebih jauh.
+
+**Status saat mulai**: entity (`presensi-sesi.entity.ts`,
+`presensi-siswa.entity.ts`), sebagian besar `presensi.service.ts`,
+`presensi.controller.ts` (dua controller: `GuruPresensiController`,
+`AdminPresensiController`), `presensi.module.ts`, dan
+`dto/simpan-roster.dto.ts` SUDAH ADA di working tree dari sesi
+sebelumnya (belum ter-commit git, belum terdaftar di
+`app.module.ts`). Saya lanjutkan dari titik itu, BUKAN dari nol.
+
+**Yang saya tambahkan/perbaiki di sesi ini:**
+
+1. **Endpoint rekap yang belum ada** — kontrak F2-SPEC.md poin 6
+   (`GET /api/guru/kelas/rekap-presensi?kelasId=&dari=&sampai=&page=&limit=`)
+   belum diimplementasikan sama sekali. Ditambahkan:
+   - [PresensiService.rekapPresensi()](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L277-L360) —
+     paginasi per SISWA (bukan per baris rekap), lalu SATU query batch
+     `GROUP BY siswaId, status` (anti N+1, sesuai §12.16/poin 7 kontrak)
+     untuk menghitung Σ H/S/I/A/T dari `presensi_siswa` yang tergabung ke
+     sesi TERLAKSANA kelas tsb dalam rentang tanggal. Siswa yang TIDAK
+     PERNAH tercatat di rentang tsb → `rekap: null` (LEFT JOIN semantics,
+     poin 8 kontrak — NULL = tidak tercatat, bukan alpha).
+   - `isWaliKelas` / `isWaliKelasByUserId` — helper RBAC (guru hanya
+     boleh rekap kelas yang dia WALI-nya; admin lolos semua, sesuai
+     `roles.guard.ts` baris 54).
+   - [GuruKelasRekapController](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.controller.ts#L63-L96)
+     (baru, `@Controller('api/guru/kelas')`): cek RBAC manual di
+     handler (bukan cuma `@Roles`) karena syaratnya bukan sekadar peran
+     'guru', tapi guru yang BENAR wali kelas ybs → `403` bila bukan.
+2. **Registrasi `app.module.ts`** — `PresensiModule` DAN entity
+   `PresensiSesi`/`PresensiSiswa` belum terdaftar sama sekali (artinya
+   tabel belum pernah dibuat TypeORM, route belum aktif). Ditambahkan ke
+   `entities: [...]` (utk `synchronize`) dan `imports: [...]`.
+3. **`PresensiModule`** — ditambahkan `Kelas` entity ke
+   `TypeOrmModule.forFeature` (dibutuhkan `kelasRepo` baru) dan
+   `GuruKelasRekapController` ke daftar `controllers`.
+4. **Bug NYATA ditemukan & diperbaiki** — `hariWIB()` di
+   [presensi.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L24-L31)
+   salah hitung hari-dalam-minggu: kode lama `new
+   Date(`${tanggal}T00:00:00+07:00`).getUTCDay()` menggeser MUNDUR ke
+   tanggal UTC sebelumnya (00:00 WIB = 17:00 UTC hari sebelumnya) lalu
+   `getUTCDay()` dipanggil pada Date itu — hasilnya hari SEBELUM
+   tanggal yang dimaksud (mis. 2026-07-17=Jumat terhitung Kamis).
+   Akibatnya `kbmHariIni()` & filter `hari` di jadwal matriks salah
+   total. Ditemukan lewat e2e (bukan review manual) — assert
+   "sesi TERLAKSANA" gagal karena `jadwalRepo` filter `hari` tak pernah
+   cocok dengan jadwal yang baru dibuat hari itu. **Perbaikan**: bangun
+   `Date.UTC(y, m-1, d)` murni dari komponen string tanggal (tanpa
+   parsing offset zona sama sekali) → `getUTCDay()` sekarang selalu
+   mengembalikan hari kalender yang benar untuk tanggal WIB manapun.
+
+**Spec e2e baru** —
+[frontend/e2e/gelombang2/presensi-siswa.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-siswa.spec.ts),
+3 test (setup murni API: guru+mapel+kelas+2 siswa+penugasan+jadwal
+"sepanjang hari" agar tak tergantung jam berjalan):
+1. Simpan roster → baca kembali → matriks admin (batch, ringkasan per
+   status benar) → koreksi PATCH tanggal lampau TANPA alasan → 400 →
+   koreksi DENGAN alasan → 200 & status berubah.
+2. Rekap presensi kelas: simpan 1H+1S → rekap per siswa mencerminkan
+   hitungan yang benar, berpaginasi.
+3. RBAC: guru LAIN (bukan pemilik paket, bukan admin) mencoba simpan
+   roster sesi orang lain → 403.
+
+> [!NOTE]
+> Skenario "cutoff 403" di kontrak (guru tak boleh simpan sesudah jam
+> cutoff) TIDAK diuji lewat manipulasi wall-clock (tidak praktis/rapuh
+> di CI — waktu asli server dipakai `cutoffJam()`). Sebagai gantinya,
+> logic cutoff DIVERIFIKASI lewat review kode
+> ([presensi.service.ts baris 192–210](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L192-L214))
+> + test #3 di atas membuktikan jalur `ForbiddenException` pada
+> `simpanRoster` benar-benar ter-throw utk kasus non-pemilik (jalur kode
+> yang sama dgn percabangan cutoff). Bila planner ingin cutoff diuji
+> eksplisit by-clock, perlu keputusan: mock `Date` di test atau tambah
+> parameter waktu-override khusus test (belum ada di kontrak).
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose build
+backend` (rebuild image, bukan cuma restart — Dockerfile tidak bind-mount)
+→ `up -d`. **Full suite Playwright**: `47 passed, 2 skipped`
+(skip pre-existing: butuh `GOOGLE_CLIENT_ID`, sama seperti laporan-
+laporan sebelumnya di file ini) — termasuk 3 test baru
+`presensi-siswa.spec.ts` hijau, tidak ada regresi di 44 test lain.
+
+Tidak ada bug aplikasi tersisa. **Menunggu klarifikasi planner** soal
+ambiguitas penamaan "KIRO" vs "Antigravity-1" di F2-SPEC.md sebelum
+lanjut ke porsi frontend F2 guru + wiring client.ts/App.tsx/menu.ts.

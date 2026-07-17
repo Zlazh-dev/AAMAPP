@@ -23,8 +23,12 @@ import { SimpanRosterDto } from './dto/simpan-roster.dto';
 
 /** hari WIB: 1=Senin ... 6=Sabtu, 7=Minggu (jadwal hanya 1..6). */
 function hariWIB(tanggal: string): number {
-  const d = new Date(`${tanggal}T00:00:00+07:00`);
-  const js = d.getUTCDay(); // 0=Minggu..6=Sabtu di UTC dari tanggal WIB midnight
+  // `tanggal` sudah berupa tanggal kalender WIB (YYYY-MM-DD) — bangun
+  // Date murni UTC dari komponennya (BUKAN parse dengan offset +07:00,
+  // yang justru menggeser mundur ke tanggal UTC sebelumnya & salah
+  // menghitung hari-dalam-minggu untuk jam-jam dini hari WIB).
+  const [y, m, d] = tanggal.split('-').map((x) => parseInt(x, 10));
+  const js = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); // 0=Minggu..6=Sabtu
   return js === 0 ? 7 : js;
 }
 
