@@ -50,7 +50,35 @@ Setelah semua: `docker compose down -v` → `up -d --build` → FULL suite
 Playwright hijau (desktop+mobile) + tambah `security.spec.ts` (endpoint
 tanpa token = 401; route @Public tetap 200). Env baru dicatat di laporan.
 
-## HUTANG KECIL (kerjakan lebih dulu, cepat)
+## TUGAS BERIKUTNYA — FIX-MENU-ADMIN (KEPUTUSAN USER: admin = superuser lihat semua menu)
+
+Bug dilaporkan user: login sebagai admin (peran ['admin']) TIDAK melihat
+menu Kurikulum, padahal §5 "Admin: semua akses" & §8.2 admin boleh CRUD
+mapel/penugasan/jadwal. Route sudah mengizinkan (RequireRole
+['kurikulum','admin']) — hanya MENU-nya tak muncul karena
+`getMenuForUser` (frontend/src/app/menu.ts) hanya menambah grup bila
+`user.roles.includes(area)`.
+
+**Perbaikan (keputusan user — admin superuser):**
+1. `getMenuForUser`: bila user berperan `admin`, tampilkan grup ADMIN +
+   grup area fungsional yang HALAMANNYA SUDAH ADA. Untuk sekarang itu =
+   `kurikulum` (punya halaman nyata). Area lain (kesiswaan/guru/kepsek/
+   tu) masih placeholder dashboard → JANGAN ditampilkan dulu; planner
+   menambahkannya saat fasenya jadi. Struktur kode agar mudah menambah:
+   mis. konstanta `ADMIN_EXTRA_AREAS = ['kurikulum']` yang di-append
+   (tanpa duplikat bila admin juga punya peran itu; urутan tetap
+   §6.1B: Admin → Kurikulum → …).
+2. **Spec e2e baru** `menu-admin.spec.ts` (menutup celah "visibilitas
+   menu tak pernah diuji"): login admin → assert item menu "Jadwal KBM"
+   (atau grup "Kurikulum") TERLIHAT di sidebar → klik → mendarat di
+   `/kurikulum/jadwal` dan halaman render. Ini yang seharusnya menangkap
+   bug ini sejak T15.
+3. Jalankan SELURUH suite e2e (harus tetap hijau + spec baru).
+
+DoD: menu Kurikulum tampil utk admin + menu-admin.spec hijau + suite
+penuh hijau + laporan di LAPORAN. Kecil — kerjakan sebelum hal lain.
+
+## HUTANG KECIL (SUDAH SELESAI — arsip)
 - `npm run build` di `frontend/` → tempel ringkasan daftar chunk + ukuran
   di laporan (§12.15d — hutang dari T16; main bundle harus ~257KB,
   leaflet chunk terpisah).
