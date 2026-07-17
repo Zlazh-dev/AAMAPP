@@ -37,6 +37,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Dashboard', path: '/admin', icon: 'dashboard' },
       { label: 'Data Orang', path: '/admin/orang', icon: 'groups' },
       { label: 'Kelas', path: '/admin/kelas', icon: 'meeting_room' },
+      { label: 'Presensi Siswa', path: '/admin/presensi-siswa', icon: 'fact_check' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
     ],
@@ -59,7 +60,10 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
   guru: {
     area: 'guru',
     label: 'GURU',
-    items: [{ label: 'Dashboard', path: '/guru', icon: 'dashboard' }],
+    items: [
+      { label: 'Dashboard', path: '/guru', icon: 'dashboard' },
+      { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
+    ],
   },
   kepsek: {
     area: 'kepsek',

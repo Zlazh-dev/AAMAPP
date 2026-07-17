@@ -50,6 +50,10 @@ const PenugasanPage = React.lazy(() => import('../pages/kurikulum/PenugasanPage'
 const PenugasanFormPage = React.lazy(() => import('../pages/kurikulum/PenugasanFormPage').then(m => ({ default: m.PenugasanFormPage })));
 const WaliKelasPage = React.lazy(() => import('../pages/kurikulum/WaliKelasPage').then(m => ({ default: m.WaliKelasPage })));
 const JadwalKbmPage = React.lazy(() => import('../pages/kurikulum/JadwalKbmPage').then(m => ({ default: m.JadwalKbmPage })));
+// Presensi F2
+const KbmHariIniPage = React.lazy(() => import('../pages/guru/KbmHariIniPage').then(m => ({ default: m.KbmHariIniPage })));
+const RosterPage = React.lazy(() => import('../pages/guru/RosterPage').then(m => ({ default: m.RosterPage })));
+const MatriksPresensiSiswaPage = React.lazy(() => import('../pages/admin/presensi/MatriksPresensiSiswaPage').then(m => ({ default: m.MatriksPresensiSiswaPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -168,8 +172,13 @@ const routes: RouteObject[] = [
           // Kesiswaan placeholder
           { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan']}><Lazy><PlaceholderPage title="Dashboard Kesiswaan" icon="dashboard" /></Lazy></RequireRole> },
 
-          // Guru placeholder
+          // Guru placeholder + Presensi F2
           { path: '/guru', element: <RequireRole roles={['guru']}><Lazy><PlaceholderPage title="Dashboard Guru" icon="dashboard" /></Lazy></RequireRole> },
+          { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
+          { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
+
+          // Admin: Presensi Siswa (F2 monitor)
+          { path: '/admin/presensi-siswa', element: <RequireRole roles={['admin','kepsek','kesiswaan']}><Lazy><MatriksPresensiSiswaPage /></Lazy></RequireRole> },
 
           // Kepsek placeholder
           { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><PlaceholderPage title="Dashboard Kepala Sekolah" icon="dashboard" /></Lazy></RequireRole> },

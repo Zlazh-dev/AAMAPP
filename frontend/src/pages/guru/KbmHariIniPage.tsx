@@ -20,15 +20,18 @@ export function KbmHariIniPage() {
     const wibTime = localTime + (wibOffset * 60000);
     return new Date(wibTime).toISOString().split('T')[0]; // YYYY-MM-DD
   });
-  const [data, setData] = useState<{ tanggal: string; sesi: Array<{
-    jadwalKbmId: number;
-    mapel: string;
-    kelas: string;
-    jamMulai: string;
-    jamSelesai: string;
-    sesiKe: number;
-    status: 'TERLAKSANA' | 'BELUM';
-  }> | null>(null);
+  const [data, setData] = useState<{
+    tanggal: string;
+    sesi: Array<{
+      jadwalKbmId: number;
+      mapel: string;
+      kelas: string;
+      jamMulai: string;
+      jamSelesai: string;
+      sesiKe: number;
+      status: 'TERLAKSANA' | 'BELUM';
+    }>;
+  } | null>(null);
 
   useEffect(() => {
     loadKbm();
@@ -144,7 +147,7 @@ export function KbmHariIniPage() {
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <span
-                    className={`material-symbols-outleted ${
+                    className={`material-symbols-outlined ${
                       sesi.status === 'TERLAKSANA' ? 'text-green-600' : 'text-yellow-600'
                     }`}
                     style={{ fontSize: '2rem' }}

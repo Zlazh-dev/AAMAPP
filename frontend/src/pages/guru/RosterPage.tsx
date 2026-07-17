@@ -19,10 +19,10 @@ export function RosterPage() {
   const [loading, setLoading] = useState(true);
   const [tanggal, setTanggal] = useState<string>(tanggalFromUrl);
   const [data, setData] = useState<{ 
-    jadwalKbmId: number; 
-    tanggal: string; 
-    kelas: string; 
-    mapel: string; 
+    jadwalKbmId: number;
+    tanggal: string;
+    kelas: string | null;
+    mapel: string | null;
     tersimpan: boolean;
     siswa: Array<{
       siswaId: number;
@@ -72,7 +72,12 @@ export function RosterPage() {
   };
 
   const handleStatusChange = (siswaId: number, status: 'H' | 'S' | 'I' | 'A' | 'T') => {
-    statusMap.set(siswaId, status);
+    setStatusMap((prev) => {
+      const next = new Map(prev);
+      next.set(siswaId, status);
+      return next;
+    });
+    setData((prev) => (prev ? { ...prev, tersimpan: false } : prev));
   };
 
   const handleSave = async () => {
@@ -141,12 +146,14 @@ export function RosterPage() {
               <p className="mt-2 text-sm text-aam-text-muted">Memuat data...</p>
             </>
           ) : (
-            <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '3rem' }}>
-              error
-            </span>
-            <p className="mt-3 text-sm text-aam-text-muted">
-              Gagal memuat data roster. Silakan periksa jadwal dan tanggal.
-            </p>
+            <>
+              <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '3rem' }}>
+                error
+              </span>
+              <p className="mt-3 text-sm text-aam-text-muted">
+                Gagal memuat data roster. Silakan periksa jadwal dan tanggal.
+              </p>
+            </>
           )}
         </div>
       </PageContainer>
@@ -264,7 +271,7 @@ export function RosterPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex items-center space-x-3">
-                      {[['H', 'S', 'I', 'A', 'T'] as const].map((status) => (
+                      {(['H', 'S', 'I', 'A', 'T'] as const).map((status) => (
                         <label
                           key={status}
                           className={`flex items-center gap-2 cursor-pointer select-none ${
@@ -299,7 +306,7 @@ export function RosterPage() {
             Ringkasan Status
           </p>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            {[['H', 'S', 'I', 'A', 'T'] as const].map((status) => {
+            {(['H', 'S', 'I', 'A', 'T'] as const).map((status) => {
               const count = Array.from(statusMap.values()).filter(s => s === status).length;
               return (
                 <div key={status} className={`flex items-center gap-2 ${statusLabels[status].color}`}>
@@ -321,7 +328,7 @@ export function RosterPage() {
       {/* Tombol aksi */}
       <div className="mt-6 flex justify-end">
         <Button
-          variant="outline"
+          variant="secondary"
           size="lg"
           onClick={() => {
             // Navigasi kembali ke KBM hari ini

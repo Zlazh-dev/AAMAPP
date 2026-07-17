@@ -429,6 +429,81 @@ export const api = {
   // --- Public ---
   getAuthConfig: () => request<AuthConfig>('/auth/config'),
 
+  // --- F2: Presensi siswa per KBM (kontrak briefs/F2-SPEC.md) ---
+  getGuruKbm: (p: { tanggal?: string }) =>
+    request<{
+      tanggal: string;
+      libur?: boolean;
+      keteranganLibur?: string | null;
+      sesi: Array<{
+        jadwalKbmId: number;
+        mapel: string;
+        kelas: string;
+        jamMulai: string;
+        jamSelesai: string;
+        sesiKe: number;
+        status: 'TERLAKSANA' | 'BELUM';
+      }>;
+    }>(`/guru/kbm${p.tanggal ? `?tanggal=${encodeURIComponent(p.tanggal)}` : ''}`),
+
+  getGuruKbmRoster: (p: { jadwalId: number; tanggal: string }) =>
+    request<{
+      jadwalKbmId: number;
+      tanggal: string;
+      kelas: string | null;
+      mapel: string | null;
+      tersimpan: boolean;
+      siswa: Array<{
+        siswaId: number;
+        nama: string;
+        nis: string;
+        status: 'H' | 'S' | 'I' | 'A' | 'T';
+      }>;
+    }>(`/guru/kbm/${p.jadwalId}/roster?tanggal=${encodeURIComponent(p.tanggal)}`),
+
+  postGuruKbmRoster: (p: {
+    jadwalId: number;
+    body: {
+      tanggal: string;
+      entri: { siswaId: number; status: 'H' | 'S' | 'I' | 'A' | 'T' }[];
+      alasan?: string;
+    };
+  }) =>
+    request<{ ok: boolean; presensiSesiId: number; ringkasan: Record<string, number> }>(
+      `/guru/kbm/${p.jadwalId}/roster`,
+      { method: 'POST', body: JSON.stringify(p.body) },
+    ),
+
+  koreksiGuruKbmRoster: (p: {
+    jadwalId: number;
+    body: {
+      tanggal: string;
+      entri: { siswaId: number; status: 'H' | 'S' | 'I' | 'A' | 'T' }[];
+      alasan?: string;
+    };
+  }) =>
+    request<{ ok: boolean; presensiSesiId: number; ringkasan: Record<string, number> }>(
+      `/guru/kbm/${p.jadwalId}/roster`,
+      { method: 'PATCH', body: JSON.stringify(p.body) },
+    ),
+
+  getMatriksPresensiSiswa: (kelasId: number, tanggal: string) =>
+    request<{
+      tanggal: string;
+      kelasId: number;
+      sesi: Array<{
+        jadwalKbmId: number;
+        mapel: string | null;
+        guru: string | null;
+        jamMulai: string;
+        jamSelesai: string;
+        status: 'TERLAKSANA' | 'BELUM';
+        ringkasan: Record<string, number> | null;
+      }>;
+    }>(
+      `/admin/presensi-siswa?kelasId=${kelasId}&tanggal=${encodeURIComponent(tanggal)}`,
+    ),
+
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
       method: 'POST',
