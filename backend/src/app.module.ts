@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { User } from './users/user.entity';
@@ -27,6 +28,7 @@ import { PengaturanModule } from './pengaturan/pengaturan.module';
 import { KurikulumModule } from './kurikulum/kurikulum.module';
 import { ImportModule } from './import/import.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { SessionAuthGuard } from './common/session-auth.guard';
 
 @Module({
   imports: [
@@ -53,7 +55,15 @@ import { UploadsModule } from './uploads/uploads.module';
           JadwalKbm,
           KalenderLibur,
         ],
-        synchronize: true,
+        // SEC-1 Butir 3: synchronize hanya aktif di luar production.
+        // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
+        // (mencegah DROP kolom/tabel tak sengaja saat entity berubah).
+        // KONSEKUENSI: perubahan skema di production HARUS dilakukan via
+        // migration TypeORM eksplisit atau perintah SQL manual/seeder —
+        // start aplikasi TIDAK lagi otomatis menyamakan skema dengan
+        // entities. Tim deploy wajib menjalankan migration sebelum
+        // rilis yang mengubah entity.
+        synchronize: process.env.NODE_ENV !== 'production',
         timezone: 'Asia/Jakarta',
         logging: false,
       }),
@@ -73,6 +83,17 @@ import { UploadsModule } from './uploads/uploads.module';
     KurikulumModule,
     ImportModule,
     UploadsModule,
+  ],
+  providers: [
+    // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD
+    // global — SEMUA endpoint kini butuh token valid walau controller
+    // lupa memasang @UseGuards(SessionAuthGuard). Route yang sengaja
+    // publik (login, auth/config, google, register-google) memakai
+    // dekorator @Public() untuk melewati guard ini.
+    {
+      provide: APP_GUARD,
+      useClass: SessionAuthGuard,
+    },
   ],
 })
 export class AppModule {}

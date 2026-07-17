@@ -51,6 +51,31 @@
 `docs/HARDENING-CHECKLIST.md` (baru), `docs/KAMUS-DATA.md` (dikoreksi) —
 ketiganya ADA & akurat + laporan per butir 1–4 di `## LAPORAN`.
  
+## TUGAS BERIKUTNYA — OPS-5 (follow-up SEC-1; wilayah TULIS diperluas ke `.env.example` + `deploy/`)
+
+SEC-1 (AGENT-1) sudah selesai & menghasilkan 2 hal yang jatuh di
+wilayahmu:
+1. **`.env.example`** — tambahkan variabel env BARU dari SEC-1 (dengan
+   komentar + penanda [WAJIB]/[OPSIONAL]):
+   - `ALLOWED_ORIGINS` (CSV origin produksi, mis.
+     `https://app.sekolah.id`) — dipakai CORS whitelist; dev fallback
+     localhost otomatis.
+   - `NODE_ENV` (development|production) — production mematikan
+     synchronize (lihat peringatan bootstrap di bawah).
+   Baca `docs/HARDENING-CHECKLIST.md` untuk daftar lengkap; jangan
+   menebak nama env — bila ada yang tak jelas, tulis pertanyaan di
+   LAPORAN.
+2. **`deploy/README-DEPLOY.md`** — TAMBAH bagian "⛔ BOOTSTRAP SKEMA
+   (WAJIB sebelum deploy pertama)": karena di production `synchronize`
+   OFF & belum ada migration, deploy ke DB kosong TIDAK membuat tabel.
+   Dokumentasikan prosedur first-run yang aman: deploy sekali dengan
+   `NODE_ENV=development` (agar synchronize membentuk skema + seed
+   admin+pengaturan jalan) → verifikasi tabel terbentuk → ganti ke
+   `NODE_ENV=production` untuk operasi normal. Tandai bahwa migration
+   tooling resmi menyusul di fase F8.
+DoD: `.env.example` + `deploy/README-DEPLOY.md` diperbarui & terverifikasi
+ada + laporan `[AGENT-2] OPS-5` di LAPORAN bawah.
+
 ## LAPORAN
 <!-- AGENT-2 append di bawah baris ini. Jangan hapus entri lama. -->
 - [ ] Ops-1 - Telah diselesaikan (lapor di scratch/agent2-ops1-report.md)

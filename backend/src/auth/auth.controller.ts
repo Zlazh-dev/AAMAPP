@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { SessionAuthGuard } from '../common/session-auth.guard';
+import { Public } from '../common/public.decorator';
 import { CurrentUser, CurrentSession } from '../common/current-user.decorator';
 import { User } from '../users/user.entity';
 import { Session } from '../sessions/session.entity';
@@ -60,21 +61,25 @@ export class AuthController {
   ) {}
 
   @Get('config')
+  @Public()
   getConfig() {
     return { googleClientId: this.authService.getGoogleClientId() };
   }
 
   @Post('login')
+  @Public()
   async login(@Body() dto: LoginDto, @Req() req: Request) {
     return this.authService.login(dto.email, dto.password, req);
   }
 
   @Post('google')
+  @Public()
   async google(@Body() dto: GoogleLoginDto, @Req() req: Request) {
     return this.authService.loginGoogle(dto.credential, req);
   }
 
   @Post('register-google')
+  @Public()
   async registerGoogle(@Body() dto: RegisterGoogleDto, @Req() req: Request) {
     const result = await this.authService.registerGoogle(
       dto.credential,

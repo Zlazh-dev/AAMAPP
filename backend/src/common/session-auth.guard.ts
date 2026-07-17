@@ -5,10 +5,12 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Reflector } from '@nestjs/core';
 import { Repository } from 'typeorm';
 import { Session } from '../sessions/session.entity';
 import { User } from '../users/user.entity';
 import { getDeviceSummary, getIpAddress } from './device.util';
+import { IS_PUBLIC_KEY } from './public.decorator';
 
 @Injectable()
 export class SessionAuthGuard implements CanActivate {
@@ -17,9 +19,18 @@ export class SessionAuthGuard implements CanActivate {
     private sessionRepo: Repository<Session>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(
+      IS_PUBLIC_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (isPublic) {
+      return true;
+    }
+
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers['authorization'];
 

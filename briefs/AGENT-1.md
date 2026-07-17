@@ -108,3 +108,120 @@ SEDANG-3, SEDANG-4, RENDAH-1) yang jadi dasar item 1–6 di brief ini.
 **Menunggu**: `docs/HARDENING-CHECKLIST.md` dari AGENT-2 sebelum
 melanjutkan eksekusi SEC-1 item 1–6. Tidak ada bug yang butuh
 keputusan planner — murni menunggu dependensi antar-agent.
+
+---
+
+### [AGENT-1] SEC-1 — DIKERJAKAN (2026-07-17 12:51, lanjutan)
+
+Blokir hilang, `docs/HARDENING-CHECKLIST.md` dibaca. Catatan
+perbedaan kecil: brief menyebut env `CORS_ORIGINS`, checklist
+menyebut `ALLOWED_ORIGINS` (dengan contoh nilai). Mengikuti checklist
+(lebih spesifik, sesuai instruksi planner) → **env final: `ALLOWED_ORIGINS`**.
+Lanjut eksekusi item 1–6 berurutan.
+
+---
+
+### [AGENT-1] SEC-1 — SELESAI (2026-07-17 13:09)
+
+Semua 6 item hardening + `security.spec.ts` selesai, diverifikasi FULL
+suite Playwright hijau **2×** dari `docker compose down -v` → `up -d
+--build` (DB kosong tiap kali). Rincian per item:
+
+**1. CORS whitelist** — [main.ts](file:///d:/Codeproject/AAMAPP/backend/src/main.ts)
+`origin: true` diganti fungsi validator: origin diizinkan jika ada di
+`ALLOWED_ORIGINS` (CSV env, ikut nama di checklist — beda dari
+`CORS_ORIGINS` di brief, sesuai keputusan di laporan sebelumnya), ATAU
+(di luar `NODE_ENV=production`) berupa `localhost`/`127.0.0.1` port
+apapun — supaya dev/e2e tak perlu setel env manual. Request tanpa
+`Origin` header (curl/Postman/server-to-server) tetap diizinkan.
+**Env baru (dicatat, TIDAK diedit ke `.env.example`)**: `ALLOWED_ORIGINS`
+— CSV origin produksi, contoh `https://app.aamapp.id`.
+
+**2. APP_GUARD global** —
+[public.decorator.ts](file:///d:/Codeproject/AAMAPP/backend/src/common/public.decorator.ts) (baru),
+[session-auth.guard.ts](file:///d:/Codeproject/AAMAPP/backend/src/common/session-auth.guard.ts),
+[app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts),
+[auth.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/auth/auth.controller.ts).
+`SessionAuthGuard` didaftarkan sbg `APP_GUARD` global. Dibuat dekorator
+`@Public()` (metadata `isPublic`); guard cek dulu via `Reflector`
+sebelum parsing token. Ditandai `@Public()`: `GET /api/auth/config`,
+`POST /api/auth/login`, `POST /api/auth/google`,
+`POST /api/auth/register-google`. `/uploads/*` (static express, bukan
+route Nest) otomatis tidak tersentuh guard ini — tetap publik seperti
+semula. `@UseGuards(SessionAuthGuard, ...)` lokal di tiap controller
+dibiarkan (redundan tapi tidak berbahaya — menghindari menyentuh 15
+controller sekaligus di luar kebutuhan wajib).
+
+**3. synchronize kondisional** —
+[app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts):
+`synchronize: process.env.NODE_ENV !== 'production'`.
+**Konsekuensi didokumentasikan**: skema production TIDAK lagi
+di-auto-sync TypeORM saat boot. Repo ini **belum punya tooling
+migration** — jadi perubahan skema di production ke depan HARUS
+via migration eksplisit (`typeorm migration:generate`/`run`) atau SQL
+manual sebelum deploy; start aplikasi produksi tidak lagi otomatis
+menyamakan skema dengan entities.
+
+> [!WARNING]
+> **Bug ditemukan & diperbaiki (di luar 6 item, tapi wajib utk DoD
+> "suite hijau")**: `backend/Dockerfile` men-hardcode
+> `ENV NODE_ENV=production` di image (dipakai baik oleh
+> `docker-compose.yml` dev/e2e INI maupun deploy nyata). Begitu item 3
+> aktif, `synchronize` otomatis `false` di stack dev/e2e juga →
+> `docker compose up` dari DB kosong CRASH (`relation "user" does not
+> exist`, karena tak ada migration). **Fix** (dalam wilayah tulis,
+> `docker-compose.yml` dev): tambah
+> `environment: - NODE_ENV=${NODE_ENV:-development}` di service
+> `backend` pada `docker-compose.yml`, menimpa default image HANYA di
+> compose dev ini. Dockerfile sendiri TIDAK diubah (tetap aman utk
+> deploy produksi nyata yang akan set `NODE_ENV=production` via
+> orkestrasi/host env). Ini murni fallout dari item 3 + ketiadaan
+> migration tooling — bukan keputusan desain baru, jadi saya
+> lanjutkan tanpa menunggu planner (root cause jelas & scope kecil).
+
+**4. Body limit** — [main.ts](file:///d:/Codeproject/AAMAPP/backend/src/main.ts)
+`json`/`urlencoded` limit `6mb` → `1mb`. Upload foto/Excel via Multer
+multipart (limit 5mb per endpoint) TIDAK terpengaruh — dibuktikan
+`image-uploader.spec.ts` & `import-wizard.spec.ts` tetap hijau di
+kedua run. Tambahan uji baru di `security.spec.ts`: payload JSON 1.5mb
+ditolak (400/413).
+
+**5. RolesGuard fail-closed** —
+[roles.guard.ts](file:///d:/Codeproject/AAMAPP/backend/src/common/roles.guard.ts)
+ditulis ulang: route tanpa `@Roles` DAN bukan `@Public` kini **ditolak
+403** (sebelumnya `return true` bagi siapapun yg login). Audit manual
+seluruh controller (`grep` + baca penuh tiap file) mengonfirmasi SEMUA
+15 controller non-public sudah punya `@Roles` di tiap route — jadi
+perubahan ini **tidak menyebabkan 403 pada route sah manapun**,
+dibuktikan seluruh suite (42 test, x2 run) tetap hijau tanpa 403 baru.
+
+**6. Upload magic-byte** —
+[uploads.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/uploads/uploads.controller.ts):
+fungsi `hasValidMagicBytes()` membaca 12 byte pertama file YANG SUDAH
+DITULIS Multer ke disk dan mencocokkan signature JPEG/PNG/WEBP; tidak
+cocok → file dihapus + `400`. Diuji: file HTML berekstensi
+`.png`+MIME `image/png` ditolak 400; PNG 1×1 asli tetap diterima
+201/200 (`security.spec.ts`, juga `image-uploader.spec.ts` regresi).
+
+**security.spec.ts** (baru,
+[frontend/e2e/gelombang2/security.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/security.spec.ts)),
+6 test: (a) 10 endpoint terlindungi → 401 tanpa token, (b) route
+`@Public()` (config/login/uploads-static) tetap accessible tanpa
+token, (c) login valid dari origin localhost (CORS) tetap 200 + token,
+(d) body JSON 1.5mb ditolak, (e) upload gambar palsu → 400 magic-byte,
+(f) upload gambar asli → 200.
+
+**Verifikasi DoD**: `docker compose down -v` → `up -d --build` →
+`npm run test:e2e` dijalankan **2×** berturut-turut dari DB kosong.
+Hasil kedua run identik: **42 passed, 2 skipped** (skip #5 butuh
+`GOOGLE_CLIENT_ID` — pre-existing, tak terkait SEC-1; skip #18 pending
+libur nasional — pre-existing). Tidak ada regresi, tidak ada 403 baru
+yang tak terduga, `frontend/package.json` build chunk report (HUTANG
+KECIL) sudah dilaporkan di entri sebelumnya di file ini.
+
+**Env baru yang perlu ditambahkan AGENT-2 ke `.env.example`**:
+`ALLOWED_ORIGINS` (CSV origin produksi, kosongkan/opsional di dev).
+
+Tidak ada bug aplikasi tersisa yang butuh keputusan planner. SEC-1
+selesai.
+

@@ -28,6 +28,16 @@ services:
     environment:
       - TZ=${TZ:-Asia/Jakarta}
       - UPLOAD_ROOT=/data/uploads
+      # SEC-1 Butir 3: image backend menetapkan NODE_ENV=production di
+      # Dockerfile (default aman utk deploy nyata). Compose ini ADALAH
+      # stack dev/e2e lokal (lihat komentar di bawah `frontend`), dan
+      # repo belum punya migration tooling — jadi di sini kita timpa
+      # eksplisit ke development agar `synchronize` (app.module.ts)
+      # tetap aktif dan skema ter-generate otomatis dari entities saat
+      # `docker compose up` dari DB kosong. Deployment produksi WAJIB
+      # menyetel NODE_ENV=production sendiri (mis. lewat env host/CI)
+      # supaya synchronize nonaktif di sana.
+      - NODE_ENV=${NODE_ENV:-development}
     volumes:
       - uploads_data:/data/uploads
     # TIDAK memetakan port keluar — hanya diakses via nginx frontend

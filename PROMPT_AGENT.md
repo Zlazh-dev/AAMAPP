@@ -32,7 +32,7 @@
 
 | Agent | Tool | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | chunk build ✅ • SEC-1 hardening | SIAP LANJUT (checklist sudah ada — blokir dependensi hilang) |
+| AGENT-1 | Antigravity | `briefs/AGENT-1.md` | SEC-1 hardening | ✅ SELESAI (6 item + security.spec; e2e 42 pass/2 skip ×2 dari DB kosong; diverifikasi planner) |
 | AGENT-2 | Cline | `briefs/AGENT-2.md` | OPS-4 | ✅ SELESAI (npm audit + HARDENING-CHECKLIST + koreksi kamus; garbage-text dibersihkan planner) |
 | AGENT-3 | Roo Code | `briefs/AGENT-3.md` | RISET-F3 | ✅ SELESAI (planning/F3-RISET-PRESENSI-WAJAH.md; menunggu review planner utk kickoff F3) |
 
@@ -40,6 +40,20 @@
 frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1
 ke-7 (butuh `npm audit fix` = sentuh lockfile = wilayah AGENT-1) —
 planner putuskan setelah SEC-1 config 1–6 lolos.
+
+**⛔ BLOCKER DEPLOY PRODUKSI (efek SEC-1 item 3 — WAJIB sebelum F8):**
+`synchronize` kini OFF di production (NODE_ENV=production di Dockerfile
+& prod compose), TAPI belum ada migration/bootstrap → deploy prod ke DB
+KOSONG tidak membuat tabel → crash. Konsekuensi: **soft-launch F1 ke
+prod TIDAK bisa sampai ada BOOTSTRAP SKEMA.** Keputusan planner:
+(a) kode kondisional dipertahankan (benar utk jangka panjang);
+(b) sebelum deploy prod nyata (fase F8, atau lebih awal bila user mau
+soft-launch), tambah SATU dari: TypeORM migration; ATAU prosedur
+first-run terdokumentasi (deploy sekali dgn synchronize sementara ON →
+seed → flip production); (c) `deploy/README-DEPLOY.md` WAJIB memuat
+peringatan ini (tugas AGENT-2). Sampai itu ada, prod deploy DIBLOKIR.
+KOREKSI klaim planner sebelumnya: "F1 bisa deploy hari ini" kini TIDAK
+akurat — perlu bootstrap skema dulu.
 
 Planner memperbarui papan ini setiap ada perubahan; agent TIDAK mengubah
 papan — status "SELESAI" ditulis planner setelah review laporan.

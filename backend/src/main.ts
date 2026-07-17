@@ -17,10 +17,12 @@ async function bootstrap() {
     }),
   );
 
-  // Body limit 6MB untuk JSON (cukup untuk kebutuhan payload data induk),
-  // upload file besar ditangani lewat multipart oleh Multer (batas 2/5MB per endpoint).
-  app.use(json({ limit: '6mb' }));
-  app.use(urlencoded({ limit: '6mb', extended: true }));
+  // SEC-1 Butir 4: body limit JSON diturunkan 6mb -> 1mb (spec keamanan).
+  // Upload file besar (foto/Excel) TIDAK lewat parser ini — ditangani
+  // multipart oleh Multer (limit 5mb per endpoint di uploads/import),
+  // jadi penurunan ini tidak memengaruhi fitur upload.
+  app.use(json({ limit: '1mb' }));
+  app.use(urlencoded({ limit: '1mb', extended: true }));
 
   // === Serve uploaded photos via /uploads/:filename ===
   // Disini kita mount static asset supaya nginx bisa proxy ke backend
@@ -55,8 +57,26 @@ async function bootstrap() {
     }),
   );
 
+  // SEC-1 Butir 1: CORS whitelist via env ALLOWED_ORIGINS (CSV, tanpa
+  // spasi), bukan lagi origin: true (yang mengizinkan SEMUA origin).
+  // Di luar production, localhost/127.0.0.1 (port apapun) selalu
+  // diizinkan agar dev server & e2e Playwright tetap jalan tanpa perlu
+  // menyetel env tsb secara eksplisit.
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const isProd = process.env.NODE_ENV === 'production';
+  const localhostRe = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
   app.enableCors({
-    origin: true,
+    origin: (origin, callback) => {
+      // Request tanpa Origin header (mis. curl, server-to-server, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (!isProd && localhostRe.test(origin)) return callback(null, true);
+      callback(new Error('Origin tidak diizinkan oleh kebijakan CORS'), false);
+    },
     credentials: true,
   });
 
