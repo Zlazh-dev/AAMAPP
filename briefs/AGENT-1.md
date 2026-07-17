@@ -383,7 +383,66 @@ Tidak ada bug/keputusan lain yang perlu planner. FIX-MENU-ADMIN selesai.
 
 ---
 
-### [AGENT-1] FIX-ASSIGN-SISWA-KELAS — DIKERJAKAN (2026-07-17 13:47)
+### [AGENT-1] FIX-ASSIGN-SISWA-KELAS — SELESAI (2026-07-17 14:02)
+
+**Perbaikan** — [KelasDetailPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/kelas/KelasDetailPage.tsx):
+
+1. **Aksi "Assign Siswa"** (tombol baru, header kartu Anggota — SELALU
+   ada, kelas kosong maupun terisi): membuka BottomSheet picker
+   multi-select. Opsi dimuat via `api.adminGetSiswa({ q, limit: 50 })`
+   (server-side search, debounce 300ms — pola sama dgn
+   `MapelListPage`/`AkunDaftarPage`), dikecualikan siswa yang SUDAH jadi
+   anggota kelas ini (`s.kelasId !== kelas.id`). Tiap baris opsi diberi
+   `Badge` label kelas saat ini (nama kelas, atau kuning "Belum ada
+   kelas") agar assign-yang-berarti-pindah TERLIHAT jelas — sesuai
+   instruksi brief. Konfirmasi → loop
+   `PATCH /api/admin/siswa/:id {kelasId}` dengan progress bar +
+   pelaporan gagal per item (pola identik `handlePindah` yang sudah
+   ada) → `loadAll()` refresh.
+2. **Logika empty-state**: `loadAll()` kini juga memanggil
+   `api.adminGetSiswa({ limit: 1 })` untuk membaca `total` siswa
+   SELURUH sistem (`totalSiswaSistem`). Kelas kosong:
+   - `totalSiswaSistem > 0` → tombol **"Assign Siswa"** (buka picker).
+   - `totalSiswaSistem === 0` → tombol **"Tambah Siswa"** (alur create
+     asli, navigate `/admin/orang/siswa/baru`) — tidak berubah.
+   Kelas terisi: daftar anggota + "Pindahkan" (keluar, tak berubah) +
+   "Assign Siswa" (masuk, baru) tersedia berdampingan di header kartu.
+3. Backend TIDAK diubah — `PATCH /api/admin/siswa/:id {kelasId}` yang
+   dipakai sudah ada & cukup (dipakai juga oleh fitur pindah-multi).
+
+**Spec baru** —
+[frontend/e2e/gelombang2/kelas-assign-siswa.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/kelas-assign-siswa.spec.ts):
+seed kelas kosong + 2 siswa tanpa kelas → buka detail kelas → assert
+tombol "Assign Siswa" tampil (BUKAN "Tambah Siswa", karena ada siswa
+lain di sistem) → klik → cari di sheet → centang 2 siswa → simpan →
+assert keduanya jadi anggota kelas (UI) + verifikasi `kelasId` via API.
+Kasus "nol siswa di seluruh sistem → tombol Tambah Siswa" TIDAK diuji
+via e2e terpisah (butuh DB benar-benar kosong dari siswa, tidak
+praktis di lingkungan e2e bersama ini) — cukup dijamin oleh
+percabangan `totalSiswaSistem > 0 ? ... : ...` yang sederhana & sudah
+type-checked; DoD §15.3 fokus pada bug assign-eksisting yang dilaporkan
+user, bukan kasus tepi database kosong.
+
+> [!NOTE]
+> Ditemukan bug KECIL di spec (bukan bug aplikasi) saat run pertama:
+> `getByText(nama, {exact:true})` cocok 2 elemen (baris tabel desktop
+> `md:table` DAN baris list mobile `md:hidden` sama-sama ada di DOM,
+> hanya disembunyikan via CSS, bukan dihapus) → strict-mode violation.
+> Diperbaiki dengan `getByRole('button', { name })` yang secara unik
+> menyasar sel nama di tabel desktop. Tidak menyentuh kode aplikasi.
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose down -v`
+→ `up -d --build` → `npm run test:e2e` dijalankan **2×** dari DB
+kosong: kedua run identik **44 passed, 2 skipped** (skip pre-existing,
+sama seperti laporan sebelumnya). `kelas-assign-siswa.spec.ts` hijau,
+tidak ada regresi di spec lain.
+
+Tidak ada bug/keputusan lain yang perlu planner. FIX-ASSIGN-SISWA-KELAS
+selesai. Lanjut BACKLINK-ADAPTIF-MOBILE.
+
+---
+
+### [AGENT-1] BACKLINK-ADAPTIF-MOBILE — DIKERJAKAN (2026-07-17 14:02)
 
 
 

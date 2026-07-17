@@ -65,22 +65,20 @@ tiap mutasi; WIB (wib.util.ts).
   (guru wali|admin) → rekap per siswa (Σ H/S/I/A/T atas sesi TERLAKSANA;
   LEFT JOIN, NULL=tidak tercatat), berpaginasi.
 
-## PEMBAGIAN WILAYAH (paralel; JANGAN saling sentuh)
-- **Antigravity-1 → BACKEND F2**: seluruh `backend/src/presensi/**`
-  (entity, dto, service, controller, module) + daftarkan module &
-  entity di `backend/src/app.module.ts` (SATU titik share — hanya
-  Antigravity-1 yang menyentuh app.module untuk F2). + e2e API-level
-  bila perlu. Mulai SEGERA (kontrak sudah dikunci, tak perlu nunggu
-  frontend).
-- **Antigravity-2 → FRONTEND F2 GURU**: `frontend/src/pages/guru/**`
-  (KbmHariIniPage daftar sesi, RosterPage grid presensi <30 dtk, §15.6)
-  + PEMILIK perubahan `frontend/src/api/client.ts`, `App.tsx`, `menu.ts`
-  untuk F2 (guru + admin route). Kerjakan SETELAH 2 bug UX antre
-  (assign-siswa, backlink) selesai.
+## PEMBAGIAN WILAYAH (2026-07-17b — Kiro utama + Roo pembantu; JANGAN saling sentuh)
+- **KIRO → BACKEND F2 + FRONTEND F2 GURU + wiring**:
+  (a) seluruh `backend/src/presensi/**` (entity, dto, service, controller,
+  module) + daftarkan di `backend/src/app.module.ts`;
+  (b) `frontend/src/pages/guru/**` (KbmHariIniPage daftar sesi, RosterPage
+  grid presensi <30 dtk, §15.6);
+  (c) PEMILIK perubahan `frontend/src/api/client.ts`, `App.tsx`, `menu.ts`
+  untuk SEMUA route F2 (guru + admin — termasuk mendaftarkan halaman
+  admin buatan Roo). Urutan: BACKLINK-ADAPTIF-MOBILE (sisa UX di
+  briefs/AGENT-1.md) → backend F2 → frontend F2 guru → wire route admin.
 - **Roo Code → FRONTEND F2 ADMIN**: `frontend/src/pages/admin/presensi/**`
-  (matriks presensi siswa, §15.3) — BUAT FILE HALAMAN di folder itu saja;
-  JANGAN sentuh client.ts/App.tsx/menu.ts (Antigravity-2 yang wire —
-  Roo cukup lapor nama komponen+path + method API yang dibutuhkan).
+  (matriks presensi siswa, §15.3) — BUAT FILE HALAMAN di folder itu SAJA;
+  JANGAN sentuh client.ts/App.tsx/menu.ts/backend. Lapor nama komponen +
+  path + daftar method API yang dibutuhkan → KIRO yang wire route+client.
 - **Cline → docs**: update `docs/API-REFERENCE.md` + `docs/KAMUS-DATA.md`
   dgn kontrak & entitas F2 di atas (baca-saja kode; tulis docs). Boleh
   mulai kapan saja (kontrak sudah final di file ini).
