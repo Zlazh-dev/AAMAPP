@@ -13,7 +13,39 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18h) — F4c FRONTEND (rekap TU + akses kepsek)
+## TUGAS AKTIF (2026-07-18i) — E2E-MANDIRI-DATA (suite deterministik apa pun isi DB)
+
+> F4c frontend kamu DITERIMA — F4 TUNTAS. TAPI suite e2e ternyata FLAKY
+> non-deterministik: "hijau" selama ini bergantung DATA SISA polusi, bukan
+> robust. Bukti: DB dev sempat 368 guru sampah; setelah planner reset →
+> `image-uploader.spec` lulus TAPI `backlink-adaptif.spec` GAGAL (butuh ≥1
+> kelas ambient yang tak dibuatnya sendiri). Dua arah kerapuhan berlawanan.
+
+Akar: sejumlah spec TIDAK mandiri — ada yang klik "baris pertama daftar"
+(butuh data ambient), ada yang cari entitasnya di daftar tak-terfilter (rusak
+saat data menumpuk). Perbaiki agar suite DETERMINISTIK tanpa bergantung isi DB.
+
+Kerjakan (wilayah `frontend/e2e/` SAJA):
+1. **Audit** semua spec gelombang2: temukan yang (a) klik `table tbody tr`
+   .first()/baris tanpa membuat entitasnya sendiri, atau (b) cari entitas via
+   daftar tak-terfilter (bukan search/by-id).
+2. **Jadikan mandiri**: tiap spec BUAT entitas yang dibutuhkannya via API di
+   `beforeEach` (pola sudah ada di kelas-crud.spec: token dari localStorage →
+   header Bearer → `request.post('/api/admin/kelas'|'/guru'|...)`), lalu
+   **navigasi LANGSUNG by ID** (`/admin/kelas/${id}`) atau **search-by-nama**
+   sebelum klik — JANGAN andalkan "baris pertama". Confirmed contoh yang harus
+   diperbaiki: `backlink-adaptif.spec.ts` (buat kelas sendiri → goto by id),
+   `image-uploader.spec.ts` (search guru by nama sebelum klik).
+3. **afterEach**: hapus entitas yang dibuat (via API DELETE) agar tak menumpuk.
+4. JANGAN longgarkan assertion. Perilaku yang diuji tetap ketat.
+
+DoD: `npm run test:e2e` HIJAU PENUH pada DB BERSIH (planner sudah TRUNCATE;
+kalau perlu isi, buat via API di spec), DIULANG 2× berturut = identik 0 gagal
+(buktikan deterministik, bukan kebetulan data). Append laporan + daftar spec
+yang diperbaiki.
+
+---
+## ARSIP TUGAS (2026-07-18h) — F4c FRONTEND (SELESAI, diterima commit cb877d4)
 
 > F4b frontend kamu DITERIMA (commit 88e8351, suite 124/0). Sekarang F4c —
 > keping terakhir F4 (kecil). Baca `briefs/F4-SPEC.md` bagian **F4c**.

@@ -5,7 +5,31 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18h) — F4c BACKEND (rekap TU bulanan + RBAC kepsek)
+## TUGAS AKTIF (2026-07-18i) — NIT-BACKEND-400 (rapikan error 500→400) + audit exception
+
+> F4c backend kamu DITERIMA — F4 backend TUNTAS. Tugas kecil pembersih
+> (paralel & non-konflik dgn AG-1 yang benahi e2e). Backend beberapa tempat
+> pakai `throw new Error(...)` untuk input klien salah → jadi HTTP 500,
+> mestinya 400 (BadRequestException).
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`):
+1. Ganti `throw new Error(...)` → exception Nest yang benar di jalur input
+   klien:
+   - `kiosk.controller.ts` `create` device: nama kosong → `BadRequestException`.
+   - `laporan.service.ts` `rekapGuru/tu` (~baris 479): format bulan invalid →
+     `BadRequestException` (bukan Error → 500).
+2. **Audit** cepat: grep `throw new Error(` di `backend/src/**` — untuk tiap
+   yang dipicu input klien (validasi, format, tak ditemukan), ganti ke
+   `BadRequestException`/`NotFoundException`/`ForbiddenException` yang sesuai.
+   JANGAN ubah error internal/programmer (biarkan 500).
+3. E2E kecil: kirim input invalid (bulan salah, nama device kosong) → assert
+   **400** (bukan 500). Suite tetap hijau.
+
+DoD: input klien salah → 4xx bermakna (bukan 500), audit throw-Error selesai,
+e2e hijau, laporan daftar titik yang diperbaiki.
+
+---
+## ARSIP — F4c BACKEND (SELESAI, diterima commit cb877d4, e2e 10/10)
 
 > F4b backend kamu DITERIMA (commit 88e8351, suite 124/0). Sekarang F4c —
 > keping terakhir F4 (kecil). Baca `briefs/F4-SPEC.md` bagian **F4c**.

@@ -53,14 +53,16 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` (F4c) + `briefs/AGENT-1.md` | **F4c FRONTEND** (rekap TU bulanan + export + akses kepsek laporan/dashboard) | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` (F4c) + `briefs/AGENT-2.md` | **F4c BACKEND** (rekap TU `/api/tu/rekap-guru` reuse agregat + RBAC kepsek) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **E2E-MANDIRI-DATA** (spec bikin data sendiri + navigasi by-id/search → suite deterministik) | mulai |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | **NIT-BACKEND-400** (throw Error→BadRequest 500→400 + audit exception) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
-**STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4a** (izin guru + status turunan
-deriveStatusHarian; suite 107/0). ▶️ **F4b** (dashboard agregat + laporan +
-export Excel/PDF) DIBUKA. ⏳ F4c (rekap TU + kepsek) ditunda. Docs (F3+F4)
-DITUNDA sampai fase F selesai. Kontrak: `briefs/F4-SPEC.md`.
+**STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
+dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap.
+▶️ Pembersih: E2E-MANDIRI-DATA (AG-1, gerbang deterministik) + NIT-BACKEND-400
+(AG-2). ⏭️ Lalu: DOCS (F3+F4) → fase berikut (F5 pelanggaran / F6 rapor).
+**Catatan gerbang:** suite flaky krn spec tak-mandiri (bergantung data ambient)
+— sedang dibenahi AG-1. DB dev sudah di-reset dari sampah test.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
