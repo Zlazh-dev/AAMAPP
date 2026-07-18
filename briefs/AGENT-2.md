@@ -5,7 +5,36 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18i) — NIT-BACKEND-400 (rapikan error 500→400) + audit exception
+## TUGAS AKTIF (2026-07-18j) — DOKUMENTASI F3+F4 (rekam kontrak wajah/kiosk/izin/laporan)
+
+> NIT-BACKEND-400 kamu DITERIMA. Gerbang e2e kini deterministik (145/0 ×2).
+> Sekarang dokumentasi F3+F4 (kamu terbukti bagus di docs F2). Wilayah TULIS:
+> `docs/` SAJA (baca kode, tulis docs). JANGAN sentuh kode/e2e/file bersama.
+
+Kerjakan (baca kode aktual, kutip file:baris sebagai bukti — planner cek silang):
+1. `docs/API-REFERENCE.md` — tambah bagian:
+   - **Presensi Wajah Guru (F3a)**: enrollment (guru/admin), scan mandiri
+     (alur 6 langkah, geofence, threshold), monitor, manual — dari
+     `presensi-guru.controller.ts`.
+   - **Kiosk (F3b)**: pairing (kode 6 digit), DeviceAuthGuard (X-Device-Token),
+     scan 1:N (threshold+margin), heartbeat, admin device, verifikasi pending —
+     dari `kiosk.controller.ts`.
+   - **Izin Guru (F4a)**: ajukan/list/setujui/tolak + `deriveStatusHarian`
+     (urutan derivasi LIBUR/IZIN/ALPHA dll) — dari `izin.*`.
+   - **Dashboard & Laporan (F4b) + Rekap TU (F4c)**: 4 endpoint agregat +
+     `/api/tu/rekap-guru` — dari `laporan.controller.ts`. Sertakan RBAC & bentuk
+     respons NYATA.
+2. `docs/KAMUS-DATA.md` — tambah tabel: `presensi_harian_guru` (+ kolom
+   perluVerifikasi), `device_kiosk`, `izin_guru` + kolom `guru.faceEmbeddings/
+   faceUpdatedAt`. Catat status DITURUNKAN (bukan kolom).
+3. Verifikasi tiap endpoint/kolom benar ADA di kode; laporan dgn bukti
+   file:baris.
+
+DoD: docs F3+F4 akurat & terverifikasi, laporan bukti file:baris. Ini menutup
+utang dokumentasi sebelum fase berikut.
+
+---
+## ARSIP — NIT-BACKEND-400 (SELESAI, diterima commit ed15d0a, e2e 6/6)
 
 > F4c backend kamu DITERIMA — F4 backend TUNTAS. Tugas kecil pembersih
 > (paralel & non-konflik dgn AG-1 yang benahi e2e). Backend beberapa tempat

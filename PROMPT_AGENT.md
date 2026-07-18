@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **E2E-MANDIRI-DATA** (spec bikin data sendiri + navigasi by-id/search → suite deterministik) | mulai |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | **NIT-BACKEND-400** (throw Error→BadRequest 500→400 + audit exception) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ E2E-MANDIRI-DATA SELESAI (gerbang deterministik 145/0 ×2). Menunggu fase berikut (F5/F6 — planner susun spec) | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | **DOKUMENTASI F3+F4** (`docs/` API-REFERENCE + KAMUS-DATA wajah/kiosk/izin/laporan) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
