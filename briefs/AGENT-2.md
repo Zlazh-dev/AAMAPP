@@ -398,3 +398,102 @@ diabaikan (sesuai SPEC-KANON anti-bug dialog dirty).
 dihormati (hanya 2 file di folder presensi/) ✅, tsc bersih ✅, docker build
 sukses ✅. Menunggu review planner + verifikasi manual browser bila
 diperlukan.
+
+## KLAIM TUGAS — F2-ADMIN-E2E
+DIKERJAKAN (12:33 WIB, 2026-07-18) — Antigravity-2 (executor B). Menulis
+`frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts` untuk mengunci 4
+perilaku fix2 (race guard, role-gating, guard tanggal kosong, escape-to-close).
+Wilayah tulis: HANYA `frontend/e2e/`. Tidak menyentuh client.ts/App.tsx/
+menu.ts/backend/halaman lain.
+
+### [AGENT-2] F2-ADMIN-E2E — SELESAI (2026-07-18 12:42 WIB)
+
+**Wilayah dihormati**: HANYA `frontend/e2e/` (1 file baru:
+[presensi-admin-fix2.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts)).
+Tidak menyentuh client.ts/App.tsx/menu.ts/backend/halaman admin manapun.
+Tidak dibuat varian `.mobile.spec.ts` terpisah — dijelaskan di bawah.
+
+**4 test ditulis, semua meng-assert lewat interaksi UI nyata (bukan cuma
+panggilan API) terhadap `/admin/presensi-siswa`:**
+
+1. **Race guard** ([L133-172](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts#L133-L172)) —
+   2 kelas (A, B) disiapkan via API. `page.route()` menunda HANYA respons
+   pertama utk kelas A 1.2 detik. Urutan: pilih kelas A (request lambat
+   mulai) → SEGERA ganti ke kelas B (request cepat, selesai duluan) →
+   tunggu 1.8 detik (lebih lama dari delay A, memastikan respons basi A
+   benar-benar tiba belakangan). Assert: matriks akhir menampilkan mapel
+   kelas B, dan mapel kelas A **tidak pernah muncul** (`toHaveCount(0)`) —
+   ini mengunci guard `cancelled` di
+   [MatriksPresensiSiswaPage.tsx:91-119](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L91-L119).
+
+2. **Role-gating** ([L174-217](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts#L174-L217)) —
+   akun `kepsek` dibuat via `/api/admin/users` (pola sama
+   `rbac-negatif.spec.ts`). Sbg kepsek: klik baris sesi → sheet
+   `Roster …` TIDAK muncul (`toHaveCount(0)`) & tombol "Simpan Koreksi"
+   tidak ada. Re-login sbg admin: klik baris sesi yang SAMA → sheet
+   `Roster …` MUNCUL. Menutup jalur regresi Blocker #2 (403 sekejap +
+   toast utk kepsek/kesiswaan).
+
+3. **Guard tanggal kosong** ([L219-253](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts#L219-L253)) —
+   `page.route()` merekam semua request ke
+   `/api/admin/presensi-siswa` yang mengandung `tanggal=` kosong
+   (regex `[?&]tanggal=(&|$)`). Setelah `dateInput.fill('')`: halaman
+   tidak crash, input date otomatis kembali ke `todayWIB()`, dan array
+   rekaman request kosong (`toHaveLength(0)`) — membuktikan tak pernah
+   ada permintaan `tanggal=''` terkirim.
+
+4. **Escape-to-close** ([L255-286](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts#L255-L286)) —
+   buka sheet (bersih) → `Escape` → sheet tertutup
+   (`toHaveCount(0)`). Buka lagi → klik baris siswa (mengubah status,
+   `dirty=true`) → `Escape` → sheet **tetap terbuka**
+   (`toBeVisible()`). Mengunci perilaku Minor #7 persis sesuai DoD
+   ("tutup saat bersih, diam saat dirty").
+
+> [!NOTE]
+> **Tidak membuat varian `.mobile.spec.ts` terpisah**: source review
+> ([RosterDetailSheet.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx),
+> [MatriksPresensiSiswaPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx))
+> mengonfirmasi ke-4 guard yang diuji (`cancelled` flag, `canEdit`
+> boolean, guard tanggal kosong, Esc handler `!saving && !dirty`) adalah
+> LOGIKA STATE murni, sama persis dipakai baik render desktop maupun
+> mobile (hanya markup/CSS yang beda, bukan behavior). Menduplikasi spec
+> untuk viewport mobile hanya akan menguji ulang CSS visibility, bukan
+> logika fix2 itu sendiri — di luar cakupan DoD tugas ini. Ditemukan pula
+> saat menjalankan: `MatriksPresensiSiswaPage` merender KEDUA versi
+> (desktop `<table>` + mobile `<div>` card list) sekaligus di DOM tiap
+> saat (disembunyikan lwt kelas `hidden md:block`/`md:hidden`, BUKAN
+> conditional render) — locator `getByText(mapel.nama)` karenanya butuh
+> `.first()` di semua test (strict-mode Playwright menangkap 2 match).
+> Ini bukan bug produk, murni detail teknis locator test.
+
+**Verifikasi (DoD):**
+- Spec baru: `npx playwright test presensi-admin-fix2` → **4 passed**
+  (semua 4 perilaku terkunci, 0 gagal, ~11 detik total).
+- Suite penuh: `npm run test:e2e` → **53 passed, 2 unrelated failed, 2
+  skipped** (pra-ada, lihat catatan di bawah).
+
+> [!IMPORTANT]
+> **2 kegagalan di suite penuh BUKAN regresi dari tugas ini** — dikonfirmasi
+> via `git status`:
+> - `guru-crud.spec.ts` ("Tambah guru … error 409 NIP") — file ini TIDAK
+>   pernah saya sentuh sama sekali; kegagalannya (`getByText(/sudah
+>   terdaftar/i)` tak ditemukan) pra-ada di codebase, di luar wilayah
+>   tulis F2-ADMIN-E2E.
+> - `rekap-presensi.spec.ts` + `RekapPresensiPage.tsx` — kedua file ini
+>   **untracked** (belum ada di git sebelum sesi ini), jelas hasil kerja
+>   agen/tugas LAIN yang sedang berjalan paralel (fitur rekap presensi),
+>   bukan bagian dari F2-ADMIN-E2E. Kegagalannya (`strict mode violation`
+>   locator ganda) adalah bug di spec ITU (pola yang sama persis dgn yang
+>   saya perbaiki di spec saya sendiri via `.first()`) — di luar wilayah
+>   tulis saya (`frontend/e2e/` boleh saya tulis, tapi memperbaiki spec
+>   agen lain di luar scope tugas F2-ADMIN-E2E ini; melapor saja supaya
+>   planner tahu).
+>
+> Nol regresi dari perubahan saya sendiri: 53 test pra-ada (di luar 2 di
+> atas) tetap hijau, ditambah 4 test baru saya juga hijau.
+
+**DoD terpenuhi**: spec baru lulus (4/4) ✅, ke-4 perilaku fix2 terkunci ✅,
+nol regresi dari perubahan saya ✅, wilayah tulis dihormati (hanya 1 file
+baru di `frontend/e2e/`) ✅. Menunggu review planner; disarankan planner
+menugaskan perbaikan `rekap-presensi.spec.ts` (locator ganda, pola sama)
+ke agen pemilik tugas rekap tsb.

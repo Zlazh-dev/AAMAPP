@@ -153,8 +153,14 @@ export function AdaptiveSelect({
     };
     computePos();
     // Reposition or close on scroll/resize
-    const handleScroll = () => {
-      // Close on scroll to avoid floating panel detaching from trigger
+    const handleScroll = (e: Event) => {
+      // Jangan tutup bila scroll terjadi DI DALAM dropdown/sheet itu sendiri
+      // (mis. daftar opsi panjang yang di-scroll saat mencari opsi) — hanya
+      // tutup bila scroll terjadi di luar (halaman induk bergeser, sehingga
+      // panel floating akan lepas dari posisi trigger).
+      const target = e.target as Node;
+      if (dropdownRef.current?.contains(target)) return;
+      if (sheetRef.current?.contains(target)) return;
       setOpen(false);
       triggerRef.current?.focus();
     };

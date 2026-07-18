@@ -54,6 +54,7 @@ const JadwalKbmPage = React.lazy(() => import('../pages/kurikulum/JadwalKbmPage'
 const KbmHariIniPage = React.lazy(() => import('../pages/guru/KbmHariIniPage').then(m => ({ default: m.KbmHariIniPage })));
 const RosterPage = React.lazy(() => import('../pages/guru/RosterPage').then(m => ({ default: m.RosterPage })));
 const MatriksPresensiSiswaPage = React.lazy(() => import('../pages/admin/presensi/MatriksPresensiSiswaPage').then(m => ({ default: m.MatriksPresensiSiswaPage })));
+const RekapPresensiPage = React.lazy(() => import('../pages/guru/RekapPresensiPage').then(m => ({ default: m.RekapPresensiPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -176,6 +177,7 @@ const routes: RouteObject[] = [
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
           { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
+          { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
 
 
           // Admin: Presensi Siswa (F2 monitor)

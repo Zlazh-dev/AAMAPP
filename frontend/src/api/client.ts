@@ -553,6 +553,25 @@ export const api = {
       `/admin/presensi-siswa?kelasId=${kelasId}&tanggal=${encodeURIComponent(tanggal)}`,
     ),
 
+  // --- F2: Rekap presensi per kelas (wali kelas | admin) ---
+  getGuruKelasRekapPresensi: (p: {
+    kelasId: number;
+    dari: string;
+    sampai: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const search = new URLSearchParams();
+    search.set('kelasId', String(p.kelasId));
+    search.set('dari', p.dari);
+    search.set('sampai', p.sampai);
+    if (p.page) search.set('page', String(p.page));
+    if (p.limit) search.set('limit', String(p.limit));
+    return request<GuruRekapPresensiResponse>(
+      `/guru/kelas/rekap-presensi?${search.toString()}`,
+    );
+  },
+
   login: (email: string, password: string) =>
     request<LoginResponse>('/auth/login', {
       method: 'POST',

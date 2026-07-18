@@ -62,6 +62,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     label: 'GURU',
     items: [
       { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
+      { label: 'Rekap Presensi', path: '/guru/rekap', icon: 'summarize' },
     ],
   },
 

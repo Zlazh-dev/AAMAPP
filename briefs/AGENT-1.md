@@ -626,3 +626,51 @@ test lain (termasuk 3 test F2 presensi-siswa).
 
 Tidak ada bug tersisa. Menunggu tugas berikutnya dari planner.
 
+## LAPORAN — F2-REKAP-FRONTEND
+
+DIKERJAKAN (2026-07-18 12:33 WIB) — mulai F2-REKAP-FRONTEND: daftarkan
+`api.getGuruKelasRekapPresensi` di client.ts, buat RekapPresensiPage.tsx,
+wiring route+menu, e2e spec.
+
+**Perubahan**:
+- `frontend/src/api/client.ts` — tambah `api.getGuruKelasRekapPresensi({
+  kelasId, dari, sampai, page?, limit? })`, konsumsi tipe
+  `GuruRekapPresensiResponse` yang sudah ada (dulu terhapus krn belum ada
+  pemakai).
+- `frontend/src/pages/guru/RekapPresensiPage.tsx` (baru) — filter kelas
+  (AdaptiveSelect, opsi dari `adminGetKelas`) + rentang tanggal (dari–
+  sampai, default 30 hari terakhir); tabel Σ H/S/I/A/T per siswa
+  (desktop table + mobile card list); rekap `null` → "—"/"Tidak
+  tercatat" (F2-SPEC #8); paginasi 20/hal; 403 (bukan wali kelas)
+  ditangani dgn EmptyState pesan jelas, bukan toast generik.
+- Wiring: `App.tsx` (lazy import + route `/guru/rekap`,
+  `RequireRole ['guru','admin']`) + `menu.ts` (item "Rekap Presensi" di
+  grup GURU, ikon `summarize`).
+- `frontend/e2e/gelombang2/rekap-presensi.spec.ts` (baru) — setup
+  guru/mapel/kelas/siswa/jadwal via API, simpan 1 roster 'H', lalu
+  drive UI: pilih kelas via AdaptiveSelect, isi rentang tanggal, verifikasi
+  baris tabel desktop menampilkan nama siswa & kolom H=1.
+- **Bug ditemukan & diperbaiki** (bukan cuma buatan sendiri):
+  `frontend/src/components/AdaptiveSelect.tsx` — window-level
+  `scroll` listener (capture) menutup dropdown SETIAP kali ada scroll
+  di mana pun, termasuk scroll DI DALAM daftar opsi dropdown itu sendiri
+  (relevan begitu opsi kelas >200 baris/butuh scroll utk temukan opsi).
+  Ini bug lama yang baru ketahuan lewat e2e baru (klik opsi gagal krn
+  panel tertutup duluan oleh scroll listener miliknya sendiri). Diperbaiki
+  dgn mengabaikan event scroll yang originnya dari dalam
+  dropdown/sheet (`dropdownRef`/`sheetRef`), hanya menutup bila scroll
+  terjadi di luar panel (halaman induk bergeser).
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose up -d
+--build frontend` (2×, sekali sebelum & sekali sesudah fix AdaptiveSelect)
+→ container Started/Healthy. **Full suite Playwright**: `55 passed, 2
+skipped` (skip pre-existing — butuh `GOOGLE_CLIENT_ID`) — termasuk 1 test
+baru `rekap-presensi.spec.ts` hijau, tidak ada regresi di 54 test lain
+(termasuk seluruh test AdaptiveSelect-dependent: SearchSelect, ui-desktop,
+semua form pages).
+
+F2 frontend TUNTAS (guru KBM+Roster, admin matriks, guru rekap). Tidak
+ada bug tersisa. Menunggu tugas berikutnya dari planner.
+
+
+
