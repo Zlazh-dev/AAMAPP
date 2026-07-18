@@ -150,6 +150,69 @@ Authorization service: wali = guru waliGuru kelas siswa. Audit; WIB.
   kehadiran + catatan wali + tombol Finalisasi) + **Export PDF** (pdfmake LAZY,
   kop sekolah, layout rapor). Wiring + menu. E2E MANDIRI.
 
+## ══════════ F6c — KOKURIKULER (dibuka 2026-07-19; dari referensi radig/rapor) ══════════
+> Sumber: `D:\Codeproject\Smpmultipleapp\radig\rapor` (kokurikuler_*.php,
+> walikelas_proses_kokurikuler.php). F6d (ekskul) & integrasi PDF menyusul.
+
+**8 DIMENSI (master `dimensi_lulusan` — verbatim referensi; dipilih per kegiatan):**
+1. Keimanan dan Ketakwaan terhadap Tuhan YME
+2. Kewargaan
+3. Penalaran Kritis
+4. Kreativitas
+5. Kolaborasi
+6. Kemandirian
+7. Kesehatan
+8. Komunikasi
+
+**Skala & rata-rata SB/B/C/K (verbatim walikelas_proses_kokurikuler.php:50-64):**
+- Skala: **Sangat Baik=4, Baik=3, Cukup=2, Kurang=1**.
+- Multi-penilai: `rata = Σskor / jumlah_penilai`.
+- Balik ke huruf: **>3.5→Sangat Baik, >2.5→Baik, >1.5→Cukup, else Kurang**.
+
+**Struktur (dari referensi):** kegiatan (tema+semester) → target dimensi (pilih
+dari 8) → tim penilai (guru per kelas) → asesmen (per siswa per dimensi, nilai
+kualitatif, MULTI-penilai) → nilai akhir per dimensi = rata-rata → deskripsi.
+
+## Entitas F6c (backend/src/kokurikuler/)
+```
+kokurikuler_kegiatan  id PK • tahunAjaranId FK • semester int • tema varchar
+                      • createdAt/updatedAt
+kokurikuler_target    id PK • kegiatanId FK (CASCADE) • namaDimensi varchar
+                      (salah satu dari 8) — UNIQUE(kegiatanId, namaDimensi)
+kokurikuler_tim       kegiatanId FK • kelasId FK • guruId FK (penilai)
+                      — PK(kegiatanId, kelasId, guruId)
+kokurikuler_asesmen   id PK • targetId FK kokurikuler_target (CASCADE)
+                      • siswaId FK • penilaiGuruId FK
+                      • nilai varchar ('Sangat Baik'|'Baik'|'Cukup'|'Kurang')
+                      — UNIQUE(targetId, siswaId, penilaiGuruId)
+```
+Nilai akhir per (siswa, dimensi) = TURUNAN rata-rata skor semua penilai (rumus
+di atas). Deskripsi otomatis per siswa = pola default planner (di bawah).
+
+**Pola deskripsi kokurikuler (default; bisa ditimpa):** gabung dimensi per
+kualitas: `"Menunjukkan capaian Sangat Baik pada {dimensi SB}. Baik pada {…}. …"`
+(hanya kualitas yang ada). Join pola sama F6b.
+
+## Kontrak API F6c (kurikulum/admin kelola; guru tim menilai; wali baca)
+- Kelola kegiatan (kurikulum|admin): `GET/POST/PATCH/DELETE
+  /api/kokurikuler/kegiatan` (+ target dimensi + tim penilai per kelas).
+- Guru tim: `GET /api/kokurikuler/asesmen?kegiatanId=&kelasId=` (siswa × dimensi
+  target, nilai sendiri) • `PUT` upsert asesmen `{ entri:[{siswaId, targetId,
+  nilai}] }` (penilai = guru sesi; authorization = anggota tim kegiatan).
+- Rapor: `GET /api/kokurikuler/rapor/:siswaId?tahunAjaranId=&semester=` → per
+  dimensi nilai akhir (rata) + deskripsi (untuk dikonsumsi rapor F6b/PDF).
+
+## PEMBAGIAN WILAYAH F6c
+- **AG-2 (backend, MEMIMPIN)**: modul `backend/src/kokurikuler/**` (4 entitas,
+  service: kelola kegiatan/target/tim, asesmen upsert dgn authorization tim,
+  **rata-rata SB/B/C/K** [4/3/2/1 → >3.5/2.5/1.5], deskripsi otomatis, rapor
+  per siswa BATCH). Daftarkan. Boot-verify + e2e mandiri (asesmen multi-penilai
+  → rata benar; non-tim 403; deskripsi pola).
+- **AG-1 (frontend)**: kelola kegiatan (kurikulum: tema+semester, pilih dimensi
+  dari 8, assign tim guru per kelas) + input asesmen (guru tim: grid siswa ×
+  dimensi, tombol SB/B/C/K) + tampilan rapor kokurikuler siswa. Wiring + menu.
+  E2E MANDIRI.
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang (spec MANDIRI — buat data via API,
 navigasi by-id/search) • RBAC + authorization service + audit + WIB • komponen

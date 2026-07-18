@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6b FRONTEND SELESAI (rapor+PDF). Menunggu F6c / docs / QA | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6b BACKEND SELESAI (assembly+deskripsi+snapshot). Menunggu F6c / docs / QA | idle |
+| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6c) + `briefs/AGENT-1.md` | **F6c FRONTEND** (kokurikuler: kegiatan+dimensi+tim+asesmen SB/B/C/K) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6c) + `briefs/AGENT-2.md` | **F6c BACKEND** (MEMIMPIN — kokurikuler + rata-rata SB/B/C/K 4/3/2/1 + authorization tim) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:

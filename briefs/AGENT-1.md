@@ -13,7 +13,32 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18n) — F6b FRONTEND (rapor akademik + PDF)
+## TUGAS AKTIF (2026-07-19) — F6c FRONTEND (kokurikuler)
+
+> F6b frontend kamu DITERIMA (commit ed9d0ed). Rapor akademik tuntas. Sekarang
+> F6c KOKURIKULER. Baca **`briefs/F6-SPEC.md` bagian F6c** (8 dimensi + SB/B/C/K
+> dari referensi). Kontrak dikunci, paralel. JANGAN F6d/integrasi PDF.
+
+**Kontrak backend F6c (konsumsi):**
+- Kelola: `GET/POST/PATCH/DELETE /api/kokurikuler/kegiatan` (tema+semester+
+  dimensi+tim). Asesmen: `GET /api/kokurikuler/asesmen?kegiatanId=&kelasId=` •
+  `PUT` `{entri:[{siswaId,targetId,nilai}]}`. Rapor: `GET /api/kokurikuler/
+  rapor/:siswaId?tahunAjaranId=&semester=`.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. Kelola kegiatan (kurikulum): buat kegiatan (tema, semester), **pilih dimensi
+   dari 8** (checkbox), assign **tim penilai** (guru per kelas). List + CRUD.
+2. Input asesmen (guru tim): grid siswa × dimensi-target, tombol **SB/B/C/K**
+   (Sangat Baik/Baik/Cukup/Kurang) → PUT. Hanya kegiatan yg dia jadi tim.
+3. Tampilan rapor kokurikuler siswa (per dimensi: nilai akhir rata + deskripsi).
+4. Wiring client.ts/App.tsx/menu.ts (kurikulum "Kokurikuler"; guru akses
+   asesmen). E2E MANDIRI (buat data via API, navigasi by-id).
+
+DoD: tsc bersih • build sukses • kegiatan→dimensi→tim→asesmen→rapor jalan •
+e2e hijau • laporan. JANGAN F6d. JANGAN sentuh backend kokurikuler (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18n) — F6b FRONTEND (SELESAI, diterima commit ed9d0ed)
 
 > F6a frontend kamu DITERIMA (suite 216/0). Sekarang F6b (rapor). Baca
 > **`briefs/F6-SPEC.md` bagian F6b** + §9. User: KKM global 75, deskripsi pola

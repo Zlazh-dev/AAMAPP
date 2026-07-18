@@ -5,7 +5,29 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18n) — F6b BACKEND (rapor akademik; MEMIMPIN)
+## TUGAS AKTIF (2026-07-19) — F6c BACKEND (kokurikuler; MEMIMPIN)
+
+> F6b backend kamu DITERIMA (commit ed9d0ed). Rapor akademik tuntas. Sekarang
+> F6c KOKURIKULER. Baca **`briefs/F6-SPEC.md` bagian F6c** (dikunci dari
+> referensi radig/rapor — 8 dimensi + rata-rata SB/B/C/K verbatim). JANGAN F6d
+> (ekskul) / integrasi PDF.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Modul `backend/src/kokurikuler/**`: 4 entitas (kegiatan, target[dimensi],
+   tim[penilai], asesmen[multi-penilai SB/B/C/K]) — skema F6-SPEC.
+2. Service: kelola kegiatan/target/tim (kurikulum/admin); asesmen upsert
+   (penilai=guru sesi; authorization = anggota tim kegiatan → 403 lain);
+   **rata-rata** per (siswa,dimensi): SB=4/B=3/C=2/K=1 → rata Σ/jumlahPenilai →
+   >3.5 SB / >2.5 B / >1.5 C / else K; deskripsi otomatis (pola F6-SPEC);
+   rapor per siswa BATCH anti-N+1.
+3. Controller kontrak F6-SPEC. Daftarkan app.module. Boot-verify (4 tabel) +
+   e2e mandiri (asesmen 2 penilai beda → rata benar; non-tim 403; deskripsi).
+
+DoD: backend F6c live, rata-rata SB/B/C/K benar (4/3/2/1+threshold),
+authorization tim, e2e hijau, laporan. JANGAN F6d. JANGAN sentuh frontend (AG-1).
+
+---
+## ARSIP — F6b BACKEND (SELESAI, diterima commit ed9d0ed)
 
 > F6a backend kamu DITERIMA (commit 86a0011, formula verified, suite 216/0).
 > Sekarang F6b (rapor). Baca **`briefs/F6-SPEC.md` bagian F6b** + §9. User
