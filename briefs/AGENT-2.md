@@ -5,7 +5,36 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF — F2-ADMIN-FIX2 (perbaiki temuan review; wilayah sama: `frontend/src/pages/admin/presensi/` SAJA)
+## TUGAS AKTIF (2026-07-18) — F2-ADMIN-E2E (kunci perbaikan fix2 dgn tes)
+
+> F2-ADMIN-FIX2 kamu DITERIMA (commit 5136bfb). Perbaikan blocker/minor itu
+> BELUM punya e2e — tanpa tes, gampang regresi. Tulis spec Playwright yang
+> mengunci perilaku fix2. Wilayah TULIS: `frontend/e2e/` (+ boleh baca
+> halaman admin buatanmu). JANGAN sentuh client.ts/App.tsx/menu.ts/backend/
+> halaman lain — ini murni tambah tes.
+
+Buat `frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts` (+ varian
+`.mobile.spec.ts` bila perlu bottom-sheet) yang meng-assert:
+1. **Race guard**: ganti kelas/tanggal cepat → matriks akhirnya menampilkan
+   data kelas TERPILIH (bukan data basi kelas sebelumnya). (Boleh pakai
+   route interception Playwright untuk menunda respons pertama.)
+2. **Role-gating**: login **kepsek/kesiswaan** → baris/kartu sesi read-only
+   (klik TIDAK membuka sheet koreksi, tidak ada 403 toast); login **admin**
+   → klik membuka sheet. Ringkasan H/S/I/A/T tetap tampil untuk semua.
+3. **Guard tanggal kosong**: clear input tanggal → tidak crash, tidak kirim
+   request `tanggal=''`, reset ke hari ini.
+4. **Escape-to-close**: sheet terbuka & belum diubah → Esc menutup; sheet
+   dgn perubahan status belum disimpan (dirty) → Esc DIABAIKAN.
+
+Pakai helper login/seed yang sudah ada di suite e2e (lihat spec gelombang2
+lain untuk pola login peran + set data). Verifikasi: `npm run test:e2e`
+hijau (spec baru lulus, nol regresi). Append laporan di `## LAPORAN`.
+
+DoD: spec baru lulus, perilaku fix2 terkunci, nol regresi, laporan.
+
+---
+
+## ARSIP — F2-ADMIN-FIX2 (SELESAI, diterima planner — commit 5136bfb)
 
 Konteks: F2-ADMIN-POLISH DITERIMA (commit `09fb2c9`). Review planner
 (workflow 39-agen + verifikasi adversarial) menemukan 6 cacat nyata di

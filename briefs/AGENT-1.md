@@ -13,11 +13,41 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## ⚠️ ROUTING BARU (2026-07-17) — armada 3 executor kode
+## TUGAS AKTIF (2026-07-18) — F2-REKAP-FRONTEND (keping F2 terakhir)
 
-- **Antigravity-1 (kamu, executor A):** tugas aktif = **F2 BACKEND**. Baca
-  `briefs/F2-SPEC.md` bagian "Antigravity-1 → BACKEND F2". Mulai segera.
-  SEC-1 & FIX-MENU-ADMIN di bawah = SUDAH SELESAI (arsip).
+> BackLink adaptif kamu DITERIMA (commit c5e29f5). Sekarang: bangun halaman
+> **Rekap Presensi per kelas** (wali kelas | admin). Backend SUDAH ADA:
+> `GET /api/guru/kelas/rekap-presensi?kelasId=&dari=&sampai=&page=&limit=`
+> (RBAC: wali kelas ATAU admin; respons berpaginasi, LEFT JOIN, siswa tanpa
+> data = null). Method client-nya DULU ada tapi terhapus karena belum ada
+> pemakai — kamu daftarkan lagi + buat halamannya. Kamu pemilik file bersama
+> (client.ts/App.tsx/menu.ts).
+
+Kerjakan:
+1. **client.ts** — tambah `api.getGuruKelasRekapPresensi({ kelasId, dari,
+   sampai, page?, limit? })` → `GuruRekapPresensiResponse` (tipe sudah ada
+   di client.ts, cek; kalau hilang, definisikan: `{ data: [{ siswaId, nama,
+   nis, rekap: Record<'H'|'S'|'I'|'A'|'T', number> | null }], total, page,
+   limit }`).
+2. **Halaman baru** `frontend/src/pages/guru/RekapPresensiPage.tsx`
+   (route `/guru/rekap` atau `/guru/kelas/rekap`): pilih kelas
+   (AdaptiveSelect — wali kelas biasanya 1 kelas; admin bisa semua), rentang
+   tanggal (dari–sampai), tabel Σ H/S/I/A/T per siswa berpaginasi. Kolom rekap
+   null = tampilkan "—" (tidak tercatat). Pola tabel + paginasi ikut
+   halaman list yang sudah ada; BackLink adaptif; PageContainer size.
+3. **Wiring**: route di App.tsx (RequireRole `['guru','admin']`) + item menu
+   grup guru ("Rekap Presensi").
+4. **e2e** minimal 1 spec (`frontend/e2e/gelombang2/rekap-presensi.spec.ts`):
+   pilih kelas + rentang → tabel muncul, paginasi jalan.
+5. Verifikasi: `npx tsc --noEmit` bersih + `docker compose up -d --build
+   frontend` + suite e2e hijau. Append laporan.
+
+DoD: halaman rekap jalan end-to-end, F2 frontend TUNTAS, tsc bersih, e2e
+hijau, laporan di `## LAPORAN`.
+
+---
+
+## ARSIP ROUTING (2026-07-17) — SEC-1, FIX-MENU-ADMIN, F2 BACKEND, BACKLINK = SELESAI
 - **Antigravity-2 (executor B):** kerjakan 2 bug UX di file INI
   (FIX-ASSIGN-SISWA-KELAS + BACKLINK-ADAPTIF-MOBILE) DULU, lalu
   `briefs/F2-SPEC.md` bagian "FRONTEND F2 GURU".
