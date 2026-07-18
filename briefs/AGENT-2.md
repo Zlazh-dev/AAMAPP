@@ -5,7 +5,31 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18f) — F4a BACKEND (izin guru + status turunan; MEMIMPIN)
+## TUGAS AKTIF (2026-07-18g) — F4b BACKEND (agregat dashboard + data laporan; MEMIMPIN)
+
+> F4a backend kamu DITERIMA (commit 9e57444, suite 107/0). Sekarang F4b
+> agregat. Baca `briefs/F4-SPEC.md` bagian **F4b** — HANYA backend; JANGAN
+> F4c. Reuse `deriveStatusHarian` yang sudah kamu buat.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. `GET /api/admin/dashboard?tanggal=` (admin|kepsek): agregat guruStatus
+   (pakai deriveStatusHarian BATCH), kbm terlaksana/kosong, siswa hadir/alpha/
+   total, perluPerhatian (izinMenunggu + presensiPending count), feed (activity
+   terbaru N). Semua BATCH, anti-N+1.
+2. 3 endpoint laporan (admin|kepsek), agregat level DB (QueryBuilder GROUP BY),
+   berfilter rentang/entitas:
+   - `GET /api/admin/laporan/harian-guru` — Σ status per guru + %hadir.
+   - `GET /api/admin/laporan/keterlaksanaan-kbm` — total vs terlaksana + %.
+   - `GET /api/admin/laporan/siswa` — Σ H/S/I/A/T per siswa + %hadir.
+3. Modul `backend/src/laporan/**` (atau perluas presensi-guru), daftarkan di
+   app.module.ts. Boot-verify + e2e (dashboard counts benar, tiap laporan
+   kembalikan baris + total; RBAC admin/kepsek).
+
+DoD: 4 endpoint live & boot-verified, agregat anti-N+1, e2e hijau, laporan.
+JANGAN generate file export (itu frontend). JANGAN F4c.
+
+---
+## ARSIP — F4a BACKEND (SELESAI, diterima commit 9e57444, e2e 10/10)
 
 > F3b frontend admin kamu DITERIMA (commit 5f57880; planner rekonsiliasi
 > body verifikasi + wiring pending). F3 TUNTAS. Sekarang F4. Baca

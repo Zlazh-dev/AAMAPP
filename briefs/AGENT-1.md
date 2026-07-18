@@ -13,7 +13,35 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18f) — F4a FRONTEND (izin guru; kontrak dikunci, boleh paralel)
+## TUGAS AKTIF (2026-07-18g) — F4b FRONTEND (dashboard + laporan + export lazy)
+
+> F4a frontend kamu DITERIMA (commit 9e57444, suite 107/0). Catatan: lampiran
+> izin kamu bikin field URL-ketik; F4-SPEC maksudnya UPLOAD file — backlog,
+> tak apa sekarang. Sekarang F4b. Baca `briefs/F4-SPEC.md` bagian **F4b** —
+> HANYA frontend; JANGAN F4c. Backend agregat AG-2 (kontrak di F4-SPEC).
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. **Dashboard** — upgrade `AdminDashboardPage`: kartu agregat dari
+   `GET /api/admin/dashboard` (guruStatus, kbm terlaksana/kosong, siswa, feed,
+   kartu "Perlu Perhatian" link ke izin-menunggu/pending). Pola Card + PageContainer.
+2. **HUB laporan** `/admin/laporan` (SubPageLinks — TANPA TAB) → 3 sub-halaman:
+   `/admin/laporan/harian-guru`, `/admin/laporan/keterlaksanaan`,
+   `/admin/laporan/siswa`. Tiap: filter rentang tanggal + entitas (AdaptiveSelect),
+   tabel hasil + baris TOTAL, pesan kosong bermakna.
+3. **Export**: tombol Export Excel + Export PDF di tiap laporan. `exceljs` &
+   `pdfmake` **dynamic-import LAZY** (util `frontend/src/lib/exportExcel.ts` &
+   `exportPdf.ts`; DILARANG di bundle utama §12.15). Kop dari
+   `api.getProfilSekolah` (nama/alamat/logo + kepsek).
+4. **Wiring** client.ts (dashboard + 3 laporan) + App.tsx (route admin/kepsek)
+   + menu.ts ("Laporan" di admin; dashboard sudah ada). E2E: dashboard render,
+   laporan filter→tabel, tombol export ada; cek `exceljs`/`pdfmake` TIDAK di
+   main chunk.
+
+DoD: tsc bersih • build sukses • dashboard+laporan jalan • export lazy • e2e
+hijau • laporan. JANGAN sentuh backend agregat (AG-2). JANGAN F4c.
+
+---
+## ARSIP TUGAS (2026-07-18f) — F4a FRONTEND (SELESAI, diterima commit 9e57444)
 
 > F3b kiosk app kamu DITERIMA (commit 5f57880, suite 93/0). Catatan planner:
 > kamu lupa wire `VerifikasiPendingPage` (AG-2) — sudah saya bereskan; lain

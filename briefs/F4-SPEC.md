@@ -110,6 +110,42 @@ status='DISETUJUI'`.
   → setujui/tolak dgn alasan, sheet adaptif) + wiring client.ts/App.tsx/menu.ts.
   Konsumsi kontrak di atas. Wilayah: `frontend/src/**` + `frontend/e2e/`.
 
+## ══════════ F4b — DASHBOARD + LAPORAN + EXPORT (dibuka 2026-07-18) ══════════
+> F4a LIVE (izin + deriveStatusHarian). F4b memakainya. Dibagi backend
+> (agregat) vs frontend (UI + export). JANGAN F4c (TU/kepsek).
+
+**Keputusan planner F4b:**
+- **Agregat di level DB** (§12.16, anti-N+1) — reuse `deriveStatusHarian`
+  batch. Backend mengembalikan DATA JSON teragregat; TIDAK generate file.
+- **Export di FRONTEND**: Excel via `exceljs` + PDF via `pdfmake`, KEDUANYA
+  **dynamic-import lazy** (§12.15, jangan di bundle utama). Kop dari
+  `pengaturan.profil_sekolah` (nama/alamat/logo + kepsekNama/kepsekNip).
+- Server tetap ringan (tak render dokumen) — konsisten filosofi proyek.
+
+**Kontrak API F4b (backend, admin|kepsek):**
+- `GET /api/admin/dashboard?tanggal=` → `{ guruStatus: {HADIR,TERLAMBAT,IZIN,
+  SAKIT,DINAS,ALPHA,LIBUR}, kbm: {terlaksana, kosong}, siswa: {hadir, alpha,
+  total}, perluPerhatian: {izinMenunggu, presensiPending}, feed: [aktivitas
+  terbaru N] }` — semua BATCH.
+- `GET /api/admin/laporan/harian-guru?dari=&sampai=&guruId?` → per guru: Σ
+  hadir/telat/izin/sakit/dinas/alpha/libur + %hadir atas hari wajib.
+- `GET /api/admin/laporan/keterlaksanaan-kbm?dari=&sampai=&guruId?&kelasId?&
+  mapelId?` → per guru/kelas/mapel: total KBM vs terlaksana + %.
+- `GET /api/admin/laporan/siswa?dari=&sampai=&kelasId?&mapelId?` → per siswa:
+  Σ H/S/I/A/T + %hadir.
+- Semua berpaginasi/berfilter level DB; error & kosong bermakna.
+
+**Wilayah F4b:**
+- **AG-2 (backend, MEMIMPIN)**: 1 endpoint dashboard + 3 endpoint laporan
+  (modul baru `backend/src/laporan/**` atau perluas; agregat SQL/QueryBuilder,
+  reuse deriveStatusHarian, anti-N+1). Daftarkan. Boot-verify + e2e.
+- **AG-1 (frontend)**: upgrade `AdminDashboardPage` (kartu agregat + feed +
+  "Perlu Perhatian") + HUB `/admin/laporan` (SubPageLinks ke 3 sub-halaman
+  laporan; TANPA TAB) + tiap laporan: filter rentang/kelas/guru/mapel + tabel
+  + baris TOTAL + tombol **Export Excel / Export PDF** (lazy exceljs/pdfmake,
+  kop sekolah). Wiring client.ts/App.tsx/menu.ts. E2E (mock data + cek tombol
+  export ada; lib export TIDAK di main bundle).
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang • RBAC server + audit + WIB • komponen
 v0.12.x (sidebar datar, satu tombol aksi, SaveSuccess, AdaptiveSelect,

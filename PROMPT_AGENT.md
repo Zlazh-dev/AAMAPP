@@ -53,15 +53,14 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` + `briefs/AGENT-1.md` | **F4a FRONTEND** (izin guru: `/izin/guru` + `/admin/izin-guru`) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` + `briefs/AGENT-2.md` | **F4a BACKEND** (MEMIMPIN — izin_guru + deriveStatusHarian + upgrade monitor) | mulai |
+| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` (F4b) + `briefs/AGENT-1.md` | **F4b FRONTEND** (dashboard agregat + HUB laporan + export Excel/PDF lazy) | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` (F4b) + `briefs/AGENT-2.md` | **F4b BACKEND** (MEMIMPIN — endpoint agregat dashboard + data laporan) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
-**STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3 TUNTAS PENUH** (F3a presensi wajah
-HP mandiri + F3b kiosk 1:N: backend+frontend, suite 93 pass/0 gagal). ⏭️
-Berikutnya: **F4** (planner susun F4-SPEC dari `planning/F4-RISET-*`). Docs F3
-DITUNDA (dikerjakan sebelum pindah fase bila user mau). Arsitektur wajah:
-embedding di device, server cosine.
+**STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4a** (izin guru + status turunan
+deriveStatusHarian; suite 107/0). ▶️ **F4b** (dashboard agregat + laporan +
+export Excel/PDF) DIBUKA. ⏳ F4c (rekap TU + kepsek) ditunda. Docs (F3+F4)
+DITUNDA sampai fase F selesai. Kontrak: `briefs/F4-SPEC.md`.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
