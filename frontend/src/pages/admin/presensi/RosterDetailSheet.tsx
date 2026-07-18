@@ -22,6 +22,19 @@ const STATUS_META: Record<StatusPresensi, { label: string; variant: 'green' | 'y
   T: { label: 'Terlambat', variant: 'purple' },
 };
 
+/** WIB "hari ini" YYYY-MM-DD (sama implementasi seperti di MatriksPresensiSiswaPage). */
+function todayWIB(): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const map: Record<string, string> = {};
+  for (const p of parts) map[p.type] = p.value;
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
 interface RosterDetailSheetProps {
   jadwalKbmId: number;
   mapel: string | null;
@@ -54,6 +67,17 @@ export function RosterDetailSheet({
   const [alasan, setAlasan] = useState('');
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  // FIX2-#5: force-reveal textarea alasan bila server membalas 400
+  // wajib-alasan (bisa terjadi karena rollover tengah malam WIB —
+  // sheet dibuka sebelum 00:00, disimpan sesudahnya).
+  const [forceShowAlasan, setForceShowAlasan] = useState(false);
+
+  // FIX2-#5: hitung ulang hari ini di setiap render — jangan andalkan
+  // prop `hariIni` yang dibekukan parent saat render.
+  const isToday = tanggal === todayWIB();
+  // Textarea alasan tampil bila bukan hari ini ATAU server sudah
+  // meminta alasan via 400.
+  const showAlasan = !isToday || forceShowAlasan;
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -69,6 +93,19 @@ export function RosterDetailSheet({
     };
   }, []);
 
+  // FIX2-#7: Escape menutup sheet — HANYA bila !saving DAN !dirty
+  // (SPEC-KANON anti-bug: dialog ber-input dirty dilarang tertutup
+  // Esc begitu saja). Pola sama seperti ConfirmDialog/AdaptiveSelect.
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !saving && !dirty) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [saving, dirty, onClose]);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -82,7 +119,17 @@ export function RosterDetailSheet({
         setEntries(m);
       })
       .catch((err) => {
-        show('error', err instanceof ApiError ? err.body?.message : 'Gagal memuat roster');
+        // FIX2-#3: cek cancelled sebelum setState/onClose — tutup sheet
+        // saat request in-flight lalu gagal bisa menyebabkan toast nyasar
+        // + onClose() basi pada komponen yang sudah unmount.
+        if (cancelled) return;
+        // FIX2-#4: fallback teks bila respons non-JSON (mis. 502 proxy).
+        show(
+          'error',
+          err instanceof ApiError
+            ? err.body?.message || 'Gagal memuat roster'
+            : 'Gagal memuat roster',
+        );
         onClose();
       })
       .finally(() => {
@@ -106,7 +153,12 @@ export function RosterDetailSheet({
 
   const handleSave = async () => {
     if (!detail || saving) return;
-    if (!hariIni && alasan.trim() === '') {
+    // FIX2-#5: hitung ulang todayWIB() di dalam handleSave — jangan
+    // andalkan prop hariIni yang mungkin basi (rollover tengah malam).
+    const nowToday = todayWIB();
+    const needsAlasan = tanggal !== nowToday;
+    if (needsAlasan && alasan.trim() === '') {
+      setForceShowAlasan(true);
       show('error', 'Alasan koreksi wajib diisi untuk tanggal selain hari ini');
       return;
     }
@@ -118,12 +170,23 @@ export function RosterDetailSheet({
         body: {
           tanggal,
           entri,
-          alasan: !hariIni ? alasan.trim() : undefined,
+          alasan: needsAlasan ? alasan.trim() : undefined,
         },
       });
       show('success', 'Koreksi presensi berhasil disimpan');
       onSaved();
     } catch (err) {
+      // FIX2-#5: bila server membalas 400 wajib-alasan (terjadi karena
+      // rollover tengah malam WIB — parent kirim hariIni=true, tapi
+      // server hitung tanggal ≠ hari ini), TAMPILKAN textarea alasan.
+      if (err instanceof ApiError && err.status === 400) {
+        const msg = typeof err.body?.message === 'string' ? err.body.message : '';
+        if (msg.includes('alasan')) {
+          setForceShowAlasan(true);
+          show('error', msg);
+          return;
+        }
+      }
       show(
         'error',
         err instanceof ApiError
@@ -197,7 +260,7 @@ export function RosterDetailSheet({
         </div>
       )}
 
-      {!hariIni && detail && (
+      {showAlasan && (
         <div className="mb-4">
           <label className="block text-xs font-medium text-aam-text-muted mb-1.5">
             Alasan koreksi (wajib — tanggal lampau)

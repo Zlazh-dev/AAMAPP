@@ -277,3 +277,95 @@ signature komponen bersama yang ada).
 
 Tidak ada bug/keputusan lain yang perlu planner. Menunggu wiring dari
 Antigravity-IDE.
+
+## KLAIM TUGAS — F2-ADMIN-FIX2
+DIKERJAKAN (18:42) — Antigravity-2 (executor B). Memperbaiki 6 temuan review
+(2 blocker, 4 minor) di `frontend/src/pages/admin/presensi/` SAJA. Tidak
+menyentuh client.ts/App.tsx/menu.ts/backend.
+
+### [AGENT-2] F2-ADMIN-FIX2 — SELESAI (2026-07-18 11:53 WIB)
+
+**Wilayah dihormati**: HANYA `frontend/src/pages/admin/presensi/` (2 file
+diedit, tidak ada file baru/hapus). TIDAK menyentuh client.ts/App.tsx/
+menu.ts/backend.
+
+**Semua 7 temuan diperbaiki:**
+
+**BLOCKER 1 — Race respons basi**
+[MatriksPresensiSiswaPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L91-L119) —
+diubah dari fungsi `loadMatriks()` lepas jadi `useEffect([kelasId, tanggal])`
+dengan pola `let cancelled = false` (identik `RosterDetailSheet.tsx`): setiap
+`.then`/`.catch`/`.finally` cek `cancelled` dulu sebelum `setState`. Skeleton
+(`loadingMatriks`) juga tidak dimatikan oleh request basi.
+
+**BLOCKER 2 — Kepsek/kesiswaan 403 saat klik sesi**
+Sama file, baris 67 (`const canEdit = !!user?.roles.includes('admin')`),
+diterapkan di render tabel desktop ([L236-L283](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L236-L283))
+dan card mobile ([L290-L333](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L290-L333)):
+admin → `<tr>`/`<button>` cursor-pointer + chevron + hover + `onClick`
+buka sheet; non-admin → `<tr>`/`<div>` read-only tanpa affordance klik dan
+TIDAK memanggil `getGuruKbmRoster`. Ringkasan H/S/I/A/T tetap tampil untuk
+semua role (hak baca). Sheet sendiri juga digerbang `canEdit` di kondisi
+render ([L340](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L340)) sebagai defense-in-depth.
+
+**MINOR 3 — `.catch` tidak cek cancelled**
+[RosterDetailSheet.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx#L121-L133) —
+ditambah `if (cancelled) return;` di awal `.catch`, sebelum toast/`onClose()`.
+
+**MINOR 4 — Toast error bisa kosong**
+Kedua file: `err.body?.message || 'Gagal memuat/menyimpan …'` (fallback teks
+eksplisit bila respons non-JSON, mis. 502 proxy). Lihat
+[MatriksPresensiSiswaPage.tsx:105-110](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L105-L110) dan
+[RosterDetailSheet.tsx:126-132](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx#L126-L132) (load) +
+[L190-L195](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx#L190-L195) (save).
+
+**MINOR 5 — Rollover tengah malam WIB**
+[RosterDetailSheet.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx#L154-L199) —
+ditambah `todayWIB()` lokal (sama seperti di halaman matriks) yang dihitung
+ULANG di dalam `handleSave` (bukan andalkan prop `hariIni` yang dibekukan
+parent saat sheet dibuka). State baru `forceShowAlasan`: textarea alasan
+muncul bila `tanggal !== todayWIB()` **atau** server pernah membalas 400
+dengan pesan mengandung "alasan" (`err.status === 400 && msg.includes('alasan')`)
+— menangani kasus sheet dibuka sebelum 00:00 lalu disimpan sesudahnya.
+
+**MINOR 6 — Tanggal bisa dikosongkan**
+[MatriksPresensiSiswaPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L92) —
+effect diguard `if (!kelasId || !tanggal) return;`; input date
+[onChange](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L185)
+reset ke `todayWIB()` bila value `''`. Sheet hanya dirender saat `tanggal`
+truthy ([L340](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx#L340)).
+
+**MINOR 7 — Escape tidak menutup sheet**
+[RosterDetailSheet.tsx:96-107](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/presensi/RosterDetailSheet.tsx#L96-L107) —
+handler `keydown` global: `Escape` → `onClose()` HANYA bila `!saving &&
+!dirty`; bila ada perubahan status belum tersimpan (`dirty=true`), Esc
+diabaikan (sesuai SPEC-KANON anti-bug dialog dirty).
+
+**Verifikasi (DoD):**
+- `npx tsc --noEmit` (frontend) — bersih, 0 error (dijalankan 2×: sesaat
+  setelah edit, dan ulang setelah server restart untuk konfirmasi).
+- `docker compose up -d --build frontend` — build sukses (image
+  `aamapp-frontend` & `aamapp-backend` Built), container `aamapp-db-1`
+  Healthy, `aamapp-backend-1` & `aamapp-frontend-1` Recreated + Started
+  tanpa error.
+- Suite e2e (`e2e/gelombang2/presensi-siswa.spec.ts`) menguji jalur API
+  backend (bukan interaksi UI React), jadi tidak terpengaruh perubahan
+  frontend-only ini secara langsung — TIDAK dijalankan ulang khusus untuk
+  FIX2 ini karena scope perbaikan murni UI-state/guard (race condition,
+  role-gating render, escape handler) yang di luar cakupan assersi e2e
+  API-level tersebut. Bila planner ingin verifikasi UI interaktif
+  (klik-cepat ganti kelas/tanggal, klik sesi sebagai role kepsek, Esc saat
+  dirty), butuh sesi browser interaktif yang tidak tersedia di executor
+  ini.
+
+> [!NOTE]
+> Docker daemon di lingkungan lokal sempat restart (server restart) setelah
+> build selesai — status container tidak bisa dicek ulang pasca-restart
+> (`docker ps` gagal connect ke daemon), namun build & start SEBELUM restart
+> sudah dikonfirmasi sukses (log lengkap: Image Built, Container Started,
+> tanpa exit-code error pada langkah build itu sendiri).
+
+**DoD terpenuhi**: 2 blocker + 4 minor semua diperbaiki ✅, wilayah tulis
+dihormati (hanya 2 file di folder presensi/) ✅, tsc bersih ✅, docker build
+sukses ✅. Menunggu review planner + verifikasi manual browser bila
+diperlukan.

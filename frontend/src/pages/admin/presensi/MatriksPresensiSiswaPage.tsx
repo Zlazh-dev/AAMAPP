@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { api, ApiError, Kelas } from '../../../api/client';
+import { useAuth } from '../../../app/AuthContext';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Badge } from '../../../components/Badge';
@@ -48,6 +49,7 @@ function ringkasanText(r: Record<string, number> | null): string {
  * alasan wajib bila tanggal ≠ hari ini — sesuai F2-SPEC kontrak koreksi).
  */
 export function MatriksPresensiSiswaPage() {
+  const { user } = useAuth();
   const { show } = useToast();
   const [kelasOptions, setKelasOptions] = useState<Kelas[]>([]);
   const [kelasId, setKelasId] = useState<string>('');
@@ -56,6 +58,13 @@ export function MatriksPresensiSiswaPage() {
   const [loadingKelas, setLoadingKelas] = useState(true);
   const [loadingMatriks, setLoadingMatriks] = useState(false);
   const [selectedSesi, setSelectedSesi] = useState<SesiMatriksRow | null>(null);
+
+  // FIX2-#2: hanya admin yang boleh membuka sheet koreksi (GET/PATCH
+  // /guru/kbm/:id/roster adalah @Roles('guru','admin')). Kepsek/kesiswaan
+  // tetap bisa membaca ringkasan H/S/I/A/T di matriks (hak baca mereka),
+  // tapi baris menjadi read-only — tanpa cursor-pointer/chevron/hover dan
+  // tidak memanggil getGuruKbmRoster.
+  const canEdit = !!user?.roles.includes('admin');
 
   useEffect(() => {
     (async () => {
@@ -72,23 +81,58 @@ export function MatriksPresensiSiswaPage() {
     })();
   }, []);
 
+  // FIX2-#1: race-condition guard — ganti filter cepat saat respons lama
+  // masih in-flight bisa menimpa data baru (matriks kelas A tampil berlabel
+  // kelas B). Pola `let cancelled = false` + cek sebelum setiap setState
+  // (sama seperti RosterDetailSheet.tsx:72-94). Skeleton loading juga tidak
+  // dimatikan oleh request lama.
+  // FIX2-#6: guard `if (!tanggal) return;` — clear input date menghasilkan
+  // '' yang server silently fallback ke hari ini; kita blok di sini.
   useEffect(() => {
-    if (!kelasId) return;
-    loadMatriks();
+    if (!kelasId || !tanggal) return;
+    let cancelled = false;
+    setLoadingMatriks(true);
+    api
+      .getMatriksPresensiSiswa(Number(kelasId), tanggal)
+      .then((res) => {
+        if (cancelled) return;
+        setData(res);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // FIX2-#4: fallback teks bila respons non-JSON (mis. 502 proxy) —
+        // err.body?.message bisa undefined → toast merang tanpa teks.
+        show(
+          'error',
+          err instanceof ApiError
+            ? err.body?.message || 'Gagal memuat matriks presensi'
+            : 'Gagal memuat matriks presensi',
+        );
+        setData(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingMatriks(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [kelasId, tanggal]);
 
-  const loadMatriks = async () => {
-    setLoadingMatriks(true);
-    try {
-      const res = await api.getMatriksPresensiSiswa(Number(kelasId), tanggal);
-      setData(res);
-    } catch (err) {
-      show('error', err instanceof ApiError ? err.body?.message : 'Gagal memuat matriks presensi');
-      setData(null);
-    } finally {
-      setLoadingMatriks(false);
-    }
-  };
+  // Dipanggil oleh RosterDetailSheet onSaved untuk refresh matriks.
+  const reloadMatriks = useCallback(() => {
+    if (!kelasId || !tanggal) return;
+    api
+      .getMatriksPresensiSiswa(Number(kelasId), tanggal)
+      .then((res) => setData(res))
+      .catch((err) => {
+        show(
+          'error',
+          err instanceof ApiError
+            ? err.body?.message || 'Gagal memuat matriks presensi'
+            : 'Gagal memuat matriks presensi',
+        );
+      });
+  }, [kelasId, tanggal]);
 
   const kelasSelectOptions = useMemo(
     () => kelasOptions.map((k) => ({ value: String(k.id), label: `${k.nama} (Tingkat ${k.tingkat})` })),
@@ -135,7 +179,10 @@ export function MatriksPresensiSiswaPage() {
             <input
               type="date"
               value={tanggal}
-              onChange={(e) => setTanggal(e.target.value)}
+              // FIX2-#6: clear input date → '' direset ke hari ini WIB
+              // (server silently fallback ke hari ini; PATCH dengan ''
+              // pasti 400 @IsDateString).
+              onChange={(e) => setTanggal(e.target.value || todayWIB())}
               className="w-full rounded-md border border-aam-border px-3 py-2 text-sm outline-none focus:border-aam-green focus:ring-1 focus:ring-aam-green/30"
             />
           </div>
@@ -186,67 +233,111 @@ export function MatriksPresensiSiswaPage() {
                   </tr>
                 </thead>
                 <tbody className="text-sm">
-                  {data.sesi.map((s) => (
-                    <tr
-                      key={s.jadwalKbmId}
-                      onClick={() => setSelectedSesi(s)}
-                      className={[
-                        'border-b border-aam-border/50 cursor-pointer transition-colors hover:bg-gray-50',
-                        s.status === 'BELUM' ? 'bg-red-50/50' : '',
-                      ].join(' ')}
-                    >
-                      <td className="px-4 py-3 text-aam-text-muted whitespace-nowrap">
-                        {s.jamMulai}–{s.jamSelesai}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-aam-text">{s.mapel ?? '—'}</td>
-                      <td className="px-4 py-3 text-aam-text-muted">{s.guru ?? '—'}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
-                          {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3 text-aam-text-muted">{ringkasanText(s.ringkasan)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>
-                          chevron_right
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {data.sesi.map((s) => {
+                    // FIX2-#2: hanya admin yang bisa klik untuk membuka
+                    // RosterDetailSheet. Non-admin (kepsek/kesiswaan) tetap
+                    // melihat ringkasan (hak baca) tapi baris read-only.
+                    const baseCls = s.status === 'BELUM' ? 'bg-red-50/50' : '';
+                    if (canEdit) {
+                      return (
+                        <tr
+                          key={s.jadwalKbmId}
+                          onClick={() => setSelectedSesi(s)}
+                          className={`border-b border-aam-border/50 cursor-pointer transition-colors hover:bg-gray-50 ${baseCls}`}
+                        >
+                          <td className="px-4 py-3 text-aam-text-muted whitespace-nowrap">
+                            {s.jamMulai}–{s.jamSelesai}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-aam-text">{s.mapel ?? '—'}</td>
+                          <td className="px-4 py-3 text-aam-text-muted">{s.guru ?? '—'}</td>
+                          <td className="px-4 py-3">
+                            <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
+                              {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-aam-text-muted">{ringkasanText(s.ringkasan)}</td>
+                          <td className="px-4 py-3 text-right">
+                            <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>
+                              chevron_right
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return (
+                      <tr key={s.jadwalKbmId} className={`border-b border-aam-border/50 ${baseCls}`}>
+                        <td className="px-4 py-3 text-aam-text-muted whitespace-nowrap">
+                          {s.jamMulai}–{s.jamSelesai}
+                        </td>
+                        <td className="px-4 py-3 font-medium text-aam-text">{s.mapel ?? '—'}</td>
+                        <td className="px-4 py-3 text-aam-text-muted">{s.guru ?? '—'}</td>
+                        <td className="px-4 py-3">
+                          <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
+                            {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-aam-text-muted">{ringkasanText(s.ringkasan)}</td>
+                        <td className="px-4 py-3 text-right" />
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* Mobile: card list */}
             <div className="md:hidden divide-y divide-aam-border/50">
-              {data.sesi.map((s) => (
-                <button
-                  key={s.jadwalKbmId}
-                  onClick={() => setSelectedSesi(s)}
-                  className={[
-                    'w-full text-left p-4 transition-colors',
-                    s.status === 'BELUM' ? 'bg-red-50/50' : '',
-                  ].join(' ')}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-medium text-aam-text">{s.mapel ?? '—'}</p>
-                    <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
-                      {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
-                    </Badge>
+              {data.sesi.map((s) => {
+                // FIX2-#2: non-admin (kepsek/kesiswaan) melihat card
+                // read-only tanpa affordance klik.
+                if (canEdit) {
+                  return (
+                    <button
+                      key={s.jadwalKbmId}
+                      onClick={() => setSelectedSesi(s)}
+                      className={[
+                        'w-full text-left p-4 transition-colors',
+                        s.status === 'BELUM' ? 'bg-red-50/50' : '',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-sm font-medium text-aam-text">{s.mapel ?? '—'}</p>
+                        <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
+                          {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-aam-text-muted">
+                        {s.jamMulai}–{s.jamSelesai} • {s.guru ?? '—'}
+                      </p>
+                      <p className="text-xs text-aam-text-muted mt-1">{ringkasanText(s.ringkasan)}</p>
+                    </button>
+                  );
+                }
+                return (
+                  <div
+                    key={s.jadwalKbmId}
+                    className={['p-4', s.status === 'BELUM' ? 'bg-red-50/50' : ''].join(' ')}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-aam-text">{s.mapel ?? '—'}</p>
+                      <Badge variant={s.status === 'TERLAKSANA' ? 'green' : 'red'}>
+                        {s.status === 'TERLAKSANA' ? 'Terlaksana' : 'Kosong'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-aam-text-muted">
+                      {s.jamMulai}–{s.jamSelesai} • {s.guru ?? '—'}
+                    </p>
+                    <p className="text-xs text-aam-text-muted mt-1">{ringkasanText(s.ringkasan)}</p>
                   </div>
-                  <p className="text-xs text-aam-text-muted">
-                    {s.jamMulai}–{s.jamSelesai} • {s.guru ?? '—'}
-                  </p>
-                  <p className="text-xs text-aam-text-muted mt-1">{ringkasanText(s.ringkasan)}</p>
-                </button>
-              ))}
+                );
+              })}
             </div>
           </>
         )}
       </Card>
 
       {/* Detail roster + koreksi per siswa (bottom sheet adaptif) */}
-      {selectedSesi && (
+      {selectedSesi && canEdit && tanggal && (
         <RosterDetailSheet
           jadwalKbmId={selectedSesi.jadwalKbmId}
           mapel={selectedSesi.mapel}
@@ -255,7 +346,7 @@ export function MatriksPresensiSiswaPage() {
           onClose={() => setSelectedSesi(null)}
           onSaved={() => {
             setSelectedSesi(null);
-            loadMatriks();
+            reloadMatriks();
           }}
         />
       )}
