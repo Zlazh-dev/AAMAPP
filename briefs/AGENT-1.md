@@ -1595,3 +1595,49 @@ DIKERJAKAN (2026-07-18 23:49 â†’ 2026-07-19 00:12 WIB).
 DoD terpenuhi: tsc bersih â€¢ build sukses â€¢ rapor listâ†’detailâ†’overrideâ†’catatanâ†’finalisasiâ†’PDF
 jalan â€¢ FINALâ†’read-only â€¢ export PDF lazy (tidak di main bundle) â€¢ e2e mandiri 8/8
 â€¢ F6b tuntas.
+
+---
+
+## LAPORAN — F6c FRONTEND: KOKURIKULER
+
+DIKERJAKAN (2026-07-19 00:47 ? 01:08 WIB).
+
+### Yang dibangun
+
+**client.ts — F6c methods (9 method):**
+- getKokurikulerKegiatan/create/update/delete — kegiatan CRUD.
+- getKokurikulerTim/assignKokurikulerTim/removeKokurikulerTim — tim per kelas.
+- getKokurikulerAsesmen/putKokurikulerAsesmen — grid asesmen GET/PUT.
+- getRaporKokurikuler(siswaId, semester) — rapor per siswa per semester.
+- getGuruKokurikuler() — kegiatan di mana guru jadi penilai.
+
+**Halaman:**
+- `kokurikulerConstants.ts`: 8 dimensi master list, NilaiKokurikuler type, nilaiToVariant.
+- KokurikulerKegiatanPage /kurikulum/kokurikuler: list kegiatan, CRUD inline sheet (tema+semester+checkboxes 8 dimensi), navigasi ke tim.
+- KokurikulerTimPage /kurikulum/kokurikuler/:id/tim: assign guru penilai per kelas (multi-guru), remove guru dari tim.
+- GuruKokurikulerPage /guru/kokurikuler: kartu kegiatan guru jadi penilai ? Input Asesmen by kegiatanId.
+- KokurikulerAsesmenPage /guru/kokurikuler/:id/asesmen: grid siswa×dimensi, tombol SB/B/C/K toggle per cell, bulk PUT, progress badge, kelas selector.
+- RaporKokurikulerPage /kokurikuler/rapor/:siswaId: tabel dimensi × nilai akhir rata-rata SB/B/C/K + deskripsi, semester selector, formula note (SB=4/B=3/C=2/K=1 ? >3.5/>2.5/>1.5/K).
+
+**Wiring:**
+- App.tsx: 5 lazy imports + 6 routes (kurikulum kelola, guru asesmen, rapor).
+- menu.ts: kurikulum += Kokurikuler; guru += Kokurikuler.
+
+**E2E kokurikuler-f6c.spec.ts (semua pass, full suite 255/0):**
+- Kegiatan: route, form sheet 8 dimensi + semester selector.
+- Tim: route, back, assign form.
+- Asesmen guru: route, simpan button, back button.
+- Rapor kokurikuler: route tidak crash, semester selector.
+- Menu: Kokurikuler visible di sidebar kurikulum & guru.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| F6c spec | 14 | 0 | 0 |
+| Full suite | 255 | 12 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • kelola kegiatan?tim?asesmen?rapor
+jalan • 8 dimensi SB/B/C/K • formula rata-rata multi-penilai • e2e mandiri 14/14
+• full suite 255/0 • F6 (a+b+c) TUNTAS.
+
+

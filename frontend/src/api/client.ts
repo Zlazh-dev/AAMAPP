@@ -1667,6 +1667,43 @@ export const api = {
 
   batalFinalRapor: (siswaId: number) =>
     request<any>(`/rapor/siswa/${siswaId}/batal-final`, { method: 'PATCH' }),
+
+  // ── F6c: Kokurikuler ──────────────────────────────────────────────────────
+  getKokurikulerKegiatan: () =>
+    request<{ data: any[] }>('/kokurikuler/kegiatan'),
+
+  createKokurikulerKegiatan: (body: { tema: string; semester: number; targetDimensi: string[] }) =>
+    request<any>('/kokurikuler/kegiatan', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateKokurikulerKegiatan: (id: number, body: any) =>
+    request<any>(`/kokurikuler/kegiatan/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+
+  deleteKokurikulerKegiatan: (id: number) =>
+    request<any>(`/kokurikuler/kegiatan/${id}`, { method: 'DELETE' }),
+
+  getKokurikulerTim: (kegiatanId: number) =>
+    request<{ data: any[] }>(`/kokurikuler/kegiatan/${kegiatanId}/tim`),
+
+  assignKokurikulerTim: (kegiatanId: number, body: { kelasId: number; guruIds: number[] }) =>
+    request<any>(`/kokurikuler/kegiatan/${kegiatanId}/tim`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  removeKokurikulerTim: (kegiatanId: number, kelasId: number, guruId: number) =>
+    request<any>(`/kokurikuler/kegiatan/${kegiatanId}/tim/${kelasId}/${guruId}`, { method: 'DELETE' }),
+
+  getKokurikulerAsesmen: (kegiatanId: number, kelasId: number) =>
+    request<any>(`/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`),
+
+  putKokurikulerAsesmen: (kegiatanId: number, kelasId: number | null, body: { entri: any[] }) =>
+    request<any>(`/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  getRaporKokurikuler: (siswaId: number, semester: number) =>
+    request<any>(`/kokurikuler/rapor/${siswaId}?semester=${semester}`),
+
+  getGuruKokurikuler: () =>
+    request<{ data: any[] }>('/kokurikuler/guru/kegiatan'),
 };
 
 

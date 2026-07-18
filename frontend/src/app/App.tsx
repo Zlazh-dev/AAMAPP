@@ -96,6 +96,12 @@ const InputNilaiPage = React.lazy(() => import('../pages/guru/InputNilaiPage').t
 // F6b: Rapor
 const RaporListPage = React.lazy(() => import('../pages/guru/RaporListPage').then(m => ({ default: m.RaporListPage })));
 const RaporDetailPage = React.lazy(() => import('../pages/guru/RaporDetailPage').then(m => ({ default: m.RaporDetailPage })));
+// F6c: Kokurikuler
+const KokurikulerKegiatanPage = React.lazy(() => import('../pages/kokurikuler/KokurikulerKegiatanPage').then(m => ({ default: m.KokurikulerKegiatanPage })));
+const KokurikulerTimPage = React.lazy(() => import('../pages/kokurikuler/KokurikulerTimPage').then(m => ({ default: m.KokurikulerTimPage })));
+const KokurikulerAsesmenPage = React.lazy(() => import('../pages/kokurikuler/KokurikulerAsesmenPage').then(m => ({ default: m.KokurikulerAsesmenPage })));
+const GuruKokurikulerPage = React.lazy(() => import('../pages/kokurikuler/GuruKokurikulerPage').then(m => ({ default: m.GuruKokurikulerPage })));
+const RaporKokurikulerPage = React.lazy(() => import('../pages/kokurikuler/RaporKokurikulerPage').then(m => ({ default: m.RaporKokurikulerPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -280,6 +286,14 @@ const routes: RouteObject[] = [
           // F6b: Rapor
           { path: '/guru/rapor', element: <RequireRole roles={['guru','admin']}><Lazy><RaporListPage /></Lazy></RequireRole> },
           { path: '/guru/rapor/:siswaId', element: <RequireRole roles={['guru','admin']}><Lazy><RaporDetailPage /></Lazy></RequireRole> },
+          // F6c: Kokurikuler (guru)
+          { path: '/guru/kokurikuler', element: <RequireRole roles={['guru','admin']}><Lazy><GuruKokurikulerPage /></Lazy></RequireRole> },
+          { path: '/guru/kokurikuler/:kegiatanId/asesmen', element: <RequireRole roles={['guru','admin']}><Lazy><KokurikulerAsesmenPage /></Lazy></RequireRole> },
+          // F6c: Kokurikuler (kurikulum/admin)
+          { path: '/kurikulum/kokurikuler', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerKegiatanPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/kokurikuler/:kegiatanId/tim', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerTimPage /></Lazy></RequireRole> },
+          // F6c: Rapor kokurikuler
+          { path: '/kokurikuler/rapor/:siswaId', element: <RequireRole roles={['guru','admin','kesiswaan']}><Lazy><RaporKokurikulerPage /></Lazy></RequireRole> },
         ],
       },
 

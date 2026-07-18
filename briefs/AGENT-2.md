@@ -1440,3 +1440,42 @@ Wilayah: backend/** + frontend/e2e/.
 10. ✅ Wali kelas lain → 403
 
 **F6b BACKEND TUNTAS. F6 SELESAI (F6a + F6b).** AG-1 siap konsumsi `/api/rapor`.
+
+## KLAIM TUGAS — F6c BACKEND (kokurikuler; MEMIMPIN)
+DIKERJAKAN (00:47 WIB, 2026-07-19) — Antigravity-2 (executor B).
+Modul backend/src/kokurikuler/: 4 entitas (kegiatan/target/tim/asesmen);
+service kelola kegiatan/target/tim + asesmen upsert (auth anggota tim → 403)
++ rata-rata SB/B/C/K (4/3/2/1 → >3.5/2.5/1.5) + deskripsi otomatis +
+rapor per siswa BATCH anti-N+1. Daftarkan app.module. Boot-verify + e2e mandiri.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F6c BACKEND — SELESAI (2026-07-19 01:03 WIB)
+
+**Wilayah dihormati**: `backend/src/kokurikuler/**` + `app.module.ts` + `frontend/e2e/gelombang2/kokurikuler-f6c-backend.spec.ts`.
+
+**File yang dibuat:**
+
+| File | Isi |
+|------|-----|
+| [kokurikuler-kegiatan.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler-kegiatan.entity.ts) | Kegiatan per TA+semester |
+| [kokurikuler-target.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler-target.entity.ts) | Target dimensi, UNIQUE(kegiatanId,namaDimensi), 8 DIMENSI_LULUSAN const |
+| [kokurikuler-tim.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler-tim.entity.ts) | Tim penilai PK(kegiatanId,kelasId,guruId) |
+| [kokurikuler-asesmen.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler-asesmen.entity.ts) | Asesmen UNIQUE(targetId,siswaId,penilaiGuruId), SKOR_MAP SB=4/B=3/C=2/K=1 |
+| [kokurikuler.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler.service.ts) | CRUD kegiatan/target/tim; `assertTimMember` 403; upsert asesmen batch; `getRaporSiswa` BATCH 1 query + `skorKeHuruf` (>3.5/2.5/1.5) + `buildDeskripsiKokurikuler` |
+| [kokurikuler.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler.controller.ts) | 13 endpoint `/api/kokurikuler/*` |
+
+**Boot-verify**: 13 endpoint terpeta, 4 tabel baru terbentuk ✅
+
+**E2E — 10/10 LULUS (4.8 detik):**
+1. ✅ POST kegiatan → created
+2. ✅ GET list → kegiatan muncul
+3. ✅ POST target dimensi valid (Kreativitas + Kolaborasi) → created
+4. ✅ POST dimensi tidak valid → 400
+5. ✅ POST tim guru1 + guru2 → created
+6. ✅ GET asesmen guru tim → siswa × dimensi (nilai null awal)
+7. ✅ PUT asesmen guru1: Kreativitas=SB, Kolaborasi=B
+8. ✅ PUT asesmen guru2: Kreativitas=B, Kolaborasi=C
+9. ✅ Rapor: Kreativitas rata=3.5→Baik, Kolaborasi rata=2.5→Cukup; deskripsi otomatis benar
+10. ✅ Non-anggota tim → 403 GET & PUT
+
+**F6c BACKEND TUNTAS. F6 SELESAI PENUH (F6a+F6b+F6c).** AG-1 siap konsumsi `/api/kokurikuler`.

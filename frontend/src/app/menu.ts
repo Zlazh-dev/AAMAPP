@@ -56,6 +56,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Mata Pelajaran', path: '/kurikulum/mapel', icon: 'book' },
       { label: 'Penugasan', path: '/kurikulum/penugasan', icon: 'assignment_ind' },
       { label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month' },
+      { label: 'Kokurikuler', path: '/kurikulum/kokurikuler', icon: 'school' },
     ],
   },
   kesiswaan: {
@@ -82,6 +83,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Pelanggaran', path: '/guru/pelanggaran', icon: 'report' },
       { label: 'Penilaian', path: '/guru/penilaian', icon: 'grading' },
       { label: 'Rapor', path: '/guru/rapor', icon: 'menu_book' },
+      { label: 'Kokurikuler', path: '/guru/kokurikuler', icon: 'school' },
     ],
   },
 
