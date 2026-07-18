@@ -1450,6 +1450,32 @@ export const api = {
       }>;
     }>(`/admin/laporan/siswa?${q}`);
   },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F4c: Rekap TU bulanan
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * TU: rekap bulanan per guru (basis gaji).
+   * GET /api/tu/rekap-guru?bulan=YYYY-MM  (@Roles 'tu','admin')
+   */
+  getTuRekapGuru: (bulan: string) =>
+    request<{
+      data: Array<{
+        guruId: number;
+        guruNama: string;
+        nip: string | null;
+        hariWajib: number;
+        hadir: number;
+        terlambat: number;
+        izin: number;
+        sakit: number;
+        dinas: number;
+        alpha: number;
+        libur: number;
+        persen: number;
+      }>;
+    }>(`/tu/rekap-guru?bulan=${encodeURIComponent(bulan)}`),
 };
 
 

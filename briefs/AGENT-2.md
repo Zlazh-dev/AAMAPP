@@ -1038,3 +1038,40 @@ Tidak menyentuh frontend halaman / export file (AG-1 wilayah).
 
 **DoD terpenuhi**: 4 endpoint live ✅, boot-verified ✅, agregat anti-N+1 ✅,
 e2e 10/10 ✅, TIDAK generate file export ✅, TIDAK F4c ✅.
+
+## KLAIM TUGAS — F4c BACKEND (rekap TU bulanan + RBAC kepsek)
+DIKERJAKAN (18:25 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Endpoint GET /api/tu/rekap-guru?bulan=YYYY-MM (@Roles 'tu','admin'), reuse
+laporanHarianGuru, konfirmasi RBAC kepsek dashboard+laporan.
+Wilayah: `backend/**` + `frontend/e2e/`.
+
+### [AGENT-2] F4c BACKEND — SELESAI (2026-07-18 18:31 WIB)
+
+**Wilayah dihormati**: `backend/src/laporan/**` + `frontend/e2e/gelombang2/rekap-tu-backend.spec.ts`.
+
+**File dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [laporan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.service.ts) | MODIFY | +`rekapBulananGuru()`: parse YYYY-MM → dari/sampai, delegate ke `laporanHarianGuru` (reuse BATCH anti-N+1) |
+| [laporan.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.controller.ts) | MODIFY | +`TuController` `@Controller('api/tu')` `@Roles('tu','admin')` dengan `GET rekap-guru` |
+| [laporan.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.module.ts) | MODIFY | +`TuController` di controllers array |
+| [rekap-tu-backend.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/rekap-tu-backend.spec.ts) | NEW | 10 test e2e |
+
+**Boot-verify**: route `GET /api/tu/rekap-guru` ter-mapped ✅
+**RBAC kepsek dikonfirmasi**: 4 endpoint F4b (dashboard + 3 laporan) → kepsek 200 ✅
+
+**E2E — 10/10 LULUS (59.9 detik):**
+1. ✅ Shape valid (total, page, limit, dari=2026-07-01, sampai=2026-07-31, data)
+2. ✅ Data baris punya HADIR/TERLAMBAT/ALPHA/LIBUR/hariWajib/pctHadir
+3. ✅ Default bulan (tanpa param) → bulan ini, dari=YYYY-MM-01
+4. ✅ Format bulan invalid → error ≥400, server tidak crash
+5. ✅ RBAC: guru → 403
+6. ✅ RBAC: kepsek → dashboard 200
+7. ✅ RBAC: kepsek → harian-guru 200
+8. ✅ RBAC: kepsek → keterlaksanaan-kbm 200
+9. ✅ RBAC: kepsek → laporan siswa 200
+10. ✅ dari/sampai tepat (Feb → 28 hari, Des → 31 hari)
+
+**DoD terpenuhi**: endpoint TU live ✅, RBAC kepsek dikonfirmasi ✅,
+e2e 10/10 ✅. **F4 BACKEND TUNTAS** (F4a + F4b + F4c).

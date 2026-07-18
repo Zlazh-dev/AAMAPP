@@ -460,4 +460,36 @@ export class LaporanService {
     const data = allData.slice((page - 1) * limit, page * limit);
     return { total, page, limit, dari, sampai, data };
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // REKAP BULANAN GURU (untuk TU)
+  // GET /api/tu/rekap-guru?bulan=YYYY-MM
+  // Reuse laporanHarianGuru dengan dari=awal bulan, sampai=akhir bulan.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async rekapBulananGuru(params: {
+    bulan: string; // format: YYYY-MM
+    guruId?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    // Parse YYYY-MM → dari & sampai
+    const [tahun, bulanStr] = params.bulan.split('-').map(Number);
+    if (!tahun || !bulanStr || bulanStr < 1 || bulanStr > 12) {
+      throw new Error('Format bulan tidak valid, gunakan YYYY-MM');
+    }
+    const dari = `${params.bulan}-01`;
+    // Akhir bulan: hari pertama bulan berikutnya - 1 hari
+    const akhirDate = new Date(Date.UTC(tahun, bulanStr, 0)); // bulanStr = index bulan (1-12) → bulanStr sebagai 0-indexed = benar
+    const sampai = akhirDate.toISOString().slice(0, 10);
+
+    return this.laporanHarianGuru({
+      dari,
+      sampai,
+      guruId: params.guruId,
+      page: params.page ?? 1,
+      limit: params.limit ?? 200, // TU butuh semua guru dalam satu rekap
+    });
+  }
 }
+

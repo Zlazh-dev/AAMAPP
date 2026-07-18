@@ -1142,3 +1142,52 @@ Tidak di bundle utama.
 
 DoD terpenuhi: tsc bersih • build sukses • dashboard+laporan jalan •
 export lazy (exceljs+pdfmake dynamic-import) • e2e hijau 124/0 • laporan.
+
+---
+
+## LAPORAN — F4c FRONTEND: REKAP TU + AKSES KEPSEK
+
+DIKERJAKAN (2026-07-18 18:25 WIB).
+
+### Yang dibangun
+
+**client.ts — F4c method:**
+- `getTuRekapGuru(bulan)` — GET /api/tu/rekap-guru?bulan=YYYY-MM (@Roles tu,admin).
+  Return: hariWajib/hadir/terlambat/izin/sakit/dinas/alpha/libur/persen per guru.
+
+**TuRekapGuruPage.tsx** `/tu/rekap-guru`:
+- `<input type="month">` default bulan berjalan (WIB).
+- Tombol Tampilkan → fetch → tabel dengan 11 kolom (nama, NIP, hariWajib,
+  hadir, terlambat, izin, sakit, dinas, alpha, libur, %hadir).
+- Baris TOTAL (sum kolom angka, rata-rata %hadir).
+- Tombol Export Excel + Export PDF (REUSE `lib/exportExcel.ts` & `exportPdf.ts`,
+  kop sekolah dari profil_sekolah, TTD kepsek).
+- EmptyState bermakna saat data kosong.
+
+**Wiring:**
+- App.tsx: route `/tu` + `/tu/rekap-guru` (RequireRole tu,admin),
+  route `/kepsek` → AdminLaporanHubPage (kepsek baca-semua).
+- menu.ts: TU "Rekap Guru" path `/tu/rekap-guru` icon `summarize`;
+  kepsek menu → "Dashboard / Laporan" + "Izin Guru";
+  `ADMIN_EXTRA_AREAS` += `guru`, `tu`.
+
+**Akses kepsek dikonfirmasi:**
+- `/admin/laporan` → RequireRole admin|kepsek ✓ (F4b, sudah ada).
+- `/admin/laporan/*` sub-halaman → RequireRole admin|kepsek ✓ (F4b, sudah ada).
+- `/admin/izin-guru` → RequireRole admin|kepsek ✓ (F4a, sudah ada).
+- `/kepsek` landing → AdminLaporanHubPage (laporan hub).
+
+**E2E `tu-rekap.spec.ts` (5 test, semua pass):**
+- TU halaman: pemilih bulan + tampilkan → tabel + TOTAL.
+- Export buttons visible + enabled.
+- Kepsek `/admin/laporan` → tidak 403.
+- Kepsek `/admin/izin-guru` → tidak 403.
+- Route `/tu/rekap-guru` accessible + URL correct.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| Full suite | 139 | 5 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • /tu/rekap-guru jalan + export •
+kepsek akses laporan+dashboard • e2e hijau 139/0 • laporan. **F4 TUNTAS.**

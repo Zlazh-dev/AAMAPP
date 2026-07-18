@@ -75,6 +75,8 @@ const AdminLaporanHubPage = React.lazy(() => import('../pages/admin/laporan/Admi
 const LaporanHarianGuruPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanHarianGuruPage })));
 const LaporanKeterlaksanaanPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanKeterlaksanaanPage })));
 const LaporanSiswaPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanSiswaPage })));
+// F4c: TU rekap guru
+const TuRekapGuruPage = React.lazy(() => import('../pages/tu/TuRekapGuruPage').then(m => ({ default: m.TuRekapGuruPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -226,11 +228,12 @@ const routes: RouteObject[] = [
 
           { path: '/admin/presensi-guru-pending', element: <RequireRole roles={['admin']}><Lazy><VerifikasiPendingPage /></Lazy></RequireRole> },
 
-          // Kepsek placeholder
-          { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><PlaceholderPage title="Dashboard Kepala Sekolah" icon="dashboard" /></Lazy></RequireRole> },
+          // Kepsek: baca-semua — landing ke dashboard (F4b)
+          { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><AdminLaporanHubPage /></Lazy></RequireRole> },
 
-          // TU placeholder
-          { path: '/tu', element: <RequireRole roles={['tu']}><Lazy><PlaceholderPage title="Rekap Guru" icon="dashboard" /></Lazy></RequireRole> },
+          // TU: Rekap Guru bulanan (F4c)
+          { path: '/tu', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
+          { path: '/tu/rekap-guru', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
         ],
       },
 

@@ -78,15 +78,14 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     area: 'kepsek',
     label: 'KEPSEK',
     items: [
-      { label: 'Dashboard', path: '/kepsek', icon: 'dashboard' },
+      { label: 'Dashboard / Laporan', path: '/admin/laporan', icon: 'assessment' },
       { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
-      { label: 'Laporan', path: '/admin/laporan', icon: 'assessment' },
     ],
   },
   tu: {
     area: 'tu',
     label: 'TU',
-    items: [{ label: 'Rekap Guru', path: '/tu', icon: 'dashboard' }],
+    items: [{ label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize' }],
   },
 };
 
@@ -100,7 +99,7 @@ const AREA_ORDER = ['admin', 'kurikulum', 'kesiswaan', 'guru', 'kepsek', 'tu'];
  * halaman nyata (mapel/penugasan/jadwal). Tambahkan area lain ke array
  * ini begitu fasenya jadi (kesiswaan/guru/kepsek/tu masih placeholder).
  */
-const ADMIN_EXTRA_AREAS = ['kurikulum'];
+const ADMIN_EXTRA_AREAS = ['kurikulum', 'guru', 'tu'];
 
 export function getMenuForUser(user: SafeUser): MenuGroup[] {
   const groups: MenuGroup[] = [];

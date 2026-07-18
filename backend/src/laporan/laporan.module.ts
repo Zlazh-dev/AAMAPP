@@ -14,7 +14,7 @@ import { ActivityLog } from '../audit/activity-log.entity';
 import { Session } from '../sessions/session.entity';
 import { User } from '../users/user.entity';
 import { LaporanService } from './laporan.service';
-import { LaporanController } from './laporan.controller';
+import { LaporanController, TuController } from './laporan.controller';
 import { AuditModule } from '../audit/audit.module';
 import { IzinModule } from '../izin/izin.module';
 
@@ -28,7 +28,7 @@ import { IzinModule } from '../izin/izin.module';
     AuditModule,
     IzinModule,
   ],
-  controllers: [LaporanController],
+  controllers: [LaporanController, TuController],
   providers: [LaporanService],
   exports: [LaporanService],
 })

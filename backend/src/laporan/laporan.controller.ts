@@ -91,3 +91,38 @@ export class LaporanController {
     });
   }
 }
+
+/**
+ * TU (Tata Usaha) Controller
+ * GET /api/tu/rekap-guru?bulan=YYYY-MM — rekap bulanan kehadiran guru.
+ * @Roles('tu','admin'): TU bisa akses, admin bisa akses, kepsek/guru tidak.
+ */
+@Controller('api/tu')
+@UseGuards(SessionAuthGuard, RolesGuard)
+@Roles('tu', 'admin')
+export class TuController {
+  constructor(private readonly svc: LaporanService) {}
+
+  /**
+   * GET /api/tu/rekap-guru?bulan=YYYY-MM&guruId?&page?&limit?
+   * Rekap kehadiran bulanan per guru (hariWajib, hadir, terlambat, izin,
+   * sakit, dinas, alpha, libur, pctHadir). Reuse laporanHarianGuru scope bulan.
+   */
+  @Get('rekap-guru')
+  rekapGuru(
+    @Query('bulan') bulan?: string,
+    @Query('guruId') guruId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    // Default: bulan ini
+    const defaultBulan = new Date().toISOString().slice(0, 7);
+    return this.svc.rekapBulananGuru({
+      bulan: bulan || defaultBulan,
+      guruId: guruId ? Number(guruId) : undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+}
+
