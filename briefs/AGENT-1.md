@@ -13,7 +13,29 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18g) — F4b FRONTEND (dashboard + laporan + export lazy)
+## TUGAS AKTIF (2026-07-18h) — F4c FRONTEND (rekap TU + akses kepsek)
+
+> F4b frontend kamu DITERIMA (commit 88e8351, suite 124/0). Sekarang F4c —
+> keping terakhir F4 (kecil). Baca `briefs/F4-SPEC.md` bagian **F4c**.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. **`/tu/rekap-guru`** (peran TU): pemilih bulan (default bulan berjalan WIB)
+   → tabel rekap per guru dari `GET /api/tu/rekap-guru?bulan=` + baris TOTAL +
+   tombol Export Excel/PDF (REUSE `lib/exportExcel.ts` & `exportPdf.ts`, kop
+   sekolah). Menu grup TU "Rekap Guru" (ganti placeholder).
+2. **Akses kepsek**: menu kepsek + route agar kepsek bisa buka **dashboard**
+   (mis. arahkan landing kepsek ke ringkasan) + **laporan** (route
+   `/admin/laporan*` RequireRole sertakan 'kepsek'). Kepsek = baca-semua
+   (approve izin sudah ada). Pastikan RequireRole route dashboard/laporan
+   memuat 'kepsek'.
+3. Wiring client.ts (`getTuRekapGuru`) + App.tsx + menu.ts. E2E: TU buka rekap
+   bulan → tabel + export ada; kepsek bisa akses laporan (tak 403 di UI).
+
+DoD: tsc bersih • rekap TU jalan + export • kepsek akses laporan/dashboard •
+e2e hijau • laporan. Ini menutup F4 (frontend). Setelah ini F4 TUNTAS.
+
+---
+## ARSIP TUGAS (2026-07-18g) — F4b FRONTEND (SELESAI, diterima commit 88e8351)
 
 > F4a frontend kamu DITERIMA (commit 9e57444, suite 107/0). Catatan: lampiran
 > izin kamu bikin field URL-ketik; F4-SPEC maksudnya UPLOAD file — backlog,

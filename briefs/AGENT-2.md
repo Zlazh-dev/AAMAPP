@@ -5,7 +5,26 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18g) — F4b BACKEND (agregat dashboard + data laporan; MEMIMPIN)
+## TUGAS AKTIF (2026-07-18h) — F4c BACKEND (rekap TU bulanan + RBAC kepsek)
+
+> F4b backend kamu DITERIMA (commit 88e8351, suite 124/0). Sekarang F4c —
+> keping terakhir F4 (kecil). Baca `briefs/F4-SPEC.md` bagian **F4c**.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`):
+1. `GET /api/tu/rekap-guru?bulan=YYYY-MM` (@Roles 'tu','admin'): rekap BULANAN
+   per guru (hariWajib/hadir/terlambat/izin/sakit/dinas/alpha/libur + %hadir) —
+   REUSE agregat rentang `laporanHarianGuru` (F4b), scope 1 bulan (dari=awal
+   bulan, sampai=akhir bulan), BATCH anti-N+1.
+2. Pastikan RBAC: dashboard + 3 laporan F4b sudah `@Roles('admin','kepsek')`
+   (cek; bila kepsek belum ada, tambah). Kepsek = baca-semua.
+3. Daftarkan bila modul baru. Boot-verify (endpoint ter-guard, tu bisa akses) +
+   e2e (rekap bulan kembalikan baris + total; RBAC tu/admin only).
+
+DoD: endpoint rekap TU live, RBAC kepsek dikonfirmasi, e2e hijau, laporan.
+Ini menutup F4 (backend). Setelah ini F4 backend TUNTAS.
+
+---
+## ARSIP — F4b BACKEND (SELESAI, diterima commit 88e8351, e2e 10/10)
 
 > F4a backend kamu DITERIMA (commit 9e57444, suite 107/0). Sekarang F4b
 > agregat. Baca `briefs/F4-SPEC.md` bagian **F4b** — HANYA backend; JANGAN

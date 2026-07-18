@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` (F4b) + `briefs/AGENT-1.md` | **F4b FRONTEND** (dashboard agregat + HUB laporan + export Excel/PDF lazy) | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` (F4b) + `briefs/AGENT-2.md` | **F4b BACKEND** (MEMIMPIN — endpoint agregat dashboard + data laporan) | mulai |
+| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` (F4c) + `briefs/AGENT-1.md` | **F4c FRONTEND** (rekap TU bulanan + export + akses kepsek laporan/dashboard) | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` (F4c) + `briefs/AGENT-2.md` | **F4c BACKEND** (rekap TU `/api/tu/rekap-guru` reuse agregat + RBAC kepsek) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4a** (izin guru + status turunan

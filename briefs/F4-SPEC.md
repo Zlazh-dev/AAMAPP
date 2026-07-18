@@ -146,6 +146,34 @@ status='DISETUJUI'`.
   kop sekolah). Wiring client.ts/App.tsx/menu.ts. E2E (mock data + cek tombol
   export ada; lib export TIDAK di main bundle).
 
+## ══════════ F4c — REKAP TU + AREA KEPSEK (dibuka 2026-07-18) ══════════
+> Keping TERAKHIR F4 (kecil). Reuse agregat F4b + akses baca lintas-peran.
+
+**Keputusan planner F4c:**
+- **Rekap TU** = rekap BULANAN per guru (basis gaji, dihitung di luar sistem).
+  Reuse logika `laporanHarianGuru` (F4b) discope 1 bulan. RBAC peran `tu`
+  (+admin). Export Excel/PDF berkop (reuse exportExcel/exportPdf F4b).
+- **Area kepsek** = BACA-SEMUA. Kepsek sudah punya menu Izin Guru + Laporan
+  (F4a/F4b, endpoint sudah @Roles admin,kepsek). F4c: pastikan kepsek juga bisa
+  buka **dashboard** (beri akses baca) + landing kepsek mengarah ke dashboard/
+  laporan. TIDAK ada mutasi baru utk kepsek selain approve izin (sudah ada).
+
+**Kontrak API F4c:**
+- `GET /api/tu/rekap-guru?bulan=YYYY-MM` (@Roles 'tu','admin') → per guru:
+  hariWajib, hadir, terlambat, izin, sakit, dinas, alpha, libur, %hadir untuk
+  bulan itu (reuse agregat rentang F4b, batch anti-N+1).
+- Dashboard/laporan F4b: tambahkan 'tu' TIDAK perlu; pastikan 'kepsek' sudah
+  di @Roles (cek). Bila dashboard belum izinkan kepsek → tambah.
+
+**Wilayah F4c:**
+- **AG-2 (backend)**: endpoint `GET /api/tu/rekap-guru` (modul laporan/tu,
+  reuse service agregat) + pastikan RBAC kepsek pada dashboard. Boot-verify +
+  e2e.
+- **AG-1 (frontend)**: `/tu/rekap-guru` (pemilih bulan + tabel rekap + baris
+  TOTAL + Export Excel/PDF reuse) untuk peran TU + landing/akses kepsek ke
+  dashboard & laporan (menu kepsek + route RequireRole sertakan kepsek).
+  Wiring. E2E.
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang • RBAC server + audit + WIB • komponen
 v0.12.x (sidebar datar, satu tombol aksi, SaveSuccess, AdaptiveSelect,
