@@ -13,7 +13,43 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18i) — E2E-MANDIRI-DATA (suite deterministik apa pun isi DB)
+## TUGAS AKTIF (2026-07-18j) — F5a FRONTEND (kesiswaan/demerit; kontrak dikunci, paralel)
+
+> E2E-MANDIRI-DATA kamu DITERIMA — gerbang deterministik (145/0 ×2). Sekarang
+> F5 (pelanggaran/demerit). Baca **`briefs/F5-SPEC.md`** + **SPEC-KANON §7**
+> (SOP resmi) — HANYA F5a; JANGAN F5b. Kontrak DIKUNCI → mulai paralel; backend
+> F5a menyusul (AG-2 setelah docs). Boleh mock e2e sampai backend live.
+
+**Kontrak backend F5a (konsumsi; daftarkan di client.ts):**
+- Katalog: `GET/POST /api/kesiswaan/katalog`, `PATCH/DELETE /:id`.
+- Pelanggaran: `POST /api/kesiswaan/pelanggaran` `{ siswaId, katalogId|
+  (kategori+poin), tanggal, catatan?, buktiUrl? }` • `GET .../pelanggaran`
+  (filter siswaId/kelasId/status/rentang) • `GET .../verifikasi` (antrean) •
+  `PATCH .../:id/setujui` • `PATCH .../:id/tolak {alasan}`.
+- Saldo: `GET /api/kesiswaan/saldo?siswaId=` (turunan 500−Σ).
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. `/kesiswaan/tata-tertib`: daftar katalog + CRUD butir (kategori R/S/B/SB +
+   poin). Pola list + form + SaveSuccess.
+2. `/kesiswaan/pelanggaran`: form catat (AdaptiveSelect siswa + butir katalog →
+   auto isi kategori/poin; tanggal; catatan; bukti opsional) + daftar
+   pelanggaran + **saldo per siswa** (badge 500−Σ, warna makin merah makin
+   rendah). KHUSUS = form terpisah/opsi.
+3. `/kesiswaan/verifikasi`: antrean MENUNGGU (dari laporan guru + R-07 otomatis)
+   → Setujui/Tolak (alasan wajib tolak, sheet adaptif) + badge count di menu.
+4. Guru "Pelanggaran" (`/guru/pelanggaran`): form LAPOR (masuk antrean) +
+   daftar laporan sendiri dgn status.
+5. Wiring client.ts + App.tsx (RBAC: kesiswaan + guru + wali; kepsek baca) +
+   menu.ts (grup KESISWAAN §6: Dashboard•Tata Tertib•Pelanggaran•Verifikasi
+   [badge]; item guru "Pelanggaran"). E2E MANDIRI (buat data via API, navigasi
+   by-id/search — jangan andalkan daftar ambient; pelajaran E2E-MANDIRI-DATA).
+
+DoD: tsc bersih • build sukses • catat→saldo turun (setelah backend live) •
+antrean verifikasi jalan • e2e hijau • laporan. JANGAN F5b (tindak lanjut/
+reward/laporan). JANGAN sentuh backend kesiswaan (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18i) — E2E-MANDIRI-DATA (SELESAI, diterima commit ed15d0a)
 
 > F4c frontend kamu DITERIMA — F4 TUNTAS. TAPI suite e2e ternyata FLAKY
 > non-deterministik: "hijau" selama ini bergantung DATA SISA polusi, bukan
