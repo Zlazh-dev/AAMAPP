@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | ✅ E2E-ISOLASI SELESAI (gerbang hijau deterministik 55/0 ×2) → **F3a FRONTEND** (tunggu backend AG-2 live) | siap, tunggu kontrak live |
-| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` + `briefs/AGENT-2.md` | **F3a BACKEND** — MEMIMPIN F3: modul presensi-guru (enrollment/scan/monitor/manual). JANGAN kerjakan kiosk (F3b) | mulai |
+| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | **F3a FRONTEND** (enrollment wizard + "Presensi Sekarang" overlay kamera + monitor admin; `human` dynamic-import) — backend LIVE | mulai |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3a BACKEND SELESAI** (diterima, e2e 9/9). Menunggu tugas berikut (kandidat: F3b kiosk contract, atau bantu e2e/docs F3a) | idle — tunggu assign |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ **F2 CLOSED PENUH** (backend+frontend guru+admin+rekap+docs;

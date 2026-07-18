@@ -13,7 +13,62 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18b) — E2E-ISOLASI-HARDENING (bikin gerbang hijau lagi)
+## TUGAS AKTIF (2026-07-18c) — F3a FRONTEND (presensi wajah guru; backend LIVE)
+
+> E2E-ISOLASI-HARDENING kamu DITERIMA (gerbang hijau deterministik 55/0 ×2,
+> fix race AuthContext sehat). Sekarang bangun FRONTEND F3a. Baca
+> **`briefs/F3-SPEC.md`** — HANYA F3a; JANGAN kiosk (F3b). Backend sudah LIVE
+> & terverifikasi (commit 1689461): enrollment, scan, monitor, manual.
+
+**Kontrak backend live (konsumsi ini; daftarkan method di client.ts):**
+- `GET /api/guru/wajah/status` → `{ enrolled, poses, faceUpdatedAt }`
+- `PUT /api/guru/wajah` body `{ embeddings: number[][] }` (enroll diri)
+- `POST /api/guru/presensi-scan` body `{ embedding:number[], lat?, lng?,
+  mode?:'masuk'|'pulang' }` → `{ status, checkInAt|checkOutAt, similarity,
+  distanceMeter, pesan }`; error: 400 belum-enroll, 403 luar-area, 401 wajah
+  tak dikenali.
+- `GET /api/admin/wajah?q=&page=&limit=` • `PUT /api/admin/wajah/:guruId` •
+  `DELETE /api/admin/wajah/:guruId`
+- `GET /api/admin/presensi-guru/harian?tanggal=` • `POST /api/admin/presensi-
+  guru/manual` body `{ guruId, tanggal, status, checkInAt?, checkOutAt?,
+  alasan }`.
+
+Kerjakan (urut; wilayah: `frontend/src/**` + `frontend/e2e/`; kamu pegang
+client.ts/App.tsx/menu.ts):
+1. **Util wajah** `frontend/src/lib/faceHuman.ts`: bungkus
+   `@vladmandic/human` dengan **dynamic import** (DILARANG di bundle utama —
+   §12.15) + lazy-load model. Ekspor `loadHuman()`, `detectEmbedding(video)`
+   (→ embedding number[] | null), quality/pose check. (Tambahkan
+   `@vladmandic/human` ke package.json frontend.)
+2. **Enrollment** `/admin/wajah` (daftar status enroll guru, dari
+   `GET /api/admin/wajah`) + wizard `/admin/wajah/:guruId`: overlay kamera,
+   **auto-capture 3–5 pose** (depan/kiri/kanan) dgn feedback kualitas realtime
+   (BUKAN klik jepret manual), pratinjau thumbnail → Simpan (`PUT /api/admin/
+   wajah/:guruId`). Kamera ditolak → panel instruksi izin.
+3. **Presensi mandiri**: tombol besar "Presensi Sekarang" di `/guru` →
+   **overlay kamera fullscreen** (halaman/overlay khusus, bukan sekadar card):
+   (a) bila `pengaturan.lokasi.aktif`, pre-check geolokasi browser dulu —
+   di luar/izin ditolak → pesan + arahan; (b) auto-capture → `detectEmbedding`
+   → `POST /api/guru/presensi-scan`; (c) tampil hasil HADIR/TERLAMBAT + jam;
+   (d) 3× gagal "wajah tak dikenali" → jalur manual (arahkan hubungi admin).
+   Enrollment ("Daftar Wajah") vs presensi ("Presensi Sekarang") = DUA alur
+   terpisah, jangan digabung.
+4. **Monitor admin** `/admin/presensi-guru` (harian): tabel guru + status hari
+   itu (`GET .../harian`) + form input manual (`POST .../manual`, alasan wajib,
+   pola sheet adaptif).
+5. **Wiring** client.ts (semua method di atas) + App.tsx (route, RequireRole
+   benar: enroll/monitor admin; scan guru) + menu.ts (guru "Presensi Sekarang"/
+   "Daftar Wajah"; admin "Presensi Guru").
+6. **E2E**: karena kamera sulit, boleh mock `detectEmbedding` / kirim embedding
+   langsung; uji alur UI enroll→status, scan sukses (mock), monitor tampil.
+   Model `human` JANGAN sampai masuk bundle utama (cek: build + ukuran chunk).
+
+DoD: tsc bersih • `docker compose up -d --build frontend` sukses • suite e2e
+HIJAU • `human` lazy (bukan di main chunk) • alur enroll→scan→monitor jalan
+di browser • laporan di `## LAPORAN`.
+
+---
+## ARSIP TUGAS (2026-07-18b) — E2E-ISOLASI-HARDENING (SELESAI, diterima)
 
 > F2-REKAP-FRONTEND kamu DITERIMA (commit 984d039) — halaman rekap +
 > perbaikan bug AdaptiveSelect scroll, keduanya hijau. TAPI suite penuh
