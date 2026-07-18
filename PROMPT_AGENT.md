@@ -53,16 +53,20 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | **F3a FRONTEND** (enrollment wizard + "Presensi Sekarang" overlay kamera + monitor admin; `human` dynamic-import) — backend LIVE | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` (F3b) + `briefs/AGENT-2.md` | **F3b BACKEND** (kiosk 1:N — device_kiosk + pairing 6-digit + DeviceAuthGuard + scan/heartbeat/manual). Backend saja; frontend kiosk menyusul | mulai |
+| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | ✅ **F3a FRONTEND SELESAI** (enroll+scan+monitor; human lazy; e2e 82/0 ×2). Kandidat berikut: **F3b kiosk FRONTEND** (scanner fullscreen + offline) | siap tugas berikut |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3b BACKEND SELESAI** (kiosk 1:N, e2e 11/11, ter-guard). Kandidat: **F3-DOKUMENTASI** (docs/, non-konflik) | idle — tunggu assign |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
-**STATUS FASE:** ✅ **F2 CLOSED PENUH** (backend+frontend guru+admin+rekap+docs;
-gerbang e2e HIJAU DETERMINISTIK 55 pass/2 skip, dikonfirmasi 2× — fix race
-AuthContext.refresh oleh AG-1). ▶️ F3 dibuka & DIFASE:
-**F3a** (presensi HP mandiri + enrollment + geofence + monitor) DULU; **F3b**
-(kiosk 1:N + pairing + offline) DITUNDA. Kontrak: `briefs/F3-SPEC.md`.
-Arsitektur: berat (embedding) di device, server hanya cosine (ringan).
+**STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3a LENGKAP** (backend+frontend;
+presensi HP mandiri wajah + geofence + enroll + monitor; e2e 82/0 deterministik)
+• ✅ **F3b BACKEND** (kiosk 1:N pairing+scan+verifikasi; e2e 11/11) • ⏳ **F3b
+FRONTEND** (kiosk UI) BELUM. Arsitektur: embedding di device, server cosine.
+
+**BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
+`limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
+(backend sudah dukung). (2) Model wajah dari CDN jsdelivr — self-host utk
+offline/keandalan (penting utk kiosk F3b). (3) `kiosk create device` throw
+`Error`→500, mestinya `BadRequestException`→400.
 
 **BACKEND F2 LIVE (kontrak untuk frontend):** `GET /api/guru/kbm?tanggal=`
 • `GET|POST|PATCH /api/guru/kbm/:jadwalId/roster` •
