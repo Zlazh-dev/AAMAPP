@@ -1311,4 +1311,42 @@ DoD terpenuhi: suite hijau 2× berturut identik 0 gagal • laporan.
 
 ## LAPORAN — F5a FRONTEND: KESISWAAN / DEMERIT
 
-DIKERJAKAN (2026-07-18 20:03 WIB) — tata-tertib CRUD, catat pelanggaran, verifikasi, guru lapor, wiring, e2e mandiri.
+DIKERJAKAN (2026-07-18 20:03 WIB).
+
+### Yang dibangun
+
+**client.ts — F5a types & methods:**
+- Types: `KategoriPelanggaran`, `StatusPelanggaran`, `SumberPelanggaran`, `KatalogEntry`, `PelanggaranEntry`, `SaldoEntry`.
+- `getKatalog/createKatalog/updateKatalog/deleteKatalog` — katalog tata tertib CRUD.
+- `catatPelanggaran` — POST /api/kesiswaan/pelanggaran.
+- `getPelanggaran` — GET dengan filter siswaId/kelasId/status/rentang.
+- `getVerifikasiAntrean` — GET /api/kesiswaan/verifikasi (MENUNGGU).
+- `setujuiPelanggaran / tolakPelanggaran` — PATCH setujui/tolak.
+- `getSaldo / getSaldoBatch` — saldo 500−Σ poin disetujui.
+
+**Halaman kesiswaan:**
+- `TataTertibPage` `/kesiswaan/tata-tertib`: list katalog + filter (q, kategori) + inline sheet tambah/edit (kategori→auto poin) + soft-delete.
+- `PelanggaranPage` `/kesiswaan/pelanggaran`: list + status filter + saldo badge (hijau→kuning→merah) + inline sheet catat (SearchSelect siswa+katalog → auto poin preview).
+- `VerifikasiPage` `/kesiswaan/verifikasi`: antrean MENUNGGU + Setujui/Tolak (inline sheet alasan wajib) + badge count heading.
+
+**Halaman guru:**
+- `GuruPelanggaranPage` `/guru/pelanggaran`: lapor form (SearchSelect siswa+katalog, banner peringatan antrean, tanggal WIB) + daftar laporan sendiri + status badge.
+
+**Wiring:**
+- App.tsx: lazy imports + 4 route kesiswaan + 1 route guru.
+- menu.ts: kesiswaan group (Dashboard/Tata Tertib/Pelanggaran/Verifikasi) + guru "Pelanggaran" + ADMIN_EXTRA_AREAS += kesiswaan.
+
+**E2E `kesiswaan-frontend.spec.ts` (14 test, semua pass):**
+- Tata Tertib: route accessible, form sheet open, filter tersedia, auto-poin (S→25, B→50).
+- Pelanggaran: route, filter status, form sheet, tanggal WIB default.
+- Verifikasi: route, refresh button.
+- Menu: Tata Tertib + Pelanggaran visible di sidebar.
+- Guru: route, form sheet + banner antrean, menu Pelanggaran.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| Full suite | 169 | 5 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • 4 halaman kesiswaan + guru lapor •
+wiring client/App/menu • e2e mandiri 14/14 • full suite 169/0 • laporan.

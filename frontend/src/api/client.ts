@@ -1476,7 +1476,126 @@ export const api = {
         persen: number;
       }>;
     }>(`/tu/rekap-guru?bulan=${encodeURIComponent(bulan)}`),
+
+  // ── F5a: Katalog Tata Tertib ───────────────────────────────────────────────
+  getKatalog: (params?: { q?: string; kategori?: string; page?: number; limit?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.q) q.set('q', params.q);
+    if (params?.kategori) q.set('kategori', params.kategori);
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    return request<{ data: KatalogEntry[]; total: number; page: number; limit: number }>(
+      `/kesiswaan/katalog?${q}`,
+    );
+  },
+
+  createKatalog: (data: { bentuk: string; kategori: KategoriPelanggaran; poin: number }) =>
+    request<KatalogEntry>('/kesiswaan/katalog', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateKatalog: (id: number, data: Partial<{ bentuk: string; kategori: KategoriPelanggaran; poin: number; aktif: boolean }>) =>
+    request<KatalogEntry>(`/kesiswaan/katalog/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  deleteKatalog: (id: number) =>
+    request<void>(`/kesiswaan/katalog/${id}`, { method: 'DELETE' }),
+
+  // ── F5a: Pelanggaran ───────────────────────────────────────────────────────
+  catatPelanggaran: (data: {
+    siswaId: number;
+    katalogId?: number;
+    kategori?: KategoriPelanggaran;
+    poin?: number;
+    tanggal: string;
+    catatan?: string;
+    buktiUrl?: string;
+  }) => request<PelanggaranEntry>('/kesiswaan/pelanggaran', { method: 'POST', body: JSON.stringify(data) }),
+
+  getPelanggaran: (params?: {
+    siswaId?: number; kelasId?: number; status?: StatusPelanggaran;
+    dari?: string; sampai?: string; page?: number; limit?: number;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.siswaId) q.set('siswaId', String(params.siswaId));
+    if (params?.kelasId) q.set('kelasId', String(params.kelasId));
+    if (params?.status) q.set('status', params.status);
+    if (params?.dari) q.set('dari', params.dari);
+    if (params?.sampai) q.set('sampai', params.sampai);
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    return request<{ data: PelanggaranEntry[]; total: number; page: number; limit: number }>(
+      `/kesiswaan/pelanggaran?${q}`,
+    );
+  },
+
+  getVerifikasiAntrean: (params?: { page?: number; limit?: number }) => {
+    const q = new URLSearchParams();
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    return request<{ data: PelanggaranEntry[]; total: number; page: number; limit: number }>(
+      `/kesiswaan/verifikasi?${q}`,
+    );
+  },
+
+  setujuiPelanggaran: (id: number) =>
+    request<PelanggaranEntry>(`/kesiswaan/pelanggaran/${id}/setujui`, { method: 'PATCH' }),
+
+  tolakPelanggaran: (id: number, alasan: string) =>
+    request<PelanggaranEntry>(`/kesiswaan/pelanggaran/${id}/tolak`, {
+      method: 'PATCH',
+      body: JSON.stringify({ alasan }),
+    }),
+
+  getSaldo: (siswaId: number) =>
+    request<SaldoEntry>(`/kesiswaan/saldo?siswaId=${siswaId}`),
+
+  getSaldoBatch: (kelasId: number) =>
+    request<{ data: SaldoEntry[] }>(`/kesiswaan/saldo?kelasId=${kelasId}`),
 };
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// F5a: Kesiswaan / Demerit
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type KategoriPelanggaran = 'R' | 'S' | 'B' | 'SB' | 'KHUSUS';
+export type StatusPelanggaran = 'MENUNGGU' | 'DISETUJUI' | 'DITOLAK';
+export type SumberPelanggaran = 'LANGSUNG' | 'LAPORAN' | 'OTOMATIS_T';
+
+export interface KatalogEntry {
+  id: number;
+  nomor: number;
+  bentuk: string;
+  kategori: KategoriPelanggaran;
+  poin: number;
+  aktif: boolean;
+}
+
+export interface PelanggaranEntry {
+  id: number;
+  siswaId: number;
+  siswaNama: string;
+  siswaNis?: string;
+  katalogId: number | null;
+  katalogBentuk: string | null;
+  kategori: KategoriPelanggaran;
+  poin: number;
+  tanggal: string;
+  catatan: string | null;
+  buktiUrl: string | null;
+  sumber: SumberPelanggaran;
+  status: StatusPelanggaran;
+  pelaporNama: string | null;
+  verifikatorNama: string | null;
+  verifikasiPada: string | null;
+  alasanKeputusan: string | null;
+  tahunAjaranId: number;
+  createdAt: string;
+}
+
+export interface SaldoEntry {
+  siswaId: number;
+  saldo: number;
+  terpotong: number;
+  perKategori: Partial<Record<KategoriPelanggaran, number>>;
+}
 
 export { ApiError };

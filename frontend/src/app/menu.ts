@@ -61,7 +61,12 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
   kesiswaan: {
     area: 'kesiswaan',
     label: 'KESISWAAN',
-    items: [{ label: 'Dashboard', path: '/kesiswaan', icon: 'dashboard' }],
+    items: [
+      { label: 'Dashboard', path: '/kesiswaan', icon: 'dashboard' },
+      { label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel' },
+      { label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning' },
+      { label: 'Verifikasi', path: '/kesiswaan/verifikasi', icon: 'task_alt' },
+    ],
   },
   guru: {
     area: 'guru',
@@ -71,6 +76,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Rekap Presensi', path: '/guru/rekap', icon: 'summarize' },
       { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'face_retouching_natural' },
       { label: 'Izin', path: '/izin/guru', icon: 'event_available' },
+      { label: 'Pelanggaran', path: '/guru/pelanggaran', icon: 'report' },
     ],
   },
 
@@ -99,7 +105,7 @@ const AREA_ORDER = ['admin', 'kurikulum', 'kesiswaan', 'guru', 'kepsek', 'tu'];
  * halaman nyata (mapel/penugasan/jadwal). Tambahkan area lain ke array
  * ini begitu fasenya jadi (kesiswaan/guru/kepsek/tu masih placeholder).
  */
-const ADMIN_EXTRA_AREAS = ['kurikulum', 'guru', 'tu'];
+const ADMIN_EXTRA_AREAS = ['kurikulum', 'guru', 'tu', 'kesiswaan'];
 
 export function getMenuForUser(user: SafeUser): MenuGroup[] {
   const groups: MenuGroup[] = [];

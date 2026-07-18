@@ -20,6 +20,7 @@ import { AuditService } from '../audit/audit.service';
 import { Pengaturan } from '../pengaturan/pengaturan.entity';
 import { formatDateWIB, todayWIB } from '../common/wib.util';
 import { SimpanRosterDto } from './dto/simpan-roster.dto';
+import { KesiswaanService } from '../kesiswaan/kesiswaan.service';
 
 /** hari WIB: 1=Senin ... 6=Sabtu, 7=Minggu (jadwal hanya 1..6). */
 function hariWIB(tanggal: string): number {
@@ -61,6 +62,7 @@ export class PresensiService {
     @InjectRepository(Pengaturan)
     private readonly pengaturanRepo: Repository<Pengaturan>,
     private readonly audit: AuditService,
+    private readonly kesiswaanService: KesiswaanService,
   ) {}
 
   private async taAktifId(): Promise<number> {
@@ -260,8 +262,12 @@ export class PresensiService {
         row.status = e.status;
       }
       await this.siswaPresRepo.save(row);
-      // TODO F5: status 'T' → draft pelanggaran R-07 (dibangun di F5).
-      // TODO F4: kunci entri bila siswa punya izin pada tanggal ini.
+      // Hook R-07: status 'T' → draft pelanggaran MENUNGGU (idempoten, tak potong sebelum setujui)
+      if (e.status === 'T') {
+        this.kesiswaanService.hookR07(e.siswaId, dto.tanggal).catch(() => {
+          // hook gagal tidak boleh menggagalkan simpan roster
+        });
+      }
     }
 
     await this.audit.log({

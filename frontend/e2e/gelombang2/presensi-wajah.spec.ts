@@ -29,6 +29,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
   let adminToken: string;
   let guruId: number;
   let guruUserId: number | null = null;
+  let guruEmail = '';
   let createdUserIds: number[] = [];
   let createdGuruIds: number[] = [];
 
@@ -54,6 +55,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     const user = await userRes.json();
     createdUserIds.push(user.id);
     guruUserId = user.id;
+    guruEmail = `guru.f3a.${suffix}@test.com`;
 
     const guruRes = await request.post('/api/admin/guru', {
       headers,
@@ -142,21 +144,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     request,
   }) => {
     // guruId sudah ada tapi belum diroll enrollment
-    const suffix = Date.now().toString();
-    const userEmail = `guru.f3a.${suffix}@test.com`;
-    // cari email user yang dibuat di beforeEach
-    const users = await (
-      await request.get('/api/admin/users', {
-        headers: authHeaders(adminToken),
-      })
-    ).json();
-    const userObj = (users.data ?? users).find(
-      (u: any) => u.id === guruUserId,
-    );
-    const guruToken = await loginAsGuru(
-      request,
-      userObj?.email ?? userEmail,
-    );
+    const guruToken = await loginAsGuru(request, guruEmail);
 
     const res = await request.post('/api/guru/presensi-scan', {
       headers: authHeaders(guruToken),
@@ -190,13 +178,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     });
 
     // Login sbg guru
-    const allUsers = await (
-      await request.get('/api/admin/users', { headers })
-    ).json();
-    const userObj = (allUsers.data ?? allUsers).find(
-      (u: any) => u.id === guruUserId,
-    );
-    const guruToken = await loginAsGuru(request, userObj.email);
+    const guruToken = await loginAsGuru(request, guruEmail);
 
     const res = await request.post('/api/guru/presensi-scan', {
       headers: authHeaders(guruToken),
@@ -233,13 +215,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
       data: { value: { aktif: false } },
     });
 
-    const allUsers = await (
-      await request.get('/api/admin/users', { headers })
-    ).json();
-    const userObj = (allUsers.data ?? allUsers).find(
-      (u: any) => u.id === guruUserId,
-    );
-    const guruToken = await loginAsGuru(request, userObj.email);
+    const guruToken = await loginAsGuru(request, guruEmail);
 
     const res = await request.post('/api/guru/presensi-scan', {
       headers: authHeaders(guruToken),
@@ -277,13 +253,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
       },
     });
 
-    const allUsers = await (
-      await request.get('/api/admin/users', { headers })
-    ).json();
-    const userObj = (allUsers.data ?? allUsers).find(
-      (u: any) => u.id === guruUserId,
-    );
-    const guruToken = await loginAsGuru(request, userObj.email);
+    const guruToken = await loginAsGuru(request, guruEmail);
 
     // Kirim koordinat jauh (Surabaya ~700km dari Jakarta)
     const res = await request.post('/api/guru/presensi-scan', {
@@ -317,13 +287,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
       data: { value: { aktif: false } },
     });
 
-    const allUsers = await (
-      await request.get('/api/admin/users', { headers })
-    ).json();
-    const userObj = (allUsers.data ?? allUsers).find(
-      (u: any) => u.id === guruUserId,
-    );
-    const guruToken = await loginAsGuru(request, userObj.email);
+    const guruToken = await loginAsGuru(request, guruEmail);
 
     // Scan pertama (check-in)
     const res1 = await request.post('/api/guru/presensi-scan', {

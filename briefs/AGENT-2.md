@@ -1183,3 +1183,41 @@ e2e 10/10 ✅. **F4 BACKEND TUNTAS** (F4a + F4b + F4c).
 4. ✅ Rekap TU bulan="bukan-bulan" → 400
 5. ✅ Rekap TU bulan="2026-13" (month>12) → 400
 6. ✅ Rekap TU bulan="2026-07" valid → 200
+
+## KLAIM TUGAS — F5a BACKEND (kesiswaan/demerit; MEMIMPIN)
+DIKERJAKAN (20:05 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Modul backend/src/kesiswaan/: katalog_pelanggaran + SEED 28 butir §7.2,
+entitas pelanggaran (dedup R-07), service (saldoBatch + berhakLangsung +
+catat/verifikasi), controller RBAC + hook R-07 di presensi.service.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F5a BACKEND — SELESAI (2026-07-18 20:27 WIB)
+
+**Wilayah dihormati**: `backend/src/kesiswaan/**` + hook di `presensi.service.ts` + `presensi.module.ts` + `app.module.ts` + `frontend/e2e/gelombang2/kesiswaan-f5a-backend.spec.ts`. TIDAK menyentuh frontend kesiswaan (AG-1).
+
+**File yang dibuat/diubah:**
+
+| File | Baris kunci |
+|------|------------|
+| [katalog-pelanggaran.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/katalog-pelanggaran.entity.ts) | Entitas `katalog_pelanggaran` — nomor, bentuk, kategori R/S/B/SB, poin, aktif |
+| [pelanggaran.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/pelanggaran.entity.ts) | Entitas `pelanggaran` — SNAPSHOT poin, sumber LANGSUNG/LAPORAN/OTOMATIS_T, `@Unique` dedup R-07 (siswaId+tanggal+katalogId+sumber), `@Index` (siswaId+tahunAjaranId+status) |
+| [kesiswaan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.service.ts) | `SEED_KATALOG` 28 butir §7.2 (baris 31–60), `onModuleInit→seedKatalog` (idempotent), `berhakLangsung` (kesiswaan/admin ATAU waliKelas via dynamic Guru lookup), `hitungSaldoBatch` (1 GROUP BY query anti-N+1, baris 158–188), `hookR07` (idempotent, MENUNGGU tak potong), catat/verif |
+| [kesiswaan.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.controller.ts) | 8 endpoint RBAC sesuai F5-SPEC |
+| [kesiswaan.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.module.ts) | Session+User di forFeature (SessionAuthGuard), exports KesiswaanService |
+| [presensi.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts) | baris 263–269: hook R-07 fire-and-forget di simpanRoster tiap e.status==='T' |
+| [presensi.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.module.ts) | `forwardRef(() => KesiswaanModule)` |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | KatalogPelanggaran+Pelanggaran entities + KesiswaanModule |
+
+**Boot-verify**: `Seed katalog pelanggaran: 28 butir baru ditambahkan (total 28/28)` ✅
+
+**E2E — 10/10 LULUS (2.5 detik):**
+1. ✅ GET katalog → 28 butir
+2. ✅ R-07 = nomor 7, R, 10 poin
+3. ✅ Guru bisa baca katalog (RBAC)
+4. ✅ Catat langsung (admin) → DISETUJUI, saldo turun 10
+5. ✅ Lapor (guru) → MENUNGGU, saldo tidak berubah
+6. ✅ Setujui → DISETUJUI, saldo turun
+7. ✅ Tolak + alasan → DITOLAK
+8. ✅ Tolak tanpa alasan → 400
+9. ✅ Guru biasa → LAPORAN/MENUNGGU (bukan langsung)
+10. ✅ Saldo batch kelasId → saldo < 500, perKategori.R terisi

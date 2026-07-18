@@ -77,6 +77,11 @@ const LaporanKeterlaksanaanPage = React.lazy(() => import('../pages/admin/lapora
 const LaporanSiswaPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanSiswaPage })));
 // F4c: TU rekap guru
 const TuRekapGuruPage = React.lazy(() => import('../pages/tu/TuRekapGuruPage').then(m => ({ default: m.TuRekapGuruPage })));
+// F5a: Kesiswaan
+const TataTertibPage = React.lazy(() => import('../pages/kesiswaan/TataTertibPage').then(m => ({ default: m.TataTertibPage })));
+const PelanggaranPage = React.lazy(() => import('../pages/kesiswaan/PelanggaranPage').then(m => ({ default: m.PelanggaranPage })));
+const VerifikasiPage = React.lazy(() => import('../pages/kesiswaan/VerifikasiPage').then(m => ({ default: m.VerifikasiPage })));
+const GuruPelanggaranPage = React.lazy(() => import('../pages/guru/GuruPelanggaranPage').then(m => ({ default: m.GuruPelanggaranPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -194,8 +199,11 @@ const routes: RouteObject[] = [
           { path: '/kurikulum/wali-kelas', element: <RequireRole roles={['kurikulum','admin']}><Lazy><WaliKelasPage /></Lazy></RequireRole> },
           { path: '/kurikulum/jadwal', element: <RequireRole roles={['kurikulum','admin']}><Lazy><JadwalKbmPage /></Lazy></RequireRole> },
 
-          // Kesiswaan placeholder
-          { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan']}><Lazy><PlaceholderPage title="Dashboard Kesiswaan" icon="dashboard" /></Lazy></RequireRole> },
+          // F5a: Kesiswaan
+          { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><PlaceholderPage title="Dashboard Kesiswaan" icon="dashboard" /></Lazy></RequireRole> },
+          { path: '/kesiswaan/tata-tertib', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TataTertibPage /></Lazy></RequireRole> },
+          { path: '/kesiswaan/pelanggaran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><PelanggaranPage /></Lazy></RequireRole> },
+          { path: '/kesiswaan/verifikasi', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><VerifikasiPage /></Lazy></RequireRole> },
 
           // Guru: KBM & Presensi (F2)
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
@@ -234,6 +242,9 @@ const routes: RouteObject[] = [
           // TU: Rekap Guru bulanan (F4c)
           { path: '/tu', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
           { path: '/tu/rekap-guru', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
+
+          // F5a: Guru pelanggaran
+          { path: '/guru/pelanggaran', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPelanggaranPage /></Lazy></RequireRole> },
         ],
       },
 

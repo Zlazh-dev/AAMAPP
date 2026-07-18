@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PresensiSesi } from './presensi-sesi.entity';
 import { PresensiSiswa } from './presensi-siswa.entity';
@@ -19,6 +19,7 @@ import { Kelas } from '../kelas/kelas.entity';
 import { Guru } from '../guru/guru.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { Pengaturan } from '../pengaturan/pengaturan.entity';
+import { KesiswaanModule } from '../kesiswaan/kesiswaan.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { Pengaturan } from '../pengaturan/pengaturan.entity';
       User,
     ]),
     AuditModule,
+    forwardRef(() => KesiswaanModule),
   ],
   controllers: [
     GuruPresensiController,

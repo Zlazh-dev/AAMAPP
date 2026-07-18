@@ -21,6 +21,9 @@ import { DeviceKiosk } from './kiosk/device-kiosk.entity';
 import { IzinGuru } from './izin/izin-guru.entity';
 import { IzinModule } from './izin/izin.module';
 import { LaporanModule } from './laporan/laporan.module';
+import { KesiswaanModule } from './kesiswaan/kesiswaan.module';
+import { KatalogPelanggaran } from './kesiswaan/katalog-pelanggaran.entity';
+import { Pelanggaran } from './kesiswaan/pelanggaran.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -69,6 +72,8 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           PresensiHarianGuru,
           DeviceKiosk,
           IzinGuru,
+          KatalogPelanggaran,
+          Pelanggaran,
         ],
         // SEC-1 Butir 3: synchronize hanya aktif di luar production.
         // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
@@ -103,6 +108,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     KioskModule,
     IzinModule,
     LaporanModule,
+    KesiswaanModule,
   ],
   providers: [
     // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD
