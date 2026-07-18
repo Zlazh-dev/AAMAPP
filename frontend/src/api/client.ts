@@ -1581,6 +1581,58 @@ export const api = {
     if (params.limit) q.set('limit', String(params.limit));
     return request<{ data: any[]; total: number }>(`/kesiswaan/laporan/demerit?${q}`);
   },
+
+  // ── F6a: Penilaian Guru ───────────────────────────────────────────────────
+  getPenilaianPaket: () =>
+    request<{ data: any[] }>('/guru/penilaian'),
+
+  getTpList: (penugasanId: number) =>
+    request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/tp`),
+
+  createTp: (penugasanId: number, body: { deskripsi: string; urutan?: number }) =>
+    request<any>(`/guru/penilaian/${penugasanId}/tp`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateTp: (tpId: number, body: { deskripsi?: string; urutan?: number }) =>
+    request<any>(`/guru/penilaian/tp/${tpId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteTp: (tpId: number) =>
+    request<any>(`/guru/penilaian/tp/${tpId}`, { method: 'DELETE' }),
+
+  getPenilaianList: (penugasanId: number) =>
+    request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/penilaian`),
+
+  createPenilaian: (penugasanId: number, body: any) =>
+    request<any>(`/guru/penilaian/${penugasanId}/penilaian`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updatePenilaian: (penilaianId: number, body: any) =>
+    request<any>(`/guru/penilaian/penilaian/${penilaianId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deletePenilaian: (penilaianId: number) =>
+    request<any>(`/guru/penilaian/penilaian/${penilaianId}`, { method: 'DELETE' }),
+
+  getNilaiList: (penilaianId: number) =>
+    request<any>(`/guru/penilaian/penilaian/${penilaianId}/nilai`),
+
+  putNilai: (penilaianId: number, body: { entri: { siswaId: number; nilai: number | null; catatan?: string }[] }) =>
+    request<any>(`/guru/penilaian/penilaian/${penilaianId}/nilai`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  getRekapNilai: (penugasanId: number) =>
+    request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/rekap`),
 };
 
 

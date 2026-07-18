@@ -80,6 +80,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'face_retouching_natural' },
       { label: 'Izin', path: '/izin/guru', icon: 'event_available' },
       { label: 'Pelanggaran', path: '/guru/pelanggaran', icon: 'report' },
+      { label: 'Penilaian', path: '/guru/penilaian', icon: 'grading' },
     ],
   },
 

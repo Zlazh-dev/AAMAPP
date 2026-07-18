@@ -1447,3 +1447,52 @@ DIKERJAKAN (2026-07-18 22:32 WIB).
 DoD terpenuhi: tsc bersih • build sukses • tindak-lanjut/reward/laporan jalan •
 export lazy (tidak di main bundle) • e2e mandiri 12/12 • full suite 191/0 •
 laporan. **F5 TUNTAS.**
+
+---
+
+## LAPORAN — F6a FRONTEND: PENILAIAN GURU
+
+## LAPORAN — F6a FRONTEND: PENILAIAN GURU
+
+DIKERJAKAN (2026-07-18 23:22 WIB).
+
+### Yang dibangun
+
+**client.ts — F6a methods:**
+- `getPenilaianPaket()` — GET /api/guru/penilaian (kartu paket).
+- `getTpList/createTp/updateTp/deleteTp` — TP CRUD.
+- `getPenilaianList/createPenilaian/updatePenilaian/deletePenilaian` — penilaian CRUD.
+- `getNilaiList(penilaianId)` — GET nilai semua siswa aktif.
+- `putNilai(penilaianId, {entri})` — PUT upsert nilai.
+- `getRekapNilai(penugasanId)` — GET rekap nilai akhir turunan.
+
+**Halaman guru:**
+- `GuruPenilaianDashboard` `/guru/penilaian`: kartu paket mapel–kelas otomatis dari penugasan (jumlahSiswa + jumlahPenilaian badge), empty state bila belum ditugaskan, navigasi by penugasanId.
+- `PenilaianDetailShell` `/guru/penilaian/:penugasanId`: layout shell dengan SubPageLinks (TANPA TAB) → TP / Penilaian / Rekap Nilai Akhir + tombol "← Paket Saya".
+- `TujuanPembelajaranPage` `/guru/penilaian/:id/tp`: list TP aktif + CRUD inline sheet (deskripsi+urutan wajib), soft-delete.
+- `PenilaianListPage` `/guru/penilaian/:id/penilaian`: list penilaian + CRUD inline sheet (nama/jenis/subjenis/bobot/tanggal + pilih TP bila SUMATIF_TP), SaveSuccess → navigate to input nilai by penilaianId.
+- `InputNilaiPage` `/guru/penilaian/nilai/:penilaianId`: grid semua siswa aktif kelas (nilai 0–100, null=highlight kuning), bulk PUT, catatan per siswa, badge progress terisi/total.
+- `RekapNilaiPage` `/guru/penilaian/:id/rekap`: rekap nilai akhir turunan formula Sumatif, badge merah/kuning/hijau, rata-rata, progress.
+
+**Wiring:**
+- App.tsx: 6 lazy imports + nested routes (shell + children: tp/penilaian/rekap) + input nilai route terpisah.
+- menu.ts: guru group += Penilaian.
+
+**E2E `penilaian-f6a.spec.ts` (semua pass, full suite 216/0):**
+- Dashboard: route, empty/kartu.
+- Detail Shell: SubPageLinks TP/Penilaian/Rekap, tombol Paket Saya.
+- TP: route, form sheet (deskripsi+urutan).
+- Penilaian: route, form sheet semua field, Sumatif→subjenis, tanggal WIB.
+- Input Nilai: route, tombol back.
+- Rekap: route, refresh button.
+- Menu: Penilaian visible di sidebar guru.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| F6a spec | 16 | 0 | 0 |
+| Full suite | 216 | 5 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • paket→TP→penilaian→input nilai→rekap
+jalan • SubPageLinks TANPA TAB • SaveSuccess→navigate by-id • e2e mandiri 16/16
+• full suite 216/0 • laporan.

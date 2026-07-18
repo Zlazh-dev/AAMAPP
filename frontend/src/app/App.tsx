@@ -86,6 +86,13 @@ const GuruPelanggaranPage = React.lazy(() => import('../pages/guru/GuruPelanggar
 const TindakLanjutPage = React.lazy(() => import('../pages/kesiswaan/TindakLanjutPage').then(m => ({ default: m.TindakLanjutPage })));
 const RewardPage = React.lazy(() => import('../pages/kesiswaan/RewardPage').then(m => ({ default: m.RewardPage })));
 const LaporanDemeritPage = React.lazy(() => import('../pages/kesiswaan/LaporanDemeritPage').then(m => ({ default: m.LaporanDemeritPage })));
+// F6a: Penilaian Guru
+const GuruPenilaianDashboard = React.lazy(() => import('../pages/guru/GuruPenilaianDashboard').then(m => ({ default: m.GuruPenilaianDashboard })));
+const PenilaianDetailShell = React.lazy(() => import('../pages/guru/PenilaianDetailShell').then(m => ({ default: m.PenilaianDetailShell })));
+const TujuanPembelajaranPage = React.lazy(() => import('../pages/guru/TujuanPembelajaranPage').then(m => ({ default: m.TujuanPembelajaranPage })));
+const PenilaianListPage = React.lazy(() => import('../pages/guru/PenilaianListPage').then(m => ({ default: m.PenilaianListPage })));
+const RekapNilaiPage = React.lazy(() => import('../pages/guru/RekapNilaiPage').then(m => ({ default: m.RekapNilaiPage })));
+const InputNilaiPage = React.lazy(() => import('../pages/guru/InputNilaiPage').then(m => ({ default: m.InputNilaiPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -253,6 +260,20 @@ const routes: RouteObject[] = [
 
           // F5a: Guru pelanggaran
           { path: '/guru/pelanggaran', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPelanggaranPage /></Lazy></RequireRole> },
+
+          // F6a: Penilaian Guru
+          { path: '/guru/penilaian', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPenilaianDashboard /></Lazy></RequireRole> },
+          { path: '/guru/penilaian/nilai/:penilaianId', element: <RequireRole roles={['guru','admin']}><Lazy><InputNilaiPage /></Lazy></RequireRole> },
+          {
+            path: '/guru/penilaian/:penugasanId',
+            element: <RequireRole roles={['guru','admin']}><Lazy><PenilaianDetailShell /></Lazy></RequireRole>,
+            children: [
+              { index: true, element: <Navigate to="tp" replace /> },
+              { path: 'tp', element: <Lazy><TujuanPembelajaranPage /></Lazy> },
+              { path: 'penilaian', element: <Lazy><PenilaianListPage /></Lazy> },
+              { path: 'rekap', element: <Lazy><RekapNilaiPage /></Lazy> },
+            ],
+          },
         ],
       },
 

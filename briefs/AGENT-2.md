@@ -1309,3 +1309,43 @@ Wilayah: backend/** + frontend/e2e/.
 10. ✅ Laporan demerit?kelasId= → filter hanya siswa kelas itu
 
 **F5 BACKEND TUNTAS** (F5a + F5b). AG-1 bisa konsumsi semua endpoint kesiswaan.
+
+## KLAIM TUGAS — F6a BACKEND (penilaian inti; MEMIMPIN)
+DIKERJAKAN (23:00 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Modul backend/src/penilaian/: 4 entitas (tujuan_pembelajaran, penilaian,
+penilaian_tp junction, nilai) + service (daftar paket guru, siswa-turunan,
+nilai-akhir BATCH, auth own-paket) + controller @Roles guru/admin.
+Daftarkan app.module. Boot-verify + e2e mandiri.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F6a BACKEND — SELESAI (2026-07-18 23:13 WIB)
+
+**Wilayah dihormati**: `backend/src/penilaian/**` + `app.module.ts` + `frontend/e2e/gelombang2/penilaian-f6a-backend.spec.ts`. TIDAK menyentuh F6b/F6c.
+
+**File yang dibuat:**
+
+| File | Baris kunci |
+|------|-------------|
+| [tujuan-pembelajaran.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/tujuan-pembelajaran.entity.ts) | `tujuan_pembelajaran` per mapel, soft-delete `aktif` |
+| [penilaian.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian.entity.ts) | `penilaian` per penugasan, jenis Formatif/Sumatif, bobot≥1 |
+| [penilaian-tp.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian-tp.entity.ts) | Junction PK(penilaianId, tpId) untuk SUMATIF_TP |
+| [nilai.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/nilai.entity.ts) | `nilai` UNIQUE(penilaianId, siswaId), 0–100, audit diubahOleh |
+| [penilaian.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian.service.ts) | `daftarPaket` (BATCH jumlahSiswa+jumlahPenilaian), TP CRUD, Penilaian CRUD+junction, `getDaftarNilai` (turunan), `upsertNilai` (batch), `rekapNilaiAkhir` (1 query Sumatif → aggregate in-memory round(Σ(n×b)/Σb)), `ownedPenugasan` 403 |
+| [penilaian.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian.controller.ts) | 12 endpoint `/api/guru/penilaian/*`, @Roles guru/admin |
+| [penilaian.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian.module.ts) | Semua entitas + Session/User untuk SessionAuthGuard DI |
+
+**Boot-verify**: 12 endpoint terpeta, 4 tabel baru terbentuk ✅
+
+**E2E — 10/10 LULUS (3.0 detik):**
+1. ✅ Paket muncul untuk guru yang ditugaskan (jumlahSiswa=3)
+2. ✅ Paket kosong untuk guru yang belum ditugaskan
+3. ✅ TP CRUD: create/list/update/soft-delete
+4. ✅ Penilaian CRUD: Formatif + Sumatif_TP(tpIds) + Sumatif_Akhir_Semester
+5. ✅ GET nilai siswa null → PUT upsert → nilai terisi
+6. ✅ Rekap: siswa[0] nilaiAkhir=68 = round((80×2+60×3)/5)
+7. ✅ Formatif tidak masuk rekap (nilai akhir tetap 68 setelah formatif=100 diisi)
+8. ✅ Guru lain (bukan pemilik paket) → 403
+9. ✅ Nilai 101 → 400 BadRequest
+10. ✅ Rekap tetap valid saat sumatif baru belum ada nilai
+
+**F6a BACKEND TUNTAS.** AG-1 siap konsumsi `/api/guru/penilaian`.
