@@ -977,3 +977,45 @@ Tidak menyentuh frontend halaman (AG-1 wilayah).
 
 **DoD terpenuhi**: backend F4a live ✅, boot-verified ✅, e2e 10/10 ✅,
 wilayah dihormati ✅, laporan bukti file:baris ✅. F4b/F4c TIDAK dikerjakan.
+
+## KLAIM TUGAS — F4b BACKEND (dashboard + laporan agregat)
+DIKERJAKAN (17:53 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Modul `backend/src/laporan/`: 4 endpoint agregat BATCH anti-N+1 (dashboard,
+harian-guru, keterlaksanaan-kbm, siswa). JANGAN generate file export.
+Wilayah: `backend/**` + `frontend/e2e/`.
+
+### [AGENT-2] F4b BACKEND — SELESAI (2026-07-18 18:04 WIB)
+
+**Wilayah dihormati**: `backend/src/laporan/**` + `backend/src/app.module.ts` + `frontend/e2e/gelombang2/laporan-backend.spec.ts`.
+Tidak menyentuh frontend halaman / export file (AG-1 wilayah).
+
+**File baru/dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [laporan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.service.ts) | NEW | 4 method: `dashboard()` (5 batch query, deriveStatusHarian per guru), `laporanHarianGuru()` (BATCH range, deriveStatusHarian per guru×hari, %hadir), `laporanKeterlaksanaanKbm()` (QueryBuilder GROUP BY), `laporanSiswa()` (pivot GROUP BY H/S/I/A/T) |
+| [laporan.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.controller.ts) | NEW | `@Roles('admin','kepsek')`: GET dashboard, GET laporan/harian-guru, GET laporan/keterlaksanaan-kbm, GET laporan/siswa |
+| [laporan.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.module.ts) | NEW | Modul: semua entity terdaftar + IzinModule import |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | MODIFY | +LaporanModule |
+| [laporan-backend.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/laporan-backend.spec.ts) | NEW | 10 test e2e |
+
+**Boot-verify**: 4 route ter-mapped:
+- `GET /api/admin/dashboard` ✅
+- `GET /api/admin/laporan/harian-guru` ✅
+- `GET /api/admin/laporan/keterlaksanaan-kbm` ✅
+- `GET /api/admin/laporan/siswa` ✅
+
+**E2E — 10/10 LULUS (17.1 detik):**
+1. ✅ Dashboard shape lengkap (tanggal, guruStatus, kbm, siswa, perluPerhatian, feed)
+2. ✅ Dashboard guruStatus: semua 8 key valid + kbm/siswa/perluPerhatian fields
+3. ✅ Dashboard RBAC: guru → 403
+4. ✅ Laporan harian-guru shape (total, page, limit, dari, sampai, data[].HADIR/ALPHA/LIBUR/hariWajib/pctHadir)
+5. ✅ Filter guruId → max 1 baris + total ≤ 1
+6. ✅ Laporan keterlaksanaan-kbm shape (guruNama, kelasNama, totalJadwal, terlaksana, pctTerlaksana)
+7. ✅ Laporan siswa shape (H/S/I/A/T pivot + pctHadir)
+8. ✅ Laporan RBAC: guru → 403
+9. ✅ perluPerhatian.izinMenunggu naik setelah guru ajukan izin
+10. ✅ Paginasi limit=1 → data.length ≤ 1
+
+**DoD terpenuhi**: 4 endpoint live ✅, boot-verified ✅, agregat anti-N+1 ✅,
+e2e 10/10 ✅, TIDAK generate file export ✅, TIDAK F4c ✅.

@@ -1372,6 +1372,84 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ alasan }),
     }),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F4b: Dashboard agregat + Laporan
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Dashboard admin: kartu agregat kehadiran guru/KBM/siswa + feed + perlu perhatian.
+   * GET /api/admin/dashboard?tanggal=YYYY-MM-DD
+   */
+  adminGetDashboard: (tanggal?: string) => {
+    const qs = tanggal ? `?tanggal=${encodeURIComponent(tanggal)}` : '';
+    return request<{
+      guruStatus: {
+        HADIR: number; TERLAMBAT: number; IZIN: number;
+        SAKIT: number; DINAS: number; ALPHA: number; LIBUR: number;
+      };
+      kbm: { terlaksana: number; kosong: number };
+      siswa: { hadir: number; alpha: number; total: number };
+      perluPerhatian: { izinMenunggu: number; presensiPending: number };
+      feed: Array<{ waktu: string; pesan: string; tipe: string }>;
+    }>(`/admin/dashboard${qs}`);
+  },
+
+  /**
+   * Laporan harian guru: Σ hadir/telat/izin/sakit/dinas/alpha/libur per guru.
+   * GET /api/admin/laporan/harian-guru?dari=&sampai=&guruId?
+   */
+  adminGetLaporanHarianGuru: (params: { dari: string; sampai: string; guruId?: number }) => {
+    const q = new URLSearchParams({ dari: params.dari, sampai: params.sampai });
+    if (params.guruId) q.set('guruId', String(params.guruId));
+    return request<{
+      data: Array<{
+        guruId: number; guruNama: string;
+        hadir: number; terlambat: number; izin: number;
+        sakit: number; dinas: number; alpha: number; libur: number;
+        persen: number;
+      }>;
+    }>(`/admin/laporan/harian-guru?${q}`);
+  },
+
+  /**
+   * Laporan keterlaksanaan KBM per guru/kelas/mapel.
+   * GET /api/admin/laporan/keterlaksanaan-kbm?dari=&sampai=&guruId?&kelasId?&mapelId?
+   */
+  adminGetLaporanKeterlaksanaan: (params: {
+    dari: string; sampai: string;
+    guruId?: number; kelasId?: number; mapelId?: number;
+  }) => {
+    const q = new URLSearchParams({ dari: params.dari, sampai: params.sampai });
+    if (params.guruId) q.set('guruId', String(params.guruId));
+    if (params.kelasId) q.set('kelasId', String(params.kelasId));
+    if (params.mapelId) q.set('mapelId', String(params.mapelId));
+    return request<{
+      data: Array<{
+        guruId: number; guruNama: string; kelas: string; mapel: string;
+        totalKbm: number; terlaksana: number; persen: number;
+      }>;
+    }>(`/admin/laporan/keterlaksanaan-kbm?${q}`);
+  },
+
+  /**
+   * Laporan kehadiran siswa per kelas/mapel.
+   * GET /api/admin/laporan/siswa?dari=&sampai=&kelasId?&mapelId?
+   */
+  adminGetLaporanSiswa: (params: {
+    dari: string; sampai: string; kelasId?: number; mapelId?: number;
+  }) => {
+    const q = new URLSearchParams({ dari: params.dari, sampai: params.sampai });
+    if (params.kelasId) q.set('kelasId', String(params.kelasId));
+    if (params.mapelId) q.set('mapelId', String(params.mapelId));
+    return request<{
+      data: Array<{
+        siswaId: number; siswaNama: string; kelas: string;
+        hadir: number; sakit: number; izin: number; alpha: number; terlambat: number;
+        persen: number;
+      }>;
+    }>(`/admin/laporan/siswa?${q}`);
+  },
 };
 
 

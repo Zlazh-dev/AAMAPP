@@ -43,6 +43,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Perangkat Kiosk', path: '/admin/perangkat', icon: 'devices' },
       { label: 'Verifikasi Presensi', path: '/admin/presensi-guru-pending', icon: 'how_to_reg' },
       { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
+      { label: 'Laporan', path: '/admin/laporan', icon: 'assessment' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
     ],
@@ -79,6 +80,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     items: [
       { label: 'Dashboard', path: '/kepsek', icon: 'dashboard' },
       { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
+      { label: 'Laporan', path: '/admin/laporan', icon: 'assessment' },
     ],
   },
   tu: {

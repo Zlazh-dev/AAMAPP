@@ -20,6 +20,7 @@ import { PresensiHarianGuru } from './presensi-guru/presensi-harian-guru.entity'
 import { DeviceKiosk } from './kiosk/device-kiosk.entity';
 import { IzinGuru } from './izin/izin-guru.entity';
 import { IzinModule } from './izin/izin.module';
+import { LaporanModule } from './laporan/laporan.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -101,6 +102,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     PresensiGuruModule,
     KioskModule,
     IzinModule,
+    LaporanModule,
   ],
   providers: [
     // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD

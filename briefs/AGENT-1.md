@@ -1064,3 +1064,59 @@ backend F4a belum di-deploy. Bukan regresi AG-1. Semua test AG-1 hijau.
 
 DoD terpenuhi: tsc bersih • build sukses • halaman guru+admin terbuild •
 form validasi jalan • sheet setujui/tolak jalan • e2e AG-1 hijau • laporan.
+
+---
+
+## LAPORAN — F4b FRONTEND: DASHBOARD + LAPORAN + EXPORT LAZY
+
+DIKERJAKAN (2026-07-18 17:54 WIB).
+
+### Yang dibangun
+
+**client.ts — F4b methods:**
+- `adminGetDashboard(tanggal?)` — GET /api/admin/dashboard (guruStatus/kbm/siswa/perluPerhatian/feed).
+- `adminGetLaporanHarianGuru(params)` — GET .../laporan/harian-guru.
+- `adminGetLaporanKeterlaksanaan(params)` — GET .../laporan/keterlaksanaan-kbm.
+- `adminGetLaporanSiswa(params)` — GET .../laporan/siswa.
+
+**lib/exportExcel.ts** — dynamic-import exceljs (§12.15): kop sekolah, header kolom,
+data rows, baris TOTAL, TTD kepsek. Tidak di bundle utama.
+
+**lib/exportPdf.ts** — dynamic-import pdfmake (§12.15): landscape, kop, tabel, TTD.
+Tidak di bundle utama.
+
+**AdminDashboardPage.tsx** (upgrade F4b):
+- Coba `adminGetDashboard` → tampil kartu agregat: GuruStatusGrid (7 status),
+  4 kartu KBM/siswa, PerluPerhatianCard (link ke izin/pending), FeedCard aktivitas.
+- Graceful fallback ke T13 statis jika backend F4b belum live.
+
+**AdminLaporanHubPage.tsx** `/admin/laporan`:
+- SubPageLinks (TANPA TAB) → 3 sub-halaman laporan dengan ikon + deskripsi.
+
+**LaporanPages.tsx** (3 halaman dalam 1 file):
+- `/admin/laporan/harian-guru` — filter tanggal + tampilkan → tabel + baris TOTAL.
+- `/admin/laporan/keterlaksanaan` — filter tanggal → tabel KBM terlaksana/total + %.
+- `/admin/laporan/siswa` — filter tanggal → tabel H/S/I/A/T per siswa + %.
+- Setiap halaman: tombol Export Excel + Export PDF (lazy dynamic-import).
+
+**Wiring:**
+- App.tsx: 4 route baru (HUB + 3 sub-halaman, RequireRole admin|kepsek).
+- menu.ts: "Laporan" di grup ADMIN dan KEPSEK.
+
+**E2E `laporan-dashboard.spec.ts` (7 test):**
+- Dashboard render dengan mock (guruStatus grid + perlu perhatian + feed).
+- Laporan HUB: 3 sub-link visible.
+- Laporan harian guru: filter → tabel → TOTAL row.
+- Export buttons visible + enabled.
+- Laporan keterlaksanaan + siswa: accessible.
+- Bundle check: exceljs/pdfmake TIDAK di main chunk.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| Full suite | 124 | 5 | 0 |
+
+5 skip = test bergantung env guru/backend F4b (graceful). Semua test AG-1 hijau.
+
+DoD terpenuhi: tsc bersih • build sukses • dashboard+laporan jalan •
+export lazy (exceljs+pdfmake dynamic-import) • e2e hijau 124/0 • laporan.

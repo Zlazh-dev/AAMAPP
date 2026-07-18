@@ -70,6 +70,11 @@ const KioskApp = React.lazy(() => import('../pages/kiosk/KioskApp').then(m => ({
 // F4a: Izin guru
 const IzinGuruPage = React.lazy(() => import('../pages/guru/IzinGuruPage').then(m => ({ default: m.IzinGuruPage })));
 const AdminIzinGuruPage = React.lazy(() => import('../pages/admin/izin/AdminIzinGuruPage').then(m => ({ default: m.AdminIzinGuruPage })));
+// F4b: Laporan HUB + sub-halaman
+const AdminLaporanHubPage = React.lazy(() => import('../pages/admin/laporan/AdminLaporanHubPage').then(m => ({ default: m.AdminLaporanHubPage })));
+const LaporanHarianGuruPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanHarianGuruPage })));
+const LaporanKeterlaksanaanPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanKeterlaksanaanPage })));
+const LaporanSiswaPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanSiswaPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -212,6 +217,13 @@ const routes: RouteObject[] = [
 
           // Guru: F4a izin
           { path: '/izin/guru', element: <RequireRole roles={['guru','admin']}><Lazy><IzinGuruPage /></Lazy></RequireRole> },
+
+          // F4b: Laporan HUB + sub-halaman
+          { path: '/admin/laporan', element: <RequireRole roles={['admin','kepsek']}><Lazy><AdminLaporanHubPage /></Lazy></RequireRole> },
+          { path: '/admin/laporan/harian-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanHarianGuruPage /></Lazy></RequireRole> },
+          { path: '/admin/laporan/keterlaksanaan', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanKeterlaksanaanPage /></Lazy></RequireRole> },
+          { path: '/admin/laporan/siswa', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanSiswaPage /></Lazy></RequireRole> },
+
           { path: '/admin/presensi-guru-pending', element: <RequireRole roles={['admin']}><Lazy><VerifikasiPendingPage /></Lazy></RequireRole> },
 
           // Kepsek placeholder
