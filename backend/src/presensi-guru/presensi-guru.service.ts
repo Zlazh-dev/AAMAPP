@@ -445,7 +445,8 @@ export class PresensiGuruService {
     return {
       tanggal: tgl,
       data: rows.map((g) => {
-        const ph = (g as any).presensiHarian as PresensiHarianGuru | null;
+        const phArr = (g as any).presensiHarian as PresensiHarianGuru[];
+        const ph = Array.isArray(phArr) && phArr.length > 0 ? phArr[0] : null;
         return {
           guruId: g.id,
           nama: g.nama,

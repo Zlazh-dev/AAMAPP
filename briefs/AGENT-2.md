@@ -637,3 +637,55 @@ service cosine+haversine+derivasi status, controller enrollment/scan/monitor/
 manual), daftar di app.module.ts, key pengaturan `wajah`, boot-verify, e2e
 mock embedding. Wilayah: `backend/**` + `frontend/e2e/`. TIDAK mengerjakan
 kiosk (F3b) atau frontend halaman (AG-1).
+
+### [AGENT-2] F3a BACKEND — SELESAI (2026-07-18 14:41 WIB)
+
+**Wilayah dihormati**: `backend/**` + `frontend/e2e/gelombang2/presensi-wajah.spec.ts`.
+Tidak menyentuh frontend halaman, client.ts, App.tsx, menu.ts.
+
+**File baru/dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [guru.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/guru/guru.entity.ts) | MODIFY | +`faceEmbeddings jsonb nullable`, +`faceUpdatedAt timestamptz nullable`, +`presensiHarian OneToMany` |
+| [presensi-harian-guru.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-harian-guru.entity.ts) | NEW | Entitas `presensi_harian_guru`, UNIQUE(guruId,tanggal), FK CASCADE, semua kolom F3-SPEC |
+| [dto/enroll-wajah.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/dto/enroll-wajah.dto.ts) | NEW | `{ embeddings: number[][] }`, validasi 3–5 pose |
+| [dto/scan.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/dto/scan.dto.ts) | NEW | `{ embedding, lat?, lng?, mode? }` |
+| [dto/manual.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/dto/manual.dto.ts) | NEW | `{ guruId, tanggal, status, checkInAt?, checkOutAt?, alasan }`, alasan wajib |
+| [presensi-guru.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.service.ts) | NEW | cosine(), haversineMeter(), deriveStatus(), enrollment (self+admin+delete), scan 6-langkah, monitorHarian BATCH anti-N+1, manualAdmin |
+| [presensi-guru.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.controller.ts) | NEW | 3 controller class, 7 route persis kontrak F3-SPEC, @Roles benar |
+| [presensi-guru.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.module.ts) | NEW | Module NestJS, forFeature dgn Session+User utk SessionAuthGuard |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | MODIFY | +`PresensiHarianGuru` di entities, +`PresensiGuruModule` di imports |
+| [pengaturan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/pengaturan/pengaturan.service.ts) | MODIFY | +`'wajah'` di `PengaturanKey`, +seed default `{ threshold:0.6, minPoses:3 }` |
+| [pengaturan.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/pengaturan/pengaturan.controller.ts) | MODIFY | +`'wajah'` di `VALID_KEYS` |
+| [presensi-wajah.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/presensi-wajah.spec.ts) | NEW | 9 test mock embedding, pure REST-API, tanpa kamera |
+
+**Boot-verify (dikonfirmasi via psql):**
+```
+presensi_harian_guru terbentuk ✅ — semua kolom + UNIQUE(guruId,tanggal) + FK CASCADE
+guru.faceEmbeddings jsonb ✅
+guru.faceUpdatedAt timestamptz ✅
+7 route F3a ter-mapped di logs NestJS ✅
+```
+
+**E2E mock embedding — 9/9 LULUS (12.9 detik):**
+1. ✅ Enrollment wajah 3 pose via admin endpoint
+2. ✅ Scan 400 bila belum enroll
+3. ✅ Scan sukses HADIR/TERLAMBAT (cosine=1.0, geofence off)
+4. ✅ Scan 401 wajah asing (vektor ortogonal, cosine≈0)
+5. ✅ Scan 403 luar radius (Surabaya vs sekolah Jakarta, >700km)
+6. ✅ Scan ganda idempotent → "Sudah tercatat"
+7. ✅ Manual admin: 400 tanpa alasan, 200 dgn alasan, monitor verifikasi
+8. ✅ Semua endpoint 401 tanpa token
+9. ✅ DELETE wajah → enrolled=false
+
+**Temuan teknis (dicatat, bukan bug):**
+- `SessionAuthGuard` membutuhkan `Session` + `User` di `forFeature` tiap module
+  yang pakai `@UseGuards` — pola sama seperti `PresensiModule`.
+- `leftJoinAndSelect` pada relasi OneToMany menghasilkan **array** (bukan scalar)
+  meski kondisi unique — diakses sebagai `phArr[0]`.
+- Pengaturan `wajah.threshold` default 0.6, dibaca runtime dari DB (tuning tanpa redeploy).
+
+**DoD terpenuhi**: tabel+kolom ada ✅, backend live & boot-verified ✅,
+endpoint ter-guard ✅, e2e mock embedding 9/9 hijau ✅, laporan dgn bukti ✅,
+wilayah tulis dihormati ✅. Kiosk (F3b) TIDAK dikerjakan sesuai instruksi.
