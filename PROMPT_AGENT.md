@@ -53,14 +53,15 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` (F3b-A) + `briefs/AGENT-1.md` | **F3b KIOSK APP** (device-facing: `/kiosk` pairing+scanner, X-Device-Token) + pemilik wiring F3b | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` (F3b-B) + `briefs/AGENT-2.md` | **F3b ADMIN FRONTEND** (`/admin/perangkat` + verifikasi pending, folder `admin/kiosk/`) + nit backend fix | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ **F3b KIOSK APP SELESAI** (/kiosk publik + scanner + pairing; suite 93/0). Menunggu F4 | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3b ADMIN SELESAI** (perangkat + verifikasi pending; nit backend fixed). Menunggu F4 | idle |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
-**STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3a LENGKAP** (backend+frontend;
-presensi HP mandiri wajah + geofence + enroll + monitor; e2e 82/0 deterministik)
-• ✅ **F3b BACKEND** (kiosk 1:N pairing+scan+verifikasi; e2e 11/11) • ⏳ **F3b
-FRONTEND** (kiosk UI) BELUM. Arsitektur: embedding di device, server cosine.
+**STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3 TUNTAS PENUH** (F3a presensi wajah
+HP mandiri + F3b kiosk 1:N: backend+frontend, suite 93 pass/0 gagal). ⏭️
+Berikutnya: **F4** (planner susun F4-SPEC dari `planning/F4-RISET-*`). Docs F3
+DITUNDA (dikerjakan sebelum pindah fase bila user mau). Arsitektur wajah:
+embedding di device, server cosine.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
