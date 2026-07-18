@@ -18,15 +18,19 @@
   6.114 baris tertimpa jadi 2 baris).
 - **USER**: pemilik produk; komunikasi via chat planner; QA visual.
 
-## STATUS PROYEK (2026-07-17)
+## STATUS PROYEK (2026-07-19) — SEMUA FITUR F0–F6 TUNTAS
 
-- ✅ **F0** fondasi+auth • ✅ **F1** data induk+kurikulum-jadwal+pengaturan
-  (T11–T16; e2e Playwright 36 pass/2 skip ×2 dari DB kosong).
-- 🔶 Menunggu: QA visual user (T16 poin 12 & 15) → verdict F1 TUNTAS.
-- ▶️ Berjalan: SEC-1 (AGENT-1), OPS-4 (AGENT-2), RISET-F3 (AGENT-3).
-- ⏭️ Berikutnya: kickoff F2 presensi siswa (bahan: `planning/F2-RISET-*.md`).
-- Git: aktif sejak 2026-07-17 (commit `0cd29b8`); planner commit tiap
-  tugas lolos review.
+- ✅ F0 auth • F1 data induk/kurikulum/pengaturan • F2 presensi siswa • F3
+  presensi wajah+kiosk • F4 izin+dashboard+laporan+rekap TU • F5 kesiswaan/
+  demerit • F6 penilaian+rapor akademik+kokurikuler+ekstrakurikuler.
+- Gerbang e2e: 285 pass/12 skip/0 gagal (12 skip = 5 GOOGLE_CLIENT_ID + 7
+  presensi Sunday-skip). Deterministik.
+- ⏭️ Tersisa NON-fitur: (1) **INTEGRASI PDF** rapor (gabung akademik+
+  kokurikuler+ekskul jadi satu dokumen berkop); (2) **DOCS** (F3–F6 satu pass);
+  (3) **DEPLOY** (blocker bootstrap skema produksi); (4) backlog harness (audit
+  spec lookup-paginasi).
+- Git: commit tiap tugas lolos review. Referensi rapor: `D:\Codeproject\
+  Smpmultipleapp\radig\rapor` (dasar F6c/F6d).
 
 ## ARMADA (update 2026-07-17c — hanya 2 Antigravity; Kiro/Roo/Cline DIBUANG)
 
@@ -53,8 +57,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6d) + `briefs/AGENT-1.md` | **F6d FRONTEND** (ekstrakurikuler: ekskul+peserta+tujuan+nilai+kehadiran%) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6d) + `briefs/AGENT-2.md` | **F6d BACKEND** (MEMIMPIN — ekskul 5 entitas + auth pembina + kehadiran% <70) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6d FRONTEND SELESAI (suite 285/0). Menunggu: integrasi PDF / docs / QA | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6d BACKEND SELESAI (F6 backend total tuntas). Menunggu arah | idle |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
