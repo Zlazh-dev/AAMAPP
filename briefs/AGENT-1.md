@@ -13,7 +13,30 @@
   `## LAPORAN`. Selesai â†’ append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-19) â€” F6c FRONTEND (kokurikuler)
+## TUGAS AKTIF (2026-07-19b) â€” F6d FRONTEND (ekstrakurikuler)
+
+> F6c frontend kamu DITERIMA (commit a88b6cc, suite 255/0). Sekarang F6d EKSKUL.
+> Baca **`briefs/F6-SPEC.md` bagian F6d** (dari referensi). Kontrak dikunci,
+> paralel. JANGAN integrasi PDF (menyusul).
+
+**Kontrak backend F6d (konsumsi):** admin `GET/POST/PATCH/DELETE /api/ekskul`;
+pembina peserta/tujuan/nilai/kehadiran `.../:id/...`; rapor
+`GET /api/ekskul/rapor/:siswaId?...`.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. Admin kelola ekskul (nama + pilih pembina guru) â€” list + CRUD.
+2. Pembina (halaman /guru/ekskul): peserta (add/remove siswa) + tujuan (per
+   semester) + input nilai (grid peserta Ã— tujuan, tombol SB/B/C/K) + kehadiran
+   (jumlahHadir/totalPertemuan â†’ tampil % , **merah <70%**).
+3. Tampilan rapor ekskul siswa (nilai per tujuan + kehadiran% + deskripsi).
+4. Wiring client.ts/App.tsx/menu.ts (admin/kurikulum "Ekstrakurikuler"; guru
+   "Ekskul"). E2E MANDIRI (buat data via API, navigasi by-id).
+
+DoD: tsc bersih â€¢ build sukses â€¢ ekskulâ†’pesertaâ†’tujuanâ†’nilaiâ†’kehadiranâ†’rapor
+jalan â€¢ e2e hijau â€¢ laporan. JANGAN integrasi PDF. JANGAN sentuh backend (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-19) â€” F6c FRONTEND (SELESAI, diterima commit a88b6cc)
 
 > F6b frontend kamu DITERIMA (commit ed9d0ed). Rapor akademik tuntas. Sekarang
 > F6c KOKURIKULER. Baca **`briefs/F6-SPEC.md` bagian F6c** (8 dimensi + SB/B/C/K
@@ -1598,26 +1621,26 @@ jalan â€¢ FINALâ†’read-only â€¢ export PDF lazy (tidak di main bundle) â€¢ e2e m
 
 ---
 
-## LAPORAN — F6c FRONTEND: KOKURIKULER
+## LAPORAN ï¿½ F6c FRONTEND: KOKURIKULER
 
 DIKERJAKAN (2026-07-19 00:47 ? 01:08 WIB).
 
 ### Yang dibangun
 
-**client.ts — F6c methods (9 method):**
-- getKokurikulerKegiatan/create/update/delete — kegiatan CRUD.
-- getKokurikulerTim/assignKokurikulerTim/removeKokurikulerTim — tim per kelas.
-- getKokurikulerAsesmen/putKokurikulerAsesmen — grid asesmen GET/PUT.
-- getRaporKokurikuler(siswaId, semester) — rapor per siswa per semester.
-- getGuruKokurikuler() — kegiatan di mana guru jadi penilai.
+**client.ts ï¿½ F6c methods (9 method):**
+- getKokurikulerKegiatan/create/update/delete ï¿½ kegiatan CRUD.
+- getKokurikulerTim/assignKokurikulerTim/removeKokurikulerTim ï¿½ tim per kelas.
+- getKokurikulerAsesmen/putKokurikulerAsesmen ï¿½ grid asesmen GET/PUT.
+- getRaporKokurikuler(siswaId, semester) ï¿½ rapor per siswa per semester.
+- getGuruKokurikuler() ï¿½ kegiatan di mana guru jadi penilai.
 
 **Halaman:**
 - `kokurikulerConstants.ts`: 8 dimensi master list, NilaiKokurikuler type, nilaiToVariant.
 - KokurikulerKegiatanPage /kurikulum/kokurikuler: list kegiatan, CRUD inline sheet (tema+semester+checkboxes 8 dimensi), navigasi ke tim.
 - KokurikulerTimPage /kurikulum/kokurikuler/:id/tim: assign guru penilai per kelas (multi-guru), remove guru dari tim.
 - GuruKokurikulerPage /guru/kokurikuler: kartu kegiatan guru jadi penilai ? Input Asesmen by kegiatanId.
-- KokurikulerAsesmenPage /guru/kokurikuler/:id/asesmen: grid siswa×dimensi, tombol SB/B/C/K toggle per cell, bulk PUT, progress badge, kelas selector.
-- RaporKokurikulerPage /kokurikuler/rapor/:siswaId: tabel dimensi × nilai akhir rata-rata SB/B/C/K + deskripsi, semester selector, formula note (SB=4/B=3/C=2/K=1 ? >3.5/>2.5/>1.5/K).
+- KokurikulerAsesmenPage /guru/kokurikuler/:id/asesmen: grid siswaï¿½dimensi, tombol SB/B/C/K toggle per cell, bulk PUT, progress badge, kelas selector.
+- RaporKokurikulerPage /kokurikuler/rapor/:siswaId: tabel dimensi ï¿½ nilai akhir rata-rata SB/B/C/K + deskripsi, semester selector, formula note (SB=4/B=3/C=2/K=1 ? >3.5/>2.5/>1.5/K).
 
 **Wiring:**
 - App.tsx: 5 lazy imports + 6 routes (kurikulum kelola, guru asesmen, rapor).
@@ -1636,8 +1659,8 @@ DIKERJAKAN (2026-07-19 00:47 ? 01:08 WIB).
 | F6c spec | 14 | 0 | 0 |
 | Full suite | 255 | 12 | 0 |
 
-DoD terpenuhi: tsc bersih • build sukses • kelola kegiatan?tim?asesmen?rapor
-jalan • 8 dimensi SB/B/C/K • formula rata-rata multi-penilai • e2e mandiri 14/14
-• full suite 255/0 • F6 (a+b+c) TUNTAS.
+DoD terpenuhi: tsc bersih ï¿½ build sukses ï¿½ kelola kegiatan?tim?asesmen?rapor
+jalan ï¿½ 8 dimensi SB/B/C/K ï¿½ formula rata-rata multi-penilai ï¿½ e2e mandiri 14/14
+ï¿½ full suite 255/0 ï¿½ F6 (a+b+c) TUNTAS.
 
 

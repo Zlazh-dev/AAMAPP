@@ -53,19 +53,17 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6c) + `briefs/AGENT-1.md` | **F6c FRONTEND** (kokurikuler: kegiatan+dimensi+tim+asesmen SB/B/C/K) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6c) + `briefs/AGENT-2.md` | **F6c BACKEND** (MEMIMPIN — kokurikuler + rata-rata SB/B/C/K 4/3/2/1 + authorization tim) | mulai |
+| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6d) + `briefs/AGENT-1.md` | **F6d FRONTEND** (ekstrakurikuler: ekskul+peserta+tujuan+nilai+kehadiran%) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6d) + `briefs/AGENT-2.md` | **F6d BACKEND** (MEMIMPIN — ekskul 5 entitas + auth pembina + kehadiran% <70) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
 dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap.
-✅ **F5 TUNTAS** • ✅ **F6a** (penilaian: TP+nilai+nilai akhir) • ✅ **F6b**
-(rapor: deskripsi otomatis+katrol+S/I/A+draft/final+snapshot+PDF; KKM global 75).
-**RAPOR AKADEMIK SELESAI.** ⏳ Tersisa: **F6c** (kokurikuler+ekskul — butuh
-keputusan user: 8 dimensi, rata-rata SB/B/C/K) + **DOCS** (F3–F6) + **DEPLOY**
-(blocker bootstrap skema). Catatan gerbang: 5 e2e presensi SKIP di hari MINGGU
-(hari 7 tak ada KBM — produk benar; jalan normal Sen-Sab). Docs & backlog
-harness (audit spec lookup-paginasi) tetap tertunda.
+✅ F5 • ✅ **F6a** penilaian • ✅ **F6b** rapor akademik • ✅ **F6c**
+kokurikuler (8 dimensi + rata SB/B/C/K, dari referensi radig/rapor). ▶️ **F6d**
+ekstrakurikuler (dari referensi yg sama) DIBUKA. Setelah F6d → **INTEGRASI PDF**
+(gabung akademik+kokurikuler+ekskul) → **DOCS** (F3–F6) → **DEPLOY** (blocker
+bootstrap skema). Gerbang: e2e presensi SKIP hari Minggu (produk benar).
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`

@@ -5,7 +5,26 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-19) — F6c BACKEND (kokurikuler; MEMIMPIN)
+## TUGAS AKTIF (2026-07-19b) — F6d BACKEND (ekstrakurikuler; MEMIMPIN)
+
+> F6c backend kamu DITERIMA (commit a88b6cc). Sekarang F6d EKSKUL. Baca
+> **`briefs/F6-SPEC.md` bagian F6d** (dikunci dari referensi radig/rapor).
+> Setelah ini → integrasi PDF (menyusul).
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Modul `backend/src/ekskul/**`: 5 entitas (ekskul, peserta, tujuan, nilai
+   SB/B/C/K, kehadiran) — skema F6-SPEC.
+2. Service: CRUD ekskul (admin) + peserta/tujuan/nilai/kehadiran (pembina,
+   **authorization = ekskul.pembinaGuruId → 403 lain**); **kehadiran%** turunan
+   (hadir/total×100, flag <70%); deskripsi otomatis; rapor per siswa BATCH.
+3. Controller kontrak F6-SPEC. Daftarkan app.module. Boot-verify (5 tabel) +
+   e2e mandiri (pembina-only 403; kehadiran% <70 flag; rapor per siswa).
+
+DoD: backend F6d live, auth pembina, kehadiran% benar, e2e hijau, laporan.
+JANGAN integrasi PDF (menyusul). JANGAN sentuh frontend (AG-1).
+
+---
+## ARSIP — F6c BACKEND (SELESAI, diterima commit a88b6cc)
 
 > F6b backend kamu DITERIMA (commit ed9d0ed). Rapor akademik tuntas. Sekarang
 > F6c KOKURIKULER. Baca **`briefs/F6-SPEC.md` bagian F6c** (dikunci dari

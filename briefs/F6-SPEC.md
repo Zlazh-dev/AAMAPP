@@ -213,6 +213,54 @@ kualitas: `"Menunjukkan capaian Sangat Baik pada {dimensi SB}. Baik pada {…}. 
   dimensi, tombol SB/B/C/K) + tampilan rapor kokurikuler siswa. Wiring + menu.
   E2E MANDIRI.
 
+## ══════════ F6d — EKSTRAKURIKULER (dibuka 2026-07-19; dari referensi radig/rapor) ══════════
+> Sumber: admin_ekskul.php, pembina_penilaian_ekskul.php. Setelah F6d →
+> INTEGRASI PDF rapor (akademik+kokurikuler+ekskul).
+
+**Struktur (dari referensi):** ekskul (nama + pembina guru) → peserta (siswa) →
+tujuan (deskripsi per semester) → nilai per peserta per tujuan (SB/B/C/K
+kualitatif) + kehadiran (jumlahHadir/totalPertemuan). **Kehadiran %** =
+hadir/total ×100; **MERAH < 70%** (§9). Nilai kualitatif sama skala F6c
+(Sangat Baik/Baik/Cukup/Kurang) — TAPI ekskul TIDAK dirata (single pembina).
+
+## Entitas F6d (backend/src/ekskul/)
+```
+ekskul  id PK • nama varchar • pembinaGuruId FK guru (SET NULL) • createdAt/updatedAt
+ekskul_peserta  id PK • ekskulId FK (CASCADE) • siswaId FK (CASCADE)
+                — UNIQUE(ekskulId, siswaId)
+ekskul_tujuan  id PK • ekskulId FK (CASCADE) • semester int • deskripsi text
+               • createdAt/updatedAt
+ekskul_nilai  id PK • pesertaId FK ekskul_peserta (CASCADE) • tujuanId FK
+              ekskul_tujuan (CASCADE) • nilai varchar (SB/B/C/K)
+              — UNIQUE(pesertaId, tujuanId)
+ekskul_kehadiran  id PK • pesertaId FK ekskul_peserta (CASCADE) • semester int
+                  • jumlahHadir int • totalPertemuan int
+                  — UNIQUE(pesertaId, semester)
+```
+Kehadiran% = TURUNAN. Deskripsi otomatis = pola default (gabung tujuan per
+kualitas, sama F6c).
+
+## Kontrak API F6d (admin kelola ekskul; pembina kelola isinya; wali/rapor baca)
+- Admin: `GET/POST/PATCH/DELETE /api/ekskul` (nama + pembinaGuruId).
+- Pembina (authorization = ekskul.pembinaGuruId): peserta
+  `GET/POST/DELETE /api/ekskul/:id/peserta` • tujuan `GET/POST/PATCH/DELETE
+  /api/ekskul/:id/tujuan?semester=` • nilai `PUT /api/ekskul/:id/nilai`
+  `{semester, entri:[{pesertaId,tujuanId,nilai}]}` • kehadiran
+  `PUT /api/ekskul/:id/kehadiran` `{semester, entri:[{pesertaId,jumlahHadir,
+  totalPertemuan}]}`.
+- Rapor: `GET /api/ekskul/rapor/:siswaId?tahunAjaranId=&semester=` → per ekskul
+  yg diikuti siswa: nilai per tujuan + kehadiran% (+ flag <70%) + deskripsi.
+
+## PEMBAGIAN WILAYAH F6d
+- **AG-2 (backend, MEMIMPIN)**: modul `backend/src/ekskul/**` (5 entitas,
+  service: CRUD ekskul[admin] + peserta/tujuan/nilai/kehadiran[pembina, auth
+  pembinaGuruId 403], kehadiran% turunan, deskripsi otomatis, rapor per siswa
+  BATCH). Daftarkan. Boot-verify + e2e mandiri (pembina-only 403, kehadiran%
+  <70 flag, rapor).
+- **AG-1 (frontend)**: admin kelola ekskul (nama+pembina) + pembina
+  (peserta+tujuan+nilai SB/B/C/K+kehadiran) + rapor ekskul siswa. Wiring + menu.
+  E2E MANDIRI.
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang (spec MANDIRI — buat data via API,
 navigasi by-id/search) • RBAC + authorization service + audit + WIB • komponen
