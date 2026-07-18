@@ -472,6 +472,68 @@ async function request<T>(
   }
 }
 
+// ─── Device token helpers (F3b kiosk) ───────────────────────────────────────
+const DEVICE_TOKEN_KEY = 'aamapp_device_token';
+const DEVICE_NAMA_KEY  = 'aamapp_device_nama';
+
+export function getDeviceToken(): string | null {
+  return localStorage.getItem(DEVICE_TOKEN_KEY);
+}
+
+export function setDeviceToken(token: string, nama: string): void {
+  localStorage.setItem(DEVICE_TOKEN_KEY, token);
+  localStorage.setItem(DEVICE_NAMA_KEY, nama);
+}
+
+export function clearDeviceToken(): void {
+  localStorage.removeItem(DEVICE_TOKEN_KEY);
+  localStorage.removeItem(DEVICE_NAMA_KEY);
+}
+
+export function getDeviceNama(): string | null {
+  return localStorage.getItem(DEVICE_NAMA_KEY);
+}
+
+/**
+ * Seperti `request`, tapi:
+ * - Kirim header `X-Device-Token` (dari localStorage), BUKAN Bearer sesi.
+ * - 401 → clearDeviceToken (token perangkat dicabut), TIDAK redirect ke /login.
+ */
+async function requestDevice<T>(url: string, options: RequestInit = {}): Promise<T> {
+  const token = getDeviceToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((options.headers as Record<string, string>) || {}),
+  };
+  if (token) headers['X-Device-Token'] = token;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  try {
+    const res = await fetch(`/api${url}`, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (res.status === 204) return undefined as T;
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      if (res.status === 401) clearDeviceToken();
+      throw new ApiError(res.status, data);
+    }
+    return data as T;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') throw new ApiError(0, { message: 'Permintaan timed out.' });
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(0, { message: 'Tidak dapat terhubung ke server.' });
+  }
+}
+
 // ============ AUTH API ============
 
 export const api = {
@@ -1121,6 +1183,106 @@ export const api = {
     alasan: string;
   }) =>
     request<{ ok: boolean }>('/admin/presensi-guru/manual', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F3b: KIOSK — device-facing (pakai X-Device-Token, BUKAN Bearer sesi)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Tukar kode pairing 6-digit → deviceToken + nama perangkat.
+   * PUBLIC — tidak butuh auth apapun.
+   */
+  kioskPair: (pairingCode: string) =>
+    requestDevice<{ deviceToken: string; nama: string }>('/kiosk/pair', {
+      method: 'POST',
+      body: JSON.stringify({ pairingCode }),
+    }),
+
+  /**
+   * Scan wajah 1:N → HADIR/TERLAMBAT atau 404 wajah tidak dikenali.
+   * Header: X-Device-Token.
+   */
+  kioskScan: (data: { embedding: number[]; scannedAt?: string }) =>
+    requestDevice<{
+      guruId: number;
+      guruNama: string;
+      status: 'HADIR' | 'TERLAMBAT';
+      jam: string;
+    }>('/kiosk/scan', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Manual NIP — catat source=KIOSK perluVerifikasi=true.
+   * Header: X-Device-Token.
+   */
+  kioskManual: (data: { nip: string; scannedAt?: string }) =>
+    requestDevice<{ status: 'PENDING' }>('/kiosk/manual', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Heartbeat periodik → update lastSeenAt perangkat.
+   * Header: X-Device-Token.
+   */
+  kioskHeartbeat: () =>
+    requestDevice<{ ok: boolean }>('/kiosk/heartbeat', { method: 'POST' }),
+
+  // --- F3b: Admin device kiosk (dibutuhkan AG-2 halaman admin) ---
+
+  /** Daftar perangkat kiosk + isOnline + status pairing. */
+  adminGetDeviceKiosk: () =>
+    request<{
+      data: Array<{
+        id: number;
+        nama: string;
+        pairingCode: string | null;
+        pairingExpiresAt: string | null;
+        lastSeenAt: string | null;
+        isOnline: boolean;
+      }>;
+    }>('/admin/device-kiosk'),
+
+  /** Buat perangkat baru → kode pairing 6 digit. */
+  adminCreateDeviceKiosk: (nama: string) =>
+    request<{
+      id: number;
+      nama: string;
+      pairingCode: string;
+      expiresAt: string;
+    }>('/admin/device-kiosk', {
+      method: 'POST',
+      body: JSON.stringify({ nama }),
+    }),
+
+  /** Cabut perangkat (token mati). */
+  adminDeleteDeviceKiosk: (id: number) =>
+    request<void>(`/admin/device-kiosk/${id}`, { method: 'DELETE' }),
+
+  // --- F3b: Admin presensi pending (verifikasi manual NIP kiosk) ---
+
+  /** Daftar record perluVerifikasi=true. */
+  adminGetPresensiPending: () =>
+    request<{
+      data: Array<{
+        id: number;
+        guruId: number;
+        guruNama: string;
+        nip: string | null;
+        tanggal: string;
+        checkInAt: string | null;
+        status: string;
+      }>;
+    }>('/admin/presensi-guru/pending'),
+
+  /** Terima atau tolak record pending. */
+  adminVerifikasiPresensi: (id: number, data: { aksi: 'terima' | 'tolak'; status?: string; alasan?: string }) =>
+    request<{ ok: boolean }>(`/admin/presensi-guru/${id}/verifikasi`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),

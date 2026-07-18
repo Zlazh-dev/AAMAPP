@@ -40,6 +40,8 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Presensi Siswa', path: '/admin/presensi-siswa', icon: 'fact_check' },
       { label: 'Presensi Guru', path: '/admin/presensi-guru', icon: 'person_check' },
       { label: 'Pendaftaran Wajah', path: '/admin/wajah', icon: 'face_retouching_natural' },
+      { label: 'Perangkat Kiosk', path: '/admin/perangkat', icon: 'devices' },
+      { label: 'Verifikasi Presensi', path: '/admin/presensi-guru-pending', icon: 'how_to_reg' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
     ],

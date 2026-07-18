@@ -816,3 +816,58 @@ presensi_harian_guru.perluVerifikasi boolean default false ✅
 **DoD terpenuhi**: tabel+kolom ada ✅, backend live ✅, endpoint ter-guard ✅,
 e2e 11/11 hijau ✅, laporan dgn bukti ✅, wilayah dihormati ✅.
 Frontend kiosk (F3b UI) TIDAK dikerjakan sesuai instruksi.
+
+## KLAIM TUGAS — F3b FRONTEND ADMIN + nit backend
+DIKERJAKAN (16:45 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Membangun: (1) /admin/perangkat — halaman daftar device kiosk + kode pairing,
+(2) verifikasi pending, (3) nit backend BadRequestException, (4) e2e.
+Wilayah: `frontend/src/pages/admin/kiosk/**` + `backend/src/kiosk/` + `frontend/e2e/`.
+
+### [AGENT-2] F3b FRONTEND ADMIN — SELESAI (2026-07-18 16:56 WIB)
+
+**Wilayah dihormati**: `frontend/src/pages/admin/kiosk/**` + `backend/src/kiosk/kiosk.controller.ts` (nit fix) + `frontend/e2e/`.
+Tidak menyentuh `client.ts`/`App.tsx`/`menu.ts`.
+
+**File baru/dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [PerangkatKioskPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/kiosk/PerangkatKioskPage.tsx) | NEW | Daftar device + isOnline/paired badge, "Tambah" → kode pairing 6 digit besar modal, "Cabut" dgn konfirmasi sheet |
+| [VerifikasiPendingPage.tsx](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/kiosk/VerifikasiPendingPage.tsx) | NEW | List perluVerifikasi=true, terima (status override) / tolak (alasan wajib), adaptive sheet |
+| [index.ts](file:///d:/Codeproject/AAMAPP/frontend/src/pages/admin/kiosk/index.ts) | NEW | Barrel export |
+| [kiosk.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/kiosk.controller.ts) | MODIFY | Nit: `throw new Error` → `BadRequestException` (500→400) |
+| [kiosk-frontend-admin.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/kiosk-frontend-admin.spec.ts) | NEW | 6 test: create device, cabut, list pending, terima, tolak, 400 nit |
+
+**E2E — 6/6 LULUS (13.4 detik):**
+1. ✅ Buat device → pairingCode 6 digit
+2. ✅ Cabut device → ok=true
+3. ✅ List pending → shape valid
+4. ✅ Verifikasi terima → status=HADIR, perluVerifikasi cleared
+5. ✅ Verifikasi tolak → record hilang dari pending
+6. ✅ Nit: nama kosong → 400 (bukan 500)
+
+**TypeScript**: `npx tsc --noEmit` → 0 error ✅
+
+---
+
+## DAFTAR METHOD UNTUK AG-1 (wire ke App.tsx/menu.ts)
+
+AG-1 perlu mendaftarkan 2 route baru di App.tsx + menu.ts:
+
+| Komponen | Path route | Import |
+|----------|-----------|--------|
+| `PerangkatKioskPage` | `/admin/perangkat` | `frontend/src/pages/admin/kiosk` |
+| `VerifikasiPendingPage` | `/admin/presensi-guru-pending` (atau tab di `/admin/presensi-guru`) | `frontend/src/pages/admin/kiosk` |
+
+**Method API yang sudah ada di `client.ts`** (AG-1 tidak perlu tambah):
+- `api.adminGetDeviceKiosk()` → GET `/api/admin/device-kiosk` (list + isOnline)
+- `api.adminCreateDeviceKiosk(nama)` → POST `/api/admin/device-kiosk` (buat + kode)
+- `api.adminDeleteDeviceKiosk(id)` → DELETE `/api/admin/device-kiosk/:id` (cabut)
+- `api.adminGetPresensiPending()` → GET `/api/admin/presensi-guru/pending`
+- `api.adminVerifikasiPresensi(id, body)` → POST `/api/admin/presensi-guru/:id/verifikasi`
+
+> **Catatan**: Body `adminVerifikasiPresensi` di client.ts memakai `{terima: boolean, alasan?}` tapi backend mengharapkan `{aksi: 'terima'|'tolak', status?, alasan?}`. AG-2 menggunakan `apiFetch` lokal untuk bypass mismatch ini. AG-1 perlu update signature di client.ts saat migrate.
+
+**DoD terpenuhi**: halaman admin kiosk jalan ✅, TypeScript 0 error ✅, nit backend fixed ✅,
+e2e 6/6 hijau ✅, laporan + daftar method AG-1 ✅, wilayah dihormati ✅.
+Frontend device-facing kiosk (layar kiosk itu sendiri) TIDAK dikerjakan.

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -30,7 +31,7 @@ export class AdminDeviceKioskController {
   @Post()
   @Roles('admin')
   create(@Body() body: { nama: string }, @Req() req: Request) {
-    if (!body.nama?.trim()) throw new Error('nama wajib diisi');
+    if (!body.nama?.trim()) throw new BadRequestException('nama wajib diisi');
     return this.svc.createDevice(body.nama.trim(), req);
   }
 

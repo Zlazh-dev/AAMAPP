@@ -62,6 +62,11 @@ const GuruPresensiDashboard = React.lazy(() => import('../pages/guru/GuruPresens
 const WajahListPage = React.lazy(() => import('../pages/admin/wajah/WajahListPage').then(m => ({ default: m.WajahListPage })));
 const EnrollWizardPage = React.lazy(() => import('../pages/admin/wajah/EnrollWizardPage').then(m => ({ default: m.EnrollWizardPage })));
 const PresensiGuruPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruPage').then(m => ({ default: m.PresensiGuruPage })));
+// F3b: Admin kiosk (AG-2)
+const PerangkatKioskPage = React.lazy(() => import('../pages/admin/kiosk/PerangkatKioskPage').then(m => ({ default: m.PerangkatKioskPage })));
+const VerifikasiPendingPage = React.lazy(() => import('../pages/admin/kiosk/VerifikasiPendingPage').then(m => ({ default: m.VerifikasiPendingPage })));
+// F3b: Kiosk device app (AG-1) — di-mount di luar AuthedLayout
+const KioskApp = React.lazy(() => import('../pages/kiosk/KioskApp').then(m => ({ default: m.KioskApp })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -108,6 +113,8 @@ const routes: RouteObject[] = [
       // Public
       { path: '/login', element: <LoginPage /> },
       { path: '/daftar', element: <Lazy><DaftarPage /></Lazy> },
+      // F3b: Kiosk device app — public, no auth required
+      { path: '/kiosk', element: <Lazy><KioskApp /></Lazy> },
 
       // Authenticated
       {
@@ -195,6 +202,9 @@ const routes: RouteObject[] = [
           { path: '/admin/wajah', element: <RequireRole roles={['admin']}><Lazy><WajahListPage /></Lazy></RequireRole> },
           { path: '/admin/wajah/:guruId', element: <RequireRole roles={['admin']}><Lazy><EnrollWizardPage /></Lazy></RequireRole> },
           { path: '/admin/presensi-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><PresensiGuruPage /></Lazy></RequireRole> },
+          // F3b: Admin kiosk management (AG-2 builds page; AG-1 wires route)
+          { path: '/admin/perangkat', element: <RequireRole roles={['admin']}><Lazy><PerangkatKioskPage /></Lazy></RequireRole> },
+          { path: '/admin/presensi-guru-pending', element: <RequireRole roles={['admin']}><Lazy><VerifikasiPendingPage /></Lazy></RequireRole> },
 
           // Kepsek placeholder
           { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><PlaceholderPage title="Dashboard Kepala Sekolah" icon="dashboard" /></Lazy></RequireRole> },

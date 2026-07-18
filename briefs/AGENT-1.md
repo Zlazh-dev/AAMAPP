@@ -903,4 +903,51 @@ dibuat tiap test tidak masuk ke dalam daftar dropdown/select di UI.
 DoD terpenuhi: `npm run test:e2e` hijau penuh ×2, tidak ada assertion yang
 dilonggarkan.
 
+---
 
+## LAPORAN — F3b FRONTEND: APLIKASI KIOSK (device-facing)
+
+DIKERJAKAN (2026-07-18 16:45 WIB) — mulai F3b: client.ts kiosk methods
+(X-Device-Token variant), layar pairing+scanner /kiosk, wiring App.tsx+menu.ts,
+route admin /admin/perangkat untuk AG-2, e2e mock.
+
+### Yang dibangun
+
+**client.ts — varian request device + method kiosk:**
+- `getDeviceToken / setDeviceToken / clearDeviceToken / getDeviceNama` —
+  helper localStorage `aamapp_device_token` / `aamapp_device_nama`.
+- `requestDevice<T>()` — seperti `request` tapi kirim header `X-Device-Token`
+  (BUKAN Bearer); 401 → clearDeviceToken, TIDAK redirect ke `/login`.
+- Method: `kioskPair`, `kioskScan`, `kioskManual`, `kioskHeartbeat`.
+- Admin method: `adminGetDeviceKiosk`, `adminCreateDeviceKiosk`,
+  `adminDeleteDeviceKiosk`, `adminGetPresensiPending`, `adminVerifikasiPresensi`.
+
+**Aplikasi kiosk `/kiosk` (di luar AuthedLayout):**
+- `KioskApp.tsx` — orchestrator: cek localStorage device token → pilih layar.
+- `KioskPairingPage.tsx` — input kode 6-digit → `kioskPair` → simpan token;
+  full-dark premium UI, validasi inline.
+- `KioskScannerPage.tsx` — kamera fullscreen + overlay jam WIB besar;
+  auto-capture via `faceHuman.ts` (dynamic-import, §12.15); state machine:
+  idle → scanning → match (kartu slide-in) / no_match (retry; 3× → manual NIP)
+  / sudah_tercatat / pending_verifikasi / error_cam; heartbeat 60 s.
+
+**Wiring App.tsx + menu.ts:**
+- `/kiosk` → public route (di luar AuthedLayout, dalam RootLayout).
+- `/admin/perangkat` → RequireRole admin → `PerangkatKioskPage` (AG-2 sudah build).
+- Menu admin: item "Perangkat Kiosk" (icon `devices`) setelah Pendaftaran Wajah.
+
+**E2E `kiosk-device.spec.ts` (5 test):**
+1. Layar pairing tampil saat belum ada device token.
+2. Pairing: input kode → token tersimpan → scanner (video) tampil.
+3. Scanner MATCH → kartu sukses (mock `/api/kiosk/scan`).
+4. Scanner NO_MATCH 3× → form manual NIP (mock).
+5. Admin `/admin/perangkat` accessible.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| kiosk-device isolated (5 test) | 5 | 0 | 0 |
+| Full suite (93 test) | 93 | 2 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • kiosk pairing→scanner jalan •
+human tetap lazy (dynamic-import) • e2e hijau • laporan.
