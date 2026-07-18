@@ -53,19 +53,19 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6b) + `briefs/AGENT-1.md` | **F6b FRONTEND** (rapor wali: nilai+deskripsi+katrol+kehadiran+finalisasi+PDF) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6b) + `briefs/AGENT-2.md` | **F6b BACKEND** (MEMIMPIN — rapor assembly derived + deskripsi otomatis + draft/final snapshot) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6b FRONTEND SELESAI (rapor+PDF). Menunggu F6c / docs / QA | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6b BACKEND SELESAI (assembly+deskripsi+snapshot). Menunggu F6c / docs / QA | idle |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
 dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap.
-✅ **F5 TUNTAS** (suite 191/0 dikonfirmasi bersih). ▶️ **F6 DIBUKA (fase
-TERAKHIR, keputusan user)** — DIFASE: **F6a** (penilaian inti: TP+penilaian+
-input nilai+nilai akhir turunan) DULU; F6b (rapor: deskripsi otomatis+katrol+
-S/I/A+draft/final+PDF) & F6c (kokurikuler+ekskul) ditunda. Kontrak:
-`briefs/F6-SPEC.md` (§9). PERTANYAAN TERBUKA utk F6b/c (KKM per-mapel, pola
-kalimat deskripsi, 8 dimensi kokurikuler) — diputus user sebelum fase itu.
-Docs (F3+F4+F5) tetap tertunda. Gerbang deterministik — spec baru wajib mandiri.
+✅ **F5 TUNTAS** • ✅ **F6a** (penilaian: TP+nilai+nilai akhir) • ✅ **F6b**
+(rapor: deskripsi otomatis+katrol+S/I/A+draft/final+snapshot+PDF; KKM global 75).
+**RAPOR AKADEMIK SELESAI.** ⏳ Tersisa: **F6c** (kokurikuler+ekskul — butuh
+keputusan user: 8 dimensi, rata-rata SB/B/C/K) + **DOCS** (F3–F6) + **DEPLOY**
+(blocker bootstrap skema). Catatan gerbang: 5 e2e presensi SKIP di hari MINGGU
+(hari 7 tak ada KBM — produk benar; jalan normal Sen-Sab). Docs & backlog
+harness (audit spec lookup-paginasi) tetap tertunda.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
