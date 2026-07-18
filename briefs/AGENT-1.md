@@ -700,5 +700,12 @@ semua form pages).
 F2 frontend TUNTAS (guru KBM+Roster, admin matriks, guru rekap). Tidak
 ada bug tersisa. Menunggu tugas berikutnya dari planner.
 
+## LAPORAN — E2E-ISOLASI-HARDENING
+
+DIKERJAKAN (2026-07-18 13:12 WIB) — mulai E2E-ISOLASI-HARDENING: perbaiki
+`loginAs` di `e2e/helpers/auth.ts` agar deterministik, tambah reset state
+antar-test bila perlu, verifikasi `npm run test:e2e` hijau 2× berturut.
+
+
 
 

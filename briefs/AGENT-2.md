@@ -518,3 +518,76 @@ nol regresi dari perubahan saya ✅, wilayah tulis dihormati (hanya 1 file
 baru di `frontend/e2e/`) ✅. Menunggu review planner; disarankan planner
 menugaskan perbaikan `rekap-presensi.spec.ts` (locator ganda, pola sama)
 ke agen pemilik tugas rekap tsb.
+
+## KLAIM TUGAS — F2-DOKUMENTASI
+DIKERJAKAN (13:12 WIB, 2026-07-18) — Antigravity-2 (executor B). Mendokumentasikan
+modul presensi F2 di `docs/API-REFERENCE.md` (4 grup endpoint) dan
+`docs/KAMUS-DATA.md` (tabel presensi_sesi & presensi_siswa). Wilayah tulis:
+HANYA `docs/`. Tidak menyentuh kode/e2e/file bersama.
+
+### [AGENT-2] F2-DOKUMENTASI — SELESAI (2026-07-18 13:15 WIB)
+
+**Wilayah dihormati**: HANYA `docs/` (2 file dimodifikasi, tidak ada file
+dibuat/dihapus). Tidak menyentuh kode/e2e/file bersama.
+
+**[docs/API-REFERENCE.md](file:///d:/Codeproject/AAMAPP/docs/API-REFERENCE.md)** — bagian baru
+"Presensi (F2)" ditambahkan sebelum "Catatan Keamanan", mendokumentasikan
+SEMUA 6 endpoint dari 3 controller class di
+[presensi.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.controller.ts)
+(bukan 4 grup — kode aktual punya 3 controller/6 route, karena POST & PATCH
+roster adalah 2 route terpisah yang berbagi 1 service):
+1. `GET /api/guru/kbm` — sesi KBM guru hari ini
+2. `GET /api/guru/kbm/:jadwalId/roster` — baca roster
+3/4. `POST` & `PATCH /api/guru/kbm/:jadwalId/roster` — simpan/koreksi (upsert, service sama)
+5. `GET /api/guru/kelas/rekap-presensi` — rekap per siswa (RBAC ganda: role + wali kelas)
+6. `GET /api/admin/presensi-siswa` — matriks admin (baca saja)
+
+Untuk tiap endpoint dicatat: method+path+query nyata, bentuk
+request/response NYATA (dikutip persis dari kode, bukan ditebak), RBAC
+(`@Roles` + pengecekan tambahan di handler bila ada), dan SEMUA kondisi
+error yang diminta planner:
+- **403 cutoff** guru (bukan hari ini ATAU lewat jam cutoff) —
+  [presensi.service.ts:199-212](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L199-L212)
+- **403 bukan-pemilik** (guru bukan pemilik penugasan sesi) —
+  [presensi.service.ts:149-152](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L149-L152) &
+  [:195-197](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L195-L197)
+- **400 alasan wajib** (admin koreksi tanggal lampau tanpa alasan) —
+  [presensi.service.ts:213-216](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L213-L216)
+
+Setiap klaim di dokumen disertai link `file:baris` langsung ke kode sumber
+(bukan hanya di laporan ini) supaya bisa dicek silang tanpa membuka file
+terpisah.
+
+**[docs/KAMUS-DATA.md](file:///d:/Codeproject/AAMAPP/docs/KAMUS-DATA.md)** — 2 tabel baru
+ditambahkan sebelum "Deviasi Terdeteksi", plus 4 baris relasi baru di
+bagian "Relasi Antar Tabel":
+- **`presensi_sesi`** ([presensi-sesi.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi-sesi.entity.ts)) —
+  6 kolom + FK `jadwalKbmId`(RESTRICT)/`guruPelaksanaId`(RESTRICT)/
+  `guruPenggantiId`(SET NULL, nullable). UNIQUE `(jadwalKbmId,tanggal)`.
+- **`presensi_siswa`** ([presensi-siswa.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi-siswa.entity.ts)) —
+  FK `presensiSesiId`/`siswaId` (keduanya CASCADE). UNIQUE
+  `(presensiSesiId,siswaId)`. Kolom `status varchar(1) default 'H'`
+  (BUKAN enum Postgres — validasi `@IsIn` di
+  [simpan-roster.dto.ts:18-21](file:///d:/Codeproject/AAMAPP/backend/src/presensi/dto/simpan-roster.dto.ts#L18-L21) di layer DTO saja).
+
+> [!IMPORTANT]
+> **Deviasi ditemukan & dicatat via GitHub alert di KAMUS-DATA.md**: entity
+> `presensi_sesi` mendesain 3 status turunan `TERLAKSANA`/`KOSONG`/
+> `DIGANTIKAN` di komentarnya
+> ([presensi-sesi.entity.ts:19-23](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi-sesi.entity.ts#L19-L23)),
+> tapi verifikasi `grep_search "KOSONG|DIGANTIKAN"` di seluruh
+> `backend/src/presensi/` — **0 hasil**. Kode berjalan
+> ([presensi.service.ts:135](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L135),
+> [:445](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.service.ts#L445)) hanya pernah
+> menghasilkan `'TERLAKSANA'` atau `'BELUM'`. Label `KOSONG`/`DIGANTIKAN`
+> murni desain di komentar entity, BELUM diimplementasi F2 — didokumentasikan
+> apa adanya, tidak ditulis seolah sudah aktif.
+
+**Verifikasi**: setiap baris kolom/endpoint yang ditulis dicek langsung
+terhadap file sumber sebelum ditulis (tidak menebak dari nama); klaim
+"KOSONG/DIGANTIKAN belum diproduksi" diverifikasi via grep_search
+(0 hasil, dikutip di atas).
+
+**DoD terpenuhi**: 2 file docs terupdate akurat ✅, laporan dgn bukti
+file:baris ✅ (juga tertanam langsung di kedua file docs itu sendiri),
+wilayah tulis dihormati (hanya `docs/`) ✅.

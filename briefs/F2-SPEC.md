@@ -8,6 +8,14 @@
 1. **Status sesi DITURUNKAN**, bukan kolom. `presensi_sesi` simpan
    `disimpanPada` + `guruPenggantiId`; TERLAKSANA=ada baris, KOSONG=jam
    lewat tanpa baris, DIGANTIKAN=guruPenggantiId terisi.
+   > **REVISI 2026-07-18 (temuan AG-2 F2-DOKUMENTASI, diverifikasi planner):**
+   > Implementasi aktual (presensi.service.ts:135,445) hanya menghasilkan
+   > 2 label: **TERLAKSANA** (ada baris) / **BELUM** (belum ada baris).
+   > Label **KOSONG** (jam lewat tanpa baris — sinyal kepatuhan) &
+   > **DIGANTIKAN** (guruPenggantiId terisi) BELUM disurfacekan (datanya
+   > tersimpan, tapi tak jadi label). Keputusan: **DITANGGUHKAN** ke fase
+   > monitoring kepatuhan (F4/F5), BUKAN reopen F2. F2 fungsional cukup
+   > dgn TERLAKSANA/BELUM. Catat sebagai backlog, bukan bug.
 2. **Koreksi = OVERWRITE** (upsert) + audit mencatat perubahan. Tanpa
    soft-delete. Guru boleh edit sampai cutoff; sesudah cutoff hanya admin
    (+ alasan di audit).
