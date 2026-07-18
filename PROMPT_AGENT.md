@@ -53,9 +53,15 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **BACKLINK-ADAPTIF-MOBILE** — WIP di tree (checkpoint `c5e29f5`); WAJIB lapor di AGENT-1.md utk review planner | menunggu laporan |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | **F2-ADMIN-FIX2** — perbaiki 6 temuan review (2 blocker) di `frontend/src/pages/admin/presensi/`; rincian file:baris di dokumen tugas | siap mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **E2E-ISOLASI-HARDENING** (benahi loginAs → gerbang hijau) → lalu **F3a FRONTEND** (`briefs/F3-SPEC.md`, tunggu backend live) | jalan (harness) |
+| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` + `briefs/AGENT-2.md` | **F3a BACKEND** — MEMIMPIN F3: modul presensi-guru (enrollment/scan/monitor/manual). JANGAN kerjakan kiosk (F3b) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
+
+**STATUS FASE:** ✅ F2 SELESAI (backend+frontend guru+admin+rekap+docs; e2e
+produk hijau, sisa hardening isolasi harness di AG-1). ▶️ F3 dibuka & DIFASE:
+**F3a** (presensi HP mandiri + enrollment + geofence + monitor) DULU; **F3b**
+(kiosk 1:N + pairing + offline) DITUNDA. Kontrak: `briefs/F3-SPEC.md`.
+Arsitektur: berat (embedding) di device, server hanya cosine (ringan).
 
 **BACKEND F2 LIVE (kontrak untuk frontend):** `GET /api/guru/kbm?tanggal=`
 • `GET|POST|PATCH /api/guru/kbm/:jadwalId/roster` •

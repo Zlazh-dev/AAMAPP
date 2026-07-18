@@ -40,21 +40,15 @@ export async function apiLogin(
  * ATAU langsung set localStorage setelah `page.goto('/')` pertama kali
  * (localStorage butuh origin yang sudah dimuat).
  *
- * HARDENING (E2E-ISOLASI-HARDENING): sebelum fix ini, urutan
- * `goto('/login')` lalu `evaluate(setToken)` punya race window — bila
- * ada token LAMA (mis. dari akun sebelumnya yg sesinya baru saja
- * di-revoke oleh `afterEach` test lain via hapus user ->
- * `revokeAllByUser`) masih tersimpan di localStorage saat `/login`
- * mounting, `AuthProvider.refresh()` memanggil `/api/me` dgn token lama
- * itu secara ASYNC. Jika request itu baru resolve (gagal, 401) SETELAH
- * `evaluate()` di bawah menulis token baru, `clearToken()` di catch-nya
- * menghapus token baru itu tanpa syarat — sesi jadi "hilang" secara acak
- * tergantung timing jaringan, bukan bug produk tapi kerapuhan harness.
- *
- * Perbaikan: hapus token LAMA lewat `addInitScript` SEBELUM navigasi apa
- * pun terjadi, sehingga saat halaman benar2 mounting, `getToken()` sudah
- * null -> `refresh()` selesai sinkron (tanpa fetch async) -> tidak ada
- * balapan sama sekali. Token baru baru ditulis setelah origin termuat.
+ * CATATAN (E2E-ISOLASI-HARDENING): sempat dicoba menghapus token lama via
+ * `page.addInitScript` di sini, TAPI itu salah — init script berlaku utk
+ * SEMUA navigasi berikutnya di context yang sama (termasuk `page.reload()`
+ * / `page.goto()` lain di dalam body test setelah login), jadi token yang
+ * baru saja di-set pun ikut terhapus tiap kali halaman dimuat ulang ->
+ * regresi masif (44 test gagal). Race sesungguhnya (token lama tertimpa
+ * balapan oleh `AuthProvider.refresh()` yang gagal) diperbaiki di level
+ * produk: `frontend/src/app/AuthContext.tsx` (refresh() hanya clearToken()
+ * bila token belum berubah sejak request /me dimulai), bukan di harness.
  */
 export async function loginAs(
   page: import('@playwright/test').Page,
@@ -62,20 +56,6 @@ export async function loginAs(
   password: string,
 ): Promise<LoginResult> {
   const result = await apiLogin(page.request, email, password);
-
-  // Bersihkan token & return-to LAMA dari context ini SEBELUM navigasi apa
-  // pun, agar AuthProvider tidak pernah mounting dgn kredensial basi.
-  // addInitScript berlaku utk SEMUA navigasi berikutnya di context ini
-  // (termasuk goto('/login') di bawah), jadi race window tertutup total.
-  await page.addInitScript(() => {
-    try {
-      localStorage.removeItem('aamapp_token');
-      sessionStorage.removeItem('aamapp_return_to');
-    } catch {
-      // ignore (mis. akses storage diblokir sebelum origin termuat)
-    }
-  });
-
   // Origin harus sudah dimuat sebelum localStorage bisa ditulis.
   await page.goto('/login');
   await page.evaluate((token) => {

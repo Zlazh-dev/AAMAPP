@@ -5,7 +5,44 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18b) — F2-DOKUMENTASI (rekam kontrak presensi)
+## TUGAS AKTIF (2026-07-18c) — F3a BACKEND (kamu MEMIMPIN F3; fondasi presensi wajah)
+
+> F2-DOKUMENTASI kamu DITERIMA (commit eefa8d5) — temuan deviasi KOSONG/
+> DIGANTIKAN diverifikasi akurat & dicatat planner. Sekarang kamu MEMIMPIN
+> F3: bangun BACKEND F3a lebih dulu (pola sama seperti F2 backend yang
+> sukses). Baca **`briefs/F3-SPEC.md`** (kontrak terkunci) — HANYA bagian
+> **F3a**; JANGAN kerjakan KIOSK (itu F3b, ditunda).
+
+Kerjakan (wilayah: `backend/**` + `frontend/e2e/`; kamu pegang app.module.ts
+untuk F3):
+1. Modul baru `backend/src/presensi-guru/**`:
+   - Entitas `presensi_harian_guru` (skema di F3-SPEC: UNIQUE(guruId,tanggal),
+     status HADIR/TERLAMBAT/ALPHA, source HP/MANUAL, distanceMeter, similarity,
+     alasan).
+   - Migrasi kolom `guru`: `faceEmbeddings jsonb NULL` + `faceUpdatedAt
+     timestamptz NULL` (tambah di guru.entity.ts).
+   - DTO (anti-DTO-drift): EnrollWajahDto `{ embeddings: number[][] }`,
+     ScanDto `{ embedding: number[], lat?, lng?, mode? }`, ManualDto
+     `{ guruId, tanggal, status, checkInAt?, checkOutAt?, alasan }`.
+   - Service: helper `cosine(a,b)` + `haversineMeter(lat1,lng1,lat2,lng2)` +
+     derivasi HADIR/TERLAMBAT dari `jam_presensi`. Method enrollment (self +
+     admin + delete-clear), scan (alur 6 langkah di F3-SPEC), monitor harian
+     (BATCH, LEFT JOIN, anti N+1), manual.
+   - Controller: 6+ route persis kontrak F3-SPEC dgn @Roles yang benar
+     (guru scan/enroll-diri; admin monitor/manual/enroll-guru; kepsek boleh
+     baca monitor).
+2. Daftarkan modul + 2 entitas baru di `app.module.ts`. Tambah key pengaturan
+   `wajah` `{ threshold:0.6, minPoses:3 }` (default di kode bila belum diset).
+3. Boot-verify: `docker compose build backend` OK → tabel `presensi_harian_guru`
+   terbentuk + kolom guru baru ada (psql) → endpoint merespons ter-guard (401
+   tanpa token).
+4. E2E mock embedding (`frontend/e2e/gelombang2/presensi-wajah.spec.ts`): seed
+   guru dgn faceEmbeddings, kirim embedding uji ke scan → uji jalur sukses
+   HADIR/TERLAMBAT, tolak luar-radius (geofence aktif), tolak wajah-asing
+   (< threshold), idempotent scan-ganda, manual admin.
+
+DoD: backend F3a live & boot-verified, tabel+kolom ada, e2e mock hijau,
+laporan dgn bukti di `## LAPORAN`. JANGAN sentuh frontend halaman (itu AG-1).
 
 > F2-ADMIN-E2E kamu DITERIMA (commit 984d039); planner menata-ulang 1 test
 > role-gating yang re-login-nya rapuh. Sekarang tugas non-konflik dgn AG-1

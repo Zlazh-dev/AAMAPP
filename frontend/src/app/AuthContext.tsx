@@ -40,8 +40,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const me = await api.me();
       setUser(me);
     } catch {
-      clearToken();
-      setUser(null);
+      // Hanya hapus token bila masih SAMA dgn token yang dicek di awal
+      // refresh() ini. Bila sudah berubah (mis. login baru menulis token
+      // FRESH sementara request /me utk token LAMA ini masih berjalan &
+      // baru gagal belakangan), jangan hapus token baru itu — race
+      // ditemukan lewat e2e (E2E-ISOLASI-HARDENING): tanpa guard ini,
+      // sesi baru bisa "hilang" secara acak tergantung timing jaringan.
+      if (getToken() === token) {
+        clearToken();
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
