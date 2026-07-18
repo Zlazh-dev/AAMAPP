@@ -1306,3 +1306,9 @@ Spec lain (`jadwal-mobile`, `wali-force`, `kelas-crud`, dll.) sudah mandiri
 Identik. Suite DETERMINISTIK terbukti — tidak bergantung data ambient.
 
 DoD terpenuhi: suite hijau 2× berturut identik 0 gagal • laporan.
+
+---
+
+## LAPORAN — F5a FRONTEND: KESISWAAN / DEMERIT
+
+DIKERJAKAN (2026-07-18 20:03 WIB) — tata-tertib CRUD, catat pelanggaran, verifikasi, guru lapor, wiring, e2e mandiri.

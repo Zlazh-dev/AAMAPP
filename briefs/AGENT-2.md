@@ -5,7 +5,43 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18j) — DOKUMENTASI F3+F4 (rekam kontrak wajah/kiosk/izin/laporan)
+## TUGAS AKTIF (2026-07-18k) — F5a BACKEND (kesiswaan/demerit; MEMIMPIN)
+
+> NIT-BACKEND-400 kamu DITERIMA (commit ed15d0a). F5 = prioritas user & AG-1
+> sudah bangun F5a frontend → kamu langsung backend F5a (paralel, F5a kelar
+> tercepat). DOKUMENTASI DITUNDA (nanti satu pass F3+F4+F5). Baca
+> **`briefs/F5-SPEC.md`** + **SPEC-KANON §7** (SOP resmi) — HANYA F5a; JANGAN F5b.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Modul `backend/src/kesiswaan/**`:
+   - Entitas `katalog_pelanggaran` + **SEED 28 butir §7.2** (idempotent — cek
+     ada dulu; nomor+bentuk+kategori+poin PERSIS §7.2, jangan diubah).
+   - Entitas `pelanggaran` (skema F5-SPEC: kategori R/S/B/SB/KHUSUS, poin
+     SNAPSHOT, sumber LANGSUNG/LAPORAN/OTOMATIS_T, status MENUNGGU/DISETUJUI/
+     DITOLAK, tahunAjaranId scope, dedup UNIQUE R-07).
+   - DTO lengkap (anti-drift). Service: `hitungSaldoBatch` (MURNI setelah 1
+     query Σ GROUP BY, status=DISETUJUI, TA aktif), `berhakLangsung(user,
+     siswa)` (kesiswaan ATAU wali kelas siswa), catat (langsung→DISETUJUI /
+     guru-lain→MENUNGGU), verifikasi setujui/tolak, list/antrean (filter DB
+     anti-N+1).
+   - Controller: endpoint katalog + pelanggaran + verifikasi + saldo PERSIS
+     kontrak F5-SPEC dgn @Roles benar (kesiswaan/guru/wali; kepsek baca).
+2. **Hook R-07**: di `presensi.service.simpanRoster` (F2), setelah simpan,
+   untuk tiap siswa status 'T' → panggil KesiswaanService buat pelanggaran
+   katalog R-07 (nomor 7, R, 10) status MENUNGGU sumber OTOMATIS_T, IDEMPOTENT
+   (dedup siswaId+tanggal+katalog+sumber). TAK potong sebelum disetujui. Inject
+   KesiswaanService ke PresensiModule.
+3. Daftarkan modul di app.module.ts. Boot-verify (tabel + seed 28 katalog
+   terbentuk; endpoint ter-guard). e2e MANDIRI (buat data via API): catat
+   langsung→saldo turun; lapor guru→MENUNGGU→verifikasi→potong; tolak; R-07
+   dari T muncul MENUNGGU & TAK potong; RBAC guru-lain tak bisa langsung.
+
+DoD: backend F5a live & boot-verified (seed 28), saldo batch anti-N+1, hook
+R-07 idempoten, e2e hijau, laporan bukti file:baris. JANGAN F5b. JANGAN sentuh
+halaman frontend kesiswaan (AG-1).
+
+---
+## ARSIP — NIT-BACKEND-400 + DOKUMENTASI (docs ditunda ke pass gabungan F3+F4+F5)
 
 > NIT-BACKEND-400 kamu DITERIMA. Gerbang e2e kini deterministik (145/0 ×2).
 > Sekarang dokumentasi F3+F4 (kamu terbukti bagus di docs F2). Wilayah TULIS:

@@ -54,7 +54,7 @@
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
 | Antigravity-IDE | executor A | `briefs/F5-SPEC.md` + `briefs/AGENT-1.md` | **F5a FRONTEND** (kesiswaan/demerit: tata-tertib + pelanggaran + verifikasi + saldo; guru lapor) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` → lalu `briefs/F5-SPEC.md` | **DOKUMENTASI F3+F4** (`docs/`) → lalu **F5a BACKEND** (katalog+seed 28 + pelanggaran + saldo + hook R-07) | docs dulu |
+| Antigravity-v2.0 | executor B | `briefs/F5-SPEC.md` + `briefs/AGENT-2.md` | **F5a BACKEND** (MEMIMPIN — katalog+seed 28 + pelanggaran + saldo turunan + hook R-07 di simpanRoster) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
@@ -62,9 +62,10 @@ dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap
 ▶️ **F5 DIBUKA (pelanggaran/demerit, keputusan user)** — DIFASE: F5a (katalog
 tata tertib + pencatatan + verifikasi + saldo turunan 500−Σ + hook R-07 dari
 tanda T) DULU; F5b (tindak lanjut otomatis + reward + laporan) ditunda.
-Kontrak: `briefs/F5-SPEC.md` (basis SPEC-KANON §7 SOP). AG-1 frontend paralel;
-AG-2 docs→backend. Gerbang e2e DETERMINISTIK (145/0 ×2) — spec baru wajib
-mandiri (buat data via API).
+Kontrak: `briefs/F5-SPEC.md` (basis SPEC-KANON §7 SOP). AG-1 frontend + AG-2
+backend PARALEL. Docs F3+F4 DITUNDA → satu pass gabungan F3+F4+F5 nanti.
+Gerbang e2e DETERMINISTIK (145/0 ×2) — spec baru wajib mandiri (buat data via
+API).
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
