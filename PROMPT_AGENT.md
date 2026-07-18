@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F5a FRONTEND SELESAI (suite 169/0). Menunggu F5b / arah user | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F5a BACKEND SELESAI (seed 28 SOP, saldo, hook R-07). Menunggu F5b / arah user | idle |
+| Antigravity-IDE | executor A | `briefs/F5-SPEC.md` (F5b) + `briefs/AGENT-1.md` | **F5b FRONTEND** (tindak lanjut + reward + laporan demerit + export) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F5-SPEC.md` (F5b) + `briefs/AGENT-2.md` | **F5b BACKEND** (MEMIMPIN — tindak_lanjut auto-trigger ambang + reward turunan + laporan demerit) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:

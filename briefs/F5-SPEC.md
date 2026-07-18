@@ -113,6 +113,58 @@ peran kesiswaan ATAU user=guru waliKelas dari kelas siswa.
   "Pelanggaran" (form lapor) + wiring client.ts/App.tsx/menu.ts (grup KESISWAAN
   + item guru). Kontrak dikunci → boleh paralel. E2E.
 
+## ══════════ F5b — TINDAK LANJUT + REWARD + LAPORAN (dibuka 2026-07-18) ══════════
+> Penutup F5. Basis SOP §7.3 (ambang), §7.4 (reward), §7.5 (alur). F5a LIVE.
+
+**Keputusan planner F5b:**
+- **Tindak lanjut OTOMATIS**: saat pelanggaran jadi DISETUJUI (catat-langsung
+  atau setujui), hitung ulang `terpotong = Σ poin DISETUJUI siswa/semester`.
+  Untuk tiap ambang yang kini terlampaui → buat entri `tindak_lanjut` bila
+  belum ada (idempotent, sekali/tahap/semester). Ambang (§7.3, per TERPOTONG):
+  200→PERINGATAN_1, 300→PERINGATAN_2, 400→PERINGATAN_3, 500→TINDAKAN_KHUSUS.
+  Staf catat pelaksanaan → SELESAI. Kategori KHUSUS (poin 0) → TINDAKAN_KHUSUS
+  langsung (dari F5a catat khusus).
+- **Reward semester DITURUNKAN** (§7.4, tanpa entitas): Sangat Baik = saldo 500
+  (utuh); Baik = 400–490. Daftar otomatis dari saldo → export.
+- **Laporan demerit**: rekap per siswa (Σ per kategori + saldo) rentang/kelas →
+  export Excel/PDF (frontend lazy, reuse F4b lib).
+
+**Entitas F5b:**
+```
+tindak_lanjut id PK • siswaId FK siswa (CASCADE) • tahunAjaranId FK
+  • tahap varchar ('PERINGATAN_1'|'PERINGATAN_2'|'PERINGATAN_3'|'TINDAKAN_KHUSUS')
+  • ambang int (200/300/400/500)
+  • status varchar ('BARU'|'SELESAI') default 'BARU'
+  • catatanPelaksanaan text NULL • dilaksanakanOleh FK user NULL
+  • dilaksanakanPada timestamptz NULL • createdAt/updatedAt
+  — UNIQUE(siswaId, tahunAjaranId, tahap)
+```
+
+**Kontrak API F5b (kesiswaan|wali baca; kesiswaan catat pelaksanaan):**
+- `GET /api/kesiswaan/tindak-lanjut?status?&kelasId?&page&limit` → antrean +
+  riwayat (siswaNama, tahap, ambang, status). Auto-terisi (tak ada POST
+  manual create — sistem yang buat).
+- `PATCH /api/kesiswaan/tindak-lanjut/:id/selesai` `{ catatanPelaksanaan }`
+  → SELESAI + dilaksanakanOleh/pada; audit.
+- `GET /api/kesiswaan/reward?tahunAjaranId=` → `{ sangatBaik:[{siswa,saldo}],
+  baik:[...] }` (turunan saldo, BATCH).
+- `GET /api/kesiswaan/laporan/demerit?dari=&sampai=&kelasId?&page&limit` → per
+  siswa Σ R/S/B/SB + total terpotong + saldo (agregat level DB, anti-N+1).
+
+**Wilayah F5b:**
+- **AG-2 (backend, MEMIMPIN)**: entitas `tindak_lanjut` + **auto-trigger** di
+  kesiswaan.service (setelah DISETUJUI → hitung terpotong → buat tindak_lanjut
+  idempoten) + endpoint tindak-lanjut/selesai + reward (turunan saldo) +
+  laporan demerit (agregat). Daftarkan. Boot-verify + e2e (potong sampai 200 →
+  Peringatan_1 muncul; selesai; reward list; laporan agregat). Wilayah
+  `backend/**` + `frontend/e2e/`.
+- **AG-1 (frontend)**: `/kesiswaan/tindak-lanjut` (antrean + catat pelaksanaan
+  sheet) + `/kesiswaan/reward` (daftar Sangat Baik/Baik + export) +
+  `/kesiswaan/laporan` (filter + tabel + export Excel/PDF reuse) + wiring +
+  menu KESISWAAN (tambah Tindak Lanjut•Reward•Laporan). E2E MANDIRI (buat data
+  via API, navigasi by-id — JANGAN lookup daftar paginasi, pelajaran
+  presensi-wajah).
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang (spec mandiri, buat data sendiri via API
 — lihat pelajaran E2E-MANDIRI-DATA) • RBAC server + audit + WIB • komponen

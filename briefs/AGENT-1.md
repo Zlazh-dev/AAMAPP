@@ -13,7 +13,36 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18j) — F5a FRONTEND (kesiswaan/demerit; kontrak dikunci, paralel)
+## TUGAS AKTIF (2026-07-18l) — F5b FRONTEND (tindak lanjut + reward + laporan demerit)
+
+> F5a frontend kamu DITERIMA (suite 169/0). Sekarang penutup F5. Baca
+> **`briefs/F5-SPEC.md` bagian F5b**. Kontrak dikunci, paralel (backend AG-2).
+> CATATAN: planner perbaiki presensi-wajah.spec yg rapuh (lookup user di daftar
+> paginasi) — JANGAN ulangi pola itu; e2e wajib pakai ID/email dari create.
+
+**Kontrak backend F5b (konsumsi):**
+- `GET /api/kesiswaan/tindak-lanjut?status?&kelasId?` •
+  `PATCH /api/kesiswaan/tindak-lanjut/:id/selesai {catatanPelaksanaan}`.
+- `GET /api/kesiswaan/reward?tahunAjaranId=` → `{ sangatBaik:[], baik:[] }`.
+- `GET /api/kesiswaan/laporan/demerit?dari=&sampai=&kelasId?`.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. `/kesiswaan/tindak-lanjut`: antrean tindak lanjut otomatis (siswa, tahap,
+   ambang, status) → catat pelaksanaan (sheet, `catatanPelaksanaan`) → SELESAI.
+2. `/kesiswaan/reward`: daftar Sangat Baik (500) & Baik (400–490) per semester
+   + Export Excel/PDF (reuse `lib/exportExcel.ts`/`exportPdf.ts`).
+3. `/kesiswaan/laporan`: filter rentang/kelas → tabel per siswa (Σ R/S/B/SB +
+   terpotong + saldo) + TOTAL + Export.
+4. Wiring client.ts/App.tsx/menu.ts (grup KESISWAAN +Tindak Lanjut•Reward•
+   Laporan). E2E MANDIRI (buat data via API, navigasi by-id/search — JANGAN
+   lookup daftar paginasi).
+
+DoD: tsc bersih • build sukses • tindak-lanjut/reward/laporan jalan • export
+lazy • e2e hijau • laporan. Ini MENUTUP F5 frontend. JANGAN sentuh backend
+kesiswaan (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18j) — F5a FRONTEND (SELESAI, diterima commit 8d04f38)
 
 > E2E-MANDIRI-DATA kamu DITERIMA — gerbang deterministik (145/0 ×2). Sekarang
 > F5 (pelanggaran/demerit). Baca **`briefs/F5-SPEC.md`** + **SPEC-KANON §7**

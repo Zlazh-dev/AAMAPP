@@ -5,7 +5,31 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18k) — F5a BACKEND (kesiswaan/demerit; MEMIMPIN)
+## TUGAS AKTIF (2026-07-18l) — F5b BACKEND (tindak lanjut + reward + laporan; MEMIMPIN)
+
+> F5a backend kamu DITERIMA (commit 8d04f38, seed 28 SOP verified, suite 169/0).
+> Sekarang penutup F5. Baca **`briefs/F5-SPEC.md` bagian F5b** + SPEC-KANON §7.3–7.5.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Entitas `tindak_lanjut` (skema F5b: tahap PERINGATAN_1/2/3/TINDAKAN_KHUSUS,
+   ambang 200/300/400/500, UNIQUE(siswaId,tahunAjaranId,tahap)).
+2. **Auto-trigger** di kesiswaan.service: setelah pelanggaran jadi DISETUJUI
+   (catat-langsung & setujui), hitung `terpotong = Σ poin DISETUJUI/semester`,
+   untuk tiap ambang terlampaui → buat tindak_lanjut bila belum ada (IDEMPOTEN).
+   Kategori KHUSUS → TINDAKAN_KHUSUS langsung.
+3. Endpoint: `GET /api/kesiswaan/tindak-lanjut` (filter status/kelas, paginasi) +
+   `PATCH .../:id/selesai {catatanPelaksanaan}` + `GET /api/kesiswaan/reward?
+   tahunAjaranId=` (turunan saldo: Sangat Baik=500, Baik=400–490, BATCH) +
+   `GET /api/kesiswaan/laporan/demerit` (agregat per siswa Σ kategori+saldo,
+   anti-N+1). @Roles kesiswaan/wali/kepsek sesuai F5-SPEC.
+4. Daftarkan. Boot-verify (tabel tindak_lanjut) + e2e MANDIRI: potong siswa
+   ≥200 → PERINGATAN_1 auto muncul; selesai; reward list benar; laporan agregat.
+
+DoD: backend F5b live, auto-trigger idempoten, e2e hijau, laporan bukti. Ini
+MENUTUP F5 backend. JANGAN sentuh halaman frontend kesiswaan (AG-1).
+
+---
+## ARSIP — F5a BACKEND (SELESAI, diterima commit 8d04f38, seed 28 SOP verified)
 
 > NIT-BACKEND-400 kamu DITERIMA (commit ed15d0a). F5 = prioritas user & AG-1
 > sudah bangun F5a frontend → kamu langsung backend F5a (paralel, F5a kelar
