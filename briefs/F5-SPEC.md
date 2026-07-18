@@ -16,17 +16,18 @@
 ## ⚠️ SUMBER OTORITATIF = SOP asli (SOP/KESISWAAN/001/2026, dari user 2026-07-18)
 SPEC-KANON §7 adalah TURUNAN dgn selisih. Yang mengikat = SOP asli. Selisih
 terverifikasi:
-- **Poin kategori S (Sedang) BENTROK di dalam SOP**: tabel definisi kategori
-  bilang **20**, tabel katalog (butir 12–18,22) bilang **25**. → MENUNGGU
-  KEPUTUSAN USER. JANGAN seed nilai S sampai dikunci. R=10, B=50, SB=100 pasti.
+- **Poin kategori S = 25** (DIKUNCI user 2026-07-18 — ikut tabel KATALOG;
+  definisi-kategori yg tulis 20 = salah ketik). Final: R=10, **S=25**, B=50,
+  SB=100. Katalog 28 butir = verbatim SOP bagian D.b (planner sudah verifikasi
+  cocok §7.2). SEED boleh jalan.
 - Alur: **WALI KELAS pencatat utama** (rekap tiap Sabtu → input Demerit;
   publikasi bulanan). Guru/pegawai lain hanya MELAPOR (WA/form/kotak) → wali.
   Kesiswaan/BK mengawasi. Sesuaikan RBAC: input-langsung = wali kelas &
   kesiswaan; guru lain = lapor→antrean.
 
 ## Prinsip inti (§7.1) — saldo DITURUNKAN, bukan kolom
-Token **500 poin/siswa/semester**. Kategori **R=10, S=⟨20 atau 25 — PENDING⟩,
-B=50, SB=100**.
+Token **500 poin/siswa/semester**. Kategori **R=10, S=25, B=50, SB=100**
+(dikunci user; katalog verbatim §7.2/SOP-D.b).
 `saldo = 500 − Σ poin pelanggaran DISETUJUI siswa pada TA/semester AKTIF`
 (dihitung saat query, BATCH; bukan kolom statis). Semester = `tahun_ajaran`
 aktif (kolom semester 1/2 sudah ada). Reset otomatis karena scope per-TA-aktif.
