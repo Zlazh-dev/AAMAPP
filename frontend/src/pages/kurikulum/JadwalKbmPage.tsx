@@ -46,7 +46,7 @@ export function JadwalKbmPage() {
         const ta = await api.getTahunAjaranAktif();
         if (cancelled) return;
         setTaAktif(ta);
-        const kelasRes = await api.adminGetKelas({ limit: 200 });
+        const kelasRes = await api.adminGetKelas({ limit: 1000 });
         if (cancelled) return;
         setKelasList(kelasRes.data);
         if (kelasRes.data.length > 0) {

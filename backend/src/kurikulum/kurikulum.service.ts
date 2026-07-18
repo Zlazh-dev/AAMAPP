@@ -90,7 +90,7 @@ export class KurikulumService {
 
   async listMapel(filter: MapelFilter) {
     const page = Math.max(1, filter.page ?? 1);
-    const limit = Math.min(200, Math.max(1, filter.limit ?? 50));
+    const limit = Math.min(1000, Math.max(1, filter.limit ?? 50));
     const where: any = {};
     if (filter.q) {
       where.nama = ILike(`%${filter.q}%`);

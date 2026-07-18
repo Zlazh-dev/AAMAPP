@@ -36,7 +36,7 @@ export function PenugasanPage() {
       try {
         const [ta, guruRes] = await Promise.all([
           api.getTahunAjaranAktif(),
-          api.adminGetGuru({ limit: 200 }),
+          api.adminGetGuru({ limit: 1000 }),
         ]);
         if (cancelled) return;
         setTaAktif(ta);

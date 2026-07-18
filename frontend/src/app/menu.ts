@@ -38,6 +38,8 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Data Orang', path: '/admin/orang', icon: 'groups' },
       { label: 'Kelas', path: '/admin/kelas', icon: 'meeting_room' },
       { label: 'Presensi Siswa', path: '/admin/presensi-siswa', icon: 'fact_check' },
+      { label: 'Presensi Guru', path: '/admin/presensi-guru', icon: 'person_check' },
+      { label: 'Pendaftaran Wajah', path: '/admin/wajah', icon: 'face_retouching_natural' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
     ],
@@ -63,6 +65,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     items: [
       { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
       { label: 'Rekap Presensi', path: '/guru/rekap', icon: 'summarize' },
+      { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'face_retouching_natural' },
     ],
   },
 

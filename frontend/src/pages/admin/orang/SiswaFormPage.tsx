@@ -95,7 +95,7 @@ export function SiswaFormPage() {
 
   const loadKelasOptions = async () => {
     try {
-      const res = await api.adminGetKelas({ limit: 200 });
+      const res = await api.adminGetKelas({ limit: 1000 });
       setKelasOptions(res.data.map((k) => ({
         value: k.id,
         label: k.nama,

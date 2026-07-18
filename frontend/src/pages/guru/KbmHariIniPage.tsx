@@ -25,7 +25,7 @@ function todayWIB(): string {
  * Guru: KbmHariIniPage — daftar sesi KBM guru pada tanggal terpilih (F2).
  * Status TERLAKSANA (presensi_sesi ada) atau BELUM. Klik sesi → RosterPage.
  */
-export function KbmHariIniPage() {
+export function KbmHariIniPage({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { show } = useToast();
   const [loading, setLoading] = useState(true);
@@ -51,16 +51,18 @@ export function KbmHariIniPage() {
     }
   };
 
-  return (
-    <PageContainer size="xl">
-      <div className="mb-4">
-        <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
-          KBM Hari Ini
-        </h2>
-        <p className="text-xs text-aam-text-muted">
-          Daftar sesi KBM Anda pada tanggal terpilih. Klik sesi untuk mengisi presensi.
-        </p>
-      </div>
+  const inner = (
+    <>
+      {!embedded && (
+        <div className="mb-4">
+          <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
+            KBM Hari Ini
+          </h2>
+          <p className="text-xs text-aam-text-muted">
+            Daftar sesi KBM Anda pada tanggal terpilih. Klik sesi untuk mengisi presensi.
+          </p>
+        </div>
+      )}
 
       <Card icon="event" className="p-4 mb-4">
         <label className="block text-xs font-medium text-aam-text-muted mb-1.5">Tanggal</label>
@@ -112,6 +114,11 @@ export function KbmHariIniPage() {
           ))}
         </div>
       )}
-    </PageContainer>
+    </>
   );
+
+  if (embedded) return inner;
+  return <PageContainer size="xl">{inner}</PageContainer>;
 }
+
+export default KbmHariIniPage;

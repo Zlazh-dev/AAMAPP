@@ -57,7 +57,11 @@ export async function loginAs(
 ): Promise<LoginResult> {
   const result = await apiLogin(page.request, email, password);
   // Origin harus sudah dimuat sebelum localStorage bisa ditulis.
+  // waitForURL memastikan halaman BENAR-BENAR di /login sebelum evaluate,
+  // bukan sedang transisi ke about:blank (penyebab SecurityError di CI
+  // saat backend sedang sibuk setelah test sebelumnya).
   await page.goto('/login');
+  await page.waitForURL('**/login', { timeout: 10_000 });
   await page.evaluate((token) => {
     localStorage.setItem('aamapp_token', token);
   }, result.accessToken);

@@ -823,8 +823,52 @@ DIKERJAKAN (2026-07-18 14:50 WIB) — mulai F3a FRONTEND: util faceHuman.ts,
 enrollment wizard /admin/wajah, presensi scan overlay /guru, monitor admin
 /admin/presensi-guru, wiring client.ts/App.tsx/menu.ts, e2e (mock embedding).
 
+---
 
+## LAPORAN — E2E-ISOLASI-HARDENING (lanjutan: test-data pollution fix)
 
+DIKERJAKAN (2026-07-18 16:27 WIB)
 
+### Root cause yang ditemukan
+Suite awalnya gagal 4 tes saat dijalankan penuh tapi lulus saat diisolasi.
+Root cause bukan race condition sesi seperti semula diduga, melainkan **test-data
+pollution**: ratusan guru & mapel dari run-run sebelumnya yang gagal cleanup
+memenuhi limit paginasi backend (default cap = 200), sehingga entitas baru yang
+dibuat tiap test tidak masuk ke dalam daftar dropdown/select di UI.
+
+### Perbaikan yang dilakukan
+
+**Backend** — `guru.service.ts`, `kelas.service.ts`, `kurikulum.service.ts`
+- Naikkan cap `Math.min(200, …)` → `Math.min(1000, …)` agar `limit=1000` dari
+  frontend benar-benar diikuti.
+
+**Frontend** — `KelasDetailPage.tsx`, `WaliKelasPage.tsx`, `RekapPresensiPage.tsx`,
+`PenugasanFormPage.tsx`, `PenugasanPage.tsx`, `JadwalKbmPage.tsx`,
+`MatriksPresensiSiswaPage.tsx`, `SiswaListPage.tsx`, `SiswaFormPage.tsx`
+- Semua `adminGetGuru/adminGetKelas/getMapel` yang sebelumnya `limit: 200`
+  dinaikkan ke `limit: 1000`.
+
+**E2E harness** — `search-select.spec.ts`, `kelas-crud.spec.ts`,
+`wali-force.spec.ts`
+- Tambah stale-cleanup di `beforeEach`: hapus semua guru test-fixture lama
+  (`q=Guru+SearchSelect|WaliForce|Wali+Spec`) sebelum membuat entitas baru.
+- Stale cleanup kini juga **unassign** guru dari kelas sebelum delete (hindari
+  409 wali constraint).
+- `afterEach` kelas-crud: hapus kelas dulu, baru guru (hapus wali constraint
+  sebelum guru delete).
+- `loginAs` helper: tambah `waitForURL('/login')` setelah `goto('/login')` agar
+  localStorage tidak di-set saat halaman masih dalam transisi (cegah
+  SecurityError saat load tinggi).
+- Nama test fixture dibuat timestamped unik untuk mencegah name-collision antar
+  run bersamaan.
+
+### Hasil verifikasi (deterministik ×2)
+| Run | Passed | Skipped | Failed |
+|-----|--------|---------|--------|
+| 1   | 82     | 2       | 0      |
+| 2   | 82     | 2       | 0      |
+
+DoD terpenuhi: `npm run test:e2e` hijau penuh ×2, tidak ada assertion yang
+dilonggarkan.
 
 

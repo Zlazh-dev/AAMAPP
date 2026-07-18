@@ -33,7 +33,7 @@ export class KelasService {
 
   async list(filter: KelasFilter) {
     const page = Math.max(1, filter.page ?? 1);
-    const limit = Math.min(200, Math.max(1, filter.limit ?? 50));
+    const limit = Math.min(1000, Math.max(1, filter.limit ?? 50));
     const where: any = {};
     if (filter.tingkat) where.tingkat = filter.tingkat;
     // T11-FIX Ronde 2 (Butir 7): query `q=` bukan `search`.

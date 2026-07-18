@@ -89,8 +89,8 @@ export function KelasDetailPage() {
       const [k, siswa, guru, allKelas, siswaSistem] = await Promise.all([
         api.adminGetKelasById(kelasId),
         api.adminGetSiswa({ kelasId, limit: 500 }),
-        api.adminGetGuru({ status: 'aktif', limit: 200 }),
-        api.adminGetKelas({ limit: 200 }),
+        api.adminGetGuru({ status: 'aktif', limit: 1000 }),
+        api.adminGetKelas({ limit: 1000 }),
         api.adminGetSiswa({ limit: 1 }),
       ]);
       setKelas(k);

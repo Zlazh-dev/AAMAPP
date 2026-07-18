@@ -12,8 +12,29 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
   const createdSiswaIds: number[] = [];
   const createdGuruIds: number[] = [];
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await loginAsAdmin(page);
+    const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
+    const headers = { Authorization: `Bearer ${token}` };
+
+    // Bersihkan guru "Guru WaliForce" yang tertinggal dari run sebelumnya
+    // agar tidak memenuhi limit=200 di KelasDetailPage.
+    const staleRes = await request.get('/api/admin/guru?q=Guru+WaliForce&limit=500', { headers });
+    if (staleRes.ok()) {
+      const stale = await staleRes.json();
+      for (const g of (stale.data ?? [])) {
+        // Unassign dari kelas sebelum delete (hindari 409 wali constraint)
+        const kelasRes2 = await request.get(`/api/admin/kelas?waliGuruId=${g.id}&limit=50`, { headers }).catch(() => null);
+        if (kelasRes2?.ok()) {
+          const kd = await kelasRes2.json();
+          for (const k of (kd.data ?? [])) {
+            await request.patch(`/api/admin/kelas/${k.id}/wali`, { headers, data: { waliGuruId: null } }).catch(() => {});
+          }
+        }
+        await request.delete(`/api/admin/guru/${g.id}`, { headers }).catch(() => {});
+      }
+    }
+
     namaKelas = `KX-${Date.now()}`;
     await page.goto('/admin/kelas');
   });
@@ -24,6 +45,7 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     for (const sid of createdSiswaIds) {
       await request.delete(`/api/admin/siswa/${sid}`, { headers }).catch(() => {});
     }
+    // Hapus kelas dulu (menghapus wali constraint) baru hapus guru
     for (const kid of createdKelasIds) {
       await request.delete(`/api/admin/kelas/${kid}`, { headers }).catch(() => {});
     }
@@ -122,7 +144,8 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     await page.goto(`/admin/kelas/${kelasBaru.id}`);
     await page.getByRole('button', { name: 'Pilih wali kelas... expand_more' }).click();
     await page.getByPlaceholder('Cari nama guru...').fill(`Guru WaliForce ${suffix}`);
-    await page.getByText(`Guru WaliForce ${suffix}`, { exact: true }).click();
+    // Option button mungkin mengandung icon text 'school' — gunakan regex.
+    await page.getByRole('button', { name: new RegExp(`Guru WaliForce ${suffix}`) }).first().click();
     await page.getByRole('button', { name: 'Simpan Wali' }).click();
 
     // 409 dialog menyebut nama kelas lama.

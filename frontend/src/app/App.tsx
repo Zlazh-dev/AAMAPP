@@ -55,6 +55,13 @@ const KbmHariIniPage = React.lazy(() => import('../pages/guru/KbmHariIniPage').t
 const RosterPage = React.lazy(() => import('../pages/guru/RosterPage').then(m => ({ default: m.RosterPage })));
 const MatriksPresensiSiswaPage = React.lazy(() => import('../pages/admin/presensi/MatriksPresensiSiswaPage').then(m => ({ default: m.MatriksPresensiSiswaPage })));
 const RekapPresensiPage = React.lazy(() => import('../pages/guru/RekapPresensiPage').then(m => ({ default: m.RekapPresensiPage })));
+// F3a: Presensi wajah guru
+const GuruWajahPage = React.lazy(() => import('../pages/guru/GuruWajahPage').then(m => ({ default: m.GuruWajahPage })));
+const GuruEnrollWizardPage = React.lazy(() => import('../pages/guru/GuruEnrollWizardPage').then(m => ({ default: m.GuruEnrollWizardPage })));
+const GuruPresensiDashboard = React.lazy(() => import('../pages/guru/GuruPresensiDashboard').then(m => ({ default: m.GuruPresensiDashboard })));
+const WajahListPage = React.lazy(() => import('../pages/admin/wajah/WajahListPage').then(m => ({ default: m.WajahListPage })));
+const EnrollWizardPage = React.lazy(() => import('../pages/admin/wajah/EnrollWizardPage').then(m => ({ default: m.EnrollWizardPage })));
+const PresensiGuruPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruPage').then(m => ({ default: m.PresensiGuruPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -175,13 +182,19 @@ const routes: RouteObject[] = [
 
           // Guru: KBM & Presensi (F2)
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
-          { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
+          { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
           { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
-
+          // F3a: Guru wajah enrollment mandiri (alur TERPISAH dari presensi scan)
+          { path: '/guru/wajah', element: <RequireRole roles={['guru','admin']}><Lazy><GuruWajahPage /></Lazy></RequireRole> },
+          { path: '/guru/wajah/enroll', element: <RequireRole roles={['guru','admin']}><Lazy><GuruEnrollWizardPage /></Lazy></RequireRole> },
 
           // Admin: Presensi Siswa (F2 monitor)
           { path: '/admin/presensi-siswa', element: <RequireRole roles={['admin','kepsek','kesiswaan']}><Lazy><MatriksPresensiSiswaPage /></Lazy></RequireRole> },
+          // F3a: Admin wajah enrollment + monitor presensi guru
+          { path: '/admin/wajah', element: <RequireRole roles={['admin']}><Lazy><WajahListPage /></Lazy></RequireRole> },
+          { path: '/admin/wajah/:guruId', element: <RequireRole roles={['admin']}><Lazy><EnrollWizardPage /></Lazy></RequireRole> },
+          { path: '/admin/presensi-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><PresensiGuruPage /></Lazy></RequireRole> },
 
           // Kepsek placeholder
           { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><PlaceholderPage title="Dashboard Kepala Sekolah" icon="dashboard" /></Lazy></RequireRole> },

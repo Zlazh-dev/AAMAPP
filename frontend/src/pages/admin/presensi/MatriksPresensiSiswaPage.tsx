@@ -70,7 +70,7 @@ export function MatriksPresensiSiswaPage() {
     (async () => {
       setLoadingKelas(true);
       try {
-        const res = await api.adminGetKelas({ limit: 200 });
+        const res = await api.adminGetKelas({ limit: 1000 });
         setKelasOptions(res.data);
         if (res.data.length > 0) setKelasId(String(res.data[0].id));
       } catch {

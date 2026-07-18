@@ -24,8 +24,8 @@ export function WaliKelasPage() {
     (async () => {
       try {
         const [kelasRes, guruRes] = await Promise.all([
-          api.adminGetKelas({ limit: 200 }),
-          api.adminGetGuru({ limit: 200 }),
+          api.adminGetKelas({ limit: 1000 }),
+          api.adminGetGuru({ limit: 1000 }),
         ]);
         if (cancelled) return;
         setKelasList(kelasRes.data);

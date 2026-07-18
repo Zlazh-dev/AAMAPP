@@ -73,6 +73,11 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
 
   test.afterEach(async ({ request }) => {
     const headers = authHeaders(adminToken);
+    // Reset geofence ke nonaktif — test 5 mengaktifkan geofence, pastikan dibersihkan.
+    await request.patch('/api/admin/pengaturan/lokasi', {
+      headers,
+      data: { value: { aktif: false } },
+    }).catch(() => {});
     // Hapus presensi & wajah (cascade by guru delete), lalu hapus guru & user
     for (const gid of createdGuruIds) {
       await request.delete(`/api/admin/guru/${gid}`, { headers }).catch(() => {});

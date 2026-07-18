@@ -1054,6 +1054,76 @@ export const api = {
   // --- Kurikulum: Dashboard counts (T15) ---
   getKurikulumDashboard: () =>
     request<{ mapelCount: number; penugasanCount: number; jadwalCount: number; taAktif: TahunAjaran | null }>(`/kurikulum/dashboard`),
+
+  // --- F3a: Guru wajah (enrollment mandiri) ---
+  guruWajahStatus: () =>
+    request<{ enrolled: boolean; poses: number; faceUpdatedAt: string | null }>('/guru/wajah/status'),
+
+  guruPutWajah: (data: { embeddings: number[][] }) =>
+    request<{ ok: boolean; poses: number }>('/guru/wajah', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  guruPresensiScan: (data: { embedding: number[]; lat?: number; lng?: number; mode?: 'masuk' | 'pulang' }) =>
+    request<{
+      status: 'HADIR' | 'TERLAMBAT';
+      checkInAt?: string;
+      checkOutAt?: string;
+      similarity: number;
+      distanceMeter?: number;
+      pesan: string;
+    }>('/guru/presensi-scan', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // --- F3a: Admin wajah ---
+  adminGetWajah: (params?: { q?: string; page?: number; limit?: number }) => {
+    const search = new URLSearchParams();
+    if (params?.q) search.set('q', params.q);
+    if (params?.page) search.set('page', String(params.page));
+    if (params?.limit) search.set('limit', String(params.limit));
+    return request<{
+      data: Array<{ id: number; nama: string; email: string; enrolled: boolean; poses: number; faceUpdatedAt: string | null }>;
+      total: number; page: number; limit: number;
+    }>(`/admin/wajah?${search.toString()}`);
+  },
+
+  adminPutWajah: (guruId: number, data: { embeddings: number[][] }) =>
+    request<{ ok: boolean; poses: number }>(`/admin/wajah/${guruId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  adminDeleteWajah: (guruId: number) =>
+    request<{ message: string }>(`/admin/wajah/${guruId}`, { method: 'DELETE' })
+    .then((result) => { invalidateCache('/admin/wajah'); return result; }),
+
+  // --- F3a: Admin presensi guru harian + manual ---
+  adminGetPresensiGuruHarian: (params: { tanggal: string }) =>
+    request<{
+      data: Array<{
+        guruId: number; nama: string; email: string;
+        status: 'HADIR' | 'TERLAMBAT' | 'ALPHA' | null;
+        checkInAt: string | null; checkOutAt: string | null;
+        source: 'HP' | 'MANUAL' | 'KIOSK' | null;
+        alasan: string | null;
+      }>;
+    }>(`/admin/presensi-guru/harian?tanggal=${encodeURIComponent(params.tanggal)}`),
+
+  adminPostPresensiGuruManual: (data: {
+    guruId: number;
+    tanggal: string;
+    status: 'HADIR' | 'TERLAMBAT' | 'ALPHA';
+    checkInAt?: string;
+    checkOutAt?: string;
+    alasan: string;
+  }) =>
+    request<{ ok: boolean }>('/admin/presensi-guru/manual', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
 };
 
 

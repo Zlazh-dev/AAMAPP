@@ -37,9 +37,9 @@ export function PenugasanFormPage() {
       try {
         const [ta, guruRes, mapelRes, kelasRes] = await Promise.all([
           api.getTahunAjaranAktif(),
-          api.adminGetGuru({ limit: 200 }),
-          api.getMapel({ limit: 200 }),
-          api.adminGetKelas({ limit: 200 }),
+          api.adminGetGuru({ limit: 1000 }),
+          api.getMapel({ limit: 1000 }),
+          api.adminGetKelas({ limit: 1000 }),
         ]);
         if (cancelled) return;
         setTaAktif(ta);
