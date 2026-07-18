@@ -1379,3 +1379,44 @@ DIKERJAKAN (2026-07-18 20:03 WIB).
 
 DoD terpenuhi: tsc bersih • build sukses • 4 halaman kesiswaan + guru lapor •
 wiring client/App/menu • e2e mandiri 14/14 • full suite 169/0 • laporan.
+
+---
+
+## LAPORAN — F5b FRONTEND: TINDAK LANJUT + REWARD + LAPORAN DEMERIT
+
+## LAPORAN — F5b FRONTEND: TINDAK LANJUT + REWARD + LAPORAN DEMERIT
+
+DIKERJAKAN (2026-07-18 22:32 WIB).
+
+### Yang dibangun
+
+**client.ts — F5b methods:**
+- `getTindakLanjut(status?, kelasId?)` — GET /api/kesiswaan/tindak-lanjut.
+- `selesaiTindakLanjut(id, catatanPelaksanaan)` — PATCH .../selesai.
+- `getReward(tahunAjaranId?)` — GET /api/kesiswaan/reward → `{sangatBaik, baik}`.
+- `getLaporanDemerit({dari, sampai, kelasId?, limit?})` — GET /api/kesiswaan/laporan/demerit.
+
+**Halaman kesiswaan:**
+- `TindakLanjutPage` `/kesiswaan/tindak-lanjut`: antrean BARU/SELESAI, badge tahap (PERINGATAN_1–TINDAKAN_KHUSUS), inline sheet "Catat Selesai" (catatanPelaksanaan wajib), badge count heading.
+- `RewardPage` `/kesiswaan/reward`: dua seksi Sangat Baik (500) & Baik (400–490), export Excel/PDF lazy reuse lib F4b (exportToExcel/exportToPdf + profil sekolah).
+- `LaporanDemeritPage` `/kesiswaan/laporan`: filter dari/sampai/kelas, tabel per siswa Σ R/S/B/SB + terpotong + saldo (badge merah/kuning/hijau) + TOTAL row, export Excel/PDF lazy.
+
+**Wiring:**
+- App.tsx: 3 lazy imports F5b + 3 routes (/tindak-lanjut, /reward, /laporan) dengan RequireRole.
+- menu.ts: kesiswaan group += Tindak Lanjut • Reward • Laporan.
+
+**E2E `kesiswaan-f5b.spec.ts` (12 test, semua pass):**
+- Tindak Lanjut: route, filter status, refresh button, daftar/empty state.
+- Reward: route, export buttons visible, seksi tersedia.
+- Laporan Demerit: route, filter dari/sampai/kelas, export buttons, tombol Tampilkan.
+- Menu: Tindak Lanjut + Reward + Laporan visible di sidebar.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| F5b spec | 12 | 0 | 0 |
+| Full suite | 191 | 5 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • tindak-lanjut/reward/laporan jalan •
+export lazy (tidak di main bundle) • e2e mandiri 12/12 • full suite 191/0 •
+laporan. **F5 TUNTAS.**

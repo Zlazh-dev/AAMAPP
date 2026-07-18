@@ -82,6 +82,10 @@ const TataTertibPage = React.lazy(() => import('../pages/kesiswaan/TataTertibPag
 const PelanggaranPage = React.lazy(() => import('../pages/kesiswaan/PelanggaranPage').then(m => ({ default: m.PelanggaranPage })));
 const VerifikasiPage = React.lazy(() => import('../pages/kesiswaan/VerifikasiPage').then(m => ({ default: m.VerifikasiPage })));
 const GuruPelanggaranPage = React.lazy(() => import('../pages/guru/GuruPelanggaranPage').then(m => ({ default: m.GuruPelanggaranPage })));
+// F5b: Kesiswaan
+const TindakLanjutPage = React.lazy(() => import('../pages/kesiswaan/TindakLanjutPage').then(m => ({ default: m.TindakLanjutPage })));
+const RewardPage = React.lazy(() => import('../pages/kesiswaan/RewardPage').then(m => ({ default: m.RewardPage })));
+const LaporanDemeritPage = React.lazy(() => import('../pages/kesiswaan/LaporanDemeritPage').then(m => ({ default: m.LaporanDemeritPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -204,6 +208,10 @@ const routes: RouteObject[] = [
           { path: '/kesiswaan/tata-tertib', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TataTertibPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/pelanggaran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><PelanggaranPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/verifikasi', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><VerifikasiPage /></Lazy></RequireRole> },
+          // F5b: Kesiswaan
+          { path: '/kesiswaan/tindak-lanjut', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TindakLanjutPage /></Lazy></RequireRole> },
+          { path: '/kesiswaan/reward', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><RewardPage /></Lazy></RequireRole> },
+          { path: '/kesiswaan/laporan', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><LaporanDemeritPage /></Lazy></RequireRole> },
 
           // Guru: KBM & Presensi (F2)
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },

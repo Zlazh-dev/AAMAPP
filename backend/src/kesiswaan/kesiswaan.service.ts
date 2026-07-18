@@ -11,6 +11,7 @@ import { Repository, In } from 'typeorm';
 import { Request } from 'express';
 import { KatalogPelanggaran } from './katalog-pelanggaran.entity';
 import { Pelanggaran } from './pelanggaran.entity';
+import { TindakLanjut, TahapTindakLanjut } from './tindak-lanjut.entity';
 import { Siswa } from '../siswa/siswa.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
@@ -18,7 +19,16 @@ import { AuditService } from '../audit/audit.service';
 import { CreateKatalogDto } from './dto/create-katalog.dto';
 import { CatatPelanggaranDto } from './dto/catat-pelanggaran.dto';
 import { KeputusanPelanggaranDto } from './dto/keputusan-pelanggaran.dto';
+import { SelesaiTindakLanjutDto } from './dto/selesai-tindak-lanjut.dto';
 import { formatDateWIB, todayWIB } from '../common/wib.util';
+
+/** Mapping ambang §7.3 → tahap */
+const AMBANG_TAHAP: Array<{ ambang: number; tahap: TahapTindakLanjut }> = [
+  { ambang: 200, tahap: 'PERINGATAN_1' },
+  { ambang: 300, tahap: 'PERINGATAN_2' },
+  { ambang: 400, tahap: 'PERINGATAN_3' },
+  { ambang: 500, tahap: 'TINDAKAN_KHUSUS' },
+];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Seed data §7.2 — 28 butir resmi (FINAL, jangan diubah tanpa user)
@@ -71,6 +81,8 @@ export class KesiswaanService implements OnModuleInit {
     private katalogRepo: Repository<KatalogPelanggaran>,
     @InjectRepository(Pelanggaran)
     private pelanggaranRepo: Repository<Pelanggaran>,
+    @InjectRepository(TindakLanjut)
+    private tindakLanjutRepo: Repository<TindakLanjut>,
     @InjectRepository(Siswa)
     private siswaRepo: Repository<Siswa>,
     @InjectRepository(Kelas)
@@ -341,6 +353,11 @@ export class KesiswaanService implements OnModuleInit {
       summary: `${status === 'DISETUJUI' ? 'Mencatat' : 'Melaporkan'} pelanggaran siswa ${siswa.nama}: ${dto.katalogId ? `katalog#${dto.katalogId}` : 'KHUSUS'} ${poin}p → ${status}`,
     });
 
+    // Auto-trigger tindak lanjut jika DISETUJUI
+    if (status === 'DISETUJUI') {
+      this.triggerTindakLanjut(dto.siswaId, ta.id, kategori).catch(() => {});
+    }
+
     return saved;
   }
 
@@ -522,6 +539,9 @@ export class KesiswaanService implements OnModuleInit {
     row.verifikasiPada = new Date();
     await this.pelanggaranRepo.save(row);
 
+    // Auto-trigger tindak lanjut
+    this.triggerTindakLanjut(row.siswaId, row.tahunAjaranId, row.kategori).catch(() => {});
+
     await this.audit.log({
       actorId: user.id,
       action: 'SETUJUI_PELANGGARAN',
@@ -622,4 +642,239 @@ export class KesiswaanService implements OnModuleInit {
 
     return { tahunAjaranId: ta.id, data };
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F5b: AUTO-TRIGGER tindak lanjut (setelah pelanggaran DISETUJUI)
+  // Idempotent: UNIQUE(siswaId, tahunAjaranId, tahap) — skip bila sudah ada.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async triggerTindakLanjut(
+    siswaId: number,
+    tahunAjaranId: number,
+    kategoriPelanggaran?: string,
+  ): Promise<void> {
+    // Kategori KHUSUS → TINDAKAN_KHUSUS langsung (tanpa potong poin)
+    if (kategoriPelanggaran === 'KHUSUS') {
+      await this._upsertTindakLanjut(siswaId, tahunAjaranId, 'TINDAKAN_KHUSUS', 500);
+      return;
+    }
+
+    // Hitung terpotong aktual (satu query)
+    const saldoMap = await this.hitungSaldoBatch([siswaId], tahunAjaranId);
+    const { terpotong } = saldoMap.get(siswaId) ?? { terpotong: 0 };
+
+    // Buat tindak lanjut untuk semua ambang yang terlampaui (idempotent)
+    for (const { ambang, tahap } of AMBANG_TAHAP) {
+      if (terpotong >= ambang) {
+        await this._upsertTindakLanjut(siswaId, tahunAjaranId, tahap, ambang);
+      }
+    }
+  }
+
+  private async _upsertTindakLanjut(
+    siswaId: number,
+    tahunAjaranId: number,
+    tahap: TahapTindakLanjut,
+    ambang: number,
+  ): Promise<void> {
+    const existing = await this.tindakLanjutRepo.findOne({
+      where: { siswaId, tahunAjaranId, tahap },
+    });
+    if (existing) return; // Idempotent — sudah ada
+
+    const row = this.tindakLanjutRepo.create({
+      siswaId,
+      tahunAjaranId,
+      tahap,
+      ambang,
+      status: 'BARU',
+      catatanPelaksanaan: null,
+      dilaksanakanOleh: null,
+      dilaksanakanPada: null,
+    });
+
+    try {
+      await this.tindakLanjutRepo.save(row);
+    } catch {
+      // Race condition: UNIQUE violation — abaikan
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F5b: LIST TINDAK LANJUT
+  // GET /api/kesiswaan/tindak-lanjut?status?&kelasId?&page&limit
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async listTindakLanjut(params: {
+    status?: string;
+    kelasId?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+
+    const qb = this.tindakLanjutRepo
+      .createQueryBuilder('tl')
+      .leftJoin('tl.siswa', 's')
+      .select([
+        'tl.id', 'tl.siswaId', 'tl.tahunAjaranId', 'tl.tahap',
+        'tl.ambang', 'tl.status', 'tl.catatanPelaksanaan',
+        'tl.dilaksanakanPada', 'tl.createdAt',
+      ])
+      .addSelect(['s.nama', 's.nis', 's.kelasId'])
+      .orderBy('tl.createdAt', 'DESC');
+
+    if (params.status) qb.andWhere('tl.status = :status', { status: params.status });
+    if (params.kelasId) qb.andWhere('s.kelasId = :kelasId', { kelasId: params.kelasId });
+
+    const [data, total] = await qb
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return { total, page, limit, data };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F5b: SELESAI tindak lanjut
+  // PATCH /api/kesiswaan/tindak-lanjut/:id/selesai
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async selesaiTindakLanjut(
+    id: number,
+    dto: SelesaiTindakLanjutDto,
+    req: Request,
+  ) {
+    const row = await this.tindakLanjutRepo.findOne({
+      where: { id },
+      relations: ['siswa'],
+    });
+    if (!row) throw new NotFoundException('Tindak lanjut tidak ditemukan');
+    if (row.status === 'SELESAI') {
+      throw new BadRequestException('Tindak lanjut sudah selesai');
+    }
+
+    const user = (req as any).user as { id: number; roles: string[] };
+    row.status = 'SELESAI';
+    row.catatanPelaksanaan = dto.catatanPelaksanaan;
+    row.dilaksanakanOleh = user.id;
+    row.dilaksanakanPada = new Date();
+    await this.tindakLanjutRepo.save(row);
+
+    await this.audit.log({
+      actorId: user.id,
+      action: 'SELESAI_TINDAK_LANJUT',
+      resource: 'tindak_lanjut',
+      resourceId: String(id),
+      ip: req.ip,
+      userAgent: req.headers['user-agent'] as string,
+      summary: `Menyelesaikan tindak lanjut #${id} (${row.tahap}) siswa ${row.siswa?.nama}`,
+    });
+
+    return row;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F5b: REWARD semester — TURUNAN dari saldo batch (tanpa entitas)
+  // GET /api/kesiswaan/reward?tahunAjaranId=
+  // §7.4: Sangat Baik = 500 utuh; Baik = 400–490.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async reward(params: { tahunAjaranId?: number }) {
+    // Gunakan TA aktif jika tidak dispesifikasi
+    let taId = params.tahunAjaranId;
+    if (!taId) {
+      const ta = await this.taRepo.findOne({ where: { aktif: true } });
+      if (!ta) throw new BadRequestException('Tidak ada tahun ajaran aktif');
+      taId = ta.id;
+    }
+
+    // Ambil semua siswa aktif
+    const siswaList = await this.siswaRepo.find({
+      where: { status: 'aktif' },
+      select: ['id', 'nama', 'nis', 'kelasId'],
+      order: { nama: 'ASC' },
+    });
+    if (siswaList.length === 0) return { tahunAjaranId: taId, sangatBaik: [], baik: [] };
+
+    const siswaIds = siswaList.map((s) => s.id);
+    const saldoMap = await this.hitungSaldoBatch(siswaIds, taId);
+    const siswaById = new Map(siswaList.map((s) => [s.id, s]));
+
+    const sangatBaik: any[] = [];
+    const baik: any[] = [];
+
+    for (const [id, { saldo, terpotong }] of saldoMap) {
+      const s = siswaById.get(id);
+      if (!s) continue;
+      const entry = { siswaId: id, nama: s.nama, nis: s.nis, kelasId: s.kelasId, saldo, terpotong };
+      if (saldo === 500) sangatBaik.push(entry);
+      else if (saldo >= 400 && saldo <= 490) baik.push(entry);
+    }
+
+    return { tahunAjaranId: taId, sangatBaik, baik };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F5b: LAPORAN DEMERIT — agregat per siswa (anti-N+1)
+  // GET /api/kesiswaan/laporan/demerit?dari=&sampai=&kelasId?&page&limit
+  // Satu query GROUP BY siswaId + kategori → aggregate semua kategori sekaligus
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async laporanDemerit(params: {
+    dari?: string;
+    sampai?: string;
+    kelasId?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = Math.max(1, params.page ?? 1);
+    const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+    const ta = await this.taAktif();
+
+    // Query agregat: satu GROUP BY untuk semua siswa+kategori sekaligus
+    const qb = this.pelanggaranRepo
+      .createQueryBuilder('p')
+      .innerJoin('p.siswa', 's')
+      .select('p.siswaId', 'siswaId')
+      .addSelect('s.nama', 'siswaNama')
+      .addSelect('s.nis', 'siswaNis')
+      .addSelect('s.kelasId', 'kelasId')
+      .addSelect("SUM(CASE WHEN p.kategori = 'R' THEN p.poin ELSE 0 END)", 'totalR')
+      .addSelect("SUM(CASE WHEN p.kategori = 'S' THEN p.poin ELSE 0 END)", 'totalS')
+      .addSelect("SUM(CASE WHEN p.kategori = 'B' THEN p.poin ELSE 0 END)", 'totalB')
+      .addSelect("SUM(CASE WHEN p.kategori = 'SB' THEN p.poin ELSE 0 END)", 'totalSB')
+      .addSelect('SUM(p.poin)', 'terpotong')
+      .where("p.status = 'DISETUJUI'")
+      .andWhere('p.tahunAjaranId = :taId', { taId: ta.id })
+      .groupBy('p.siswaId, s.nama, s.nis, s.kelasId')
+      .orderBy('terpotong', 'DESC');
+
+    if (params.kelasId) qb.andWhere('s.kelasId = :kelasId', { kelasId: params.kelasId });
+    if (params.dari) qb.andWhere('p.tanggal >= :dari', { dari: params.dari });
+    if (params.sampai) qb.andWhere('p.tanggal <= :sampai', { sampai: params.sampai });
+
+    const allRows = await qb.getRawMany();
+    const total = allRows.length;
+    const pageRows = allRows.slice((page - 1) * limit, page * limit);
+
+    const data = pageRows.map((r) => ({
+      siswaId: Number(r.siswaId),
+      siswaNama: r.siswaNama,
+      siswaNis: r.siswaNis,
+      kelasId: Number(r.kelasId),
+      perKategori: {
+        R: Number(r.totalR),
+        S: Number(r.totalS),
+        B: Number(r.totalB),
+        SB: Number(r.totalSB),
+      },
+      terpotong: Number(r.terpotong),
+      saldo: 500 - Number(r.terpotong),
+    }));
+
+    return { tahunAjaranId: ta.id, total, page, limit, data };
+  }
 }
+

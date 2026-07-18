@@ -1549,6 +1549,38 @@ export const api = {
 
   getSaldoBatch: (kelasId: number) =>
     request<{ data: SaldoEntry[] }>(`/kesiswaan/saldo?kelasId=${kelasId}`),
+
+  // ── F5b: Tindak Lanjut ────────────────────────────────────────────────────
+  getTindakLanjut: (status?: string, kelasId?: number) => {
+    const q = new URLSearchParams();
+    if (status) q.set('status', status);
+    if (kelasId) q.set('kelasId', String(kelasId));
+    q.set('limit', '50');
+    return request<{ data: any[]; total: number }>(`/kesiswaan/tindak-lanjut?${q}`);
+  },
+
+  selesaiTindakLanjut: (id: number, catatanPelaksanaan: string) =>
+    request<any>(`/kesiswaan/tindak-lanjut/${id}/selesai`, {
+      method: 'PATCH',
+      body: JSON.stringify({ catatanPelaksanaan }),
+    }),
+
+  // ── F5b: Reward ────────────────────────────────────────────────────────────
+  getReward: (tahunAjaranId?: number) => {
+    const q = new URLSearchParams();
+    if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));
+    return request<{ sangatBaik: any[]; baik: any[] }>(`/kesiswaan/reward?${q}`);
+  },
+
+  // ── F5b: Laporan Demerit ──────────────────────────────────────────────────
+  getLaporanDemerit: (params: { dari: string; sampai: string; kelasId?: number; limit?: number }) => {
+    const q = new URLSearchParams();
+    q.set('dari', params.dari);
+    q.set('sampai', params.sampai);
+    if (params.kelasId) q.set('kelasId', String(params.kelasId));
+    if (params.limit) q.set('limit', String(params.limit));
+    return request<{ data: any[]; total: number }>(`/kesiswaan/laporan/demerit?${q}`);
+  },
 };
 
 

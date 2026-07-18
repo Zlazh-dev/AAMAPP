@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KatalogPelanggaran } from './katalog-pelanggaran.entity';
 import { Pelanggaran } from './pelanggaran.entity';
+import { TindakLanjut } from './tindak-lanjut.entity';
 import { Siswa } from '../siswa/siswa.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
@@ -16,6 +17,7 @@ import { AuditModule } from '../audit/audit.module';
     TypeOrmModule.forFeature([
       KatalogPelanggaran,
       Pelanggaran,
+      TindakLanjut,
       Siswa,
       Kelas,
       TahunAjaran,

@@ -66,6 +66,9 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel' },
       { label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning' },
       { label: 'Verifikasi', path: '/kesiswaan/verifikasi', icon: 'task_alt' },
+      { label: 'Tindak Lanjut', path: '/kesiswaan/tindak-lanjut', icon: 'assignment_late' },
+      { label: 'Reward', path: '/kesiswaan/reward', icon: 'emoji_events' },
+      { label: 'Laporan', path: '/kesiswaan/laporan', icon: 'bar_chart' },
     ],
   },
   guru: {

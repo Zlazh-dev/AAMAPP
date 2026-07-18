@@ -1245,3 +1245,41 @@ Wilayah: backend/** + frontend/e2e/.
 8. ✅ Tolak tanpa alasan → 400
 9. ✅ Guru biasa → LAPORAN/MENUNGGU (bukan langsung)
 10. ✅ Saldo batch kelasId → saldo < 500, perKategori.R terisi
+
+## KLAIM TUGAS — F5b BACKEND (tindak lanjut + reward + laporan demerit; MEMIMPIN)
+DIKERJAKAN (21:15 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Entitas tindak_lanjut + auto-trigger (ambang 200/300/400/500 idempoten) +
+endpoint tindak-lanjut/selesai + reward (turunan saldo BATCH) +
+laporan/demerit (agregat anti-N+1). Daftarkan. Boot-verify + e2e.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F5b BACKEND — SELESAI (2026-07-18 22:23 WIB)
+
+**Wilayah dihormati**: `backend/src/kesiswaan/**` + `app.module.ts` + `frontend/e2e/gelombang2/kesiswaan-f5b-backend.spec.ts`. TIDAK menyentuh frontend kesiswaan (AG-1).
+
+**File yang dibuat/diubah:**
+
+| File | Isi |
+|------|-----|
+| [tindak-lanjut.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/tindak-lanjut.entity.ts) | Entitas `tindak_lanjut` — UNIQUE(siswaId, tahunAjaranId, tahap) idempoten |
+| [dto/selesai-tindak-lanjut.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/dto/selesai-tindak-lanjut.dto.ts) | DTO `catatanPelaksanaan` (MinLength 3) |
+| [kesiswaan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.service.ts) | `AMBANG_TAHAP` mapping 200→P1/300→P2/400→P3/500→TK, `triggerTindakLanjut` (idempoten, KHUSUS→TK langsung), `_upsertTindakLanjut`, `listTindakLanjut`, `selesaiTindakLanjut`, `reward` (BATCH), `laporanDemerit` (1 GROUP BY anti-N+1). Wired ke `catatPelanggaran` + `setujui` fire-and-forget |
+| [kesiswaan.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.controller.ts) | 4 endpoint F5b baru: GET tindak-lanjut, PATCH selesai, GET reward, GET laporan/demerit |
+| [kesiswaan.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/kesiswaan/kesiswaan.module.ts) | TindakLanjut ditambah ke forFeature |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | TindakLanjut entity global + import |
+
+**Boot-verify**: tabel `tindak_lanjut` terbentuk, seed idempoten (`28 butir sudah ada — dilewati`) ✅
+
+**E2E — 10/10 LULUS (4.8 detik):**
+1. ✅ Terpotong ≥200 → PERINGATAN_1 auto muncul
+2. ✅ Auto-trigger idempoten (trigger lagi → tidak duplikasi)
+3. ✅ List filter status=BARU → berisi PERINGATAN_1
+4. ✅ PATCH selesai → status SELESAI + catatanPelaksanaan
+5. ✅ PATCH selesai dua kali → 400 BadRequest
+6. ✅ Reward: 0 pelanggaran → sangatBaik (saldo 500)
+7. ✅ Reward: terpotong 10 → baik (saldo 490)
+8. ✅ Reward: terpotong ≥200 → tidak di sangatBaik/baik
+9. ✅ Laporan demerit → agregat perKategori + saldo per siswa
+10. ✅ Laporan demerit?kelasId= → filter hanya siswa kelas itu
+
+**F5 BACKEND TUNTAS** (F5a + F5b). AG-1 bisa konsumsi semua endpoint kesiswaan.

@@ -24,6 +24,7 @@ import { LaporanModule } from './laporan/laporan.module';
 import { KesiswaanModule } from './kesiswaan/kesiswaan.module';
 import { KatalogPelanggaran } from './kesiswaan/katalog-pelanggaran.entity';
 import { Pelanggaran } from './kesiswaan/pelanggaran.entity';
+import { TindakLanjut } from './kesiswaan/tindak-lanjut.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -74,6 +75,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           IzinGuru,
           KatalogPelanggaran,
           Pelanggaran,
+          TindakLanjut,
         ],
         // SEC-1 Butir 3: synchronize hanya aktif di luar production.
         // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
