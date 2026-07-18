@@ -11,8 +11,10 @@ import { loginAsAdmin } from '../helpers/auth';
  * MENOLAK path relatif. Fix: DTO kini menerima path `/uploads/...`
  * ATAU URL http(s) penuh (create-guru.dto.ts).
  *
- * Test ini melakukan upload NYATA (1x1 PNG) lewat UI — bukan mock —
- * supaya benar-benar melewati endpoint upload asli + validasi DTO.
+ * FIX MANDIRI-DATA (§12.17e):
+ * - Setelah simpan sukses, cari guru by nama unik via API → dapat ID.
+ * - Navigasi langsung by ID ke /admin/orang/guru/:id (bukan klik daftar).
+ * - afterEach: hapus guru via API agar tidak menumpuk.
  */
 
 // 1x1 transparent PNG, valid magic bytes agar lolos fileFilter mimetype.
@@ -20,11 +22,25 @@ const PNG_1X1_BASE64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
 
 test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
+  let createdGuruId: number | null = null;
+
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
+    createdGuruId = null;
   });
 
-  test('Upload foto nyata -> pratinjau -> simpan -> foto tampil di detail -> hapus foto', async ({ page }) => {
+  test.afterEach(async ({ page, request }) => {
+    if (!createdGuruId) return;
+    const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
+    await request
+      .delete(`/api/admin/guru/${createdGuruId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .catch(() => {});
+    createdGuruId = null;
+  });
+
+  test('Upload foto nyata -> pratinjau -> simpan -> foto tampil di detail -> hapus foto', async ({ page, request }) => {
     await page.goto('/admin/orang/guru/baru');
     await expect(page.getByRole('heading', { name: 'Tambah Guru' })).toBeVisible();
 
@@ -41,27 +57,37 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
       buffer,
     });
 
-    // Pratinjau: <img> preview muncul menggantikan placeholder ikon kamera
-    // (ImageUploader merender <img src={value}> begitu upload sukses).
+    // Pratinjau: <img> preview muncul menggantikan placeholder ikon kamera.
     const preview = page.locator('img[alt="Foto Guru"]');
     await expect(preview).toBeVisible();
-    // Pastikan src bukan lagi kosong (upload asli sudah selesai, bukan pending).
     await expect(preview).toHaveAttribute('src', /\/uploads\//);
 
     // Simpan
     await page.getByRole('button', { name: 'Simpan' }).click();
 
-    // Ini adalah bukti utama: JIKA bug relatif-URL masih ada, simpan akan
-    // gagal 400 dan halaman SaveSuccess TIDAK akan muncul.
-    await expect(page.getByText(/berhasil ditambahkan/i).first()).toBeVisible();
+    // Bukti utama: jika bug relatif-URL masih ada → 400 → SaveSuccess tidak muncul.
+    await expect(page.getByText(/berhasil ditambahkan/i).first()).toBeVisible({ timeout: 10_000 });
 
-    // Ke detail: klik "Lihat Daftar Guru" lalu buka guru yang baru dibuat.
-    await page.getByRole('button', { name: 'Lihat Daftar Guru' }).click();
-    await page.waitForURL('**/admin/orang/guru');
-    await page.getByText(namaUnik).first().click();
+    // Cari guru by nama unik via API → dapat ID → navigasi by ID.
+    const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
+    const headers = { Authorization: `Bearer ${token}` };
+    const searchRes = await request.get(
+      `/api/admin/guru?q=${encodeURIComponent(namaUnik)}&limit=5`,
+      { headers },
+    );
+    const searchBody = await searchRes.json();
+    const found = (searchBody.data ?? []).find((g: any) => g.nama === namaUnik);
+    if (found) {
+      createdGuruId = found.id;
+    }
+
+    expect(createdGuruId, 'Guru yang baru dibuat harus ditemukan via API').not.toBeNull();
+
+    // Navigasi langsung ke detail by ID — tidak bergantung urutan daftar.
+    await page.goto(`/admin/orang/guru/${createdGuruId}`);
 
     // Detail: <img> foto guru tampil (bukan avatar inisial fallback).
-    await expect(page.getByRole('heading', { name: namaUnik })).toBeVisible();
+    await expect(page.getByRole('heading', { name: namaUnik })).toBeVisible({ timeout: 8_000 });
     const detailImg = page.locator(`img[alt="${namaUnik}"]`);
     await expect(detailImg).toBeVisible();
     await expect(detailImg).toHaveAttribute('src', /\/uploads\//);

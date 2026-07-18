@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Guru } from '../guru/guru.entity';
@@ -476,7 +476,7 @@ export class LaporanService {
     // Parse YYYY-MM → dari & sampai
     const [tahun, bulanStr] = params.bulan.split('-').map(Number);
     if (!tahun || !bulanStr || bulanStr < 1 || bulanStr > 12) {
-      throw new Error('Format bulan tidak valid, gunakan YYYY-MM');
+      throw new BadRequestException('Format bulan tidak valid, gunakan YYYY-MM');
     }
     const dari = `${params.bulan}-01`;
     // Akhir bulan: hari pertama bulan berikutnya - 1 hari

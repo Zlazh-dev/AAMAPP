@@ -2,27 +2,41 @@ import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * BACKLINK-ADAPTIF-MOBILE — keputusan user (zona jempol): di MOBILE, teks
- * kecil "← Kembali" di atas halaman sulit dijangkau → tombol full-width
- * "← Kembali" (≥48px) MELAYANG di paling bawah viewport (position: fixed,
- * bukan elemen terakhir konten — sengaja dipilih agar selalu terjangkau
- * tanpa scroll, dan tidak perlu reorder JSX per halaman).
- * Desktop tetap tautan teks di atas.
+ * BACKLINK-ADAPTIF-MOBILE — spec MANDIRI-DATA (§12.17e).
+ *
+ * Keputusan user (zona jempol): di MOBILE, teks kecil "← Kembali" di atas
+ * halaman sulit dijangkau → tombol full-width "← Kembali" (≥48px) MELAYANG
+ * di paling bawah viewport (position: fixed). Desktop tetap tautan teks di atas.
+ *
+ * FIX: buat kelas via API beforeEach, navigasi by ID langsung — tidak klik
+ * "baris pertama" yang butuh data ambient.
  */
 test.describe('BackLink adaptif mobile', () => {
-  test.beforeEach(async ({ page }) => {
+  let kelasId: number;
+
+  test.beforeEach(async ({ page, request }) => {
     await loginAsAdmin(page);
+    const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const res = await request.post('/api/admin/kelas', {
+      headers,
+      data: { tingkat: 8, nama: `KMobile-${Date.now()}` },
+    });
+    const kelas = await res.json();
+    kelasId = kelas.id;
+  });
+
+  test.afterEach(async ({ page, request }) => {
+    if (!kelasId) return;
+    const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
+    const headers = { Authorization: `Bearer ${token}` };
+    await request.delete(`/api/admin/kelas/${kelasId}`, { headers }).catch(() => {});
   });
 
   test('Mobile: tombol "Kembali" melayang di bawah & berfungsi (halaman detail kelas)', async ({ page }) => {
-    await page.goto('/admin/kelas');
-    await expect(page.getByRole('heading', { name: 'Data Kelas' })).toBeVisible();
-
-    // List mobile pakai <Card onClick> yang dirender sebagai <button> berlabel
-    // "<nama kelas> Fase X Tingkat Y" → cocokkan lewat accessible name agar
-    // tidak salah pilih elemen lain yang kebetulan berbagi class CSS.
-    await page.getByRole('button', { name: /Fase .* Tingkat/ }).first().click();
-
+    // Navigasi langsung by ID — tidak bergantung kelas ambient.
+    await page.goto(`/admin/kelas/${kelasId}`);
     await page.waitForURL(/\/admin\/kelas\/\d+$/);
 
     // Tombol Kembali mobile: full-width, min-height 48px, fixed di bawah viewport.
@@ -55,5 +69,3 @@ test.describe('BackLink adaptif mobile', () => {
     await expect(page.getByRole('button', { name: 'Simpan' }).last()).toBeVisible();
   });
 });
-
-

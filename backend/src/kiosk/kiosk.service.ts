@@ -99,11 +99,14 @@ export class KioskService {
 
   /** POST /api/admin/device-kiosk — buat perangkat + kode pairing 6 digit 10 mnt. */
   async createDevice(nama: string, req: Request) {
+    if (!nama || !nama.trim()) {
+      throw new BadRequestException('Nama perangkat tidak boleh kosong');
+    }
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     const device = this.deviceRepo.create({
-      nama,
+      nama: nama.trim(),
       tokenHash: null,
       pairingCode: code,
       pairingExpiresAt: expiresAt,
@@ -119,7 +122,7 @@ export class KioskService {
       resourceId: String(device.id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Membuat perangkat kiosk "${nama}" (kode: ${code})`,
+      summary: `Membuat perangkat kiosk "${nama.trim()}" (kode: ${code})`,
     });
 
     return { id: device.id, nama: device.nama, pairingCode: code, pairingExpiresAt: expiresAt };

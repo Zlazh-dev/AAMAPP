@@ -1223,3 +1223,50 @@ DIKERJAKAN (2026-07-18 18:25 WIB).
 
 DoD terpenuhi: tsc bersih • build sukses • /tu/rekap-guru jalan + export •
 kepsek akses laporan+dashboard • e2e hijau 139/0 • laporan. **F4 TUNTAS.**
+
+---
+
+## LAPORAN — E2E-MANDIRI-DATA (suite deterministik)
+
+DIKERJAKAN (2026-07-18 19:09 WIB).
+
+### Audit hasil
+
+Semua 43 spec diaudit. Ditemukan spec yang bergantung data ambient:
+
+| Spec | Masalah | Status |
+|------|---------|--------|
+| `backlink-adaptif.spec.ts` | `table tbody tr.first().click()` — butuh kelas ambient | **DIPERBAIKI** |
+| `backlink-adaptif.mobile.spec.ts` | `getByRole('button', /Fase .* Tingkat/).first().click()` — butuh kelas ambient | **DIPERBAIKI** |
+| `image-uploader.spec.ts` | Setelah simpan, `getByText(namaUnik).first().click()` di daftar besar + tidak ada afterEach cleanup | **DIPERBAIKI** |
+
+Spec lain (`jadwal-mobile`, `wali-force`, `kelas-crud`, dll.) sudah mandiri
+(buat data sendiri via API beforeEach, cleanup via afterEach).
+
+### Perbaikan yang dilakukan
+
+**backlink-adaptif.spec.ts:**
+- `beforeEach`: POST `/api/admin/kelas` → simpan `kelasId`.
+- Test: `goto('/admin/kelas/${kelasId}')` langsung by ID.
+- `afterEach`: DELETE `/api/admin/kelas/${kelasId}`.
+
+**backlink-adaptif.mobile.spec.ts:**
+- `beforeEach`: POST `/api/admin/kelas` → simpan `kelasId`.
+- Test: `goto('/admin/kelas/${kelasId}')` langsung by ID — tidak klik mobile card list.
+- `afterEach`: DELETE `/api/admin/kelas/${kelasId}`.
+
+**image-uploader.spec.ts:**
+- Setelah simpan sukses, GET `/api/admin/guru?q=${namaUnik}` → dapat ID.
+- `goto('/admin/orang/guru/${createdGuruId}')` langsung by ID.
+- `afterEach`: DELETE `/api/admin/guru/${createdGuruId}`.
+
+### Hasil verifikasi (2× berturut-turut, DB sama)
+
+| Run | Passed | Skipped | Failed |
+|-----|--------|---------|--------|
+| Pass 1 | 145 | 5 | 0 |
+| Pass 2 | 145 | 5 | 0 |
+
+Identik. Suite DETERMINISTIK terbukti — tidak bergantung data ambient.
+
+DoD terpenuhi: suite hijau 2× berturut identik 0 gagal • laporan.

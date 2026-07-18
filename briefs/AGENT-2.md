@@ -1099,3 +1099,22 @@ Wilayah: `backend/**` + `frontend/e2e/`.
 
 **DoD terpenuhi**: endpoint TU live ✅, RBAC kepsek dikonfirmasi ✅,
 e2e 10/10 ✅. **F4 BACKEND TUNTAS** (F4a + F4b + F4c).
+
+### [AGENT-2] F4-NITS — BadRequestException (500→400) — SELESAI (2026-07-18 19:14 WIB)
+
+**Audit hasil**: 2 `throw new Error(` ditemukan di backend/src/. Satu dipicu input klien (laporan), satu oleh provider eksternal HTTP (kurikulum/libur-nasional — sudah di-wrap try/catch oleh caller, tidak mencapai klien sebagai 500).
+
+**Fix dilakukan:**
+
+| File | Baris | Fix |
+|------|-------|-----|
+| [kiosk.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/kiosk.service.ts) | createDevice | Tambah guard `nama kosong/spasi` → `BadRequestException` (sebelumnya tidak ada validasi → baris nama='' bisa tersimpan) |
+| [laporan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/laporan/laporan.service.ts) | rekapBulananGuru | `throw new Error(...)` → `throw new BadRequestException(...)` — format bulan invalid → 400 bukan 500 |
+
+**E2E — 6/6 LULUS (16.5 detik):**
+1. ✅ Kiosk nama="" → 400
+2. ✅ Kiosk nama="   " (spasi) → 400
+3. ✅ Kiosk nama valid → 2xx + pairingCode 6 digit
+4. ✅ Rekap TU bulan="bukan-bulan" → 400
+5. ✅ Rekap TU bulan="2026-13" (month>12) → 400
+6. ✅ Rekap TU bulan="2026-07" valid → 200
