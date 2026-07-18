@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | ✅ **F3a FRONTEND SELESAI** (enroll+scan+monitor; human lazy; e2e 82/0 ×2). Kandidat berikut: **F3b kiosk FRONTEND** (scanner fullscreen + offline) | siap tugas berikut |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3b BACKEND SELESAI** (kiosk 1:N, e2e 11/11, ter-guard). Kandidat: **F3-DOKUMENTASI** (docs/, non-konflik) | idle — tunggu assign |
+| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` (F3b-A) + `briefs/AGENT-1.md` | **F3b KIOSK APP** (device-facing: `/kiosk` pairing+scanner, X-Device-Token) + pemilik wiring F3b | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` (F3b-B) + `briefs/AGENT-2.md` | **F3b ADMIN FRONTEND** (`/admin/perangkat` + verifikasi pending, folder `admin/kiosk/`) + nit backend fix | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3a LENGKAP** (backend+frontend;

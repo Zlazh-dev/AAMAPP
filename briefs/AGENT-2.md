@@ -5,7 +5,38 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18d) — F3b BACKEND (kiosk 1:N; independen dari frontend AG-1)
+## TUGAS AKTIF (2026-07-18e) — F3b FRONTEND ADMIN (perangkat kiosk + verifikasi pending) + nit backend
+
+> F3b BACKEND kamu DITERIMA (commit 797a1c2, e2e 11/11, ter-guard). Sekarang
+> UI admin kiosk. Baca `briefs/F3-SPEC.md` bagian "F3b — FRONTEND KIOSK"
+> bagian B. Wilayah TULIS: `frontend/src/pages/admin/kiosk/**` + `backend/**`
+> (untuk nit fix) + `frontend/e2e/`. JANGAN sentuh client.ts/App.tsx/menu.ts
+> (AG-1 yang wire — kamu lapor komponen+method, atau helper lokal sementara
+> pola F2 lalu AG-1 migrasi).
+
+Kerjakan:
+1. **`/admin/perangkat`** (`frontend/src/pages/admin/kiosk/`): daftar perangkat
+   (`GET /api/admin/device-kiosk`: nama + isOnline + status pairing), "Tambah
+   Perangkat" → `POST /api/admin/device-kiosk` → tampilkan **kode pairing 6
+   digit BESAR** (untuk diketik di kiosk), tombol cabut (`DELETE /:id`). Pola
+   proyek: PageContainer, satu-tombol-aksi + ⋮, AdaptiveSelect, Badge online/
+   offline.
+2. **Verifikasi pending**: halaman/section `GET /api/admin/presensi-guru/
+   pending` → daftar record perluVerifikasi=true → terima/tolak
+   (`POST /api/admin/presensi-guru/:id/verifikasi`, sheet adaptif, alasan bila
+   tolak). Boleh tab di `/admin/presensi-guru`.
+3. **Nit backend fix**: `kiosk.controller.ts` `create` device pakai
+   `throw new Error(...)` → ganti `BadRequestException` (500→400). Cek juga
+   endpoint kiosk lain: error klien pakai exception Nest yang benar.
+4. **E2E**: admin buat device → kode tampil; verifikasi pending terima/tolak.
+5. Lapor ke AG-1: nama komponen + path + daftar method API yang perlu di-wire
+   (list/create/delete device, list pending, verifikasi).
+
+DoD: halaman admin kiosk jalan, nit backend fixed, e2e hijau, laporan +
+daftar method utk AG-1. JANGAN sentuh aplikasi kiosk device-facing (itu AG-1).
+
+---
+## ARSIP — F3b BACKEND (SELESAI, diterima commit 797a1c2, e2e 11/11)
 
 > F3a BACKEND kamu DITERIMA (commit 1689461, planner jalankan e2e 9/9).
 > Sekarang backend KIOSK. Baca **`briefs/F3-SPEC.md`** bagian **F3b** (kontrak

@@ -214,6 +214,56 @@ DeviceAuthGuard, pairing+scan+heartbeat+manual controller) + tambah kolom
 e2e mock (pair→token→scan 1:N match/no-match→heartbeat→manual NIP→admin verify).
 JANGAN sentuh frontend (AG-1) — kecuali `frontend/e2e/`.
 
+## ══════════ F3b — FRONTEND KIOSK (dibuka 2026-07-18; contract) ══════════
+> Backend F3b LIVE & terverifikasi (commit 797a1c2). Sekarang UI. Dibagi DUA
+> agent (pola F2: device-facing vs admin-facing) → paralel tanpa tabrakan.
+
+**A. Aplikasi KIOSK (device-facing) — route `/kiosk` (AG-1):**
+- **Auth device**: kiosk pakai TOKEN PERANGKAT (localStorage `aamapp_device_token`),
+  BUKAN sesi user. client.ts butuh varian request yang kirim header
+  `X-Device-Token` (bukan Bearer). Route `/kiosk` di LUAR AuthedLayout (tak
+  butuh login user).
+- **Layar pairing** (bila belum ada device token): input kode 6 digit →
+  `POST /api/kiosk/pair` → simpan `deviceToken` + nama ke localStorage.
+- **Layar scanner** (setelah paired): kamera fullscreen + overlay nama sekolah
+  + jam WIB besar; **auto-capture** → `detectEmbedding` (faceHuman.ts, sudah
+  ada) → `POST /api/kiosk/scan` (header device). Hasil:
+  - MATCH → kartu sukses slide-in (foto referensi + nama besar + badge
+    HADIR/TERLAMBAT + jam), lalu balik ke idle.
+  - NO_MATCH → "wajah tidak dikenali", retry; **3× gagal → input manual NIP**
+    → `POST /api/kiosk/manual` → "PENDING verifikasi admin".
+  - AMBIGUOUS → tetap tercatat perluVerifikasi (tampilkan info).
+  - scan ganda → "sudah tercatat HH:MM".
+- **Heartbeat** periodik (`POST /api/kiosk/heartbeat`, mis. tiap 60 dtk).
+- **Offline (opsional v1 ringkas)**: bila fetch scan gagal jaringan, antre di
+  localStorage + retry saat online (kirim `scannedAt`). Boleh MINIMAL dulu +
+  TODO; jangan blokir.
+- Kiosk TANPA geofence (perangkat memang di sekolah) & tanpa idle-timeout.
+
+**B. Admin kiosk (admin-facing) — folder `frontend/src/pages/admin/kiosk/` (AG-2):**
+- **`/admin/perangkat`**: daftar perangkat (`GET /api/admin/device-kiosk`,
+  nama + isOnline + status pairing), tombol "Tambah Perangkat" →
+  `POST /api/admin/device-kiosk` → tampilkan **kode pairing 6 digit besar**
+  (untuk diketik di kiosk), tombol cabut (`DELETE`). Pola satu-tombol-aksi +
+  AdaptiveSelect + PageContainer.
+- **Verifikasi pending**: halaman/section review `GET /api/admin/presensi-guru/
+  pending` → daftar record perluVerifikasi=true (nama/NIP tebakan + jam) →
+  terima/tolak (`POST /api/admin/presensi-guru/:id/verifikasi`, pola sheet
+  adaptif, alasan bila tolak). Bisa jadi tab di `/admin/presensi-guru`.
+- AG-2 BUAT FILE HALAMAN di folder itu SAJA; JANGAN sentuh client.ts/App.tsx/
+  menu.ts (lapor komponen + method → AG-1 yang wire, atau pakai helper lokal
+  sementara spt F2 lalu AG-1 migrasi). Method API yang dibutuhkan: list/create/
+  delete device, list pending, verifikasi.
+
+**Wiring (AG-1 pemilik):** client.ts semua method kiosk (device app + admin)
++ request-varian X-Device-Token + App.tsx routes (`/kiosk` publik di luar
+AuthedLayout; `/admin/perangkat` RequireRole admin) + menu.ts (admin
+"Perangkat Kiosk").
+
+**E2E:** device app scan boleh mock embedding (seperti backend). Uji: pairing
+UI → token tersimpan, scanner MATCH tampilkan kartu, NO_MATCH 3× → manual,
+admin buat device tampil kode, verifikasi pending.
+
 ## Aturan wajib (semua): §12.15 lazy (human WAJIB dynamic-import) • §12.16
 filter+paginasi level DB + anti N+1 + anti DTO-drift • §12.17 e2e (mock
 embedding) = gerbang • RBAC/token server + audit + WIB • klaim tugas sebelum

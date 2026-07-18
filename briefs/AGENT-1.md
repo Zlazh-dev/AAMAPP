@@ -13,7 +13,39 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18c) — F3a FRONTEND (presensi wajah guru; backend LIVE)
+## TUGAS AKTIF (2026-07-18e) — F3b FRONTEND: APLIKASI KIOSK (device-facing)
+
+> F3a FRONTEND kamu DITERIMA (commit e76f126, e2e 82/0 deterministik, human
+> lazy). Sekarang bangun **aplikasi KIOSK** (device-facing) + kamu PEMILIK
+> semua wiring F3b frontend. Baca `briefs/F3-SPEC.md` bagian "F3b — FRONTEND
+> KIOSK" (bagian A + Wiring). Backend kiosk LIVE (commit 797a1c2).
+
+Kerjakan (wilayah: `frontend/src/**` + `frontend/e2e/`; kamu pegang
+client.ts/App.tsx/menu.ts):
+1. **client.ts**: semua method kiosk. PENTING: kiosk pakai TOKEN PERANGKAT →
+   buat varian request yang kirim header `X-Device-Token` (dari localStorage
+   `aamapp_device_token`), BUKAN Bearer sesi. Method: `kioskPair(code)`,
+   `kioskScan(embedding, mode?)`, `kioskManual(nip, mode?)`,
+   `kioskHeartbeat()` + method admin device (list/create/delete) & pending/
+   verifikasi (dipakai halaman admin AG-2 — daftarkan agar mereka bisa migrasi).
+2. **Aplikasi kiosk** route `/kiosk` (di LUAR AuthedLayout — tak butuh login
+   user): layar pairing (input kode 6 digit → `kioskPair` → simpan token) →
+   layar scanner fullscreen (nama sekolah + jam WIB besar, auto-capture pakai
+   `faceHuman.ts` yang sudah ada → `kioskScan`): MATCH → kartu sukses (nama +
+   HADIR/TERLAMBAT), NO_MATCH 3× → manual NIP (`kioskManual`) → PENDING, scan
+   ganda → "sudah tercatat". Heartbeat periodik. Offline antre minimal (boleh
+   TODO ringkas, jangan blokir).
+3. **Wiring** route + menu untuk halaman admin kiosk buatan AG-2 (dia lapor
+   nama komponen + path; kamu daftarkan `/admin/perangkat` RequireRole admin +
+   menu "Perangkat Kiosk").
+4. **E2E**: pairing UI → token tersimpan, scanner MATCH kartu (mock embedding),
+   NO_MATCH 3× → manual. Suite tetap hijau.
+
+DoD: tsc bersih • build sukses • kiosk pairing→scan jalan • human tetap lazy •
+e2e hijau • laporan. JANGAN kerjakan halaman admin kiosk (itu AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18c) — F3a FRONTEND (SELESAI, diterima e2e 82/0)
 
 > E2E-ISOLASI-HARDENING kamu DITERIMA (gerbang hijau deterministik 55/0 ×2,
 > fix race AuthContext sehat). Sekarang bangun FRONTEND F3a. Baca
