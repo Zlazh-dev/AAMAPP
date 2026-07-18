@@ -82,6 +82,74 @@ DTO lengkap; daftar siswa/nilai anti-N+1.
   client.ts/App.tsx/menu.ts (guru "Penilaian"). E2E MANDIRI (buat data via API,
   navigasi by-id — JANGAN lookup daftar paginasi).
 
+## ══════════ F6b — RAPOR AKADEMIK (dibuka 2026-07-18; keputusan user) ══════════
+> F6a LIVE. F6b = rapor per siswa/semester dari nilai F6a + deskripsi otomatis
+> + kehadiran F2 + workflow draft/final + PDF. F6c (kokurikuler+ekskul) ditunda.
+
+**Keputusan user (2026-07-18):**
+- **KKM = GLOBAL 75** (dari pengaturan `kkm.{nilai}`; TIDAK per-mapel). Nilai <
+  KKM = merah/belum tuntas.
+- **Deskripsi otomatis = pola default planner** (di bawah); bisa DITIMPA manual
+  per siswa-mapel.
+
+**Prinsip: turunan + simpan hanya override + snapshot saat FINAL.**
+- Nilai akhir per mapel = dari F6a rekap (turunan). Deskripsi = turunan (pola).
+- Simpan hanya: override (nilaiKatrol, deskripsiOverride), catatan wali, status
+  workflow. Saat FINAL → SNAPSHOT seluruh rapor (jsonb) agar historis tak
+  berubah bila master/nilai berubah kemudian.
+
+**Pola deskripsi otomatis (default; §9 top2/bottom2 vs KKM):**
+- Rata-rata nilai per TP = mean nilai semua penilaian Sumatif-TP yang terhubung
+  ke TP itu (untuk siswa itu). Urutkan TP desc.
+- **Dikuasai** = TP dgn rata ≥ KKM (ambil ≤2 teratas). **Perlu penguatan** = TP
+  dgn rata < KKM (ambil ≤2 terbawah).
+- Template: `"Ananda menunjukkan penguasaan baik pada {dikuasai_join}." ` +
+  (bila ada perlu-penguatan) `" Masih memerlukan penguatan pada {penguatan_join}."`
+  Join: gabung deskripsi TP (huruf awal kecil, tanpa titik akhir) dgn ", " dan
+  " dan " sebelum item terakhir. Bila semua ≥KKM → hanya kalimat pertama; bila
+  belum ada nilai → "Belum ada nilai sumatif." (bisa ditimpa).
+
+## Entitas F6b (backend/src/rapor/)
+```
+rapor  id PK • siswaId FK siswa (CASCADE) • tahunAjaranId FK
+  • status varchar ('DRAFT'|'FINAL') default 'DRAFT'
+  • catatanWali text NULL
+  • finalisasiOleh FK user NULL • finalisasiPada timestamptz NULL
+  • snapshot jsonb NULL   -- diisi saat FINAL (rapor lengkap ter-render)
+  • createdAt/updatedAt — UNIQUE(siswaId, tahunAjaranId)
+rapor_mapel_override  id PK • raporId FK rapor (CASCADE) • mapelId FK mapel
+  • nilaiKatrol int NULL (0–100) • deskripsiOverride text NULL
+  • createdAt/updatedAt — UNIQUE(raporId, mapelId)
+```
+Kehadiran S/I/A = TURUNAN dari `presensi_siswa` (F2) per siswa/semester (Σ per
+status). Ketidakhadiran rapor = koreksi wali via audit (F2), bukan input ulang.
+
+## Kontrak API F6b (wali kelas kelasnya; admin/kepsek baca)
+Authorization service: wali = guru waliGuru kelas siswa. Audit; WIB.
+- `GET /api/rapor/kelas/:kelasId?tahunAjaranId=` (wali|admin|kepsek) → daftar
+  siswa kelas + status rapor + nilai akhir ringkas (BATCH).
+- `GET /api/rapor/siswa/:siswaId?tahunAjaranId=` → rapor lengkap DERIVED
+  (per mapel: nilaiAkhir, nilaiKatrol?, deskripsi[auto|override], KKM; kehadiran
+  S/I/A; catatanWali; status). Bila FINAL → dari snapshot.
+- `PUT /api/rapor/siswa/:siswaId/mapel/:mapelId` (wali) `{ nilaiKatrol?,
+  deskripsiOverride? }` → upsert override; audit. Ditolak bila rapor FINAL.
+- `PATCH /api/rapor/siswa/:siswaId/catatan` (wali) `{ catatanWali }`.
+- `PATCH /api/rapor/siswa/:siswaId/finalisasi` (wali) → status FINAL + snapshot
+  render lengkap + finalisasiOleh/pada. `PATCH .../batal-final` (admin) → DRAFT.
+- PDF: DIBUAT DI FRONTEND (pdfmake lazy, kop profil sekolah) dari data rapor.
+
+## PEMBAGIAN WILAYAH F6b
+- **AG-2 (backend, MEMIMPIN)**: modul `backend/src/rapor/**` (2 entitas,
+  assembly DERIVED per siswa: nilai akhir per mapel [reuse F6a] + deskripsi
+  otomatis [pola di atas] + kehadiran S/I/A dari presensi_siswa + override +
+  KKM global; workflow draft/final + snapshot; authorization wali). Daftarkan.
+  Boot-verify + e2e mandiri (rapor derived benar, deskripsi pola, override,
+  finalisasi snapshot, wali-only 403, kehadiran dari F2).
+- **AG-1 (frontend)**: `/guru/rapor` (wali: daftar siswa kelasnya → detail
+  rapor per siswa: nilai per mapel + deskripsi [edit override] + katrol +
+  kehadiran + catatan wali + tombol Finalisasi) + **Export PDF** (pdfmake LAZY,
+  kop sekolah, layout rapor). Wiring + menu. E2E MANDIRI.
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang (spec MANDIRI — buat data via API,
 navigasi by-id/search) • RBAC + authorization service + audit + WIB • komponen

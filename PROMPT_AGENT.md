@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6a FRONTEND SELESAI (suite 216/0). Menunggu F6b (butuh keputusan user: KKM + pola deskripsi) | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6a BACKEND SELESAI (formula nilai akhir + auth own-paket). Menunggu F6b | idle |
+| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (F6b) + `briefs/AGENT-1.md` | **F6b FRONTEND** (rapor wali: nilai+deskripsi+katrol+kehadiran+finalisasi+PDF) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (F6b) + `briefs/AGENT-2.md` | **F6b BACKEND** (MEMIMPIN — rapor assembly derived + deskripsi otomatis + draft/final snapshot) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:

@@ -13,7 +13,34 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18m) — F6a FRONTEND (penilaian guru; kontrak dikunci, paralel)
+## TUGAS AKTIF (2026-07-18n) — F6b FRONTEND (rapor akademik + PDF)
+
+> F6a frontend kamu DITERIMA (suite 216/0). Sekarang F6b (rapor). Baca
+> **`briefs/F6-SPEC.md` bagian F6b** + §9. User: KKM global 75, deskripsi pola
+> default. Kontrak dikunci, paralel (backend AG-2). JANGAN F6c.
+
+**Kontrak backend F6b (konsumsi):**
+- `GET /api/rapor/kelas/:kelasId?tahunAjaranId=` (daftar siswa+status) •
+  `GET /api/rapor/siswa/:siswaId?tahunAjaranId=` (rapor lengkap derived) •
+  `PUT /api/rapor/siswa/:siswaId/mapel/:mapelId {nilaiKatrol?,deskripsiOverride?}`
+  • `PATCH .../catatan {catatanWali}` • `PATCH .../finalisasi` • `.../batal-final`.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. `/guru/rapor` (wali kelas): daftar siswa kelasnya + status rapor (DRAFT/
+   FINAL) → detail rapor per siswa.
+2. Detail rapor: tabel per mapel (nilai akhir, KKM 75, nilai < KKM merah,
+   katrol override, deskripsi [auto, bisa edit override]) + kehadiran S/I/A +
+   catatan wali + tombol **Finalisasi** (kunci; setelah FINAL read-only).
+3. **Export PDF** rapor: `pdfmake` **dynamic-import LAZY** (reuse pola
+   `lib/exportPdf.ts`), kop profil sekolah, layout rapor rapi.
+4. Wiring client.ts/App.tsx/menu.ts (guru "Rapor"). E2E MANDIRI (buat data via
+   API, navigasi by-id — JANGAN lookup daftar paginasi).
+
+DoD: tsc bersih • build sukses • rapor tampil+edit override+finalisasi+PDF •
+export lazy • e2e hijau • laporan. JANGAN F6c. JANGAN sentuh backend rapor (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18m) — F6a FRONTEND (SELESAI, diterima commit 86a0011)
 
 > F5b frontend kamu DITERIMA (suite 191/0). F5 TUNTAS. Sekarang F6 (fase
 > terakhir). Baca **`briefs/F6-SPEC.md`** + SPEC-KANON §9 — HANYA F6a; JANGAN

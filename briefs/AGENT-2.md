@@ -5,7 +5,34 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18m) — F6a BACKEND (penilaian inti; MEMIMPIN; fase terakhir)
+## TUGAS AKTIF (2026-07-18n) — F6b BACKEND (rapor akademik; MEMIMPIN)
+
+> F6a backend kamu DITERIMA (commit 86a0011, formula verified, suite 216/0).
+> Sekarang F6b (rapor). Baca **`briefs/F6-SPEC.md` bagian F6b** + §9. User
+> putuskan: KKM GLOBAL 75, deskripsi = pola default (di F6-SPEC). JANGAN F6c.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Modul `backend/src/rapor/**`: entitas `rapor` (status DRAFT/FINAL, snapshot
+   jsonb, UNIQUE(siswaId,tahunAjaranId)) + `rapor_mapel_override` (nilaiKatrol,
+   deskripsiOverride, UNIQUE(raporId,mapelId)).
+2. **Assembly DERIVED** per siswa/semester: per mapel (dari penugasan kelas
+   siswa) → nilai akhir (reuse formula F6a) + **deskripsi otomatis** (pola
+   F6-SPEC: rata TP vs KKM global 75, top2 dikuasai/bottom2 penguatan) +
+   kehadiran S/I/A (Σ dari presensi_siswa F2) + override bila ada. BATCH
+   anti-N+1.
+3. Workflow: `PUT override`, `PATCH catatan`, `PATCH finalisasi` (→ FINAL +
+   SNAPSHOT render lengkap ke jsonb; tolak edit bila FINAL), `PATCH batal-final`
+   (admin). Authorization: wali = guru waliGuru kelas siswa (403 lain).
+   Endpoint persis kontrak F6-SPEC.
+4. Daftarkan app.module. Boot-verify (2 tabel) + e2e mandiri (rapor derived +
+   deskripsi pola benar + override + finalisasi snapshot + wali-only 403 +
+   kehadiran dari F2).
+
+DoD: backend F6b live, assembly+deskripsi+snapshot benar, authorization wali,
+e2e hijau, laporan. JANGAN F6c. JANGAN sentuh frontend rapor (AG-1).
+
+---
+## ARSIP — F6a BACKEND (SELESAI, diterima commit 86a0011, formula verified)
 
 > F5b backend kamu DITERIMA (commit d9bb4f7; planner konfirmasi suite 191/0
 > bersih). F5 TUNTAS. Sekarang F6 (penilaian & rapor, fase terakhir). Baca
