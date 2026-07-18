@@ -1704,6 +1704,45 @@ export const api = {
 
   getGuruKokurikuler: () =>
     request<{ data: any[] }>('/kokurikuler/guru/kegiatan'),
+
+  // ── F6d: Ekstrakurikuler ──────────────────────────────────────────────────
+  getEkskul: () => request<{ data: any[] }>('/ekskul'),
+
+  createEkskul: (body: { nama: string; pembinaGuruId?: number | null }) =>
+    request<any>('/ekskul', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateEkskul: (id: number, body: any) =>
+    request<any>(`/ekskul/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+
+  deleteEkskul: (id: number) =>
+    request<any>(`/ekskul/${id}`, { method: 'DELETE' }),
+
+  getEkskulDetail: (id: number, semester: number) =>
+    request<any>(`/ekskul/${id}?semester=${semester}`),
+
+  addEkskulPeserta: (id: number, body: { siswaId: number }) =>
+    request<any>(`/ekskul/${id}/peserta`, { method: 'POST', body: JSON.stringify(body) }),
+
+  removeEkskulPeserta: (id: number, pesertaId: number) =>
+    request<any>(`/ekskul/${id}/peserta/${pesertaId}`, { method: 'DELETE' }),
+
+  createEkskulTujuan: (id: number, body: { semester: number; deskripsi: string }) =>
+    request<any>(`/ekskul/${id}/tujuan`, { method: 'POST', body: JSON.stringify(body) }),
+
+  updateEkskulTujuan: (id: number, tujuanId: number, body: { deskripsi: string }) =>
+    request<any>(`/ekskul/${id}/tujuan/${tujuanId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+
+  deleteEkskulTujuan: (id: number, tujuanId: number) =>
+    request<any>(`/ekskul/${id}/tujuan/${tujuanId}`, { method: 'DELETE' }),
+
+  putEkskulNilai: (id: number, body: { semester: number; entri: any[] }) =>
+    request<any>(`/ekskul/${id}/nilai`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  putEkskulKehadiran: (id: number, body: { semester: number; entri: any[] }) =>
+    request<any>(`/ekskul/${id}/kehadiran`, { method: 'PUT', body: JSON.stringify(body) }),
+
+  getRaporEkskul: (siswaId: number, semester: number) =>
+    request<any>(`/ekskul/rapor/${siswaId}?semester=${semester}`),
 };
 
 

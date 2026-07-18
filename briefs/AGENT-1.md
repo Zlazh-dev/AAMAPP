@@ -1664,3 +1664,45 @@ jalan ï¿½ 8 dimensi SB/B/C/K ï¿½ formula rata-rata multi-penilai ï¿½ e2e mandiri
 ï¿½ full suite 255/0 ï¿½ F6 (a+b+c) TUNTAS.
 
 
+---
+
+## LAPORAN — F6d FRONTEND: EKSTRAKURIKULER
+
+DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
+
+### Yang dibangun
+
+**client.ts — F6d methods (12 method):**
+- getEkskul/createEkskul/updateEkskul/deleteEkskul — CRUD ekskul (admin).
+- getEkskulDetail(id, semester) — GET detail + peserta + tujuan + nilai + kehadiran per semester.
+- ddEkskulPeserta/removeEkskulPeserta — manajemen peserta.
+- createEkskulTujuan/updateEkskulTujuan/deleteEkskulTujuan — CRUD tujuan per semester.
+- putEkskulNilai(id, {semester, entri}) — PUT bulk nilai SB/B/C/K.
+- putEkskulKehadiran(id, {semester, entri}) — PUT bulk kehadiran hadir/total.
+- getRaporEkskul(siswaId, semester) — GET rapor ekskul per siswa per semester.
+
+**Halaman:**
+- `EkskulAdminPage` /admin/ekskul + /guru/ekskul: list ekskul + pembina, CRUD inline sheet (nama+pembina selector), navigasi ke detail by ekskulId.
+- `EkskulPembinaPage` /admin/ekskul/:ekskulId + /guru/ekskul/:ekskulId: semester selector; tujuan CRUD per semester (inline sheet deskripsi); peserta (tambah via search siswa by nama, hapus); grid nilai SB/B/C/K toggle per peserta×tujuan; tabel kehadiran hadir/total per peserta dengan % merah <70%.
+- `RaporEkskulPage` /ekskul/rapor/:siswaId: per ekskul yang diikuti siswa: kehadiran% (?? <70% merah), tabel tujuan × nilai SB/B/C/K, deskripsi otomatis, semester selector.
+
+**Wiring:**
+- App.tsx: 3 lazy imports F6d + 5 routes (admin ekskul list+detail, guru ekskul list+detail, rapor ekskul).
+- menu.ts: admin += Ekstrakurikuler; guru += Ekskul.
+
+**E2E ekskul-f6d.spec.ts (semua pass, full suite 285/0):**
+- Admin: route, form sheet nama+pembina.
+- Pembina: semester selector, tujuan sheet, peserta search, simpan nilai/kehadiran.
+- Guru ekskul: route pembina.
+- Rapor ekskul: route, semester selector, tidak crash by id 999.
+- Menu: sidebar visible.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| F6d spec | 16 | 0 | 0 |
+| Full suite | 285 | 12 | 0 |
+
+DoD terpenuhi: tsc bersih • build sukses • admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester • e2e mandiri 16/16 • full suite 285/0 • F6d TUNTAS.
+
+

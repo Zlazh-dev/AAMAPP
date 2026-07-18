@@ -1498,3 +1498,43 @@ Wilayah: backend/** + frontend/e2e/.
 10. ✅ Non-anggota tim → 403 GET & PUT
 
 **F6c BACKEND TUNTAS. F6 SELESAI PENUH (F6a+F6b+F6c).** AG-1 siap konsumsi `/api/kokurikuler`.
+
+## KLAIM TUGAS — F6d BACKEND (ekstrakurikuler; MEMIMPIN)
+DIKERJAKAN (01:21 WIB, 2026-07-19) — Antigravity-2 (executor B).
+Modul backend/src/ekskul/: 5 entitas (ekskul/peserta/tujuan/nilai/kehadiran);
+service CRUD ekskul[admin] + peserta/tujuan/nilai/kehadiran[pembina, auth pembinaGuruId→403],
+kehadiran% turunan (flag <70%), deskripsi otomatis, rapor per siswa BATCH.
+Daftarkan app.module. Boot-verify + e2e mandiri.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F6d BACKEND — SELESAI (2026-07-19 01:29 WIB)
+
+**Wilayah dihormati**: `backend/src/ekskul/**` + `app.module.ts` + `frontend/e2e/gelombang2/ekskul-f6d-backend.spec.ts`.
+
+**File yang dibuat:**
+
+| File | Isi |
+|------|-----|
+| [ekskul.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul.entity.ts) | nama + pembinaGuruId (SET NULL), cascade peserta+tujuan |
+| [ekskul-peserta.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul-peserta.entity.ts) | UNIQUE(ekskulId,siswaId) |
+| [ekskul-tujuan.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul-tujuan.entity.ts) | Per ekskul per semester, deskripsi text |
+| [ekskul-nilai.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul-nilai.entity.ts) | UNIQUE(pesertaId,tujuanId), NilaiEkskul SB/B/C/K |
+| [ekskul-kehadiran.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul-kehadiran.entity.ts) | UNIQUE(pesertaId,semester), jumlahHadir/totalPertemuan |
+| [ekskul.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul.service.ts) | CRUD ekskul/peserta/tujuan + `assertPembina` 403 + upsert nilai/kehadiran batch + `getRaporSiswa` BATCH (4 query) + `flagMerah <70%` + `buildDeskripsiEkskul` |
+| [ekskul.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul.controller.ts) | 15 endpoint `/api/ekskul/*` |
+
+**Boot-verify**: 15 endpoint terpeta, 5 tabel baru terbentuk ✅
+
+**E2E — 10/10 LULUS (3.6 detik):**
+1. ✅ POST ekskul → created dengan pembina
+2. ✅ GET list → ekskul muncul
+3. ✅ POST peserta siswa1 + siswa2 → added
+4. ✅ POST 2 tujuan semester 1 → created
+5. ✅ PUT nilai batch (siswa1: SB+B; siswa2: C+B) → saved=4
+6. ✅ PUT kehadiran (siswa1=70%, siswa2=60%) → saved=2
+7. ✅ Rapor siswa1: kehadiran=70%, flagMerah=false, nilai benar
+8. ✅ Rapor siswa2: kehadiran=60%, flagMerah=true, deskripsi Cukup+Baik
+9. ✅ Non-pembina → 403 peserta/tujuan/nilai/kehadiran
+10. ✅ DELETE peserta → removed
+
+**F6d BACKEND TUNTAS. F6 SELESAI TOTAL (F6a+F6b+F6c+F6d).** AG-1 siap konsumsi `/api/ekskul`.

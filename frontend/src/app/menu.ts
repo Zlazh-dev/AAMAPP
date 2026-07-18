@@ -46,6 +46,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Laporan', path: '/admin/laporan', icon: 'assessment' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
+      { label: 'Ekstrakurikuler', path: '/admin/ekskul', icon: 'sports' },
     ],
   },
   kurikulum: {
@@ -84,6 +85,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Penilaian', path: '/guru/penilaian', icon: 'grading' },
       { label: 'Rapor', path: '/guru/rapor', icon: 'menu_book' },
       { label: 'Kokurikuler', path: '/guru/kokurikuler', icon: 'school' },
+      { label: 'Ekskul', path: '/guru/ekskul', icon: 'sports' },
     ],
   },
 

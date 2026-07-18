@@ -38,6 +38,12 @@ import { KokurikulerKegiatan } from './kokurikuler/kokurikuler-kegiatan.entity';
 import { KokurikulerTarget } from './kokurikuler/kokurikuler-target.entity';
 import { KokurikulerTim } from './kokurikuler/kokurikuler-tim.entity';
 import { KokurikulerAsesmen } from './kokurikuler/kokurikuler-asesmen.entity';
+import { EkskulModule } from './ekskul/ekskul.module';
+import { Ekskul } from './ekskul/ekskul.entity';
+import { EkskulPeserta } from './ekskul/ekskul-peserta.entity';
+import { EkskulTujuan } from './ekskul/ekskul-tujuan.entity';
+import { EkskulNilai } from './ekskul/ekskul-nilai.entity';
+import { EkskulKehadiran } from './ekskul/ekskul-kehadiran.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -99,6 +105,11 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           KokurikulerTarget,
           KokurikulerTim,
           KokurikulerAsesmen,
+          Ekskul,
+          EkskulPeserta,
+          EkskulTujuan,
+          EkskulNilai,
+          EkskulKehadiran,
         ],
         // SEC-1 Butir 3: synchronize hanya aktif di luar production.
         // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
@@ -137,6 +148,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     PenilaianModule,
     RaporModule,
     KokurikulerModule,
+    EkskulModule,
   ],
   providers: [
     // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD
