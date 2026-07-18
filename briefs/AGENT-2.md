@@ -5,7 +5,41 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18e) — F3b FRONTEND ADMIN (perangkat kiosk + verifikasi pending) + nit backend
+## TUGAS AKTIF (2026-07-18f) — F4a BACKEND (izin guru + status turunan; MEMIMPIN)
+
+> F3b frontend admin kamu DITERIMA (commit 5f57880; planner rekonsiliasi
+> body verifikasi + wiring pending). F3 TUNTAS. Sekarang F4. Baca
+> **`briefs/F4-SPEC.md`** — HANYA F4a; JANGAN F4b/F4c. Kamu memimpin backend
+> (pola F2/F3 sukses).
+
+Kerjakan (wilayah: `backend/**` + `frontend/e2e/`; kamu pegang app.module.ts):
+1. Modul baru `backend/src/izin/**`:
+   - Entitas `izin_guru` (skema F4-SPEC: jenis IZIN/SAKIT/DINAS, rentang
+     mulaiTanggal–selesaiTanggal, status MENUNGGU/DISETUJUI/DITOLAK,
+     disetujuiOleh FK user, dll).
+   - DTO (anti-drift): AjukanIzinDto `{ jenis, mulaiTanggal, selesaiTanggal,
+     keterangan, lampiranUrl? }`, KeputusanDto `{ alasan? }` (tolak: alasan
+     WAJIB — validasi).
+   - Service + helper **`deriveStatusHarian`** MURNI (tanpa query dalam loop;
+     dipanggil setelah batch fetch). Method: ajukan (guru dari SESI),
+     listDiri, listAdmin (paginasi+filter level DB), setujui, tolak (guru
+     TAK boleh approve sendiri; hanya dari MENUNGGU).
+   - Controller: `POST /api/izin/guru`, `GET /api/izin/guru`,
+     `GET /api/admin/izin/guru`, `PATCH /api/admin/izin/guru/:id/setujui`,
+     `PATCH .../tolak` — @Roles sesuai F4-SPEC.
+2. **UPGRADE** monitor F3 `GET /api/admin/presensi-guru/harian`: status pakai
+   `deriveStatusHarian` (IZIN/SAKIT/DINAS/ALPHA/LIBUR), BATCH (anti-N+1: satu
+   query izin-aktif `In(guruIds)`, satu presensi, satu jadwal). JANGAN N+1.
+3. Daftarkan modul di app.module.ts. Boot-verify (tabel izin_guru terbentuk,
+   endpoint ter-guard). e2e mock: ajukan→approve→monitor tampil IZIN; ALPHA
+   (wajib KBM, tak hadir, tak izin); LIBUR (tak ada jadwal); tolak wajib-alasan;
+   RBAC guru tak bisa approve.
+
+DoD: backend F4a live & boot-verified, e2e hijau, laporan bukti file:baris.
+JANGAN sentuh frontend halaman (AG-1). JANGAN F4b/F4c.
+
+---
+## ARSIP — F3b FRONTEND ADMIN (SELESAI, diterima commit 5f57880)
 
 > F3b BACKEND kamu DITERIMA (commit 797a1c2, e2e 11/11, ter-guard). Sekarang
 > UI admin kiosk. Baca `briefs/F3-SPEC.md` bagian "F3b — FRONTEND KIOSK"

@@ -53,8 +53,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ **F3b KIOSK APP SELESAI** (/kiosk publik + scanner + pairing; suite 93/0). Menunggu F4 | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3b ADMIN SELESAI** (perangkat + verifikasi pending; nit backend fixed). Menunggu F4 | idle |
+| Antigravity-IDE | executor A | `briefs/F4-SPEC.md` + `briefs/AGENT-1.md` | **F4a FRONTEND** (izin guru: `/izin/guru` + `/admin/izin-guru`) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F4-SPEC.md` + `briefs/AGENT-2.md` | **F4a BACKEND** (MEMIMPIN — izin_guru + deriveStatusHarian + upgrade monitor) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ **F2 CLOSED** • ✅ **F3 TUNTAS PENUH** (F3a presensi wajah

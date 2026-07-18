@@ -13,7 +13,40 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18e) — F3b FRONTEND: APLIKASI KIOSK (device-facing)
+## TUGAS AKTIF (2026-07-18f) — F4a FRONTEND (izin guru; kontrak dikunci, boleh paralel)
+
+> F3b kiosk app kamu DITERIMA (commit 5f57880, suite 93/0). Catatan planner:
+> kamu lupa wire `VerifikasiPendingPage` (AG-2) — sudah saya bereskan; lain
+> kali pastikan SEMUA komponen yang dilaporkan agent lain ter-route. F3 TUNTAS.
+> Sekarang F4. Baca **`briefs/F4-SPEC.md`** — HANYA F4a; JANGAN F4b/F4c.
+> Kontrak DIKUNCI → boleh mulai paralel dgn backend AG-2.
+
+**Kontrak backend F4a (konsumsi; daftarkan di client.ts):**
+- `POST /api/izin/guru` body `{ jenis:'IZIN'|'SAKIT'|'DINAS', mulaiTanggal,
+  selesaiTanggal, keterangan, lampiranUrl? }` • `GET /api/izin/guru` (milik
+  sendiri) • `GET /api/admin/izin/guru?status=&dari=&sampai=&guruId=&page=&limit=`
+  • `PATCH /api/admin/izin/guru/:id/setujui` `{ alasan? }` •
+  `PATCH /api/admin/izin/guru/:id/tolak` `{ alasan }` (wajib).
+
+Kerjakan (wilayah: `frontend/src/**` + `frontend/e2e/`; kamu pegang shared
+files):
+1. **`/izin/guru`** (guru): form ajukan izin (AdaptiveSelect jenis, rentang
+   tanggal dari–sampai, keterangan wajib, lampiran opsional via upload yang
+   ada) + SaveSuccess + daftar izin SENDIRI dgn badge status (MENUNGGU kuning/
+   DISETUJUI hijau/DITOLAK merah). Menu grup guru "Izin".
+2. **`/admin/izin-guru`** (admin/kepsek): daftar berpaginasi + filter status,
+   baris → detail/sheet → Setujui / Tolak (alasan wajib saat tolak, sheet
+   adaptif). Menu admin "Izin Guru".
+3. **Wiring** client.ts (semua method) + App.tsx (route: `/izin/guru`
+   RequireRole guru; `/admin/izin-guru` RequireRole admin+kepsek) + menu.ts.
+4. **E2E**: guru ajukan izin → muncul di daftar; admin approve → status berubah;
+   tolak tanpa alasan → ditolak validasi. Suite tetap hijau.
+
+DoD: tsc bersih • build sukses • ajukan→approve jalan • e2e hijau • laporan.
+JANGAN sentuh backend izin (AG-2). JANGAN F4b/F4c.
+
+---
+## ARSIP TUGAS (2026-07-18e) — F3b KIOSK APP (SELESAI, diterima commit 5f57880)
 
 > F3a FRONTEND kamu DITERIMA (commit e76f126, e2e 82/0 deterministik, human
 > lazy). Sekarang bangun **aplikasi KIOSK** (device-facing) + kamu PEMILIK
