@@ -5,7 +5,28 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-19b) — F6d BACKEND (ekstrakurikuler; MEMIMPIN)
+## TUGAS AKTIF (2026-07-19c) — F6-INTEGRASI BACKEND (rapor lengkap + snapshot)
+
+> F6d backend kamu DITERIMA (commit 42630b9). SEMUA FITUR F0-F6 TUNTAS. Sekarang
+> INTEGRASI: satukan rapor. Baca **`briefs/F6-SPEC.md` bagian F6-INTEGRASI**.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`):
+1. Perluas `backend/src/rapor/rapor.service.ts`: inject `KokurikulerService` +
+   `EkskulService` (pastikan keduanya di-`exports` modulnya; import modul ke
+   RaporModule). Tambahkan bagian **kokurikuler** (per dimensi, nilai rata +
+   deskripsi) & **ekstrakurikuler** (per ekskul: kehadiran% + tujuan×nilai +
+   deskripsi) ke assembly `GET /api/rapor/siswa/:siswaId` (semester dari TA
+   aktif) — bentuk respons di F6-SPEC.
+2. **Finalisasi snapshot**: saat FINAL, snapshot jsonb kini memuat akademik +
+   kokurikuler + ekstrakurikuler (render beku immutable).
+3. Boot-verify + e2e mandiri: rapor lengkap memuat 3 bagian; FINAL → snapshot
+   berisi semua & tak berubah walau nilai koku/ekskul diubah setelahnya.
+
+DoD: rapor assembly + snapshot lengkap (3 bagian), e2e hijau, laporan. JANGAN
+sentuh frontend/PDF (AG-1).
+
+---
+## ARSIP — F6d BACKEND (SELESAI, diterima commit 42630b9)
 
 > F6c backend kamu DITERIMA (commit a88b6cc). Sekarang F6d EKSKUL. Baca
 > **`briefs/F6-SPEC.md` bagian F6d** (dikunci dari referensi radig/rapor).

@@ -261,6 +261,35 @@ kualitas, sama F6c).
   (peserta+tujuan+nilai SB/B/C/K+kehadiran) + rapor ekskul siswa. Wiring + menu.
   E2E MANDIRI.
 
+## ══════════ F6-INTEGRASI — RAPOR PDF PENUH (dibuka 2026-07-19; keputusan user) ══════════
+> Gabung akademik (F6b) + kokurikuler (F6c) + ekstrakurikuler (F6d) jadi SATU
+> rapor per siswa + PDF berkop. Snapshot FINAL harus memuat SEMUA bagian.
+
+**Prinsip:** rapor assembly F6b DIPERLUAS memanggil service kokurikuler & ekskul
+(inject) → satu respons lengkap. Semester = dari TA aktif. FINAL → snapshot
+menyertakan semua bagian (immutable).
+
+**Kontrak (perluas `GET /api/rapor/siswa/:siswaId?tahunAjaranId=`):** respons
+tambah bagian:
+```
+{ ...(akademik, kehadiran S/I/A, catatanWali, status yang sudah ada),
+  kokurikuler: [ { namaDimensi, nilai(SB/B/C/K), deskripsi } ],  // per dimensi (rata)
+  ekstrakurikuler: [ { nama, kehadiranPersen, flagMerah, tujuan:[{deskripsi,nilai}],
+                      deskripsi } ] }
+```
+FINAL: snapshot jsonb memuat akademik+kokurikuler+ekstrakurikuler (render beku).
+
+**Wilayah:**
+- **AG-2 (backend)**: perluas `backend/src/rapor/rapor.service.ts` — inject
+  `KokurikulerService` + `EkskulService` (export dari modulnya), tambahkan
+  bagian kokurikuler & ekskul ke assembly (semester dari TA aktif) + ke
+  SNAPSHOT finalisasi. Perbarui RaporModule imports. e2e: rapor lengkap memuat
+  3 bagian; FINAL snapshot immutable memuat semua.
+- **AG-1 (frontend)**: perluas `RaporDetailPage` tampilkan 3 bagian (akademik +
+  kokurikuler + ekstrakurikuler) + **PDF rapor PENUH** (pdfmake lazy, kop
+  sekolah, semua bagian dlm satu dokumen rapi: identitas siswa → nilai mapel →
+  kehadiran → kokurikuler → ekskul → catatan wali → ttd). E2E mandiri.
+
 ## Aturan wajib: §12.15 lazy • §12.16 filter+paginasi DB + anti-N+1 +
 anti-DTO-drift • §12.17 e2e = gerbang (spec MANDIRI — buat data via API,
 navigasi by-id/search) • RBAC + authorization service + audit + WIB • komponen

@@ -13,7 +13,29 @@
   `## LAPORAN`. Selesai â†’ append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-19b) â€” F6d FRONTEND (ekstrakurikuler)
+## TUGAS AKTIF (2026-07-19c) â€” F6-INTEGRASI FRONTEND (rapor PDF penuh)
+
+> F6d frontend kamu DITERIMA (commit 42630b9, suite 285/0). SEMUA FITUR TUNTAS.
+> Sekarang INTEGRASI: rapor jadi satu dokumen. Baca **`briefs/F6-SPEC.md`
+> bagian F6-INTEGRASI**. Backend AG-2 memperluas `GET /api/rapor/siswa/:id`
+> (kini memuat kokurikuler + ekstrakurikuler juga).
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. Perluas `RaporDetailPage`: tampilkan 3 bagian dari respons rapor lengkap â€”
+   **akademik** (sudah ada) + **kokurikuler** (per dimensi: nilai+deskripsi) +
+   **ekstrakurikuler** (per ekskul: kehadiran% [merah<70%] + tujuanÃ—nilai +
+   deskripsi).
+2. **PDF rapor PENUH** (perluas `lib/exportPdf.ts`, pdfmake LAZY, kop sekolah):
+   satu dokumen rapi â€” identitas siswa â†’ nilai mapel+deskripsi â†’ kehadiran
+   S/I/A â†’ kokurikuler â†’ ekstrakurikuler â†’ catatan wali â†’ tanda tangan.
+3. E2E MANDIRI: rapor detail render 3 bagian; tombol export PDF ada; lib PDF
+   tetap lazy (bukan main bundle).
+
+DoD: tsc bersih â€¢ build sukses â€¢ rapor 3 bagian + PDF penuh jalan â€¢ export
+lazy â€¢ e2e hijau â€¢ laporan. JANGAN sentuh backend rapor (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-19b) â€” F6d FRONTEND (SELESAI, diterima commit 42630b9)
 
 > F6c frontend kamu DITERIMA (commit a88b6cc, suite 255/0). Sekarang F6d EKSKUL.
 > Baca **`briefs/F6-SPEC.md` bagian F6d** (dari referensi). Kontrak dikunci,
@@ -1666,25 +1688,25 @@ jalan ï¿½ 8 dimensi SB/B/C/K ï¿½ formula rata-rata multi-penilai ï¿½ e2e mandiri
 
 ---
 
-## LAPORAN — F6d FRONTEND: EKSTRAKURIKULER
+## LAPORAN ï¿½ F6d FRONTEND: EKSTRAKURIKULER
 
 DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
 
 ### Yang dibangun
 
-**client.ts — F6d methods (12 method):**
-- getEkskul/createEkskul/updateEkskul/deleteEkskul — CRUD ekskul (admin).
-- getEkskulDetail(id, semester) — GET detail + peserta + tujuan + nilai + kehadiran per semester.
-- ddEkskulPeserta/removeEkskulPeserta — manajemen peserta.
-- createEkskulTujuan/updateEkskulTujuan/deleteEkskulTujuan — CRUD tujuan per semester.
-- putEkskulNilai(id, {semester, entri}) — PUT bulk nilai SB/B/C/K.
-- putEkskulKehadiran(id, {semester, entri}) — PUT bulk kehadiran hadir/total.
-- getRaporEkskul(siswaId, semester) — GET rapor ekskul per siswa per semester.
+**client.ts ï¿½ F6d methods (12 method):**
+- getEkskul/createEkskul/updateEkskul/deleteEkskul ï¿½ CRUD ekskul (admin).
+- getEkskulDetail(id, semester) ï¿½ GET detail + peserta + tujuan + nilai + kehadiran per semester.
+- ddEkskulPeserta/removeEkskulPeserta ï¿½ manajemen peserta.
+- createEkskulTujuan/updateEkskulTujuan/deleteEkskulTujuan ï¿½ CRUD tujuan per semester.
+- putEkskulNilai(id, {semester, entri}) ï¿½ PUT bulk nilai SB/B/C/K.
+- putEkskulKehadiran(id, {semester, entri}) ï¿½ PUT bulk kehadiran hadir/total.
+- getRaporEkskul(siswaId, semester) ï¿½ GET rapor ekskul per siswa per semester.
 
 **Halaman:**
 - `EkskulAdminPage` /admin/ekskul + /guru/ekskul: list ekskul + pembina, CRUD inline sheet (nama+pembina selector), navigasi ke detail by ekskulId.
-- `EkskulPembinaPage` /admin/ekskul/:ekskulId + /guru/ekskul/:ekskulId: semester selector; tujuan CRUD per semester (inline sheet deskripsi); peserta (tambah via search siswa by nama, hapus); grid nilai SB/B/C/K toggle per peserta×tujuan; tabel kehadiran hadir/total per peserta dengan % merah <70%.
-- `RaporEkskulPage` /ekskul/rapor/:siswaId: per ekskul yang diikuti siswa: kehadiran% (?? <70% merah), tabel tujuan × nilai SB/B/C/K, deskripsi otomatis, semester selector.
+- `EkskulPembinaPage` /admin/ekskul/:ekskulId + /guru/ekskul/:ekskulId: semester selector; tujuan CRUD per semester (inline sheet deskripsi); peserta (tambah via search siswa by nama, hapus); grid nilai SB/B/C/K toggle per pesertaï¿½tujuan; tabel kehadiran hadir/total per peserta dengan % merah <70%.
+- `RaporEkskulPage` /ekskul/rapor/:siswaId: per ekskul yang diikuti siswa: kehadiran% (?? <70% merah), tabel tujuan ï¿½ nilai SB/B/C/K, deskripsi otomatis, semester selector.
 
 **Wiring:**
 - App.tsx: 3 lazy imports F6d + 5 routes (admin ekskul list+detail, guru ekskul list+detail, rapor ekskul).
@@ -1703,6 +1725,6 @@ DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
 | F6d spec | 16 | 0 | 0 |
 | Full suite | 285 | 12 | 0 |
 
-DoD terpenuhi: tsc bersih • build sukses • admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester • e2e mandiri 16/16 • full suite 285/0 • F6d TUNTAS.
+DoD terpenuhi: tsc bersih ï¿½ build sukses ï¿½ admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester ï¿½ e2e mandiri 16/16 ï¿½ full suite 285/0 ï¿½ F6d TUNTAS.
 
 
