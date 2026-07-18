@@ -5,7 +5,28 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18) — F2-ADMIN-E2E (kunci perbaikan fix2 dgn tes)
+## TUGAS AKTIF (2026-07-18b) — F2-DOKUMENTASI (rekam kontrak presensi)
+
+> F2-ADMIN-E2E kamu DITERIMA (commit 984d039); planner menata-ulang 1 test
+> role-gating yang re-login-nya rapuh. Sekarang tugas non-konflik dgn AG-1
+> (yang lagi benahi isolasi harness e2e): dokumentasikan modul presensi F2.
+> Wilayah TULIS: `docs/` SAJA (baca kode backend/frontend, tulis docs).
+> JANGAN sentuh kode, e2e, atau file bersama.
+
+Kerjakan (baca kode aktual, jangan menebak):
+1. `docs/API-REFERENCE.md` — tambah bagian **Presensi (F2)**: 4 grup
+   endpoint dari `backend/src/presensi/presensi.controller.ts`
+   (`GET /api/guru/kbm`, `GET|POST|PATCH /api/guru/kbm/:jadwalId/roster`,
+   `GET /api/guru/kelas/rekap-presensi`, `GET /api/admin/presensi-siswa`):
+   method, query/param, bentuk request & response NYATA, RBAC (@Roles),
+   kondisi error (403 cutoff, 403 bukan-pemilik, 400 alasan wajib).
+2. `docs/KAMUS-DATA.md` — tambah 2 tabel: `presensi_sesi` &
+   `presensi_siswa` (kolom, tipe, FK, UNIQUE) dari
+   `backend/src/presensi/*.entity.ts`. Catat: status sesi DITURUNKAN
+   (bukan kolom), status siswa varchar 'H|S|I|A|T'.
+3. Verifikasi tiap endpoint/kolom yang kamu tulis benar-benar ADA di kode
+   (kutip file:baris di laporan sebagai bukti — planner akan cek silang).
+   DoD: dua file docs terupdate akurat, laporan dgn bukti file:baris.
 
 > F2-ADMIN-FIX2 kamu DITERIMA (commit 5136bfb). Perbaikan blocker/minor itu
 > BELUM punya e2e — tanpa tes, gampang regresi. Tulis spec Playwright yang

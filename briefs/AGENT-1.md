@@ -13,7 +13,35 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18) — F2-REKAP-FRONTEND (keping F2 terakhir)
+## TUGAS AKTIF (2026-07-18b) — E2E-ISOLASI-HARDENING (bikin gerbang hijau lagi)
+
+> F2-REKAP-FRONTEND kamu DITERIMA (commit 984d039) — halaman rekap +
+> perbaikan bug AdaptiveSelect scroll, keduanya hijau. TAPI suite penuh
+> kini 53 pass / 2 GAGAL: `presensi-admin-fix2.spec.ts` (role-gating) &
+> `rbac-negatif.spec.ts`. KEDUANYA LULUS saat diisolasi & berpasangan
+> (planner sudah cek: 5 pass). Ini **kerapuhan ISOLASI HARNESS**, bukan
+> bug produk.
+>
+> Diagnosis planner: suite serial (`workers:1`) memakai akun seed admin +
+> token di `localStorage` LINTAS-spec. Helper `loginAs` (e2e/helpers/auth.ts)
+> `goto('/login')` sementara token lama masih di localStorage → race
+> redirect; ditambah `afterEach` yang MENGHAPUS user uji memicu
+> `revokeAllByUser` (backend users.controller.ts:209). Efek kumulatif:
+> token spec berikutnya jadi tak valid → halaman mendarat di `/login` →
+> assertion gagal (mis. rbac-negatif dapat 401, bukan 403).
+
+Kerjakan (wilayah: `frontend/e2e/` saja):
+1. Hardening `e2e/helpers/auth.ts::loginAs` supaya deterministik: HAPUS
+   token lama dulu / set token via cara yang bebas race redirect (mis.
+   `page.addInitScript` sebelum `goto`, atau clear localStorage lalu set
+   lalu baru caller `goto` target). Tujuan: setiap `loginAs` selalu
+   menghasilkan sesi bersih, tak terpengaruh sisa spec sebelumnya.
+2. Tambah reset state antar-test bila perlu (mis. `test.beforeEach` global /
+   fixture yang clear localStorage) supaya urutan spec tak saling cemari.
+3. JANGAN melonggarkan assertion (jangan "akali" test). Perbaiki
+   HARNESS-nya, perilaku yang diuji harus tetap ketat.
+4. DoD: `npm run test:e2e` HIJAU penuh (0 gagal) DIULANG 2× berturut
+   (buktikan determinisme, bukan kebetulan). tsc bersih. Append laporan.
 
 > BackLink adaptif kamu DITERIMA (commit c5e29f5). Sekarang: bangun halaman
 > **Rekap Presensi per kelas** (wali kelas | admin). Backend SUDAH ADA:
