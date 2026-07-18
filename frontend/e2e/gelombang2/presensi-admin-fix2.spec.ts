@@ -23,6 +23,11 @@ import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
  * urutan render).
  */
 test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () => {
+  // Matriks bergantung jadwal "hari ini"; MINGGU = hari 7 tanpa KBM. Skip di
+  // hari Minggu agar suite hijau (produk benar, bukan bug).
+  const _wibDay = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'short' });
+  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) — matriks hari-ini tidak berlaku');
+
   const createdGuruIds: number[] = [];
   const createdKelasIds: number[] = [];
   const createdMapelIds: number[] = [];

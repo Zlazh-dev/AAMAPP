@@ -13,6 +13,11 @@ import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
  * lihat roles.guard.ts baris 54 — admin selalu lolos @Roles(...)).
  */
 test.describe('F2 — Presensi Siswa per KBM', () => {
+  // Alur KBM "hari ini" tidak berlaku pada MINGGU (produk: hari 7 = tak ada
+  // KBM). Skip agar suite tetap hijau di hari Minggu (bukan bug produk).
+  const _wibDay = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'short' });
+  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) — alur presensi hari-ini tidak berlaku');
+
   const createdGuruIds: number[] = [];
   const createdKelasIds: number[] = [];
   const createdMapelIds: number[] = [];
