@@ -54,7 +54,7 @@
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
 | Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | **F3a FRONTEND** (enrollment wizard + "Presensi Sekarang" overlay kamera + monitor admin; `human` dynamic-import) — backend LIVE | mulai |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ **F3a BACKEND SELESAI** (diterima, e2e 9/9). Menunggu tugas berikut (kandidat: F3b kiosk contract, atau bantu e2e/docs F3a) | idle — tunggu assign |
+| Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` (F3b) + `briefs/AGENT-2.md` | **F3b BACKEND** (kiosk 1:N — device_kiosk + pairing 6-digit + DeviceAuthGuard + scan/heartbeat/manual). Backend saja; frontend kiosk menyusul | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ **F2 CLOSED PENUH** (backend+frontend guru+admin+rekap+docs;

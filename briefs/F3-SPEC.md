@@ -150,7 +150,71 @@ Indonesia bermakna. DTO memuat SEMUA field yang UI kirim (anti-DTO-drift).
   `/guru` (overlay kamera fullscreen + pre-check geofence), monitor admin +
   form manual, wiring client.ts/App.tsx/menu.ts. Menunggu kontrak live.
 
+## ══════════ F3b — KIOSK 1:N (BACKEND dibuka 2026-07-18; AG-2) ══════════
+> Dibuka lebih awal atas permintaan user (throughput; independen & tak
+> bertabrakan dgn frontend F3a AG-1). LINGKUP F3b INI = BACKEND SAJA.
+> Frontend kiosk (layar fullscreen, antrean offline) menyusul terpisah.
+
+**Keputusan planner F3b:**
+- Kiosk = perangkat BERSAMA terpasang di sekolah (BUKAN per-guru; tanpa
+  verifikasi lokasi — perangkat memang di sekolah). Auth perangkat = token
+  perangkat (BEDA dari sesi user).
+- Pairing: admin buat perangkat → **kode 6 digit, kedaluwarsa 10 menit,
+  sekali pakai**. Perangkat tukar kode → **token perangkat** (acak, disimpan
+  HASH seperti sesi). Kode dihapus setelah dipakai.
+- Scan 1:N: cocokkan embedding live thd SEMUA guru ter-enroll aktif; match
+  bila `best ≥ threshold` DAN `best − best2 ≥ margin` (hindari match ambigu).
+  `margin` = config `wajah.margin` default **0.05**.
+- Gagal kenali → 404 "wajah tidak dikenali" (frontend hitung 3× → manual NIP).
+- Manual NIP kiosk → catat presensi `source='KIOSK'` + `perluVerifikasi=true`
+  (admin tinjau). TAMBAH kolom `perluVerifikasi boolean default false` ke
+  `presensi_harian_guru`.
+- Offline: scan terima `scannedAt?` (ISO, waktu perangkat) utk sinkron antrean;
+  server simpan + audit (risiko spoof-waktu diterima — kiosk diawasi).
+
+**Entitas F3b:**
+```
+device_kiosk  id PK • nama varchar • tokenHash varchar NULL (terisi stlh pair)
+              • pairingCode varchar(6) NULL • pairingExpiresAt timestamptz NULL
+              • lastSeenAt timestamptz NULL • createdAt/updatedAt
+ALTER presensi_harian_guru: + perluVerifikasi boolean default false
+                            (source varchar sudah muat 'KIOSK')
+```
+`isOnline` DITURUNKAN (lastSeenAt dalam N menit terakhir), bukan kolom.
+
+**Kontrak API F3b (DIKUNCI):**
+- `POST /api/admin/device-kiosk` (admin) body `{ nama }` → buat perangkat +
+  kode pairing 6 digit; respons `{ id, nama, pairingCode, expiresAt }`; audit.
+- `GET /api/admin/device-kiosk` (admin) → daftar perangkat + `isOnline`
+  (turunan lastSeenAt) + status pairing.
+- `DELETE /api/admin/device-kiosk/:id` (admin) → cabut perangkat (token mati);
+  audit.
+- `POST /api/kiosk/pair` (PUBLIC/@Public) body `{ pairingCode }` → validasi
+  kode+kadaluwarsa, generate token perangkat, simpan hash, hapus kode;
+  respons `{ deviceToken, nama }`. Kode salah/kadaluwarsa → 400.
+- `POST /api/kiosk/scan` (**DeviceAuthGuard**, header `X-Device-Token`) body
+  `{ embedding:number[], scannedAt? }` → match 1:N (threshold+margin) →
+  upsert presensi_harian_guru source=KIOSK (HADIR/TERLAMBAT dari jam_presensi)
+  → `{ guruId, guruNama, status, jam }`; gagal → 404.
+- `POST /api/kiosk/manual` (DeviceAuthGuard) body `{ nip, scannedAt? }` →
+  cari guru by NIP, catat source=KIOSK perluVerifikasi=true → `{ status:'PENDING' }`.
+- `POST /api/kiosk/heartbeat` (DeviceAuthGuard) → update lastSeenAt.
+- `GET /api/admin/presensi-guru/pending` (admin) → daftar perluVerifikasi=true.
+- `POST /api/admin/presensi-guru/:id/verifikasi` (admin) body `{ terima:bool,
+  alasan? }` → set perluVerifikasi=false (atau hapus bila ditolak); audit.
+
+**DeviceAuthGuard** = guard baru (BUKAN SessionAuthGuard): baca
+`X-Device-Token`, hash, cocokkan `device_kiosk.tokenHash`; update tak wajib.
+Route kiosk TIDAK pakai sesi user.
+
+**Wilayah F3b (AG-2):** modul baru `backend/src/kiosk/**` (device_kiosk entity,
+DeviceAuthGuard, pairing+scan+heartbeat+manual controller) + tambah kolom
+`perluVerifikasi` di presensi_harian_guru + endpoint pending/verifikasi
+(boleh di presensi-guru controller). Daftarkan di app.module.ts. Boot-verify +
+e2e mock (pair→token→scan 1:N match/no-match→heartbeat→manual NIP→admin verify).
+JANGAN sentuh frontend (AG-1) — kecuali `frontend/e2e/`.
+
 ## Aturan wajib (semua): §12.15 lazy (human WAJIB dynamic-import) • §12.16
 filter+paginasi level DB + anti N+1 + anti DTO-drift • §12.17 e2e (mock
-embedding) = gerbang • RBAC server + audit + WIB • klaim tugas sebelum mulai
-• APPEND laporan • jangan kerjakan KIOSK (itu F3b).
+embedding) = gerbang • RBAC/token server + audit + WIB • klaim tugas sebelum
+mulai • APPEND laporan.

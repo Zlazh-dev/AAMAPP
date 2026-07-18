@@ -817,6 +817,13 @@ kebetulan.
 
 Menunggu tugas berikutnya dari planner.
 
+## LAPORAN — F3a FRONTEND (presensi wajah guru)
+
+DIKERJAKAN (2026-07-18 14:50 WIB) — mulai F3a FRONTEND: util faceHuman.ts,
+enrollment wizard /admin/wajah, presensi scan overlay /guru, monitor admin
+/admin/presensi-guru, wiring client.ts/App.tsx/menu.ts, e2e (mock embedding).
+
+
 
 
 

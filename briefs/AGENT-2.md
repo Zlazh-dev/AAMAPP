@@ -5,7 +5,43 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18c) — F3a BACKEND (kamu MEMIMPIN F3; fondasi presensi wajah)
+## TUGAS AKTIF (2026-07-18d) — F3b BACKEND (kiosk 1:N; independen dari frontend AG-1)
+
+> F3a BACKEND kamu DITERIMA (commit 1689461, planner jalankan e2e 9/9).
+> Sekarang backend KIOSK. Baca **`briefs/F3-SPEC.md`** bagian **F3b** (kontrak
+> dikunci). Ini backend SAJA — frontend kiosk menyusul. Non-konflik dgn AG-1
+> (dia di frontend F3a).
+
+Kerjakan (wilayah: `backend/**` + `frontend/e2e/`; kamu pegang app.module.ts):
+1. Modul baru `backend/src/kiosk/**`:
+   - Entitas `device_kiosk` (skema F3b: nama, tokenHash NULL, pairingCode NULL,
+     pairingExpiresAt NULL, lastSeenAt NULL).
+   - **DeviceAuthGuard** baru: baca header `X-Device-Token`, hash, cocokkan
+     `device_kiosk.tokenHash` (BUKAN SessionAuthGuard).
+   - Controller: `POST /api/admin/device-kiosk` (buat+kode pairing 6 digit 10
+     mnt), `GET /api/admin/device-kiosk` (daftar + isOnline turunan),
+     `DELETE /api/admin/device-kiosk/:id` (cabut), `POST /api/kiosk/pair`
+     (@Public, tukar kode→token), `POST /api/kiosk/scan` (DeviceAuthGuard,
+     match 1:N threshold+margin), `POST /api/kiosk/manual` (NIP→pending),
+     `POST /api/kiosk/heartbeat`.
+   - Service: match 1:N (best ≥ threshold DAN best−best2 ≥ margin), reuse
+     helper cosine/deriveStatus dari presensi-guru (import atau shared).
+2. **ALTER** `presensi_harian_guru`: + kolom `perluVerifikasi boolean default
+   false` (di entity presensi-harian-guru.entity.ts). Tambah endpoint admin
+   `GET /api/admin/presensi-guru/pending` + `POST /api/admin/presensi-guru/:id/
+   verifikasi` (boleh di modul presensi-guru).
+3. Tambah `margin` (default 0.05) ke config pengaturan `wajah`.
+4. Daftarkan modul di app.module.ts. Boot-verify (tabel device_kiosk +
+   kolom perluVerifikasi terbentuk; endpoint kiosk ter-guard token; admin
+   ter-guard sesi). e2e mock: pair→token→scan match/no-match/ambigu→heartbeat→
+   manual NIP→admin verifikasi.
+
+DoD: backend F3b live & boot-verified, e2e mock hijau, laporan dgn bukti.
+JANGAN kerjakan frontend kiosk (menyusul). JANGAN sentuh halaman frontend
+F3a (itu AG-1).
+
+---
+## ARSIP — F3a BACKEND (SELESAI, diterima planner commit 1689461, e2e 9/9)
 
 > F2-DOKUMENTASI kamu DITERIMA (commit eefa8d5) — temuan deviasi KOSONG/
 > DIGANTIKAN diverifikasi akurat & dicatat planner. Sekarang kamu MEMIMPIN
