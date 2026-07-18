@@ -6,17 +6,21 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Request } from 'express';
 import { PresensiHarianGuru } from './presensi-harian-guru.entity';
 import { Guru } from '../guru/guru.entity';
 import { Pengaturan } from '../pengaturan/pengaturan.entity';
+import { KalenderLibur } from '../kurikulum/kalender-libur.entity';
+import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
+import { Penugasan } from '../kurikulum/penugasan.entity';
 import { AuditService } from '../audit/audit.service';
 import { formatDateWIB, todayWIB, WIB } from '../common/wib.util';
 import { toZonedTime } from 'date-fns-tz';
 import { EnrollWajahDto } from './dto/enroll-wajah.dto';
 import { ScanDto } from './dto/scan.dto';
 import { ManualDto } from './dto/manual.dto';
+import { IzinService, deriveStatusHarian } from '../izin/izin.service';
 
 // ─────────────────────────────────────────────
 // Pure math helpers (no deps, pure Node)
@@ -72,6 +76,13 @@ export class PresensiGuruService {
     private readonly guruRepo: Repository<Guru>,
     @InjectRepository(Pengaturan)
     private readonly pengaturanRepo: Repository<Pengaturan>,
+    @InjectRepository(KalenderLibur)
+    private readonly liburRepo: Repository<KalenderLibur>,
+    @InjectRepository(JadwalKbm)
+    private readonly jadwalRepo: Repository<JadwalKbm>,
+    @InjectRepository(Penugasan)
+    private readonly penugasanRepo: Repository<Penugasan>,
+    private readonly izinService: IzinService,
     private readonly audit: AuditService,
   ) {}
 
@@ -405,53 +416,84 @@ export class PresensiGuruService {
     };
   }
 
-  // ────── Monitor admin ──────
-
   /**
-   * GET /api/admin/presensi-guru/harian?tanggal= — semua guru + status hari itu.
-   * Batch query (anti N+1): LEFT JOIN presensi_harian_guru.
+   * GET /api/admin/presensi-guru/harian?tanggal= — semua guru + statusHarian turunan.
+   *
+   * F4a UPGRADE (anti-N+1, 4 query batch):
+   * Q1. Semua guru aktif.
+   * Q2. Presensi_harian_guru di tanggal → Map<guruId, ph>.
+   * Q3. Izin DISETUJUI yang overlap tanggal → Map<guruId, izin>.
+   * Q4. guruIds yang punya jadwal_kbm di hariWIB → Set<guruId>.
+   * Lalu: kalender_libur → Set<tanggal>.
+   * Helper deriveStatusHarian() dipanggil per baris (pure, tanpa query).
    */
   async monitorHarian(tanggal?: string) {
     const tgl = tanggal ?? formatDateWIB(todayWIB());
 
-    // Batch: semua guru aktif + presensi hari itu (LEFT JOIN)
-    const rows = await this.guruRepo
-      .createQueryBuilder('g')
-      .leftJoinAndSelect(
-        'g.presensiHarian',
-        'ph',
-        'ph.tanggal = :tgl',
-        { tgl },
-      )
-      .where("g.status = 'aktif'")
-      .orderBy('g.nama', 'ASC')
-      .select([
-        'g.id',
-        'g.nama',
-        'g.nip',
-        'g.fotoUrl',
-        'ph.id',
-        'ph.tanggal',
-        'ph.checkInAt',
-        'ph.checkOutAt',
-        'ph.status',
-        'ph.source',
-        'ph.distanceMeter',
-        'ph.similarity',
-        'ph.alasan',
-      ])
-      .getMany();
+    // Q1: semua guru aktif
+    const guruList = await this.guruRepo.find({
+      where: { status: 'aktif' as any },
+      order: { nama: 'ASC' },
+      select: ['id', 'nama', 'nip', 'fotoUrl'],
+    });
+    const guruIds = guruList.map((g) => g.id);
 
+    if (guruIds.length === 0) return { tanggal: tgl, data: [] };
+
+    // Q2: presensi hari itu (batch)
+    const presensiRows = await this.hadrianRepo.find({
+      where: { guruId: In(guruIds), tanggal: tgl },
+    });
+    const presensiMap = new Map<number, PresensiHarianGuru>();
+    for (const ph of presensiRows) presensiMap.set(ph.guruId, ph);
+
+    // Q3: izin DISETUJUI overlap tanggal (batch via IzinService)
+    const izinAktifMap = await this.izinService.batchIzinAktif(guruIds, tgl);
+
+    // Q4: guru yang punya jadwal_kbm di hariWIB
+    // jadwal_kbm.hari: 0=Minggu, 1=Sen, ..., 6=Sab (JS Date.getDay() style)
+    const dateObj = new Date(tgl + 'T00:00:00+07:00');
+    const hariWIB = dateObj.getDay(); // 0-6
+    const penugasanList = await this.penugasanRepo.find({
+      where: { guruId: In(guruIds) },
+      select: ['id', 'guruId'],
+    });
+    const penugasanIds = penugasanList.map((p) => p.id);
+    let punyaJadwalSet = new Set<number>();
+    if (penugasanIds.length > 0) {
+      const jadwalRows = await this.jadwalRepo.find({
+        where: { penugasanId: In(penugasanIds), hari: hariWIB },
+        select: ['id', 'penugasanId'],
+      });
+      const penugasanIdSet = new Set(jadwalRows.map((j) => j.penugasanId));
+      for (const p of penugasanList) {
+        if (penugasanIdSet.has(p.id)) punyaJadwalSet.add(p.guruId);
+      }
+    }
+
+    // Q5: libur tanggal ini (satu query)
+    const liburRow = await this.liburRepo.findOne({ where: { tanggal: tgl } as any });
+    const liburSet = new Set<string>(liburRow ? [tgl] : []);
+
+    // Derive status per guru (pure helper, tanpa query)
     return {
       tanggal: tgl,
-      data: rows.map((g) => {
-        const phArr = (g as any).presensiHarian as PresensiHarianGuru[];
-        const ph = Array.isArray(phArr) && phArr.length > 0 ? phArr[0] : null;
+      data: guruList.map((g) => {
+        const ph = presensiMap.get(g.id) ?? null;
+        const statusHarian = deriveStatusHarian(g.id, tgl, {
+          liburSet,
+          izinAktifMap,
+          presensiMap: ph
+            ? new Map([[g.id, { status: ph.status }]])
+            : new Map(),
+          punyaJadwalSet,
+        });
         return {
           guruId: g.id,
           nama: g.nama,
           nip: g.nip,
           fotoUrl: g.fotoUrl,
+          statusHarian,
           presensi: ph
             ? {
                 id: ph.id,

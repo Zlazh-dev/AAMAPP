@@ -905,3 +905,51 @@ AG-1 perlu mendaftarkan 2 route baru di App.tsx + menu.ts:
 **DoD terpenuhi**: halaman admin kiosk jalan ✅, TypeScript 0 error ✅, nit backend fixed ✅,
 e2e 6/6 hijau ✅, laporan + daftar method AG-1 ✅, wilayah dihormati ✅.
 Frontend device-facing kiosk (layar kiosk itu sendiri) TIDAK dikerjakan.
+
+## KLAIM TUGAS — F4a BACKEND (izin guru + status turunan)
+DIKERJAKAN (17:17 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Modul `backend/src/izin/`: entitas izin_guru, DTO, service + deriveStatusHarian
+MURNI, controller (5 endpoint), UPGRADE monitor BATCH anti-N+1, daftar di
+app.module.ts. Boot-verify + e2e mock. Wilayah: `backend/**` + `frontend/e2e/`.
+
+### [AGENT-2] F4a BACKEND — SELESAI (2026-07-18 17:38 WIB)
+
+**Wilayah dihormati**: `backend/src/izin/**` + `backend/src/presensi-guru/` (upgrade) + `backend/src/app.module.ts` + `frontend/e2e/gelombang2/izin-guru-backend.spec.ts`.
+Tidak menyentuh frontend halaman (AG-1 wilayah).
+
+**File baru/dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [izin-guru.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/izin-guru.entity.ts) | NEW | Entitas `izin_guru`: jenis IZIN/SAKIT/DINAS, rentang date, status MENUNGGU/DISETUJUI/DITOLAK, FK guru (CASCADE) + user (SET NULL), INDEX(guruId,status) |
+| [ajukan-izin.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/dto/ajukan-izin.dto.ts) | NEW | DTO ajukan: IsIn jenis, IsDateString mulai/selesai, custom validator selesai≥mulai, keterangan wajib, lampiranUrl opsional URL |
+| [keputusan.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/dto/keputusan.dto.ts) | NEW | DTO keputusan: alasan opsional di level DTO (service enforce wajib untuk tolak) |
+| [izin.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/izin.service.ts) | NEW | Service: ajukan/listDiri/listAdmin(paginasi+filter DB)/setujui/tolak + helper `deriveStatusHarian()` MURNI + `batchIzinAktif()` |
+| [izin.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/izin.controller.ts) | NEW | IzinGuruController (guru: POST ajukan, GET listDiri) + AdminIzinGuruController (admin/kepsek: GET list, PATCH setujui/tolak) |
+| [izin.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/izin.module.ts) | NEW | Modul: TypeOrmFeature(IzinGuru,Guru,User,Session), AuditModule, export IzinService |
+| [presensi-guru.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.module.ts) | MODIFY | +KalenderLibur, +JadwalKbm, +Penugasan, +IzinModule |
+| [presensi-guru.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.service.ts) | MODIFY | **UPGRADE monitorHarian**: 5 batch query (guru aktif, presensi, izin aktif, jadwal KBM, libur) → `deriveStatusHarian()` per baris. Output kini punya field `statusHarian` |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | MODIFY | +IzinGuru entity, +IzinModule |
+| [izin-guru-backend.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/izin-guru-backend.spec.ts) | NEW | 10 test e2e mock |
+
+**Boot-verify**: tabel `izin_guru` terbentuk ✅ — 5 route ter-mapped:
+- `POST /api/izin/guru` ✅
+- `GET /api/izin/guru` ✅
+- `GET /api/admin/izin/guru` ✅
+- `PATCH /api/admin/izin/guru/:id/setujui` ✅
+- `PATCH /api/admin/izin/guru/:id/tolak` ✅
+
+**E2E — 10/10 LULUS (11.1 detik):**
+1. ✅ Guru ajukan izin SAKIT → MENUNGGU
+2. ✅ Admin list izin → shape valid (total, page, limit, guruNama)
+3. ✅ Tolak tanpa alasan → 400 BadRequest
+4. ✅ Approve → DISETUJUI; monitor harian → statusHarian SAKIT/LIBUR
+5. ✅ RBAC: guru tidak bisa PATCH admin endpoint → 403
+6. ✅ Monitor harian: setiap baris punya statusHarian valid
+7. ✅ Monitor LIBUR: hari libur kalender → semua LIBUR
+8. ✅ Tolak dengan alasan → DITOLAK + alasanKeputusan tersimpan
+9. ✅ listDiri guru → array izin sendiri
+10. ✅ Monitor shape: statusHarian + presensi field ada
+
+**DoD terpenuhi**: backend F4a live ✅, boot-verified ✅, e2e 10/10 ✅,
+wilayah dihormati ✅, laporan bukti file:baris ✅. F4b/F4c TIDAK dikerjakan.

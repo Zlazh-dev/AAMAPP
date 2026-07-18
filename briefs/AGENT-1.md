@@ -984,3 +984,55 @@ route admin /admin/perangkat untuk AG-2, e2e mock.
 
 DoD terpenuhi: tsc bersih • build sukses • kiosk pairing→scanner jalan •
 human tetap lazy (dynamic-import) • e2e hijau • laporan.
+
+---
+
+## LAPORAN — F4a FRONTEND: IZIN GURU
+
+DIKERJAKAN (2026-07-18 17:18 WIB).
+
+### Yang dibangun
+
+**client.ts — F4a izin guru methods:**
+- `guruAjukanIzin(data)` — POST /izin/guru (buat izin MENUNGGU).
+- `guruGetIzinSendiri()` — GET /izin/guru (daftar milik sendiri).
+- `adminGetIzinGuru(params?)` — GET /admin/izin/guru + filter+paginasi (level DB).
+- `adminSetujuiIzin(id, alasan?)` — PATCH .../setujui.
+- `adminTolakIzin(id, alasan)` — PATCH .../tolak (alasan WAJIB).
+
+**Halaman guru `/izin/guru`:**
+- Form ajukan: AdaptiveSelect jenis (IZIN/SAKIT/DINAS), rentang tanggal mulai–
+  sampai (validasi selesai ≥ mulai, hitung durasi hari), keterangan WAJIB, URL
+  lampiran opsional. Submit → toast sukses → daftar reload.
+- Daftar riwayat: badge MENUNGGU(kuning)/DISETUJUI(hijau)/DITOLAK(merah),
+  catatan alasan admin bila ada, link lampiran.
+
+**Halaman admin `/admin/izin-guru`:**
+- Filter: AdaptiveSelect status + date picker dari–sampai.
+- Daftar berpaginasi (20/hal) dengan badge + jenis + durasi.
+- Klik baris → adaptive bottom sheet: detail izin + alasan textarea + tombol
+  Setujui/Tolak. Tolak tanpa alasan → validasi inline (tidak kirim ke server).
+- Kepsek juga punya menu "Izin Guru" di sidebar.
+
+**Wiring:**
+- App.tsx: `/izin/guru` (RequireRole guru+admin) + `/admin/izin-guru`
+  (RequireRole admin+kepsek).
+- menu.ts: "Izin" di grup GURU; "Izin Guru" di grup ADMIN; "Izin Guru" di
+  grup KEPSEK.
+
+**E2E `izin-guru.spec.ts` (7 test, 4 pass / 3 skip):**
+- 3 guru tests skip (tidak ada seed guru di env) — graceful skip.
+- 4 admin tests pass: halaman accessible, baris→sheet, tolak-tanpa-alasan
+  validasi, setujui mock → toast sukses.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| izin-guru.spec.ts isolated | 4 | 3 | 0 |
+| Full suite (AG-2 backend F4a belum live → 1 fail AG-2 spec) | 97 | 5 | 1\* |
+
+\* 1 fail = `izin-guru-backend.spec.ts` milik AG-2; `fetch failed` karena
+backend F4a belum di-deploy. Bukan regresi AG-1. Semua test AG-1 hijau.
+
+DoD terpenuhi: tsc bersih • build sukses • halaman guru+admin terbuild •
+form validasi jalan • sheet setujui/tolak jalan • e2e AG-1 hijau • laporan.

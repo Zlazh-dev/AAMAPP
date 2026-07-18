@@ -1286,6 +1286,92 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // F4a: Izin Guru (ajukan→approve/tolak)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /** Guru: ajukan izin baru (MENUNGGU). */
+  guruAjukanIzin: (data: {
+    jenis: 'IZIN' | 'SAKIT' | 'DINAS';
+    mulaiTanggal: string;
+    selesaiTanggal: string;
+    keterangan: string;
+    lampiranUrl?: string;
+  }) =>
+    request<{ id: number; status: string }>('/izin/guru', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  /** Guru: daftar izin milik sendiri (terbaru dulu). */
+  guruGetIzinSendiri: () =>
+    request<{
+      data: Array<{
+        id: number;
+        jenis: 'IZIN' | 'SAKIT' | 'DINAS';
+        mulaiTanggal: string;
+        selesaiTanggal: string;
+        keterangan: string;
+        lampiranUrl: string | null;
+        status: 'MENUNGGU' | 'DISETUJUI' | 'DITOLAK';
+        alasanKeputusan: string | null;
+        disetujuiPada: string | null;
+        createdAt: string;
+      }>;
+    }>('/izin/guru'),
+
+  /** Admin/kepsek: daftar semua izin berpaginasi + filter. */
+  adminGetIzinGuru: (params?: {
+    status?: string;
+    dari?: string;
+    sampai?: string;
+    guruId?: number;
+    page?: number;
+    limit?: number;
+  }) => {
+    const q = new URLSearchParams();
+    if (params?.status) q.set('status', params.status);
+    if (params?.dari) q.set('dari', params.dari);
+    if (params?.sampai) q.set('sampai', params.sampai);
+    if (params?.guruId) q.set('guruId', String(params.guruId));
+    if (params?.page) q.set('page', String(params.page));
+    if (params?.limit) q.set('limit', String(params.limit));
+    const qs = q.toString();
+    return request<{
+      data: Array<{
+        id: number;
+        guruId: number;
+        guruNama: string;
+        jenis: 'IZIN' | 'SAKIT' | 'DINAS';
+        mulaiTanggal: string;
+        selesaiTanggal: string;
+        keterangan: string;
+        lampiranUrl: string | null;
+        status: 'MENUNGGU' | 'DISETUJUI' | 'DITOLAK';
+        alasanKeputusan: string | null;
+        disetujuiPada: string | null;
+        createdAt: string;
+      }>;
+      total: number;
+      page: number;
+      limit: number;
+    }>(`/admin/izin/guru${qs ? `?${qs}` : ''}`);
+  },
+
+  /** Admin/kepsek: setujui izin. */
+  adminSetujuiIzin: (id: number, alasan?: string) =>
+    request<{ ok: boolean }>(`/admin/izin/guru/${id}/setujui`, {
+      method: 'PATCH',
+      body: JSON.stringify({ alasan }),
+    }),
+
+  /** Admin/kepsek: tolak izin (alasan WAJIB). */
+  adminTolakIzin: (id: number, alasan: string) =>
+    request<{ ok: boolean }>(`/admin/izin/guru/${id}/tolak`, {
+      method: 'PATCH',
+      body: JSON.stringify({ alasan }),
+    }),
 };
 
 

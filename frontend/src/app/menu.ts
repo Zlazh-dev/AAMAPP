@@ -42,6 +42,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Pendaftaran Wajah', path: '/admin/wajah', icon: 'face_retouching_natural' },
       { label: 'Perangkat Kiosk', path: '/admin/perangkat', icon: 'devices' },
       { label: 'Verifikasi Presensi', path: '/admin/presensi-guru-pending', icon: 'how_to_reg' },
+      { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
       { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
     ],
@@ -68,13 +69,17 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
       { label: 'Rekap Presensi', path: '/guru/rekap', icon: 'summarize' },
       { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'face_retouching_natural' },
+      { label: 'Izin', path: '/izin/guru', icon: 'event_available' },
     ],
   },
 
   kepsek: {
     area: 'kepsek',
     label: 'KEPSEK',
-    items: [{ label: 'Dashboard', path: '/kepsek', icon: 'dashboard' }],
+    items: [
+      { label: 'Dashboard', path: '/kepsek', icon: 'dashboard' },
+      { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
+    ],
   },
   tu: {
     area: 'tu',
