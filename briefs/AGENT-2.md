@@ -725,3 +725,63 @@ guru.faceUpdatedAt timestamptz ✅
 **DoD terpenuhi**: tabel+kolom ada ✅, backend live & boot-verified ✅,
 endpoint ter-guard ✅, e2e mock embedding 9/9 hijau ✅, laporan dgn bukti ✅,
 wilayah tulis dihormati ✅. Kiosk (F3b) TIDAK dikerjakan sesuai instruksi.
+
+## KLAIM TUGAS — F3b BACKEND (KIOSK)
+DIKERJAKAN (14:53 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Membangun backend F3b kiosk: modul `backend/src/kiosk/` (entitas device_kiosk,
+DeviceAuthGuard, controller pairing/scan 1:N/manual NIP/heartbeat), kolom
+perluVerifikasi di presensi_harian_guru, endpoint pending/verifikasi, margin
+di config wajah, daftar di app.module.ts. Backend SAJA — frontend kiosk
+menyusul. Wilayah: `backend/**` + `frontend/e2e/`.
+
+### [AGENT-2] F3b BACKEND — SELESAI (2026-07-18 15:03 WIB)
+
+**Wilayah dihormati**: `backend/**` + `frontend/e2e/gelombang2/kiosk-backend.spec.ts`.
+Tidak menyentuh frontend kiosk, client.ts, App.tsx, menu.ts.
+
+**File baru/dimodifikasi:**
+
+| File | Aksi | Keterangan |
+|------|------|-----------|
+| [presensi-harian-guru.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-harian-guru.entity.ts) | MODIFY | +`KIOSK` di SourcePresensiGuru, +`perluVerifikasi boolean default false` |
+| [device-kiosk.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/device-kiosk.entity.ts) | NEW | Entitas `device_kiosk`, tokenHash UNIQUE, pairingCode 6-digit, pairingExpiresAt, lastSeenAt |
+| [device-auth.guard.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/device-auth.guard.ts) | NEW | DeviceAuthGuard: baca `X-Device-Token`, SHA-256, cocokkan tokenHash |
+| [kiosk.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/kiosk.service.ts) | NEW | createDevice, listDevices, revokeDevice, pair (kode→token), scan 1:N (MATCH/AMBIGUOUS/NO_MATCH), manualNip, heartbeat, listPending, verifikasi |
+| [kiosk.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/kiosk.controller.ts) | NEW | 4 controller class, 10 route persis kontrak F3-SPEC, @Public()+DeviceAuthGuard utk kiosk |
+| [kiosk.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/kiosk/kiosk.module.ts) | NEW | Module NestJS F3b |
+| [app.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/app.module.ts) | MODIFY | +`DeviceKiosk` di entities, +`KioskModule` di imports |
+| [pengaturan.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/pengaturan/pengaturan.service.ts) | MODIFY | +`margin:0.05` di seed default `wajah` |
+| [kiosk-backend.spec.ts](file:///d:/Codeproject/AAMAPP/frontend/e2e/gelombang2/kiosk-backend.spec.ts) | NEW | 11 test mock, pure REST-API |
+
+**Boot-verify (dikonfirmasi via psql + NestJS logs):**
+```
+device_kiosk terbentuk ✅ — tokenHash UNIQUE, pairingCode varchar(6)
+presensi_harian_guru.perluVerifikasi boolean default false ✅
+10 route F3b ter-mapped ✅ (POST/GET/DELETE admin device-kiosk,
+  GET/POST pending/verifikasi, POST pair, POST scan/manual/heartbeat)
+```
+
+**E2E mock kiosk — 11/11 LULUS (16.2 detik):**
+1. ✅ Admin buat device → pairingCode 6 digit
+2. ✅ Pair kode → deviceToken
+3. ✅ Heartbeat → lastSeenAt update, isOnline=true
+4. ✅ Scan MATCH (cosine=1, gap besar)
+5. ✅ Scan NO_MATCH (vektor nol, cosine=0)
+6. ✅ Scan AMBIGUOUS (margin tinggi → gap < margin → perluVerifikasi)
+7. ✅ Manual NIP → perluVerifikasi=true
+8. ✅ Admin list pending → verifikasi terima → perluVerifikasi=false
+9. ✅ Admin verifikasi tolak → record dihapus dari pending
+10. ✅ Semua endpoint kiosk 401 tanpa X-Device-Token
+11. ✅ Admin delete device → token tidak valid
+
+**Temuan teknis (dicatat):**
+- `SessionAuthGuard` APP_GUARD global berjalan **sebelum** guard lokal.
+  `KioskAuthController` butuh `@Public()` agar APP_GUARD bypass, kemudian
+  `@UseGuards(DeviceAuthGuard)` sebagai guard lokal — pola berbeda dari
+  `@Public()` murni (yang tidak punya guard sama sekali).
+- Scan 1:N: vektor nol (cosine=0) dipakai utk NO_MATCH (division by zero
+  terproteksi di fungsi `cosine()` dengan check `normA===0 || normB===0 → 0`).
+
+**DoD terpenuhi**: tabel+kolom ada ✅, backend live ✅, endpoint ter-guard ✅,
+e2e 11/11 hijau ✅, laporan dgn bukti ✅, wilayah dihormati ✅.
+Frontend kiosk (F3b UI) TIDAK dikerjakan sesuai instruksi.

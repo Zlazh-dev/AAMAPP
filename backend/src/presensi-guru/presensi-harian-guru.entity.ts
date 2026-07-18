@@ -11,7 +11,7 @@ import {
 import { Guru } from '../guru/guru.entity';
 
 export type StatusPresensiGuru = 'HADIR' | 'TERLAMBAT' | 'ALPHA';
-export type SourcePresensiGuru = 'HP' | 'MANUAL'; // 'KIOSK' menyusul F3b
+export type SourcePresensiGuru = 'HP' | 'MANUAL' | 'KIOSK';
 
 /**
  * F3a — Presensi harian guru (satu baris per guru per hari).
@@ -63,6 +63,13 @@ export class PresensiHarianGuru {
   /** Alasan (wajib untuk input MANUAL admin). */
   @Column({ type: 'text', nullable: true })
   alasan: string | null;
+
+  /**
+   * F3b — Kiosk 1:N: true bila scan kiosk hasilnya ambigu (gap terlalu kecil)
+   * atau NIP-manual belum dikonfirmasi admin.
+   */
+  @Column({ type: 'boolean', default: false })
+  perluVerifikasi: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;

@@ -195,10 +195,12 @@ export class PengaturanService {
       },
       {
         // F3a: konfigurasi pengenalan wajah guru
+        // F3b: tambah margin utk disambiguasi 1:N kiosk
         key: 'wajah',
         value: {
           threshold: 0.6,
           minPoses: 3,
+          margin: 0.05,
         },
       },
     ];
