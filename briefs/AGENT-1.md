@@ -1523,3 +1523,50 @@ DIKERJAKAN (2026-07-18 23:22 WIB).
 DoD terpenuhi: tsc bersih • build sukses • paket→TP→penilaian→input nilai→rekap
 jalan • SubPageLinks TANPA TAB • SaveSuccess→navigate by-id • e2e mandiri 16/16
 • full suite 216/0 • laporan.
+
+---
+
+## LAPORAN — F6b FRONTEND: RAPOR + PDF
+
+## LAPORAN — F6b FRONTEND: RAPOR + PDF
+
+DIKERJAKAN (2026-07-18 23:49 → 2026-07-19 00:12 WIB).
+
+### Yang dibangun
+
+**client.ts — F6b methods:**
+- `getRaporKelasOptions()` — GET /api/rapor/kelas-options (kelas wali).
+- `getRaporKelas(kelasId, tahunAjaranId?)` — GET daftar siswa + status rapor.
+- `getRaporSiswa(siswaId, tahunAjaranId?)` — GET rapor lengkap derived (per mapel: nilaiAkhir, katrol, deskripsi auto/override, KKM; kehadiran S/I/A; catatanWali; status).
+- `putRaporOverride(siswaId, mapelId, {nilaiKatrol?, deskripsiOverride?})` — PUT upsert override.
+- `patchCatatanWali(siswaId, {catatanWali})` — PATCH catatan.
+- `finalisasiRapor(siswaId)` — PATCH status FINAL + snapshot.
+- `batalFinalRapor(siswaId)` — PATCH batal (admin).
+
+**Halaman guru:**
+- `RaporListPage` `/guru/rapor`: daftar siswa kelas wali + status (DRAFT/FINAL/Belum), badge count progress (FINAL/DRAFT/Belum), navigasi by siswaId, kelas selector bila >1 kelas, empty state bila belum wali.
+- `RaporDetailPage` `/guru/rapor/:siswaId`: kehadiran S/I/A dari presensi F2; tabel per mapel (nilaiAkhir, katrol override, KKM 75, predikat Tuntas/Belum Tuntas, baris merah <KKM, deskripsi auto+edit override inline); catatan wali textarea; tombol Finalisasi (konfirmasi) → FINAL→read-only; export PDF lazy pdfmake dengan kop sekolah.
+
+**Export PDF:**
+- Reuse `exportToPdf` dari lib F4b (lazy import, tidak di main bundle).
+- Tabel per mapel: Mata Pelajaran / Nilai / KKM / Predikat / Deskripsi Capaian.
+- Profil sekolah dari pengaturan `profil_sekolah`.
+
+**Wiring:**
+- App.tsx: 2 lazy imports F6b + 2 routes (/guru/rapor, /guru/rapor/:siswaId).
+- menu.ts: guru group += Rapor.
+
+**E2E `rapor-f6b.spec.ts` (8/8 pass):**
+- Rapor list: route, empty/tabel render.
+- Detail: route, tombol Kembali, export PDF button, navigasi by ID 999 tidak crash.
+- Menu: Rapor + Penilaian visible di sidebar.
+
+### Hasil verifikasi
+| Suite | Passed | Failed | Catatan |
+|-------|--------|--------|---------|
+| F6b spec | 8 | 0 | ✅ |
+| Full suite | 227 | 6 | 5 pre-existing AG-2 backend (presensi-admin-fix2 × 4 + presensi-siswa × 1) + 1 filter-bar flaky — semua bukan milik F6b |
+
+DoD terpenuhi: tsc bersih • build sukses • rapor list→detail→override→catatan→finalisasi→PDF
+jalan • FINAL→read-only • export PDF lazy (tidak di main bundle) • e2e mandiri 8/8
+• F6b tuntas.

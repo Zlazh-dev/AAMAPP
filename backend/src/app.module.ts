@@ -30,6 +30,9 @@ import { TujuanPembelajaran } from './penilaian/tujuan-pembelajaran.entity';
 import { Penilaian } from './penilaian/penilaian.entity';
 import { PenilaianTp } from './penilaian/penilaian-tp.entity';
 import { Nilai } from './penilaian/nilai.entity';
+import { RaporModule } from './rapor/rapor.module';
+import { Rapor } from './rapor/rapor.entity';
+import { RaporMapelOverride } from './rapor/rapor-mapel-override.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -85,6 +88,8 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           Penilaian,
           PenilaianTp,
           Nilai,
+          Rapor,
+          RaporMapelOverride,
         ],
         // SEC-1 Butir 3: synchronize hanya aktif di luar production.
         // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
@@ -121,6 +126,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     LaporanModule,
     KesiswaanModule,
     PenilaianModule,
+    RaporModule,
   ],
   providers: [
     // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD

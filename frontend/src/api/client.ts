@@ -1633,6 +1633,40 @@ export const api = {
 
   getRekapNilai: (penugasanId: number) =>
     request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/rekap`),
+
+  // ── F6b: Rapor ────────────────────────────────────────────────────────────
+  getRaporKelasOptions: () =>
+    request<{ data: any[] }>('/rapor/kelas-options'),
+
+  getRaporKelas: (kelasId: number, tahunAjaranId?: number) => {
+    const q = new URLSearchParams();
+    if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));
+    return request<{ data: any[] }>(`/rapor/kelas/${kelasId}?${q}`);
+  },
+
+  getRaporSiswa: (siswaId: number, tahunAjaranId?: number) => {
+    const q = new URLSearchParams();
+    if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));
+    return request<any>(`/rapor/siswa/${siswaId}?${q}`);
+  },
+
+  putRaporOverride: (siswaId: number, mapelId: number, body: { nilaiKatrol?: number | null; deskripsiOverride?: string | null }) =>
+    request<any>(`/rapor/siswa/${siswaId}/mapel/${mapelId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  patchCatatanWali: (siswaId: number, body: { catatanWali: string }) =>
+    request<any>(`/rapor/siswa/${siswaId}/catatan`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  finalisasiRapor: (siswaId: number) =>
+    request<any>(`/rapor/siswa/${siswaId}/finalisasi`, { method: 'PATCH' }),
+
+  batalFinalRapor: (siswaId: number) =>
+    request<any>(`/rapor/siswa/${siswaId}/batal-final`, { method: 'PATCH' }),
 };
 
 

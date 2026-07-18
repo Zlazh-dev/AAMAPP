@@ -81,6 +81,7 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Izin', path: '/izin/guru', icon: 'event_available' },
       { label: 'Pelanggaran', path: '/guru/pelanggaran', icon: 'report' },
       { label: 'Penilaian', path: '/guru/penilaian', icon: 'grading' },
+      { label: 'Rapor', path: '/guru/rapor', icon: 'menu_book' },
     ],
   },
 

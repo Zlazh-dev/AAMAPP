@@ -93,6 +93,9 @@ const TujuanPembelajaranPage = React.lazy(() => import('../pages/guru/TujuanPemb
 const PenilaianListPage = React.lazy(() => import('../pages/guru/PenilaianListPage').then(m => ({ default: m.PenilaianListPage })));
 const RekapNilaiPage = React.lazy(() => import('../pages/guru/RekapNilaiPage').then(m => ({ default: m.RekapNilaiPage })));
 const InputNilaiPage = React.lazy(() => import('../pages/guru/InputNilaiPage').then(m => ({ default: m.InputNilaiPage })));
+// F6b: Rapor
+const RaporListPage = React.lazy(() => import('../pages/guru/RaporListPage').then(m => ({ default: m.RaporListPage })));
+const RaporDetailPage = React.lazy(() => import('../pages/guru/RaporDetailPage').then(m => ({ default: m.RaporDetailPage })));
 
 /** Wrap a lazy element in Suspense + ErrorBoundary */
 function Lazy({ children }: { children: React.ReactNode }) {
@@ -274,6 +277,9 @@ const routes: RouteObject[] = [
               { path: 'rekap', element: <Lazy><RekapNilaiPage /></Lazy> },
             ],
           },
+          // F6b: Rapor
+          { path: '/guru/rapor', element: <RequireRole roles={['guru','admin']}><Lazy><RaporListPage /></Lazy></RequireRole> },
+          { path: '/guru/rapor/:siswaId', element: <RequireRole roles={['guru','admin']}><Lazy><RaporDetailPage /></Lazy></RequireRole> },
         ],
       },
 

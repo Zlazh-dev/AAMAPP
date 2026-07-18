@@ -1376,3 +1376,45 @@ Wilayah: backend/** + frontend/e2e/.
 10. ✅ Rekap tetap valid saat sumatif baru belum ada nilai
 
 **F6a BACKEND TUNTAS.** AG-1 siap konsumsi `/api/guru/penilaian`.
+
+## KLAIM TUGAS — F6b BACKEND (rapor akademik; MEMIMPIN)
+DIKERJAKAN (23:49 WIB, 2026-07-18) — Antigravity-2 (executor B).
+Modul backend/src/rapor/: entitas rapor (DRAFT/FINAL + snapshot jsonb) +
+rapor_mapel_override (katrol + deskripsiOverride); assembly DERIVED per siswa
+(nilai akhir F6a reuse + deskripsi otomatis top2/bottom2 vs KKM75 +
+kehadiran S/I/A dari presensi_siswa F2 + override, BATCH anti-N+1);
+workflow override/catatan/finalisasi→snapshot/batal-final;
+auth wali (waliGuru kelas siswa → 403 lain). Daftarkan app.module.
+Boot-verify + e2e mandiri.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] F6b BACKEND — SELESAI (2026-07-19 00:03 WIB)
+
+**Wilayah dihormati**: `backend/src/rapor/**` + `app.module.ts` + `frontend/e2e/gelombang2/rapor-f6b-backend.spec.ts`. TIDAK menyentuh F6c.
+
+**File yang dibuat:**
+
+| File | Isi |
+|------|-----|
+| [rapor.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.entity.ts) | `rapor` UNIQUE(siswaId, tahunAjaranId), DRAFT/FINAL, snapshot jsonb |
+| [rapor-mapel-override.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor-mapel-override.entity.ts) | `rapor_mapel_override` UNIQUE(raporId, mapelId), nilaiKatrol + deskripsiOverride |
+| [dto/rapor.dto.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/dto/rapor.dto.ts) | OverrideMapelDto + CatatanWaliDto |
+| [rapor.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.service.ts) | `assembleRapor` DERIVED BATCH (nilaiAkhir F6a, deskripsi top2/bottom2 vs KKM75, `hitungKehadiranBatch` 1 GROUP BY dari F2, override); `listKelas`, `getRaporSiswa` (snapshot if FINAL), `upsertOverride`, `updateCatatan`, `finalisasi` (+snapshot), `batalFinal` (admin) |
+| [rapor.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.controller.ts) | 6 endpoint `/api/rapor/*`, RBAC wali/admin/kepsek |
+| [rapor.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.module.ts) | Semua entitas terdaftar |
+
+**Boot-verify**: 6 endpoint terpeta, 2 tabel baru terbentuk, seed idempoten ✅
+
+**E2E — 10/10 LULUS (4.3 detik):**
+1. ✅ GET kelas → daftar siswa + status DRAFT
+2. ✅ GET rapor siswa → derived (nilaiAkhir=73=round(145/2), kehadiran S/I/A)
+3. ✅ Deskripsi otomatis: dikuasai(TP1=85) + penguatan(TP2=60)
+4. ✅ Deskripsi: semua ≥KKM → hanya kalimat dikuasai
+5. ✅ Deskripsi: mapel tanpa nilai sumatif → "Belum ada nilai sumatif."
+6. ✅ PUT override nilaiKatrol=80 + deskripsiOverride → nilaiTampil=80, deskripsi override
+7. ✅ PATCH catatan wali → tersimpan
+8. ✅ PATCH finalisasi → FINAL + snapshot; override setelah FINAL → 400; finalisasi 2x → 400
+9. ✅ PATCH batal-final (admin) → kembali DRAFT
+10. ✅ Wali kelas lain → 403
+
+**F6b BACKEND TUNTAS. F6 SELESAI (F6a + F6b).** AG-1 siap konsumsi `/api/rapor`.
