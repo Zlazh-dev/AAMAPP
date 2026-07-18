@@ -628,3 +628,12 @@ terhadap file sumber sebelum ditulis (tidak menebak dari nama); klaim
 **DoD terpenuhi**: 2 file docs terupdate akurat ✅, laporan dgn bukti
 file:baris ✅ (juga tertanam langsung di kedua file docs itu sendiri),
 wilayah tulis dihormati (hanya `docs/`) ✅.
+
+## KLAIM TUGAS — F3a BACKEND
+DIKERJAKAN (13:40 WIB, 2026-07-18) — Antigravity-2 (executor B), MEMIMPIN F3.
+Membangun backend F3a presensi wajah guru: modul `backend/src/presensi-guru/`
+(entitas presensi_harian_guru, kolom guru.faceEmbeddings/faceUpdatedAt, DTO,
+service cosine+haversine+derivasi status, controller enrollment/scan/monitor/
+manual), daftar di app.module.ts, key pengaturan `wajah`, boot-verify, e2e
+mock embedding. Wilayah: `backend/**` + `frontend/e2e/`. TIDAK mengerjakan
+kiosk (F3b) atau frontend halaman (AG-1).

@@ -15,7 +15,8 @@ export type PengaturanKey =
   | 'profil_sekolah'
   | 'jam_presensi'
   | 'lokasi'
-  | 'kkm';
+  | 'kkm'
+  | 'wajah';
 
 /**
  * Deep-merge untuk object value (skip array — replace).
@@ -190,6 +191,14 @@ export class PengaturanService {
         key: 'kkm',
         value: {
           nilai: 75,
+        },
+      },
+      {
+        // F3a: konfigurasi pengenalan wajah guru
+        key: 'wajah',
+        value: {
+          threshold: 0.6,
+          minPoses: 3,
         },
       },
     ];

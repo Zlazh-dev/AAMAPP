@@ -16,6 +16,7 @@ import { JadwalKbm } from './kurikulum/jadwal-kbm.entity';
 import { KalenderLibur } from './kurikulum/kalender-libur.entity';
 import { PresensiSesi } from './presensi/presensi-sesi.entity';
 import { PresensiSiswa } from './presensi/presensi-siswa.entity';
+import { PresensiHarianGuru } from './presensi-guru/presensi-harian-guru.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { SessionsModule } from './sessions/sessions.module';
@@ -31,6 +32,7 @@ import { KurikulumModule } from './kurikulum/kurikulum.module';
 import { ImportModule } from './import/import.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { PresensiModule } from './presensi/presensi.module';
+import { PresensiGuruModule } from './presensi-guru/presensi-guru.module';
 import { SessionAuthGuard } from './common/session-auth.guard';
 
 @Module({
@@ -59,6 +61,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           KalenderLibur,
           PresensiSesi,
           PresensiSiswa,
+          PresensiHarianGuru,
         ],
         // SEC-1 Butir 3: synchronize hanya aktif di luar production.
         // Di production, skema DB TIDAK di-auto-sync oleh TypeORM lagi
@@ -89,6 +92,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     ImportModule,
     UploadsModule,
     PresensiModule,
+    PresensiGuruModule,
   ],
   providers: [
     // SEC-1 Butir 2: SessionAuthGuard didaftarkan sebagai APP_GUARD

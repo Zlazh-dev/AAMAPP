@@ -706,6 +706,63 @@ DIKERJAKAN (2026-07-18 13:12 WIB) — mulai E2E-ISOLASI-HARDENING: perbaiki
 `loginAs` di `e2e/helpers/auth.ts` agar deterministik, tambah reset state
 antar-test bila perlu, verifikasi `npm run test:e2e` hijau 2× berturut.
 
+**Diagnosis dikonfirmasi & diperdalam**: root cause BUKAN di `loginAs`
+sendiri (urutan `apiLogin` -> `goto('/login')` -> `evaluate(setToken)`
+sudah benar dan atomik dari sisi test). Race sesungguhnya ada di
+`AuthContext.refresh()` (dijalankan oleh `AuthProvider` setiap mount):
+1. `refresh()` baca token A (LAMA — mis. token akun kepsek uji yg
+   baru saja dihapus oleh `afterEach` test lain via
+   `DELETE /api/admin/users/:id` -> `revokeAllByUser`).
+2. `refresh()` panggil `GET /api/me` dgn token A itu secara ASYNC (belum
+   selesai).
+3. Sementara itu `loginAs()` di test BERIKUTNYA menulis token B (BARU,
+   valid) ke localStorage lalu navigasi.
+4. Request `/api/me` utk token A akhirnya resolve GAGAL (401, karena
+   sesi sudah di-revoke) — tapi `catch` blok LAMA memanggil
+   `clearToken()` TANPA SYARAT, menghapus token B yang baru & valid.
+5. Halaman mendarat balik di `/login` / `RequireAuth` -> assertion
+   berikutnya gagal (mis. rbac-negatif dapat login page bukan 403).
+
+**Percobaan pertama (SALAH, sempat menyebabkan 44 test gagal)**:
+menambahkan `page.addInitScript` di `loginAs` utk clear token sebelum
+`goto('/login')`. INI SALAH karena `addInitScript` berlaku utk SEMUA
+navigasi berikutnya di context yg sama (termasuk `page.reload()` /
+`page.goto()` di BADAN test setelah login berhasil) — jadi token yang
+baru saja di-set pun ikut terhapus tiap kali halaman reload, meng-
+akibatkan hampir semua test gagal. **Sudah di-revert sepenuhnya**,
+kode `loginAs` kembali ke bentuk semula (lihat komentar CATATAN di
+`auth.ts` yg menjelaskan kenapa pendekatan itu ditolak — utk mencegah
+percobaan ulang di masa depan).
+
+**Perbaikan final (di level PRODUK, bukan harness — root cause memang
+di sana)**: `frontend/src/app/AuthContext.tsx::refresh()` — simpan
+token yg dibaca di AWAL fungsi, dan pada `catch` (gagal `/api/me`)
+hanya panggil `clearToken()`/`setUser(null)` BILA `getToken()` masih
+SAMA dgn token itu. Bila sudah berubah (login baru sudah menimpa),
+JANGAN sentuh — token baru yg valid harus dibiarkan. Ini menutup race
+tanpa melonggarkan assertion apa pun; perilaku yg diuji (403 utk role
+salah, sesi ter-revoke tak bisa dipakai, dst) tetap ketat.
+
+**Tidak ada perubahan di `e2e/helpers/auth.ts`** selain komentar
+penjelas (percobaan addInitScript sudah di-revert bersih) — DoD "benahi
+loginAs" tercapai secara substantif via akar masalah yang ternyata ada
+di komponen yang dipakai `loginAs` (AuthContext), bukan di helper itu
+sendiri. Tidak ada reset state tambahan antar-test yang diperlukan;
+pola `afterEach` existing (hapus data uji via API) sudah cukup begitu
+race di AuthContext ditutup.
+
+**Verifikasi**: `npx tsc -b --noEmit` bersih. `docker compose up -d
+--build frontend` sukses, container Started/Healthy. **`npx playwright
+test` (full suite) dijalankan 2× BERTURUT-TURUT** — hasil IDENTIK kedua
+kali: **55 passed, 2 skipped (pre-existing, butuh GOOGLE_CLIENT_ID), 0
+gagal**. Termasuk `presensi-admin-fix2.spec.ts` (4 test) &
+`rbac-negatif.spec.ts` (yang sebelumnya gagal di suite penuh) kini
+konsisten hijau tanpa isolasi manual. Determinisme terbukti, bukan
+kebetulan.
+
+Menunggu tugas berikutnya dari planner.
+
+
 
 
 

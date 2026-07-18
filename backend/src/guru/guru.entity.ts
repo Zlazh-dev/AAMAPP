@@ -44,6 +44,19 @@ export class Guru {
   @JoinColumn({ name: 'userId' })
   user: User | null;
 
+  /**
+   * F3a — embedding wajah multi-pose (array of number[]).
+   * null = belum enroll. Diklear saat guru nonaktif (privasi).
+   */
+  @Column({ type: 'jsonb', nullable: true })
+  faceEmbeddings: number[][] | null;
+
+  /**
+   * F3a — kapan terakhir enrollment wajah dilakukan.
+   */
+  @Column({ type: 'timestamptz', nullable: true })
+  faceUpdatedAt: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
@@ -53,4 +66,8 @@ export class Guru {
   // Kelas yang di-wali (relasi balik 1-1 via waliGuruId)
   @OneToMany(() => Kelas, (kelas) => kelas.waliGuru)
   waliKelas: Kelas[];
+
+  // F3a — presensi harian (OneToMany relasi balik, lazy string ref)
+  @OneToMany('PresensiHarianGuru', 'guru')
+  presensiHarian: any[];
 }

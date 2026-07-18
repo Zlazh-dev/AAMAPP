@@ -19,6 +19,7 @@ const VALID_KEYS: PengaturanKey[] = [
   'jam_presensi',
   'lokasi',
   'kkm',
+  'wajah', // F3a: konfigurasi pengenalan wajah guru
 ];
 
 /**

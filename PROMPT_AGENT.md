@@ -53,12 +53,13 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | **E2E-ISOLASI-HARDENING** (benahi loginAs → gerbang hijau) → lalu **F3a FRONTEND** (`briefs/F3-SPEC.md`, tunggu backend live) | jalan (harness) |
+| Antigravity-IDE | executor A | `briefs/F3-SPEC.md` + `briefs/AGENT-1.md` | ✅ E2E-ISOLASI SELESAI (gerbang hijau deterministik 55/0 ×2) → **F3a FRONTEND** (tunggu backend AG-2 live) | siap, tunggu kontrak live |
 | Antigravity-v2.0 | executor B | `briefs/F3-SPEC.md` + `briefs/AGENT-2.md` | **F3a BACKEND** — MEMIMPIN F3: modul presensi-guru (enrollment/scan/monitor/manual). JANGAN kerjakan kiosk (F3b) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
-**STATUS FASE:** ✅ F2 SELESAI (backend+frontend guru+admin+rekap+docs; e2e
-produk hijau, sisa hardening isolasi harness di AG-1). ▶️ F3 dibuka & DIFASE:
+**STATUS FASE:** ✅ **F2 CLOSED PENUH** (backend+frontend guru+admin+rekap+docs;
+gerbang e2e HIJAU DETERMINISTIK 55 pass/2 skip, dikonfirmasi 2× — fix race
+AuthContext.refresh oleh AG-1). ▶️ F3 dibuka & DIFASE:
 **F3a** (presensi HP mandiri + enrollment + geofence + monitor) DULU; **F3b**
 (kiosk 1:N + pairing + offline) DITUNDA. Kontrak: `briefs/F3-SPEC.md`.
 Arsitektur: berat (embedding) di device, server hanya cosine (ringan).
