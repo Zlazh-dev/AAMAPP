@@ -53,19 +53,19 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F5-SPEC.md` + `briefs/AGENT-1.md` | **F5a FRONTEND** (kesiswaan/demerit: tata-tertib + pelanggaran + verifikasi + saldo; guru lapor) — kontrak dikunci, paralel | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F5-SPEC.md` + `briefs/AGENT-2.md` | **F5a BACKEND** (MEMIMPIN — katalog+seed 28 + pelanggaran + saldo turunan + hook R-07 di simpanRoster) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F5a FRONTEND SELESAI (suite 169/0). Menunggu F5b / arah user | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F5a BACKEND SELESAI (seed 28 SOP, saldo, hook R-07). Menunggu F5b / arah user | idle |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
 dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap.
-▶️ **F5 DIBUKA (pelanggaran/demerit, keputusan user)** — DIFASE: F5a (katalog
-tata tertib + pencatatan + verifikasi + saldo turunan 500−Σ + hook R-07 dari
-tanda T) DULU; F5b (tindak lanjut otomatis + reward + laporan) ditunda.
-Kontrak: `briefs/F5-SPEC.md` (basis SPEC-KANON §7 SOP). AG-1 frontend + AG-2
-backend PARALEL. Docs F3+F4 DITUNDA → satu pass gabungan F3+F4+F5 nanti.
-Gerbang e2e DETERMINISTIK (145/0 ×2) — spec baru wajib mandiri (buat data via
-API).
+✅ **F5a SELESAI** (katalog seed 28 verbatim SOP + S=25 dikunci user;
+pencatatan + verifikasi + saldo turunan 500−Σ DISETUJUI-only + hook R-07;
+suite 169/0). ⏳ **F5b BELUM** (tindak lanjut otomatis ambang §7.3 + reward
+semester §7.4 + laporan demerit). Kontrak: `briefs/F5-SPEC.md` (SOP asli =
+otoritatif; SPEC-KANON §7 turunan). Docs F3+F4+F5 ditunda → satu pass.
+Backlog harness: audit spec berpola lookup-daftar-paginasi (memori
+e2e-data-pollution). Gerbang e2e deterministik — spec baru wajib mandiri.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`
