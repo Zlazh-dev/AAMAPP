@@ -5,7 +5,33 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-18l) — F5b BACKEND (tindak lanjut + reward + laporan; MEMIMPIN)
+## TUGAS AKTIF (2026-07-18m) — F6a BACKEND (penilaian inti; MEMIMPIN; fase terakhir)
+
+> F5b backend kamu DITERIMA (commit d9bb4f7; planner konfirmasi suite 191/0
+> bersih). F5 TUNTAS. Sekarang F6 (penilaian & rapor, fase terakhir). Baca
+> **`briefs/F6-SPEC.md`** + SPEC-KANON §9 — HANYA F6a; JANGAN F6b/F6c.
+
+Kerjakan (wilayah `backend/**` + `frontend/e2e/`; pegang app.module.ts):
+1. Modul `backend/src/penilaian/**`:
+   - Entitas `tujuan_pembelajaran` (per mapel), `penilaian` (per penugasan;
+     jenis Formatif/Sumatif, subjenis, bobot≥1), `penilaian_tp` (junction
+     Sumatif TP↔TP), `nilai` (0–100, UNIQUE(penilaianId,siswaId)).
+   - DTO lengkap (nilai IsInt 0..100; bobot ≥1; subjenis hanya bila Sumatif).
+   - Service: daftar paket guru (penugasan WHERE guruId=guru-dari-sesi & TA
+     aktif), siswa-turunan (kelasId penugasan + aktif), TP/penilaian CRUD, nilai
+     upsert, **nilai akhir** `round(Σ(nilai×bobot)/Σbobot)` sumatif BATCH,
+     **authorization own-paket** di service (guru hanya paketnya → 403).
+   - Controller: kontrak F6-SPEC persis, @Roles('guru','admin').
+2. Daftarkan modul di app.module.ts. Boot-verify (4 tabel + junction) + e2e
+   MANDIRI (buat guru+penugasan+siswa via API): paket muncul utk guru
+   ditugaskan; input nilai → rekap nilai akhir benar; formatif TAK masuk rekap;
+   guru lain akses paket → 403.
+
+DoD: backend F6a live, nilai akhir formula benar, authorization own-paket, e2e
+hijau, laporan bukti. JANGAN F6b/F6c. JANGAN sentuh halaman frontend (AG-1).
+
+---
+## ARSIP — F5b BACKEND (SELESAI, diterima commit d9bb4f7, suite 191/0)
 
 > F5a backend kamu DITERIMA (commit 8d04f38, seed 28 SOP verified, suite 169/0).
 > Sekarang penutup F5. Baca **`briefs/F5-SPEC.md` bagian F5b** + SPEC-KANON §7.3–7.5.

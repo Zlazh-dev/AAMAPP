@@ -53,18 +53,19 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F5b FRONTEND SELESAI (F5 tuntas, suite 191/0). Menunggu arah user (F6 rapor / docs / QA) | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F5b BACKEND SELESAI (auto-trigger+reward+laporan). Menunggu arah user | idle |
+| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` + `briefs/AGENT-1.md` | **F6a FRONTEND** (penilaian guru: paket→TP→penilaian→input nilai→rekap) — kontrak dikunci, paralel | mulai |
+| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` + `briefs/AGENT-2.md` | **F6a BACKEND** (MEMIMPIN — TP+penilaian+nilai+nilai akhir formula + authorization own-paket) | mulai |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
 dashboard+laporan+export • c: rekap TU + akses kepsek). Ekosistem inti lengkap.
-✅ **F5 TUNTAS** (a: katalog SOP+saldo+hook R-07 • b: tindak lanjut auto +
-reward + laporan demerit; suite 191/0). Ekosistem: F0 auth • F1 data • F2
-presensi siswa • F3 presensi wajah+kiosk • F4 izin+dashboard+laporan • F5
-kesiswaan/demerit. ⏭️ Tersisa: **DOCS** (F3+F4+F5 satu pass) + **F6 rapor**
-(fase terakhir; riset di planning/F6-RISET-*). Backlog harness: audit spec
-lookup-paginasi (memori e2e-data-pollution). Gerbang deterministik.
+✅ **F5 TUNTAS** (suite 191/0 dikonfirmasi bersih). ▶️ **F6 DIBUKA (fase
+TERAKHIR, keputusan user)** — DIFASE: **F6a** (penilaian inti: TP+penilaian+
+input nilai+nilai akhir turunan) DULU; F6b (rapor: deskripsi otomatis+katrol+
+S/I/A+draft/final+PDF) & F6c (kokurikuler+ekskul) ditunda. Kontrak:
+`briefs/F6-SPEC.md` (§9). PERTANYAAN TERBUKA utk F6b/c (KKM per-mapel, pola
+kalimat deskripsi, 8 dimensi kokurikuler) — diputus user sebelum fase itu.
+Docs (F3+F4+F5) tetap tertunda. Gerbang deterministik — spec baru wajib mandiri.
 
 **BACKLOG (tech-debt, non-blocker):** (1) §12.16 — dropdown tarik-semua
 `limit:1000` lalu filter klien; mestinya type-ahead server-side pakai `q=`

@@ -13,7 +13,34 @@
   `## LAPORAN`. Selesai → append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-18l) — F5b FRONTEND (tindak lanjut + reward + laporan demerit)
+## TUGAS AKTIF (2026-07-18m) — F6a FRONTEND (penilaian guru; kontrak dikunci, paralel)
+
+> F5b frontend kamu DITERIMA (suite 191/0). F5 TUNTAS. Sekarang F6 (fase
+> terakhir). Baca **`briefs/F6-SPEC.md`** + SPEC-KANON §9 — HANYA F6a; JANGAN
+> F6b/F6c. Kontrak dikunci, paralel (backend AG-2). Boleh mock e2e.
+
+**Kontrak backend F6a (konsumsi):**
+- `GET /api/guru/penilaian` (kartu paket) • TP `GET/POST/PATCH/DELETE
+  /api/guru/penilaian/:penugasanId/tp` • Penilaian `.../:penugasanId/penilaian`
+  • Input nilai `GET/PUT /api/guru/penilaian/penilaian/:penilaianId/nilai` •
+  Rekap `GET /api/guru/penilaian/:penugasanId/rekap`.
+
+Kerjakan (wilayah `frontend/src/**` + `frontend/e2e/`; pegang shared files):
+1. `/guru/penilaian`: kartu paket (mapel—kelas) otomatis; belum ditugaskan →
+   empty state. Klik paket → detail.
+2. Detail paket (sub-halaman, TANPA TAB — pakai SubPageLinks): TP (list + CRUD),
+   Penilaian (list + "Tambah Penilaian" → jenis/subjenis/bobot/tanggal, Sumatif
+   TP pilih TP) → SaveSuccess → arahkan ke **input nilai**.
+3. Input nilai: SEMUA siswa aktif kelas (grid, nilai 0–100, null=disorot
+   kuning) → simpan (PUT). Rekap nilai akhir per siswa.
+4. Wiring client.ts/App.tsx/menu.ts (guru "Penilaian"). E2E MANDIRI (buat data
+   via API, navigasi by-id — JANGAN lookup daftar paginasi).
+
+DoD: tsc bersih • build sukses • paket→TP→penilaian→input nilai→rekap jalan •
+e2e hijau • laporan. JANGAN F6b/F6c. JANGAN sentuh backend penilaian (AG-2).
+
+---
+## ARSIP TUGAS (2026-07-18l) — F5b FRONTEND (SELESAI, diterima commit d9bb4f7)
 
 > F5a frontend kamu DITERIMA (suite 169/0). Sekarang penutup F5. Baca
 > **`briefs/F5-SPEC.md` bagian F5b**. Kontrak dikunci, paralel (backend AG-2).
