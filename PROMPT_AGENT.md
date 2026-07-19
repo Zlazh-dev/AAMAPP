@@ -57,8 +57,8 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/F6-SPEC.md` (INTEGRASI) + `briefs/AGENT-1.md` | **F6-INTEGRASI FRONTEND** (rapor 3 bagian + PDF penuh berkop) | mulai |
-| Antigravity-v2.0 | executor B | `briefs/F6-SPEC.md` (INTEGRASI) + `briefs/AGENT-2.md` | **F6-INTEGRASI BACKEND** (rapor assembly+snapshot gabung akademik+koku+ekskul) | mulai |
+| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6-INTEGRASI SELESAI. **APLIKASI FEATURE-COMPLETE.** Menunggu: docs / deploy / QA | idle |
+| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6-INTEGRASI SELESAI. Backend AAMAPP tuntas seluruhnya | idle |
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:
