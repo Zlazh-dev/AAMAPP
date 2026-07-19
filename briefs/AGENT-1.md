@@ -13,7 +13,39 @@
   `## LAPORAN`. Selesai â†’ append laporan per butir; planner yang menandai
   SELESAI di papan tugas hub.
 
-## TUGAS AKTIF (2026-07-19c) â€” F6-INTEGRASI FRONTEND (rapor PDF penuh)
+## TUGAS AKTIF (2026-07-19d) â€” UX-POLISH-FE Gelombang 1 (struktur)
+
+> F6-INTEGRASI kamu DITERIMA â€” feature-complete. Sekarang perbaikan konsistensi
+> pasca-QA user. Baca **`briefs/UX-POLISH-SPEC.md`** (semua) + SPEC-KANON Zona
+> 2A. Gelombang 1 = STRUKTUR (A/B/C/D). Gelombang 2 (polish E/F/G/H) menyusul.
+
+Kerjakan Gelombang 1:
+1. **(A) Akses peran**: `menu.ts` `ADMIN_EXTRA_AREAS = ['kurikulum','kesiswaan',
+   'tu']` (BUANG 'guru'). `App.tsx` `RequireRole`: hapus `'admin'` yang cuma
+   superuser di route MILIK GURU (biar area guru dikunci ke peran guru).
+2. **(B) Hapus frontend kiosk**: menu "Perangkat Kiosk" & "Verifikasi Presensi";
+   route `/kiosk`, `/admin/perangkat`, `/admin/presensi-guru-pending`; halaman
+   `pages/kiosk/**` + `pages/admin/kiosk/**`; import KioskApp; method client.ts
+   kiosk; spec e2e `kiosk-*.spec.ts`.
+3. **(C) Hierarki**: admin sidebar â†’ **Dashboard Â· Data Orang Â· Kelas Â· Laporan
+   Â· Pengaturan Â· Akun**. Buat **Laporan HUB** (`/admin/laporan`) pakai
+   **SubPageLinks** ke: Presensi Siswa, Presensi Guru, Izin Guru, Lap Harian
+   Guru, Keterlaksanaan KBM, Lap Siswa. Pindahkan Presensi Siswa/Presensi Guru/
+   Izin Guru dari sidebar â†’ sub Laporan (route tetap ada, cuma keluar sidebar +
+   masuk hub). Tiap sub â†’ BackLink ke Laporan. Kepsek: samakan.
+4. **(D) Validasi wajah di detail guru**: di `/admin/orang/guru/:id` tambah
+   bagian Wajah (status BELUM/MENUNGGU/TERVALIDASI/DITOLAK + tombol Validasi/
+   Tolak bila MENUNGGU, panggil `PATCH /api/admin/guru/:id/wajah/validasi`).
+   Buang halaman enroll admin `/admin/wajah` (tak ada wizard enroll oleh admin;
+   guru enroll sendiri di /guru/wajah).
+
+DoD Gel-1: tsc bersih â€¢ build sukses â€¢ sidebar 6-item + Laporan hub jalan â€¢
+kiosk hilang bersih â€¢ validasi wajah di detail guru â€¢ e2e MANDIRI hijau â€¢
+laporan. Gel-2 (BackLink/SubPageLinks audit semua halaman + card watermark +
+emojiâ†’ikon + desktop bottom-sheet fix) tunggu instruksi berikut.
+
+---
+## ARSIP TUGAS (2026-07-19c) â€” F6-INTEGRASI FRONTEND (SELESAI, diterima 8a1a1f7)
 
 > F6d frontend kamu DITERIMA (commit 42630b9, suite 285/0). SEMUA FITUR TUNTAS.
 > Sekarang INTEGRASI: rapor jadi satu dokumen. Baca **`briefs/F6-SPEC.md`
@@ -1730,27 +1762,27 @@ DoD terpenuhi: tsc bersih ï¿½ build sukses ï¿½ admin kelola ekskul ? pembina pes
 
 ---
 
-## LAPORAN — F6-INTEGRASI FRONTEND: RAPOR PDF PENUH
+## LAPORAN ï¿½ F6-INTEGRASI FRONTEND: RAPOR PDF PENUH
 
 DIKERJAKAN (2026-07-19 02:11 ? 02:31 WIB).
 
 ### Yang dibangun
 
-**lib/exportPdf.ts — exportRaporPenuh (F6-INTEGRASI):**
+**lib/exportPdf.ts ï¿½ exportRaporPenuh (F6-INTEGRASI):**
 - Interface: RaporPenuhParams (siswa+semester+TA, kehadiran S/I/A, mapel[], kokurikuler[], ekstrakurikuler[], catatanWali, kkm, profil).
-- Fungsi: exportRaporPenuh — pdfmake lazy A4 portrait berkop sekolah, 1 dokumen:
+- Fungsi: exportRaporPenuh ï¿½ pdfmake lazy A4 portrait berkop sekolah, 1 dokumen:
   - A. Identitas Siswa (nama/NIS/kelas/TA/semester)
   - B. Nilai Akademik (tabel mapel: nilai+katrol merah<KKM, predikat Tuntas/Belum, deskripsi)
   - C. Kehadiran (S/I/A, alpha merah bila >0)
   - D. Kokurikuler PPP (tabel dimensi+nilai SB/B/C/K+deskripsi)
-  - E. Ekstrakurikuler (per ekskul: nama, kehadiran% merah<70% ?, tabel tujuan×nilai)
+  - E. Ekstrakurikuler (per ekskul: nama, kehadiran% merah<70% ?, tabel tujuanï¿½nilai)
   - F. Catatan Wali
   - TTD 3 kolom: Orang Tua / Wali Kelas / Kepala Sekolah+NIP
 
 **RaporDetailPage (DIPERLUAS):**
-- 3 bagian terintegrasi: B.Nilai Akademik + D.Kokurikuler (PPP, tabel dimensi×SB/B/C/K) + E.Ekskul (per ekskul, kehadiran% badge merah<70%, tabel tujuan×nilai).
+- 3 bagian terintegrasi: B.Nilai Akademik + D.Kokurikuler (PPP, tabel dimensiï¿½SB/B/C/K) + E.Ekskul (per ekskul, kehadiran% badge merah<70%, tabel tujuanï¿½nilai).
 - Wrapper div#section-kokurikuler + div#section-ekskul untuk navigasi e2e.
-- Tombol ? PDF Penuh (#btn-export-rapor-pdf) ? doExportPdf() ? dynamic import exportRaporPenuh (lazy §12.15).
+- Tombol ? PDF Penuh (#btn-export-rapor-pdf) ? doExportPdf() ? dynamic import exportRaporPenuh (lazy ï¿½12.15).
 - Empty state masing-masing bagian bila backend belum live (API paralel AG-2).
 - Override katrol + catatan wali + Finalisasi tetap berfungsi.
 
@@ -1770,6 +1802,6 @@ DIKERJAKAN (2026-07-19 02:11 ? 02:31 WIB).
 | Integration spec | 18 | 0 | 0 |
 | Full suite (sebelum fix) | 301 | 12 | 2?0 setelah fix |
 
-DoD terpenuhi: tsc bersih • build sukses • RaporDetailPage 3 bagian (akademik+kokurikuler+ekskul) • PDF penuh 1 dokumen berkop (A-F+TTD) lazy §12.15 • e2e mandiri 18/18 • F6-INTEGRASI TUNTAS.
+DoD terpenuhi: tsc bersih ï¿½ build sukses ï¿½ RaporDetailPage 3 bagian (akademik+kokurikuler+ekskul) ï¿½ PDF penuh 1 dokumen berkop (A-F+TTD) lazy ï¿½12.15 ï¿½ e2e mandiri 18/18 ï¿½ F6-INTEGRASI TUNTAS.
 
 

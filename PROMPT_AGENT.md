@@ -57,8 +57,16 @@
 
 | Agent | Peran | Dokumen tugas | Tugas aktif | Status |
 |---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/AGENT-1.md` | ✅ F6-INTEGRASI SELESAI. **APLIKASI FEATURE-COMPLETE.** Menunggu: docs / deploy / QA | idle |
-| Antigravity-v2.0 | executor B | `briefs/AGENT-2.md` | ✅ F6-INTEGRASI SELESAI. Backend AAMAPP tuntas seluruhnya | idle |
+| Antigravity-IDE | executor A | `briefs/UX-POLISH-SPEC.md` + `briefs/AGENT-1.md` | **UX-POLISH-FE Gel-1** (akses peran + hapus kiosk frontend + hierarki Laporan-hub + validasi wajah di detail guru) | mulai |
+| Antigravity-v2.0 | executor B | `briefs/UX-POLISH-SPEC.md` + `briefs/AGENT-2.md` | **UX-POLISH-BE** (@Roles ketat + hapus modul kiosk + status validasi wajah) | mulai |
+
+**UX-POLISH (pasca-QA user 2026-07-19):** feature-complete tapi konsistensi
+UX perlu dirapikan. Keputusan user dikunci di `briefs/UX-POLISH-SPEC.md`:
+akses KETAT per peran (admin=admin+kurikulum+kesiswaan+tu, BUKAN guru; area
+guru dikunci ke peran guru; backend @Roles ikut ketat) • HAPUS kiosk (guru
+100% self-service) • sidebar 6-item + Laporan jadi hub sub-halaman • wajah:
+guru enroll→admin validasi di DETAIL GURU • + polish (SubPageLinks/BackLink,
+card watermark, nol emoji, desktop bukan bottom-sheet).
 | ~~Kiro/Roo/Cline~~ | — | — | tidak dipakai | — |
 
 **STATUS FASE:** ✅ F2 • ✅ F3 • ✅ **F4 TUNTAS** (a: izin+status turunan • b:

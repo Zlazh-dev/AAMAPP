@@ -163,8 +163,12 @@ export class LaporanService {
     });
     const feed = feedRows.map((r) => ({
       id: r.id,
-      action: r.action,
-      summary: r.summary,
+      tipe: r.action,
+      // Frontend membaca `pesan`; fallback ke aksi+aktor bila summary kosong
+      // agar item feed tidak tampil hanya berisi jam tanpa teks.
+      pesan:
+        r.summary ??
+        `${r.action}${r.userName ? ` oleh ${r.userName}` : ''}`,
       aktor: r.userName,
       waktu: r.createdAt,
     }));

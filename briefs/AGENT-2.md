@@ -5,7 +5,35 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-19c) — F6-INTEGRASI BACKEND (rapor lengkap + snapshot)
+## TUGAS AKTIF (2026-07-19d) — UX-POLISH-BE (RBAC ketat + hapus kiosk + validasi wajah)
+
+> F6-INTEGRASI kamu DITERIMA — aplikasi feature-complete. Sekarang perbaikan
+> konsistensi pasca-QA user. Baca **`briefs/UX-POLISH-SPEC.md`** bagian A, B, D
+> + SPEC-KANON. Wilayah `backend/**` + `frontend/e2e/`.
+
+Kerjakan (3 hal, semua backend):
+1. **(A) `@Roles` KETAT**: audit controller — endpoint yang MILIK GURU (presensi
+   guru scan/enroll-diri, roster/kbm guru, izin-diri, penilaian, rapor input)
+   JANGAN sertakan `'admin'` sebagai superuser → admin (tanpa peran guru)
+   panggil API guru = **403**. Endpoint yang MEMANG dimiliki bersama (laporan,
+   izin approve admin+kepsek, monitor) TETAP. Cek tiap perubahan tak merusak
+   e2e peran yang sah.
+2. **(B) HAPUS modul kiosk**: buang `backend/src/kiosk/**` (device_kiosk,
+   DeviceAuthGuard, controller) + registrasi di app.module. Endpoint kiosk
+   pending/verifikasi di modul lain (bila ada) ikut dibuang. Kolom
+   `perluVerifikasi` di presensi_harian_guru: biarkan (aman) atau buang.
+3. **(D) Validasi wajah**: tambah status validasi pada guru (mis. kolom
+   `faceStatus` 'BELUM'|'MENUNGGU'|'TERVALIDASI'|'DITOLAK'; set MENUNGGU saat
+   guru PUT /api/guru/wajah). Endpoint admin `PATCH /api/admin/guru/:id/wajah/
+   validasi` `{aksi:'terima'|'tolak'}` (@Roles admin). (Opsional: scan hanya
+   cocok bila TERVALIDASI.)
+
+DoD: build OK, boot-verify, e2e MANDIRI (admin tanpa-guru → 403 di API guru;
+kiosk spec dihapus & suite hijau; wajah enroll→MENUNGGU→admin validasi→
+TERVALIDASI). Laporan bukti. JANGAN sentuh halaman frontend (AG-1).
+
+---
+## ARSIP — F6-INTEGRASI BACKEND (SELESAI, diterima commit 8a1a1f7)
 
 > F6d backend kamu DITERIMA (commit 42630b9). SEMUA FITUR F0-F6 TUNTAS. Sekarang
 > INTEGRASI: satukan rapor. Baca **`briefs/F6-SPEC.md` bagian F6-INTEGRASI**.
