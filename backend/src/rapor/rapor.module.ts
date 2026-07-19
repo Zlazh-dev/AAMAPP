@@ -17,6 +17,8 @@ import { User } from '../users/user.entity';
 import { RaporService } from './rapor.service';
 import { RaporController } from './rapor.controller';
 import { AuditModule } from '../audit/audit.module';
+import { KokurikulerModule } from '../kokurikuler/kokurikuler.module';
+import { EkskulModule } from '../ekskul/ekskul.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { AuditModule } from '../audit/audit.module';
       User,
     ]),
     AuditModule,
+    KokurikulerModule,  // exports KokurikulerService
+    EkskulModule,       // exports EkskulService
   ],
   controllers: [RaporController],
   providers: [RaporService],

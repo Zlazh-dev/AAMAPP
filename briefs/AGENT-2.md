@@ -1559,3 +1559,50 @@ Wilayah: backend/** + frontend/e2e/.
 10. ✅ DELETE peserta → removed
 
 **F6d BACKEND TUNTAS. F6 SELESAI TOTAL (F6a+F6b+F6c+F6d).** AG-1 siap konsumsi `/api/ekskul`.
+
+## KLAIM TUGAS — F6-INTEGRASI BACKEND (MEMIMPIN)
+DIKERJAKAN (02:11 WIB, 2026-07-19) — Antigravity-2 (executor B).
+Perluas rapor.service.ts: inject KokurikulerService + EkskulService,
+tambah kokurikuler + ekstrakurikuler ke assembleRapor + finalisasi snapshot.
+Perbarui RaporModule imports. Boot-verify + e2e mandiri (3 bagian; FINAL snapshot beku).
+Wilayah: backend/src/rapor/** + frontend/e2e/.
+
+### [AGENT-2] F6-INTEGRASI BACKEND — SELESAI (2026-07-19 02:16 WIB)
+
+**Wilayah dihormati**: `backend/src/rapor/rapor.service.ts` + `rapor.module.ts` + `frontend/e2e/gelombang2/rapor-integrasi-backend.spec.ts`.
+
+**Perubahan:**
+
+| File | Perubahan |
+|------|-----------|
+| [rapor.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.service.ts) | Inject `KokurikulerService` + `EkskulService`; tambah `_buildKokurikuler()` + `_buildEkstrakurikuler()` helper; assembleRapor return + finalisasi snapshot kini memuat 3 bagian |
+| [rapor.module.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.module.ts) | Import `KokurikulerModule` + `EkskulModule` (exports services) |
+
+**Kontrak respons baru `GET /api/rapor/siswa/:id`:**
+```json
+{
+  "mapel": [...],          // akademik (existing F6b)
+  "kehadiran": {...},      // S/I/A (existing F6b)
+  "kokurikuler": [         // BARU — per dimensi (rata semua kegiatan TA)
+    { "namaDimensi": "Kreativitas", "nilai": "Sangat Baik" }
+  ],
+  "ekstrakurikuler": [     // BARU — per ekskul yang diikuti
+    { "nama": "...", "kehadiranPersen": 80, "flagMerah": false,
+      "tujuan": [{...}], "deskripsi": "..." }
+  ]
+}
+```
+**Snapshot FINAL** memuat semua 3 bagian → render beku immutable.
+
+**Boot-verify**: build bersih, semua route tetap terpeta ✅
+
+**E2E — 7/7 LULUS (3.4 detik):**
+1. ✅ Rapor DRAFT → bagian akademik (mapel + nilaiAkhir=90)
+2. ✅ Rapor DRAFT → bagian kokurikuler (Kreativitas=Sangat Baik)
+3. ✅ Rapor DRAFT → bagian ekskul (kehadiranPersen=80, flagMerah=false, tujuan Baik)
+4. ✅ Finalisasi → FINAL
+5. ✅ FINAL snapshot memuat 3 bagian (immutable beku)
+6. ✅ Override setelah FINAL → 400
+7. ✅ Batal-final (admin) → DRAFT + derived 3 bagian kembali
+
+**F6-INTEGRASI BACKEND TUNTAS. Backend AAMAPP SELESAI SELURUHNYA (F1–F6+INTEGRASI).**

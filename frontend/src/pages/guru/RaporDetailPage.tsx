@@ -19,10 +19,22 @@ interface MapelRapor {
   deskripsiOverride: string | null;
 }
 
-interface Kehadiran {
-  sakit: number;
-  izin: number;
-  alpha: number;
+interface Kehadiran { sakit: number; izin: number; alpha: number; }
+
+interface KokurikulerDimensi {
+  namaDimensi: string;
+  nilaiAkhir: string | null;
+  deskripsi: string;
+}
+
+interface EkskulTujuan { deskripsi: string; nilai: string | null; }
+interface EkskulItem {
+  ekskulId: number;
+  nama: string;
+  kehadiranPersen: number | null;
+  flagMerah: boolean;
+  tujuan: EkskulTujuan[];
+  deskripsi: string;
 }
 
 interface RaporSiswa {
@@ -30,10 +42,14 @@ interface RaporSiswa {
   nama: string;
   nis: string | null;
   kelas: string;
+  semester: number;
+  tahunAjaran?: string;
   status: 'DRAFT' | 'FINAL';
   catatanWali: string | null;
   kehadiran: Kehadiran;
   mapel: MapelRapor[];
+  kokurikuler?: KokurikulerDimensi[];
+  ekstrakurikuler?: EkskulItem[];
   finalisasiOleh?: string | null;
   finalisasiPada?: string | null;
 }
@@ -47,33 +63,31 @@ async function getProfilForPdf() {
   return { nama: 'Sekolah', alamat: '', kabKota: '', logoUrl: '', kepsekNama: '', kepsekNip: '', kepsekJabatan: 'Kepala Sekolah' };
 }
 
-async function exportRaporPdf(rapor: RaporSiswa) {
-  const { exportToPdf } = await import('../../lib/exportPdf');
+async function doExportPdf(rapor: RaporSiswa) {
+  const { exportRaporPenuh } = await import('../../lib/exportPdf');
   const profil = await getProfilForPdf();
-
-  // Flatten mapel rows
-  const rows = rapor.mapel.map(m => {
-    const nilaiTampil = m.nilaiKatrol ?? m.nilaiAkhir;
-    return {
-      mapel: m.mapelNama,
-      nilai: nilaiTampil !== null ? String(nilaiTampil) : '—',
-      kkm: String(KKM),
-      predikat: nilaiTampil !== null ? (nilaiTampil >= KKM ? 'Tuntas' : 'Belum Tuntas') : '—',
-      deskripsi: m.deskripsiOverride ?? m.deskripsiAuto,
-    };
-  });
-
-  await exportToPdf({
-    title: `Rapor Akademik — ${rapor.nama} (${rapor.kelas})`,
+  await exportRaporPenuh({
     profil,
-    columns: [
-      { header: 'Mata Pelajaran', key: 'mapel', width: 25 },
-      { header: 'Nilai', key: 'nilai', width: 8 },
-      { header: 'KKM', key: 'kkm', width: 8 },
-      { header: 'Predikat', key: 'predikat', width: 12 },
-      { header: 'Deskripsi Capaian', key: 'deskripsi', width: 47 },
-    ],
-    rows,
+    siswa: {
+      nama: rapor.nama,
+      nis: rapor.nis,
+      kelas: rapor.kelas,
+      semester: rapor.semester ?? 1,
+      tahunAjaran: rapor.tahunAjaran,
+      status: rapor.status,
+    },
+    kehadiran: rapor.kehadiran,
+    mapel: rapor.mapel,
+    kokurikuler: rapor.kokurikuler ?? [],
+    ekstrakurikuler: (rapor.ekstrakurikuler ?? []).map(e => ({
+      nama: e.nama,
+      kehadiranPersen: e.kehadiranPersen,
+      flagMerah: e.flagMerah ?? (e.kehadiranPersen !== null && e.kehadiranPersen < 70),
+      tujuan: e.tujuan,
+      deskripsi: e.deskripsi,
+    })),
+    catatanWali: rapor.catatanWali,
+    kkm: KKM,
   });
 }
 
@@ -87,7 +101,6 @@ export function RaporDetailPage() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
 
-  // Edit state
   const [catatanWali, setCatatanWali] = useState('');
   const [overrides, setOverrides] = useState<Record<number, { nilaiKatrol: string; deskripsi: string }>>({});
   const [editingMapelId, setEditingMapelId] = useState<number | null>(null);
@@ -167,7 +180,7 @@ export function RaporDetailPage() {
     if (!rapor) return;
     setExporting(true);
     try {
-      await exportRaporPdf(rapor);
+      await doExportPdf(rapor);
     } catch {
       toast.show('error', 'Gagal mengekspor PDF.');
     } finally {
@@ -194,7 +207,7 @@ export function RaporDetailPage() {
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="secondary" onClick={handleExportPdf} disabled={exporting} id="btn-export-rapor-pdf">
-            {exporting ? 'Mengekspor...' : '↓ PDF'}
+            {exporting ? 'Mengekspor...' : '↓ PDF Penuh'}
           </Button>
           {!isFinal && (
             <Button onClick={handleFinalisasi} disabled={finalizing} id="btn-finalisasi-rapor">
@@ -206,16 +219,16 @@ export function RaporDetailPage() {
 
       {isFinal && (
         <div className="mb-4 rounded-md bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-800">
-          ✅ Rapor telah difinalisasi
-          {rapor.finalisasiPada ? ` pada ${new Date(rapor.finalisasiPada).toLocaleDateString('id-ID')}` : ''}.
-          Data tidak bisa diubah lagi.
+          ✅ Rapor FINAL
+          {rapor.finalisasiPada ? ` — ${new Date(rapor.finalisasiPada).toLocaleDateString('id-ID')}` : ''}.
+          Data beku.
         </div>
       )}
 
       {/* Kehadiran */}
       <Card className="mb-4">
         <h3 className="font-bold text-aam-text mb-3">Kehadiran Semester</h3>
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-6 flex-wrap">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{rapor.kehadiran.sakit}</div>
             <div className="text-xs text-aam-muted">Sakit</div>
@@ -228,20 +241,17 @@ export function RaporDetailPage() {
             <div className="text-2xl font-bold text-red-600">{rapor.kehadiran.alpha}</div>
             <div className="text-xs text-aam-muted">Tanpa Keterangan</div>
           </div>
-          <div className="text-xs text-aam-muted self-end ml-4">
-            (dari data presensi F2)
-          </div>
         </div>
       </Card>
 
-      {/* Nilai per mapel */}
+      {/* B. Nilai Akademik */}
       <Card className="mb-4">
-        <h3 className="font-bold text-aam-text mb-3">Nilai Per Mata Pelajaran</h3>
+        <h3 className="font-bold text-aam-text mb-3">B. Nilai Akademik</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                {['Mata Pelajaran', 'Nilai', 'Katrol', 'KKM', 'Predikat', 'Deskripsi Capaian', ''].map(h => (
+                {['Mata Pelajaran', 'Nilai', 'Katrol', 'KKM', 'Predikat', 'Deskripsi', ''].map(h => (
                   <th key={h} className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b border-aam-border whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -253,7 +263,6 @@ export function RaporDetailPage() {
                   : (m.nilaiKatrol ?? m.nilaiAkhir);
                 const isBelowKkm = nilaiTampil !== null && nilaiTampil < KKM;
                 const isEditing = editingMapelId === m.mapelId;
-                const deskripsiTampil = m.deskripsiOverride ?? m.deskripsiAuto;
 
                 return (
                   <tr key={m.mapelId} className={isBelowKkm ? 'bg-red-50' : 'hover:bg-gray-50'}>
@@ -261,25 +270,18 @@ export function RaporDetailPage() {
                     <td className="px-3 py-2 text-center">
                       {m.nilaiAkhir !== null
                         ? <Badge variant={isBelowKkm ? 'red' : 'green'}>{m.nilaiAkhir}</Badge>
-                        : <span className="text-aam-muted">—</span>
-                      }
+                        : <span className="text-aam-muted">—</span>}
                     </td>
                     <td className="px-3 py-2 text-center">
                       {isEditing && !isFinal ? (
                         <input type="number" min={0} max={100}
                           className="w-16 text-center rounded border border-aam-border px-1 py-0.5 text-sm"
                           value={overrides[m.mapelId]?.nilaiKatrol ?? ''}
-                          onChange={e => setOverrides(prev => ({
-                            ...prev,
-                            [m.mapelId]: { ...prev[m.mapelId], nilaiKatrol: e.target.value }
-                          }))}
-                          id={`input-katrol-${m.mapelId}`}
-                        />
+                          onChange={e => setOverrides(prev => ({ ...prev, [m.mapelId]: { ...prev[m.mapelId], nilaiKatrol: e.target.value } }))}
+                          id={`input-katrol-${m.mapelId}`} />
                       ) : m.nilaiKatrol !== null ? (
                         <Badge variant="blue">{m.nilaiKatrol}</Badge>
-                      ) : (
-                        <span className="text-aam-muted text-xs">—</span>
-                      )}
+                      ) : <span className="text-aam-muted text-xs">—</span>}
                     </td>
                     <td className="px-3 py-2 text-center text-aam-muted">{KKM}</td>
                     <td className="px-3 py-2">
@@ -291,20 +293,14 @@ export function RaporDetailPage() {
                     </td>
                     <td className="px-3 py-2 max-w-xs">
                       {isEditing && !isFinal ? (
-                        <textarea
-                          className="w-full text-sm rounded border border-aam-border px-2 py-1"
-                          rows={2}
+                        <textarea className="w-full text-sm rounded border border-aam-border px-2 py-1" rows={2}
                           value={overrides[m.mapelId]?.deskripsi ?? ''}
-                          onChange={e => setOverrides(prev => ({
-                            ...prev,
-                            [m.mapelId]: { ...prev[m.mapelId], deskripsi: e.target.value }
-                          }))}
+                          onChange={e => setOverrides(prev => ({ ...prev, [m.mapelId]: { ...prev[m.mapelId], deskripsi: e.target.value } }))}
                           placeholder={m.deskripsiAuto}
-                          id={`input-deskripsi-${m.mapelId}`}
-                        />
+                          id={`input-deskripsi-${m.mapelId}`} />
                       ) : (
                         <span className={`text-xs ${!m.deskripsiOverride ? 'text-aam-muted italic' : ''}`}>
-                          {deskripsiTampil}
+                          {m.deskripsiOverride ?? m.deskripsiAuto}
                         </span>
                       )}
                     </td>
@@ -330,9 +326,101 @@ export function RaporDetailPage() {
         </div>
       </Card>
 
-      {/* Catatan wali */}
+      {/* D. Kokurikuler */}
+      <div id="section-kokurikuler">
+      <Card className="mb-4">
+        <h3 className="font-bold text-aam-text mb-3">D. Kokurikuler (Profil Pelajar Pancasila)</h3>
+        {!rapor.kokurikuler || rapor.kokurikuler.length === 0 ? (
+          <p className="text-sm text-aam-muted italic">Belum ada penilaian kokurikuler untuk siswa ini.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  {['Dimensi', 'Nilai', 'Deskripsi'].map(h => (
+                    <th key={h} className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b border-aam-border">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-aam-border">
+                {rapor.kokurikuler.map(k => (
+                  <tr key={k.namaDimensi} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 font-medium">{k.namaDimensi}</td>
+                    <td className="px-3 py-2">
+                      {k.nilaiAkhir ? (
+                        <Badge variant={
+                          k.nilaiAkhir === 'Sangat Baik' ? 'green'
+                          : k.nilaiAkhir === 'Baik' ? 'blue'
+                          : k.nilaiAkhir === 'Cukup' ? 'yellow'
+                          : 'red'
+                        }>{k.nilaiAkhir}</Badge>
+                      ) : <span className="text-aam-muted">—</span>}
+                    </td>
+                    <td className="px-3 py-2 text-xs text-aam-text">{k.deskripsi || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+      </div>
+
+      {/* E. Ekstrakurikuler */}
+      <div id="section-ekskul">
+      <Card className="mb-4">
+        <h3 className="font-bold text-aam-text mb-3">E. Ekstrakurikuler</h3>
+        {!rapor.ekstrakurikuler || rapor.ekstrakurikuler.length === 0 ? (
+          <p className="text-sm text-aam-muted italic">Siswa tidak mengikuti ekstrakurikuler.</p>
+        ) : (
+          <div className="space-y-4">
+            {rapor.ekstrakurikuler.map(e => {
+              const isMerah = e.flagMerah ?? (e.kehadiranPersen !== null && e.kehadiranPersen < 70);
+              return (
+                <div key={e.ekskulId} className="border border-aam-border rounded-md p-3" id={`ekskul-rapor-${e.ekskulId}`}>
+                  <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                    <span className="font-semibold text-aam-text">{e.nama}</span>
+                    {e.kehadiranPersen !== null && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-aam-muted">Kehadiran:</span>
+                        <Badge variant={isMerah ? 'red' : 'green'}>{e.kehadiranPersen}%</Badge>
+                        {isMerah && <span className="text-xs text-red-600">⚠️ &lt;70%</span>}
+                      </div>
+                    )}
+                  </div>
+                  {e.tujuan.length > 0 && (
+                    <table className="w-full text-xs">
+                      <tbody>
+                        {e.tujuan.map((t, ti) => (
+                          <tr key={ti} className="border-t border-aam-border first:border-0">
+                            <td className="py-1 pr-3">{t.deskripsi}</td>
+                            <td className="py-1 whitespace-nowrap">
+                              {t.nilai ? (
+                                <Badge variant={
+                                  t.nilai === 'Sangat Baik' ? 'green'
+                                  : t.nilai === 'Baik' ? 'blue'
+                                  : t.nilai === 'Cukup' ? 'yellow'
+                                  : 'red'
+                                }>{t.nilai}</Badge>
+                              ) : <span className="text-aam-muted">—</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                  {e.deskripsi && <p className="text-xs text-aam-muted italic mt-1">{e.deskripsi}</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+      </div>
+
+      {/* F. Catatan wali */}
       <Card>
-        <h3 className="font-bold text-aam-text mb-3">Catatan Wali Kelas</h3>
+        <h3 className="font-bold text-aam-text mb-3">F. Catatan Wali Kelas</h3>
         {isFinal ? (
           <p className="text-sm text-aam-text">{rapor.catatanWali || <span className="text-aam-muted italic">Tidak ada catatan.</span>}</p>
         ) : (

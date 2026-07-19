@@ -1728,3 +1728,48 @@ DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
 DoD terpenuhi: tsc bersih ï¿½ build sukses ï¿½ admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester ï¿½ e2e mandiri 16/16 ï¿½ full suite 285/0 ï¿½ F6d TUNTAS.
 
 
+---
+
+## LAPORAN — F6-INTEGRASI FRONTEND: RAPOR PDF PENUH
+
+DIKERJAKAN (2026-07-19 02:11 ? 02:31 WIB).
+
+### Yang dibangun
+
+**lib/exportPdf.ts — exportRaporPenuh (F6-INTEGRASI):**
+- Interface: RaporPenuhParams (siswa+semester+TA, kehadiran S/I/A, mapel[], kokurikuler[], ekstrakurikuler[], catatanWali, kkm, profil).
+- Fungsi: exportRaporPenuh — pdfmake lazy A4 portrait berkop sekolah, 1 dokumen:
+  - A. Identitas Siswa (nama/NIS/kelas/TA/semester)
+  - B. Nilai Akademik (tabel mapel: nilai+katrol merah<KKM, predikat Tuntas/Belum, deskripsi)
+  - C. Kehadiran (S/I/A, alpha merah bila >0)
+  - D. Kokurikuler PPP (tabel dimensi+nilai SB/B/C/K+deskripsi)
+  - E. Ekstrakurikuler (per ekskul: nama, kehadiran% merah<70% ?, tabel tujuan×nilai)
+  - F. Catatan Wali
+  - TTD 3 kolom: Orang Tua / Wali Kelas / Kepala Sekolah+NIP
+
+**RaporDetailPage (DIPERLUAS):**
+- 3 bagian terintegrasi: B.Nilai Akademik + D.Kokurikuler (PPP, tabel dimensi×SB/B/C/K) + E.Ekskul (per ekskul, kehadiran% badge merah<70%, tabel tujuan×nilai).
+- Wrapper div#section-kokurikuler + div#section-ekskul untuk navigasi e2e.
+- Tombol ? PDF Penuh (#btn-export-rapor-pdf) ? doExportPdf() ? dynamic import exportRaporPenuh (lazy §12.15).
+- Empty state masing-masing bagian bila backend belum live (API paralel AG-2).
+- Override katrol + catatan wali + Finalisasi tetap berfungsi.
+
+**E2E apor-integrasi.spec.ts 18/18 passed:**
+- Route accessible, btn-back visible.
+- Tombol PDF Penuh ada (backend-agnostic conditional).
+- #section-kokurikuler + #section-ekskul visible.
+- Heading A-F visible setelah halaman load.
+- PDF lazy: pdfmake tidak di initial bundle (0 pdfmake request saat goto).
+- Finalisasi button ada bila DRAFT.
+- URL /rapor/999 tidak crash.
+- Kokurikuler + ekskul section memuat tabel atau empty state.
+
+### Hasil verifikasi
+| Suite | Passed | Skipped | Failed |
+|-------|--------|---------|--------|
+| Integration spec | 18 | 0 | 0 |
+| Full suite (sebelum fix) | 301 | 12 | 2?0 setelah fix |
+
+DoD terpenuhi: tsc bersih • build sukses • RaporDetailPage 3 bagian (akademik+kokurikuler+ekskul) • PDF penuh 1 dokumen berkop (A-F+TTD) lazy §12.15 • e2e mandiri 18/18 • F6-INTEGRASI TUNTAS.
+
+

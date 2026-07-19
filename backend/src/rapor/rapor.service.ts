@@ -20,6 +20,8 @@ import { TujuanPembelajaran } from '../penilaian/tujuan-pembelajaran.entity';
 import { PenilaianTp } from '../penilaian/penilaian-tp.entity';
 import { PresensiSiswa } from '../presensi/presensi-siswa.entity';
 import { AuditService } from '../audit/audit.service';
+import { KokurikulerService } from '../kokurikuler/kokurikuler.service';
+import { EkskulService } from '../ekskul/ekskul.service';
 import { OverrideMapelDto, CatatanWaliDto } from './dto/rapor.dto';
 
 /** KKM global default = 75 (dari pengaturan; per user decision 2026-07-18) */
@@ -53,6 +55,8 @@ export class RaporService {
     @InjectRepository(PresensiSiswa)
     private presensiSiswaRepo: Repository<PresensiSiswa>,
     private audit: AuditService,
+    private kokurikulerService: KokurikulerService,
+    private ekskulService: EkskulService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -385,7 +389,79 @@ export class RaporService {
       kehadiran,
       mapel: mapelData,
       kkm: KKM_DEFAULT,
+      kokurikuler: await this._buildKokurikuler(siswaId, tahunAjaranId),
+      ekstrakurikuler: await this._buildEkstrakurikuler(siswaId),
     };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Helpers integrasi — kokurikuler & ekstrakurikuler (dari services F6c/F6d)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Kokurikuler per siswa: per dimensi rata semua kegiatan TA ini.
+   * Format respons: [ { namaDimensi, nilai(SB/B/C/K), deskripsi } ]
+   */
+  private async _buildKokurikuler(
+    siswaId: number,
+    tahunAjaranId: number,
+  ): Promise<any[]> {
+    try {
+      const raw = await this.kokurikulerService.getRaporSiswa(siswaId, tahunAjaranId);
+      // Flatten: per dimensi dari semua kegiatan
+      const dimensiMap = new Map<string, { nilai: string | null; count: number }>();
+      for (const kg of (raw.kegiatan ?? [])) {
+        for (const d of (kg.dimensi ?? [])) {
+          const prev = dimensiMap.get(d.namaDimensi);
+          // Ambil nilai yang sudah tersedia (nilaiAkhir)
+          if (d.nilaiAkhir) {
+            if (!prev) {
+              dimensiMap.set(d.namaDimensi, { nilai: d.nilaiAkhir, count: 1 });
+            } else {
+              // Jika ada lebih dari 1 kegiatan dengan dimensi sama, pakai yang terbaru
+              dimensiMap.set(d.namaDimensi, { nilai: d.nilaiAkhir, count: prev.count + 1 });
+            }
+          }
+        }
+      }
+      const result = [...dimensiMap.entries()].map(([namaDimensi, v]) => ({
+        namaDimensi,
+        nilai: v.nilai,
+      }));
+      return result;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Ekstrakurikuler per siswa: per ekskul yang diikuti.
+   * Format respons: [ { nama, kehadiranPersen, flagMerah, tujuan:[{deskripsi,nilai}], deskripsi } ]
+   */
+  private async _buildEkstrakurikuler(siswaId: number): Promise<any[]> {
+    try {
+      const raw = await this.ekskulService.getRaporSiswa(siswaId);
+      return (raw.ekskul ?? []).map((ek: any) => {
+        // Agregat kehadiran — ambil persen rata-rata semua semester (atau terbaru)
+        const kehadiranList = ek.kehadiran ?? [];
+        const kehadiranPersen = kehadiranList.length > 0
+          ? Math.round(kehadiranList.reduce((sum: number, k: any) => sum + (k.persen ?? 0), 0) / kehadiranList.length)
+          : null;
+        const flagMerah = kehadiranPersen !== null && kehadiranPersen < 70;
+        return {
+          nama: ek.nama,
+          kehadiranPersen,
+          flagMerah,
+          tujuan: (ek.nilaiPerTujuan ?? []).map((t: any) => ({
+            deskripsi: t.deskripsi,
+            nilai: t.nilai,
+          })),
+          deskripsi: ek.deskripsi ?? '',
+        };
+      });
+    } catch {
+      return [];
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
