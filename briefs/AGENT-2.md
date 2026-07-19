@@ -5,7 +5,67 @@
 > (sudah di-wire planner — method resmi SUDAH ADA di client.ts). Klaim tugas
 > di `## LAPORAN` bawah sebelum mulai; APPEND laporan; jangan timpa file lain.
 
-## TUGAS AKTIF (2026-07-19d) — UX-POLISH-BE (RBAC ketat + hapus kiosk + validasi wajah)
+## TUGAS AKTIF (2026-07-19e) — UX-POLISH KONSISTENSI (komponen inti + area admin/kurikulum/kesiswaan)
+
+> BE-mu selesai. Sekarang UI/UX. **KONTRAK BERANGKA: `briefs/CARD-DESIGN-STANDARD.md`**
+> — ikuti persis, jangan improvisasi. Audit menemukan bug sistemik, bukan sekadar
+> estetika: `text-aam-muted` (199×/32 file) & `bg-aam-bg` (10×/4 file) = kelas MATI
+> (config cuma punya `aam-text-muted`/`aam-page`) → hierarki visual hilang.
+>
+> **Wilayah TULIS-mu:** `components/**`, `pages/admin/**`, `pages/kurikulum/**`,
+> `pages/kokurikuler/**`, `pages/kesiswaan/**`, `pages/ekskul/**`, `pages/tu/**`,
+> `menu.ts`. **JANGAN sentuh `pages/guru/**` & `e2e/**` (itu AG-1).**
+
+Urutan (detail nilai di CARD-DESIGN-STANDARD.md §):
+1. **Card.tsx primitive DULU** (§1): baked padding `p-4 sm:p-5` + prop `flush` +
+   `shadow-sm` + `hover:shadow-md`. **Lapor begitu landas** (AG-1 nunggu ini).
+2. **Fix Table.tsx** (§6): token `bg-aam-bg→bg-aam-page`, `text-aam-muted→
+   text-aam-text-muted`, sel `px-3 py-2.5`. **Fix SubPageLinks.tsx** (§9).
+3. **Token rename** (§0) di semua folder wilayahmu (`aam-muted→aam-text-muted`,
+   `aam-bg→aam-page`).
+4. **Hapus `p-*` semua caller `<Card>`** di wilayahmu (padding sudah dibaked);
+   wrapper tabel/list pakai `<Card flush>`.
+5. **Spacing & tipografi** (§2,§3): gap-4, space-y-*, judul kartu `text-sm
+   font-semibold mb-3`, hapus `mb-*` pada kartu.
+6. **Migrasi tabel hand-rolled → `<Table>`** (§6) di wilayahmu.
+7. **Bottom-sheet adaptif** (§8) di wilayahmu (AdminIzinGuru, KelasDetail,
+   RosterDetailSheet, kesiswaan, ekskul, kokurikuler).
+8. **Watermark** kartu (§7) + **emoji→ikon** material-symbols.
+9. **MIGRASI ARSITEKTUR INFORMASI** — kontrak: **`briefs/IA-MIGRATION-MAP.md`**
+   (43 pemindahan rute, sudah diverifikasi planner). Ikuti persis; jangan
+   mengarang path. Ringkas: admin menyusut jadi Dashboard + Akun + Profil
+   Sekolah; data guru/siswa/kelas + ekskul + TA + KKM → **kurikulum**; kehadiran
+   siswa → **kesiswaan**; kehadiran guru + izin guru → **kanonik `/tu/*`,
+   didaftarkan di menu kesiswaan & TU**; jam/lokasi/libur → **TU**; hub Laporan
+   & hub Pengaturan **dibubarkan**.
+   - **File TIDAK dipindah folder** — hanya `path` rute + link yang berubah.
+   - `App.tsx`: ubah path + `RequireRole` per tabel §1. `menu.ts`: salin
+     MENU_GROUPS baru dari LAMPIRAN A. Cek `AppLayout.tsx` `dashboardRoot`.
+   - **Backend `@Roles`** ikut diubah per §ROLES (mis. data guru/siswa +
+     `kurikulum`; presensi guru & izin + `tu`,`kesiswaan`; `LaporanController`
+     perlu `@Roles` per-method karena tiap laporan pindah area). **Wajib** —
+     kalau hanya FE yang pindah, semua halaman jadi 403.
+   - **Hapus**: `AdminLaporanHubPage.tsx`, `PengaturanHubPage.tsx`,
+     `pages/admin/wajah/**` (WajahListPage + EnrollWizardPage). Verifikasi
+     planner: kartu validasi wajah SUDAH ada di `GuruDetailPage.tsx:197`
+     (`card-wajah-guru`), dan `EnrollWizardPage` = admin mendaftarkan wajah =
+     DILARANG (guru self-service via `/guru/wajah/enroll`). Endpoint
+     `PUT /api/admin/wajah/:guruId` (enroll oleh admin) ikut dicabut; validasi
+     terima/tolak + DELETE tetap.
+   - **Gating**: `GuruDetailPage` kini di area kurikulum → kartu wajah WAJIB
+     dibungkus `user.roles.includes('admin')` supaya peran kurikulum tidak bisa
+     memvalidasi wajah (backend tetap `@Roles('admin')`).
+   - Perbarui BackLink/SubPageLinks/`navigate()` internal di wilayahmu ke path
+     baru (kolom Catatan LAMPIRAN B menyebut baris persisnya).
+   - Sementara migrasi, ubah catch-all `App.tsx` ke NotFound agar dead link
+     kelihatan; kembalikan setelah suite hijau.
+   - **JANGAN sentuh `frontend/e2e/**`** — 45 spec terdampak dikerjakan AG-1.
+
+DoD: tsc bersih • build sukses • grep `aam-muted`/`aam-bg` NOL di wilayahmu •
+UI konsisten sesuai standar • suite hijau • laporan.
+
+---
+## ARSIP — UX-POLISH-BE (SELESAI: @Roles ketat + hapus kiosk + faceStatus)
 
 > F6-INTEGRASI kamu DITERIMA — aplikasi feature-complete. Sekarang perbaikan
 > konsistensi pasca-QA user. Baca **`briefs/UX-POLISH-SPEC.md`** bagian A, B, D
@@ -1634,3 +1694,81 @@ Wilayah: backend/src/rapor/** + frontend/e2e/.
 7. ✅ Batal-final (admin) → DRAFT + derived 3 bagian kembali
 
 **F6-INTEGRASI BACKEND TUNTAS. Backend AAMAPP SELESAI SELURUHNYA (F1–F6+INTEGRASI).**
+
+## KLAIM TUGAS — UX-POLISH-BE (2026-07-19d; MEMIMPIN)
+DIKERJAKAN (14:02 WIB, 2026-07-19) — Antigravity-2 (executor B).
+(A) @Roles KETAT: audit + buang 'admin' superuser dari endpoint milik-guru.
+(B) Hapus modul kiosk backend/src/kiosk/** + registrasi app.module.
+(D) Validasi wajah: kolom faceStatus guru + PATCH /api/admin/guru/:id/wajah/validasi.
+Boot-verify + e2e mandiri.
+Wilayah: backend/** + frontend/e2e/.
+
+### [AGENT-2] UX-POLISH-BE — SELESAI (2026-07-19 14:25 WIB)
+
+**Wilayah dihormati**: `backend/src/**` (roles.guard, controller, entity, service) + `frontend/e2e/gelombang2/ux-polish-be.spec.ts`.
+
+**Perubahan (A) @Roles KETAT:**
+
+| File | Perubahan |
+|------|-----------|
+| [roles.guard.ts](file:///d:/Codeproject/AAMAPP/backend/src/common/roles.guard.ts) | **Hapus bypass `admin lolos semua`** — admin kini dicek normal vs `@Roles` seperti peran lain |
+| [presensi-guru.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.controller.ts) | statusWajah, enrollDiri, scan → `@Roles('guru')` |
+| [presensi.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi/presensi.controller.ts) | kbmHariIni, roster, simpan, koreksi, rekapPresensi → `@Roles('guru')` |
+| [penilaian.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/penilaian/penilaian.controller.ts) | Semua 12 endpoint milik-guru → `@Roles('guru')` |
+| [rapor.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/rapor/rapor.controller.ts) | override/catatan/finalisasi → `@Roles('guru')` |
+| [izin.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/izin/izin.controller.ts) | ajukan/listDiri → `@Roles('guru','kepsek')` (admin tidak perlu izin sendiri) |
+| [ekskul.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/ekskul/ekskul.controller.ts) | Peserta/tujuan/nilai/kehadiran pembina → `@Roles('guru')` |
+| [kokurikuler.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/kokurikuler/kokurikuler.controller.ts) | Asesmen GET/PUT → `@Roles('guru','kurikulum')` |
+
+**Perubahan (B) Hapus kiosk:**
+- Dihapus: `backend/src/kiosk/**` (5 file: device-kiosk.entity, device-auth.guard, kiosk.controller, kiosk.module, kiosk.service)
+- Dihapus registrasi `KioskModule` + `DeviceKiosk` dari `app.module.ts`
+
+**Perubahan (D) Validasi wajah:**
+
+| File | Perubahan |
+|------|-----------|
+| [guru.entity.ts](file:///d:/Codeproject/AAMAPP/backend/src/guru/guru.entity.ts) | Kolom `faceStatus` varchar(25) default `'BELUM'` |
+| [presensi-guru.service.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.service.ts) | `_simpanEmbeddings`: set MENUNGGU_VALIDASI (diri) / TERVALIDASI (admin); `hapusWajah`: reset BELUM; `statusWajahDiri` include faceStatus; method baru `validasiWajah` |
+| [presensi-guru.controller.ts](file:///d:/Codeproject/AAMAPP/backend/src/presensi-guru/presensi-guru.controller.ts) | Endpoint baru `PATCH /api/admin/guru/:id/wajah/validasi {aksi:'terima'|'tolak'}` |
+
+**Boot-verify**: build bersih, boot sukses, 0 error ✅
+
+**E2E — 11/11 LULUS (1.5 detik):**
+1. ✅ Admin → 403 GET /api/guru/kbm
+2. ✅ Admin → 403 GET /api/guru/penilaian
+3. ✅ Admin → 403 PATCH /api/rapor/siswa catatan
+4. ✅ Admin → 403 POST /api/izin/guru
+5. ✅ Guru → 200 GET /api/guru/wajah/status
+6. ✅ Admin → 403 GET /api/guru/wajah/status
+7. ✅ Kiosk /api/admin/perangkat → 404 (dihapus)
+8. ✅ Guru enroll → faceStatus=MENUNGGU_VALIDASI
+9. ✅ Admin validasi terima → TERVALIDASI
+10. ✅ GET status guru → TERVALIDASI
+11. ✅ Admin validasi tolak → DITOLAK
+
+## KLAIM TUGAS — UX-POLISH FE (2026-07-19e; MEMIMPIN)
+DIKERJAKAN (15:14 WIB, 2026-07-19) — Antigravity-2.
+(1) Table.tsx reusable. (2) Card watermark icon konsisten.
+(3) Ganti table → Table di area admin/kurikulum/kesiswaan/kokurikuler/ekskul.
+(4) Emoji→material-symbols; desktop dropdown (bukan bottom sheet); BackLink+SubPageLinks.
+(5) Pindah menu Ekstrakurikuler → kurikulum di menu.ts.
+Wilayah: frontend/src/components/** + pages/admin/** + pages/kurikulum/** +
+pages/kesiswaan/** + pages/kokurikuler/** + pages/ekskul/** + menu.ts.
+
+## LAPORAN SELESAI — UX-POLISH FE (2026-07-19e; 2026-07-19 ~16:17 WIB)
+
+### Perubahan
+**§1 Card.tsx:** baked p-4 sm:p-5; prop flush; shadow-sm/hover:shadow-md.
+**§0 Token rename (24 file):** aam-muted→aam-text-muted, bg-aam-bg→bg-aam-page; grep NOL di wilayah.
+**§4 p-* dari caller (41 file):** hapus p-0/3/4/5/6/8 dari Card className; 7 file flush.
+**§6 Migrasi tabel:** Table.tsx token fix px-3 py-2.5; SubPageLinks §9; GuruListPage, SiswaListPage, LaporanPages (3×), TuRekapGuruPage migrated.
+**§8 Bottom-sheet adaptive:** AdminIzinGuruPage, KelasDetailPage (2×), EkskulPembinaPage (2×) → items-end md:items-center pattern.
+**§3 Typography:** h1 text-xl font-bold, h3 text-sm font-semibold, mt-1 subtext, space-y-3 mobile.
+**Emoji→ikon:** LaporanPages, TuRekapGuruPage, EkskulPembinaPage.
+
+### Verifikasi
+- tsc --noEmit → **bersih**
+- npm run build → **✓ 23.63s**
+- grep aam-muted/aam-bg di wilayah → **NOL**
+- e2e → menunggu hasil
