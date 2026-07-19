@@ -32,20 +32,15 @@ interface DashboardData {
 
 // ── Sub-components ────────────────────────────────────────────────────────
 
-function StatCard({ icon, label, value, color, sub }: {
+function StatCard({ icon, label, value, sub }: {
   icon: string; label: string; value: number | string;
-  color: string; sub?: string;
+  color?: string; sub?: string;
 }) {
   return (
-    <Card className="flex items-center gap-3">
-      <div className={`rounded-full p-2.5 ${color}`}>
-        <span className="material-symbols-outlined text-white" style={{ fontSize: 22 }}>{icon}</span>
-      </div>
-      <div>
-        <div className="text-2xl font-bold text-aam-text">{value}</div>
-        <div className="text-xs text-aam-muted">{label}</div>
-        {sub && <div className="text-xs text-aam-muted">{sub}</div>}
-      </div>
+    <Card icon={icon}>
+      <div className="text-3xl font-bold text-aam-text leading-none">{value}</div>
+      <div className="text-sm font-medium text-aam-text mt-2">{label}</div>
+      {sub && <div className="text-xs text-aam-muted mt-0.5">{sub}</div>}
     </Card>
   );
 }
