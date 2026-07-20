@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran } from '../helpers/api';
 
 /**
- * T16-SPRINT — Matriks Penugasan: Tambah + 409 duplikat (mapel+kelas di TA
+ * T16-SPRINT â€” Matriks Penugasan: Tambah + 409 duplikat (mapel+kelas di TA
  * aktif), Ganti-guru (paket id TETAP) via UI, Hapus 409 (masih dipakai jadwal).
- * §12.17e: entitas unik per run + cleanup via API di afterEach.
+ * Â§12.17e: entitas unik per run + cleanup via API di afterEach.
  */
 test.describe('CRUD Penugasan (Matriks T16)', () => {
   const createdGuruIds: number[] = [];
@@ -101,7 +101,7 @@ test.describe('CRUD Penugasan (Matriks T16)', () => {
     const penugasanRow = page.locator('tr', { hasText: kelas.nama }).first();
     await penugasanRow.getByRole('button', { name: 'Ganti Guru' }).click();
     await page.getByRole('button', { name: new RegExp(`Guru Penugasan1 ${suffix}`) }).click();
-    await page.getByPlaceholder('Cari guru…').fill(`Guru Penugasan2 ${suffix}`);
+    await page.getByPlaceholder('Cari guruâ€¦').fill(`Guru Penugasan2 ${suffix}`);
     await page.getByRole('button', { name: new RegExp(`Guru Penugasan2 ${suffix}`) }).click();
     await page.getByRole('button', { name: /^swap_horiz Simpan$/ }).click();
     await expect(page.getByText(/berhasil diganti/i)).toBeVisible();

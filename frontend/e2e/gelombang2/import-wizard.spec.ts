@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import fs from 'fs';
 import path from 'path';
@@ -56,7 +56,7 @@ test.describe('Import Wizard (Poin 2 T16)', () => {
     // Pratinjau
     await page.getByRole('button', { name: 'Pratinjau' }).click();
 
-    // Cek preview UI — ImportPage renders "Baris Valid (3):" heading and
+    // Cek preview UI â€” ImportPage renders "Baris Valid (3):" heading and
     // a summary card with count "3" + label "Baris Valid" (separate elements).
     await expect(page.getByText('Baris Valid (3):')).toBeVisible();
     await expect(page.getByText('Baris Error', { exact: true })).toBeVisible();
@@ -65,7 +65,7 @@ test.describe('Import Wizard (Poin 2 T16)', () => {
     await expect(page.getByText('NIS wajib diisi')).toBeVisible();
     await expect(page.getByText('Nama wajib diisi')).toBeVisible();
 
-    // Lanjutkan / Commit — button label is "Import {N} Baris", not "Simpan"
+    // Lanjutkan / Commit â€” button label is "Import {N} Baris", not "Simpan"
     await page.getByRole('button', { name: /Import \d+ Baris/ }).click();
 
     // Halaman sukses (Step 4 heading "Import Selesai")

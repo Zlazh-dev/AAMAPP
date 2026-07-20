@@ -74,6 +74,7 @@ const TuRekapGuruPage = React.lazy(() => import('../pages/tu/TuRekapGuruPage').t
 // F5a: Kesiswaan
 const TataTertibPage = React.lazy(() => import('../pages/kesiswaan/TataTertibPage').then(m => ({ default: m.TataTertibPage })));
 const PelanggaranPage = React.lazy(() => import('../pages/kesiswaan/PelanggaranPage').then(m => ({ default: m.PelanggaranPage })));
+const PelanggaranDetailPage = React.lazy(() => import('../pages/kesiswaan/PelanggaranDetailPage').then(m => ({ default: m.PelanggaranDetailPage })));
 const VerifikasiPage = React.lazy(() => import('../pages/kesiswaan/VerifikasiPage').then(m => ({ default: m.VerifikasiPage })));
 const GuruPelanggaranPage = React.lazy(() => import('../pages/guru/GuruPelanggaranPage').then(m => ({ default: m.GuruPelanggaranPage })));
 // F5b: Kesiswaan
@@ -178,8 +179,8 @@ const routes: RouteObject[] = [
           { path: '/admin/akun/:id', element: <RequireRole roles={['admin']}><Lazy><AkunDetailPage /></Lazy></RequireRole> },
           { path: '/admin/akun/:id/edit', element: <RequireRole roles={['admin']}><Lazy><AkunEditPage /></Lazy></RequireRole> },
 
-          // Admin: Profil Sekolah (baru: /admin/sekolah)
-          { path: '/admin/sekolah', element: <RequireRole roles={['admin']}><Lazy><PengaturanSekolahPage /></Lazy></RequireRole> },
+          // Admin: Profil Sekolah PINDAH ke TU (IA-HIERARCHY-V2 revisi 2026-07-20)
+          { path: '/admin/sekolah', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
 
           // ── KURIKULUM (menyerap Data Orang, Kelas, Ekskul, TA, KKM) ────
           { path: '/kurikulum', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KurikulumDashboardPage /></Lazy></RequireRole> },
@@ -238,6 +239,7 @@ const routes: RouteObject[] = [
           { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><KesiswaanDashboardPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/tata-tertib', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TataTertibPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/pelanggaran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><PelanggaranPage /></Lazy></RequireRole> },
+          { path: '/kesiswaan/pelanggaran/:id', element: <RequireRole roles={['kesiswaan','admin','kepsek','guru']}><Lazy><PelanggaranDetailPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/verifikasi', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><VerifikasiPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/tindak-lanjut', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TindakLanjutPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/reward', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><RewardPage /></Lazy></RequireRole> },
@@ -295,11 +297,12 @@ const routes: RouteObject[] = [
           { path: '/tu/izin-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><AdminIzinGuruPage /></Lazy></RequireRole> },
           // Laporan harian guru (pindahan dari /admin/laporan/harian-guru)
           { path: '/tu/laporan/harian-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><LaporanHarianGuruPage /></Lazy></RequireRole> },
-          // Pengaturan operasional TU — hub + 3 sub (IA-HIERARCHY-V2)
+          // Pengaturan operasional TU — hub + 4 sub (IA-HIERARCHY-V2 revisi 2026-07-20)
           { path: '/tu/pengaturan', element: <RequireRole roles={['tu','admin']}><Lazy><TuPengaturanPage /></Lazy></RequireRole> },
           { path: '/tu/pengaturan/jam', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanJamPage /></Lazy></RequireRole> },
           { path: '/tu/pengaturan/lokasi', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLokasiPage /></Lazy></RequireRole> },
           { path: '/tu/pengaturan/libur', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLiburPage /></Lazy></RequireRole> },
+          { path: '/tu/pengaturan/sekolah', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanSekolahPage /></Lazy></RequireRole> },
 
           // ── Kepsek: sekarang redirect saja ──────────────────────────────
           { path: '/kepsek', element: <Navigate to="/kesiswaan/presensi-siswa" replace /> },
@@ -316,7 +319,7 @@ const routes: RouteObject[] = [
           { path: '/admin/kelas', element: <Navigate to="/kurikulum/kelas" replace /> },
           { path: '/admin/ekskul', element: <Navigate to="/kurikulum/ekskul" replace /> },
           { path: '/admin/pengaturan', element: <Navigate to="/admin/sekolah" replace /> },
-          { path: '/admin/pengaturan/sekolah', element: <Navigate to="/admin/sekolah" replace /> },
+          { path: '/admin/pengaturan/sekolah', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
           { path: '/admin/pengaturan/tahun-ajaran', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
           { path: '/admin/pengaturan/kkm', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
           { path: '/admin/pengaturan/jam', element: <Navigate to="/tu/pengaturan/jam" replace /> },

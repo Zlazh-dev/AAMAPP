@@ -1,18 +1,18 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F4b Backend — Dashboard + Laporan Agregat
+ * F4b Backend â€” Dashboard + Laporan Agregat
  *
- *  1. GET /api/admin/dashboard — shape lengkap (guruStatus, kbm, siswa, perluPerhatian, feed)
+ *  1. GET /api/admin/dashboard â€” shape lengkap (guruStatus, kbm, siswa, perluPerhatian, feed)
  *  2. Dashboard guruStatus: semua key valid
- *  3. Dashboard RBAC: guru tidak bisa akses → 403
- *  4. GET /api/admin/laporan/harian-guru — shape valid (total, data, pctHadir)
- *  5. Laporan harian-guru filter guruId → hanya 1 guru
- *  6. GET /api/admin/laporan/keterlaksanaan-kbm — shape valid
- *  7. GET /api/admin/laporan/siswa — shape valid (pivot H/S/I/A/T + pctHadir)
- *  8. Laporan RBAC: guru tidak bisa akses → 403
+ *  3. Dashboard RBAC: guru tidak bisa akses â†’ 403
+ *  4. GET /api/admin/laporan/harian-guru â€” shape valid (total, data, pctHadir)
+ *  5. Laporan harian-guru filter guruId â†’ hanya 1 guru
+ *  6. GET /api/admin/laporan/keterlaksanaan-kbm â€” shape valid
+ *  7. GET /api/admin/laporan/siswa â€” shape valid (pivot H/S/I/A/T + pctHadir)
+ *  8. Laporan RBAC: guru tidak bisa akses â†’ 403
  *  9. Dashboard perluPerhatian: izinMenunggu naik setelah guru ajukan izin
  * 10. Laporan harian-guru paginasi: page/limit dihormati
  */
@@ -23,7 +23,7 @@ let guruId: number;
 let guruUserId: number;
 let suffix: string;
 
-test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
+test.describe('F4b Backend â€” Dashboard + Laporan Agregat', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     adminToken = (await page.evaluate(() =>
@@ -64,8 +64,8 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     suffix = ''; guruId = 0; guruUserId = 0;
   });
 
-  // ─── 1. Dashboard shape lengkap ──────────────────────────────────────────
-  test('1. GET /api/admin/dashboard → shape lengkap', async ({ request }) => {
+  // â”€â”€â”€ 1. Dashboard shape lengkap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. GET /api/admin/dashboard â†’ shape lengkap', async ({ request }) => {
     const today = new Date().toISOString().slice(0, 10);
     const res = await request.get(`/api/admin/dashboard?tanggal=${today}`, {
       headers: authHeaders(adminToken),
@@ -80,7 +80,7 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     expect(Array.isArray(body.feed)).toBeTruthy();
   });
 
-  // ─── 2. Dashboard guruStatus keys valid ──────────────────────────────────
+  // â”€â”€â”€ 2. Dashboard guruStatus keys valid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('2. Dashboard guruStatus: semua key status valid', async ({ request }) => {
     const res = await request.get('/api/admin/dashboard', {
       headers: authHeaders(adminToken),
@@ -104,16 +104,16 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     expect('presensiPending' in body.perluPerhatian).toBeTruthy();
   });
 
-  // ─── 3. Dashboard RBAC: guru → 403 ───────────────────────────────────────
-  test('3. Dashboard RBAC: guru tidak bisa akses → 403', async ({ request }) => {
+  // â”€â”€â”€ 3. Dashboard RBAC: guru â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. Dashboard RBAC: guru tidak bisa akses â†’ 403', async ({ request }) => {
     const res = await request.get('/api/admin/dashboard', {
       headers: authHeaders(guruToken),
     });
     expect(res.status()).toBe(403);
   });
 
-  // ─── 4. Laporan harian-guru shape ────────────────────────────────────────
-  test('4. GET /api/admin/laporan/harian-guru → shape valid', async ({ request }) => {
+  // â”€â”€â”€ 4. Laporan harian-guru shape â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. GET /api/admin/laporan/harian-guru â†’ shape valid', async ({ request }) => {
     const dari = '2026-07-01';
     const sampai = '2026-07-18';
     const res = await request.get(
@@ -140,8 +140,8 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     }
   });
 
-  // ─── 5. Laporan harian-guru filter guruId ────────────────────────────────
-  test('5. Laporan harian-guru filter guruId → max 1 guru di data', async ({
+  // â”€â”€â”€ 5. Laporan harian-guru filter guruId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. Laporan harian-guru filter guruId â†’ max 1 guru di data', async ({
     request,
   }) => {
     // Pastikan guruId valid (dari beforeEach)
@@ -161,13 +161,13 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     if (body.data.length > 0) {
       expect(body.data[0].guruId).toBe(guruId);
     }
-    // total harus ≤ 1 (hanya 1 guru aktif yang difilter)
+    // total harus â‰¤ 1 (hanya 1 guru aktif yang difilter)
     expect(body.total).toBeLessThanOrEqual(1);
   });
 
 
-  // ─── 6. Laporan keterlaksanaan-kbm shape ─────────────────────────────────
-  test('6. GET /api/admin/laporan/keterlaksanaan-kbm → shape valid', async ({
+  // â”€â”€â”€ 6. Laporan keterlaksanaan-kbm shape â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. GET /api/admin/laporan/keterlaksanaan-kbm â†’ shape valid', async ({
     request,
   }) => {
     const res = await request.get(
@@ -190,8 +190,8 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     }
   });
 
-  // ─── 7. Laporan siswa shape ───────────────────────────────────────────────
-  test('7. GET /api/admin/laporan/siswa → shape valid (H/S/I/A/T + pctHadir)', async ({
+  // â”€â”€â”€ 7. Laporan siswa shape â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. GET /api/admin/laporan/siswa â†’ shape valid (H/S/I/A/T + pctHadir)', async ({
     request,
   }) => {
     const res = await request.get(
@@ -212,8 +212,8 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     }
   });
 
-  // ─── 8. Laporan RBAC: guru → 403 ─────────────────────────────────────────
-  test('8. Laporan RBAC: guru tidak bisa akses → 403', async ({ request }) => {
+  // â”€â”€â”€ 8. Laporan RBAC: guru â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Laporan RBAC: guru tidak bisa akses â†’ 403', async ({ request }) => {
     const res = await request.get(
       '/api/admin/laporan/harian-guru?dari=2026-07-01&sampai=2026-07-18',
       { headers: authHeaders(guruToken) },
@@ -221,7 +221,7 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     expect(res.status()).toBe(403);
   });
 
-  // ─── 9. perluPerhatian naik setelah guru ajukan izin ─────────────────────
+  // â”€â”€â”€ 9. perluPerhatian naik setelah guru ajukan izin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('9. Dashboard perluPerhatian.izinMenunggu naik setelah guru ajukan izin', async ({
     request,
   }) => {
@@ -247,8 +247,8 @@ test.describe('F4b Backend — Dashboard + Laporan Agregat', () => {
     expect(after.perluPerhatian.izinMenunggu).toBeGreaterThan(before_count);
   });
 
-  // ─── 10. Paginasi harian-guru: limit=1 → data.length = 1 ────────────────
-  test('10. Laporan harian-guru paginasi: limit=1 → data.length ≤ 1', async ({
+  // â”€â”€â”€ 10. Paginasi harian-guru: limit=1 â†’ data.length = 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('10. Laporan harian-guru paginasi: limit=1 â†’ data.length â‰¤ 1', async ({
     request,
   }) => {
     const res = await request.get(

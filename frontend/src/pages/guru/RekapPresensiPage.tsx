@@ -71,7 +71,7 @@ export function RekapPresensiPage() {
  (async () => {
  setLoadingKelas(true);
  try {
- const res = await api.adminGetKelas({ limit: 1000 });
+  const res = await api.adminGetKelas({ limit: 100 }); // kelas count terbatas (±20), wajar dimuat untuk dropdown.
  setKelasOptions(res.data);
  if (res.data.length > 0) setKelasId(String(res.data[0].id));
  } catch (err) {

@@ -7,13 +7,13 @@ import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { useToast } from '../../../components/Toast';
 import { BackLink } from '../../../components/BackLink';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 import { PageMenu } from '../../../components/PageMenu';
 
 const PRESENSI_GURU_SUB_LINKS = [
-  { key: 'rekap', label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize' },
-  { key: 'harian', label: 'Laporan Harian Guru', path: '/tu/laporan/harian-guru', icon: 'assessment' },
-  { key: 'izin', label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available' },
+  { key: 'rekap', label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize', description: 'Rekap bulanan kehadiran guru' },
+  { key: 'harian', label: 'Laporan Harian Guru', path: '/tu/laporan/harian-guru', icon: 'assessment', description: 'Laporan harian per guru' },
+  { key: 'izin', label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available', description: 'Antrean izin dan persetujuan' },
 ];
 
 /** Baris harian dari GET /api/tu/presensi-guru/harian */
@@ -141,7 +141,7 @@ export function PresensiGuruPage() {
         <BackLink to="/tu" mobileButton={false} />
         <PageMenu menuTitle="Menu Presensi Guru" links={PRESENSI_GURU_SUB_LINKS} />
       </div>
-      <SubPageLinks links={PRESENSI_GURU_SUB_LINKS} />
+      <SubPageLayout links={PRESENSI_GURU_SUB_LINKS}>
       {/* Manual sheet */}
       {manual && (
         <div className="fixed inset-0 z-40 flex items-end md:items-center justify-center bg-black/40">
@@ -307,6 +307,7 @@ export function PresensiGuruPage() {
           </Card>
         ))}
       </div>
+      </SubPageLayout>
     </PageContainer>
   );
 }

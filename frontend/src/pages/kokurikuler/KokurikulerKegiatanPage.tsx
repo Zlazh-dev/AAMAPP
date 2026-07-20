@@ -9,7 +9,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
 import { FormDrawer } from '../../components/FormDrawer';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { BackLink } from '../../components/BackLink';
 import { PageMenu } from '../../components/PageMenu';
 import { DIMENSI_LIST } from './kokurikulerConstants';
@@ -24,9 +24,9 @@ interface Kegiatan {
 }
 
 const KOKU_LINKS = [
-  { key: 'tim', label: 'Tim & Penilai', path: '/kurikulum/kokurikuler', icon: 'groups' },
-  { key: 'asesmen', label: 'Asesmen', path: '/kurikulum/kokurikuler', icon: 'grading' },
-  { key: 'rapor', label: 'Rapor', path: '/kurikulum/kokurikuler', icon: 'menu_book' },
+  { key: 'tim', label: 'Tim & Penilai', path: '/kurikulum/kokurikuler', icon: 'groups', description: 'Susunan tim penilai per kelas' },
+  { key: 'asesmen', label: 'Asesmen', path: '/kurikulum/kokurikuler', icon: 'grading', description: 'Nilai dimensi per kegiatan' },
+  { key: 'rapor', label: 'Rapor', path: '/kurikulum/kokurikuler', icon: 'menu_book', description: 'Rapor kokurikuler siswa' },
 ];
 
 export function KokurikulerKegiatanPage() {
@@ -122,7 +122,7 @@ export function KokurikulerKegiatanPage() {
         />
       </div>
 
-      <SubPageLinks links={KOKU_LINKS} />
+      <SubPageLayout links={KOKU_LINKS}>
 
       {loading ? <TableSkeleton rows={3} /> : rows.length === 0 ? (
         <EmptyState icon="school" message="Belum ada kegiatan kokurikuler. Tambahkan untuk semester ini." />
@@ -196,6 +196,7 @@ export function KokurikulerKegiatanPage() {
           </div>
         </div>
       </FormDrawer>
+      </SubPageLayout>
     </PageContainer>
   );
 }

@@ -12,15 +12,16 @@ import { PageMenu } from '../../components/PageMenu';
 import { FilterBar } from '../../components/FilterBar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
+import { Pagination } from '../../components/Pagination';
 import { Table } from '../../components/Table';
 
 /** Sub halaman Mata Pelajaran (IA-HIERARCHY-V2). */
 const MAPEL_SUB_LINKS = [
-  { key: 'penugasan', label: 'Penugasan Mapel', path: '/kurikulum/penugasan', icon: 'assignment_ind' },
-  { key: 'kokurikuler', label: 'Kokurikuler', path: '/kurikulum/kokurikuler', icon: 'school' },
-  { key: 'ekskul', label: 'Ekstrakurikuler', path: '/kurikulum/ekskul', icon: 'sports' },
-  { key: 'ta-kkm', label: 'Tahun Ajaran & KKM', path: '/kurikulum/tahun-ajaran-kkm', icon: 'event_note' },
+  { key: 'penugasan', label: 'Penugasan Mapel', path: '/kurikulum/penugasan', icon: 'assignment_ind', description: 'Guru pengampu per mapel dan kelas' },
+  { key: 'kokurikuler', label: 'Kokurikuler', path: '/kurikulum/kokurikuler', icon: 'school', description: 'Kegiatan dan tim penilai per kelas' },
+  { key: 'ekskul', label: 'Ekstrakurikuler', path: '/kurikulum/ekskul', icon: 'sports', description: 'Pembina dan daftar ekskul' },
+  { key: 'ta-kkm', label: 'Tahun Ajaran & KKM', path: '/kurikulum/tahun-ajaran-kkm', icon: 'event_note', description: 'Aktifkan TA dan nilai KKM global' },
 ];
 
 /**
@@ -34,15 +35,17 @@ export function MapelListPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Mapel | null>(null);
 
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
     return () => clearTimeout(t);
   }, [search]);
 
   const { data: mapelList, total, loading, refresh } = useCachedList<Mapel>(
-    () => api.getMapel({ q: debouncedSearch || undefined, limit: 200 }),
-    `/kurikulum/mapel?q=${debouncedSearch}`,
-    [debouncedSearch],
+    () => api.getMapel({ q: debouncedSearch || undefined, page, limit: 25 }),
+    `/kurikulum/mapel?q=${debouncedSearch}&p=${page}`,
+    [debouncedSearch, page],
   );
 
   const handleDelete = async () => {
@@ -84,7 +87,7 @@ export function MapelListPage() {
         />
       </div>
 
-      <SubPageLinks links={MAPEL_SUB_LINKS} />
+      <SubPageLayout links={MAPEL_SUB_LINKS}>
 
       <div className="mb-4">
         <FilterBar
@@ -102,6 +105,7 @@ export function MapelListPage() {
       {loading ? (
         <TableSkeleton rows={4} cols={4} />
       ) : (
+        <>
         <Table
           columns={[
             {
@@ -129,6 +133,8 @@ export function MapelListPage() {
           emptyMessage="Belum ada mata pelajaran"
           onRowClick={(m) => navigate(`/kurikulum/mapel/${m.id}/edit`)}
         />
+        <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+        </>
       )}
 
 
@@ -141,6 +147,7 @@ export function MapelListPage() {
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
       />
+      </SubPageLayout>
     </PageContainer>
   );
 }

@@ -10,7 +10,8 @@ import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
 import { BackLink } from '../../../components/BackLink';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
+import { Pagination } from '../../../components/Pagination';
 import { PageContainer } from '../../../components/PageContainer';
 
 /**
@@ -20,10 +21,12 @@ export function AkunSesiPage() {
   const { show } = useToast();
   const [revokeTarget, setRevokeTarget] = useState<SessionInfo | null>(null);
 
+  const [page, setPage] = useState(1);
+
   const { data: sessions, total, loading, refresh } = useCachedList<SessionInfo>(
-    () => api.adminGetSessions({ limit: 200 }),
-    '/admin/sessions',
-    [],
+    () => api.adminGetSessions({ page, limit: 25 }),
+    `/admin/sessions?p=${page}`,
+    [page],
   );
 
   const handleRevokeSession = async () => {
@@ -71,14 +74,13 @@ export function AkunSesiPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group' },
-          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg' },
-          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history' },
+          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group', description: 'Semua akun pengguna' },
+          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg', description: 'Antrean akun menunggu' },
+          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history', description: 'Log aktivitas akun' },
         ]}
-      />
+      >
 
       {/* Desktop: Table */}
       <div className="hidden md:block">
@@ -167,6 +169,8 @@ export function AkunSesiPage() {
         )}
       </div>
 
+      <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+
       {/* Confirm dialog for session revoke */}
       <ConfirmDialog
         open={!!revokeTarget}
@@ -176,6 +180,7 @@ export function AkunSesiPage() {
         onConfirm={handleRevokeSession}
         onCancel={() => setRevokeTarget(null)}
       />
+      </SubPageLayout>
     </PageContainer>
   );
 }

@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F4c Backend — Rekap TU Bulanan + RBAC kepsek konfirmasi
+ * F4c Backend â€” Rekap TU Bulanan + RBAC kepsek konfirmasi
  *
- *  1. GET /api/tu/rekap-guru?bulan=YYYY-MM → shape valid (total, dari, sampai, data)
+ *  1. GET /api/tu/rekap-guru?bulan=YYYY-MM â†’ shape valid (total, dari, sampai, data)
  *  2. Rekap bulan: data[].pctHadir + hariWajib + HADIR/ALPHA ada
- *  3. Default bulan (tanpa param) → tidak error, kembalikan data
- *  4. Format bulan invalid → 400/500 (endpoint error gracefully)
- *  5. RBAC: guru tidak bisa akses /api/tu/rekap-guru → 403
- *  6. RBAC: kepsek bisa akses /api/admin/dashboard → 200 ✅
- *  7. RBAC: kepsek bisa akses /api/admin/laporan/harian-guru → 200 ✅
- *  8. RBAC: kepsek bisa akses /api/admin/laporan/keterlaksanaan-kbm → 200 ✅
- *  9. RBAC: kepsek bisa akses /api/admin/laporan/siswa → 200 ✅
+ *  3. Default bulan (tanpa param) â†’ tidak error, kembalikan data
+ *  4. Format bulan invalid â†’ 400/500 (endpoint error gracefully)
+ *  5. RBAC: guru tidak bisa akses /api/tu/rekap-guru â†’ 403
+ *  6. RBAC: kepsek bisa akses /api/admin/dashboard â†’ 200 âœ…
+ *  7. RBAC: kepsek bisa akses /api/admin/laporan/harian-guru â†’ 200 âœ…
+ *  8. RBAC: kepsek bisa akses /api/admin/laporan/keterlaksanaan-kbm â†’ 200 âœ…
+ *  9. RBAC: kepsek bisa akses /api/admin/laporan/siswa â†’ 200 âœ…
  * 10. Rekap bulan: dari = awal bulan, sampai = akhir bulan yang benar
  */
 
@@ -24,7 +24,7 @@ let guruUserId: number;
 let kepsekUserId: number;
 let suffix: string;
 
-test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
+test.describe('F4c Backend â€” Rekap TU Bulanan + RBAC kepsek', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     adminToken = (await page.evaluate(() =>
@@ -73,8 +73,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     suffix = ''; guruUserId = 0; kepsekUserId = 0;
   });
 
-  // ─── 1. Shape valid ────────────────────────────────────────────────────────
-  test('1. GET /api/tu/rekap-guru?bulan=2026-07 → shape valid', async ({ request }) => {
+  // â”€â”€â”€ 1. Shape valid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. GET /api/tu/rekap-guru?bulan=2026-07 â†’ shape valid', async ({ request }) => {
     const res = await request.get('/api/tu/rekap-guru?bulan=2026-07', {
       headers: authHeaders(adminToken),
     });
@@ -88,7 +88,7 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(Array.isArray(body.data)).toBeTruthy();
   });
 
-  // ─── 2. Data fields valid ─────────────────────────────────────────────────
+  // â”€â”€â”€ 2. Data fields valid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('2. Rekap bulan: data baris punya HADIR, ALPHA, hariWajib, pctHadir', async ({
     request,
   }) => {
@@ -110,8 +110,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     }
   });
 
-  // ─── 3. Default bulan (tanpa param) → OK ─────────────────────────────────
-  test('3. Rekap tanpa bulan param → default bulan ini, tidak error', async ({
+  // â”€â”€â”€ 3. Default bulan (tanpa param) â†’ OK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. Rekap tanpa bulan param â†’ default bulan ini, tidak error', async ({
     request,
   }) => {
     const res = await request.get('/api/tu/rekap-guru', {
@@ -126,8 +126,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(body.dari).toBe(expectedDari);
   });
 
-  // ─── 4. Format bulan invalid → error (tidak crash server) ─────────────────
-  test('4. Format bulan invalid → error 400/500, tidak crash server', async ({
+  // â”€â”€â”€ 4. Format bulan invalid â†’ error (tidak crash server) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. Format bulan invalid â†’ error 400/500, tidak crash server', async ({
     request,
   }) => {
     const res = await request.get('/api/tu/rekap-guru?bulan=bukan-bulan', {
@@ -142,8 +142,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(healthy.ok()).toBeTruthy();
   });
 
-  // ─── 5. RBAC: guru → 403 ──────────────────────────────────────────────────
-  test('5. RBAC: guru tidak bisa akses /api/tu/rekap-guru → 403', async ({
+  // â”€â”€â”€ 5. RBAC: guru â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. RBAC: guru tidak bisa akses /api/tu/rekap-guru â†’ 403', async ({
     request,
   }) => {
     const res = await request.get('/api/tu/rekap-guru?bulan=2026-07', {
@@ -152,8 +152,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(res.status()).toBe(403);
   });
 
-  // ─── 6. RBAC kepsek: dashboard → 200 ─────────────────────────────────────
-  test('6. RBAC: kepsek bisa akses /api/admin/dashboard → 200', async ({
+  // â”€â”€â”€ 6. RBAC kepsek: dashboard â†’ 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. RBAC: kepsek bisa akses /api/admin/dashboard â†’ 200', async ({
     request,
   }) => {
     const res = await request.get('/api/admin/dashboard', {
@@ -162,8 +162,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(res.ok(), `kepsek dashboard: ${await res.text()}`).toBeTruthy();
   });
 
-  // ─── 7. RBAC kepsek: laporan harian-guru → 200 ───────────────────────────
-  test('7. RBAC: kepsek bisa akses /api/admin/laporan/harian-guru → 200', async ({
+  // â”€â”€â”€ 7. RBAC kepsek: laporan harian-guru â†’ 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. RBAC: kepsek bisa akses /api/admin/laporan/harian-guru â†’ 200', async ({
     request,
   }) => {
     const res = await request.get(
@@ -173,8 +173,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(res.ok(), `kepsek harian-guru: ${await res.text()}`).toBeTruthy();
   });
 
-  // ─── 8. RBAC kepsek: keterlaksanaan-kbm → 200 ────────────────────────────
-  test('8. RBAC: kepsek bisa akses /api/admin/laporan/keterlaksanaan-kbm → 200', async ({
+  // â”€â”€â”€ 8. RBAC kepsek: keterlaksanaan-kbm â†’ 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. RBAC: kepsek bisa akses /api/admin/laporan/keterlaksanaan-kbm â†’ 200', async ({
     request,
   }) => {
     const res = await request.get(
@@ -184,8 +184,8 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(res.ok(), `kepsek keterlaksanaan: ${await res.text()}`).toBeTruthy();
   });
 
-  // ─── 9. RBAC kepsek: laporan siswa → 200 ─────────────────────────────────
-  test('9. RBAC: kepsek bisa akses /api/admin/laporan/siswa → 200', async ({
+  // â”€â”€â”€ 9. RBAC kepsek: laporan siswa â†’ 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. RBAC: kepsek bisa akses /api/admin/laporan/siswa â†’ 200', async ({
     request,
   }) => {
     const res = await request.get(
@@ -195,11 +195,11 @@ test.describe('F4c Backend — Rekap TU Bulanan + RBAC kepsek', () => {
     expect(res.ok(), `kepsek laporan siswa: ${await res.text()}`).toBeTruthy();
   });
 
-  // ─── 10. dari/sampai tepat awal/akhir bulan ───────────────────────────────
+  // â”€â”€â”€ 10. dari/sampai tepat awal/akhir bulan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('10. Rekap bulan: dari=awal bulan, sampai=akhir bulan yang benar', async ({
     request,
   }) => {
-    // Februari 2026 (bukan tahun kabisat → 28 hari)
+    // Februari 2026 (bukan tahun kabisat â†’ 28 hari)
     const res = await request.get('/api/tu/rekap-guru?bulan=2026-02', {
       headers: authHeaders(adminToken),
     });

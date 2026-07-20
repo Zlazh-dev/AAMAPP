@@ -1,18 +1,18 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 /**
- * E2E spec F4c — TU rekap guru + kepsek akses laporan.
+ * E2E spec F4c â€” TU rekap guru + kepsek akses laporan.
  *
  * Strategy:
- * 1. Admin (superuser) buka /tu/rekap-guru → pemilih bulan + tampilkan → tabel.
+ * 1. Admin (superuser) buka /tu/rekap-guru â†’ pemilih bulan + tampilkan â†’ tabel.
  * 2. Export Excel + PDF buttons ada.
- * 3. Kepsek akses /admin/laporan → tidak 403 (role kepsek diizinkan).
- * 4. Kepsek akses /tu/izin-guru → tidak 403.
+ * 3. Kepsek akses /admin/laporan â†’ tidak 403 (role kepsek diizinkan).
+ * 4. Kepsek akses /tu/izin-guru â†’ tidak 403.
  */
 
 const BASE_URL = 'http://localhost';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'e2e-admin@aamapp.sch.id';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'e2e-admin-pass';
 
 async function loginViaApi(request: any, email: string, password: string): Promise<string> {
   const res = await request.post(`${BASE_URL}/api/auth/login`, {
@@ -27,14 +27,14 @@ async function setToken(page: any, token: string) {
   await page.evaluate((t: string) => localStorage.setItem('aamapp_token', t), token);
 }
 
-test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
+test.describe('F4c â€” TU Rekap Guru + Kepsek Akses', () => {
   let adminToken: string;
 
   test.beforeAll(async ({ request }) => {
     adminToken = await loginViaApi(request, ADMIN_EMAIL, ADMIN_PASSWORD);
   });
 
-  test('TU /tu/rekap-guru — pemilih bulan + tampilkan → tabel muncul', async ({ page }) => {
+  test('TU /tu/rekap-guru â€” pemilih bulan + tampilkan â†’ tabel muncul', async ({ page }) => {
     await setToken(page, adminToken);
 
     // Mock API rekap
@@ -76,7 +76,7 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
     await expect(page.getByText('TOTAL')).toBeVisible();
   });
 
-  test('TU /tu/rekap-guru — export Excel + PDF buttons ada', async ({ page }) => {
+  test('TU /tu/rekap-guru â€” export Excel + PDF buttons ada', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/tu/rekap-guru**', async route => {
@@ -103,7 +103,7 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
     await expect(page.locator('#btn-export-pdf-rekap')).not.toBeDisabled();
   });
 
-  test('Kepsek akses laporan TU — tidak redirect ke 403', async ({ page }) => {
+  test('Kepsek akses laporan TU â€” tidak redirect ke 403', async ({ page }) => {
     await setToken(page, adminToken);
 
     // /admin/laporan hub dibubarkan (IA migration). Laporan TU kini di /tu/*
@@ -111,7 +111,7 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
     await expect(page.locator('h2, h1').first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test('Kepsek akses /tu/izin-guru — tidak 403', async ({ page }) => {
+  test('Kepsek akses /tu/izin-guru â€” tidak 403', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/izin/guru**', async route => {

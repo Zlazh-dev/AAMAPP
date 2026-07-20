@@ -1,22 +1,22 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * security.spec.ts — SEC-1 (hardening keamanan pra-produksi).
+ * security.spec.ts â€” SEC-1 (hardening keamanan pra-produksi).
  *
  * Membuktikan efek dari 6 perubahan hardening:
- *  1. CORS whitelist (dev tetap izinkan localhost — dibuktikan implisit
+ *  1. CORS whitelist (dev tetap izinkan localhost â€” dibuktikan implisit
  *     lewat SELURUH request API di suite ini yang berasal dari origin
  *     Playwright/browser localhost dan berhasil).
  *  2. APP_GUARD global SessionAuthGuard: endpoint terlindungi TANPA
  *     token -> 401. Endpoint @Public() tetap 200/201 tanpa token.
- *  3. synchronize kondisional — tidak diuji lewat e2e (butuh restart
+ *  3. synchronize kondisional â€” tidak diuji lewat e2e (butuh restart
  *     container dengan NODE_ENV berbeda; didokumentasikan di laporan).
- *  4. Body limit 1mb — payload JSON di atas 1mb ditolak (413/400).
- *  5. RolesGuard fail-closed — dibuktikan tidak langsung (semua rute
+ *  4. Body limit 1mb â€” payload JSON di atas 1mb ditolak (413/400).
+ *  5. RolesGuard fail-closed â€” dibuktikan tidak langsung (semua rute
  *     yang ada sudah punya @Roles, diverifikasi lewat seluruh suite
  *     tetap hijau tanpa 403 tak terduga).
- *  6. Upload magic-byte — file dengan ekstensi/MIME gambar tapi ISI
+ *  6. Upload magic-byte â€” file dengan ekstensi/MIME gambar tapi ISI
  *     bukan gambar sungguhan ditolak 400.
  */
 test.describe('Security hardening (SEC-1)', () => {
@@ -44,13 +44,13 @@ test.describe('Security hardening (SEC-1)', () => {
     expect(configRes.status()).toBe(200);
 
     // Static uploads mount juga publik (tidak melewati SessionAuthGuard
-    // karena bukan route Nest, melainkan express.static) — dibuktikan
+    // karena bukan route Nest, melainkan express.static) â€” dibuktikan
     // tidak 401 (boleh 404 kalau file tidak ada, itu bukan auth error).
     const uploadStaticRes = await request.get('/uploads/tidak-ada-file.png');
     expect(uploadStaticRes.status()).not.toBe(401);
 
     // Login (kredensial salah) -> tetap diproses (bukan 401 auth-guard,
-    // melainkan 401/400 dari authService karena kredensial salah — jadi
+    // melainkan 401/400 dari authService karena kredensial salah â€” jadi
     // kita pastikan responsnya BUKAN pesan generik "Anda belum masuk").
     const loginRes = await request.post('/api/auth/login', {
       data: { email: 'tidak-ada@test.com', password: 'salah12345' },
@@ -62,7 +62,7 @@ test.describe('Security hardening (SEC-1)', () => {
 
   test('Login valid via API tetap 200/201 (CORS localhost tidak diblokir)', async ({ request }) => {
     const res = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     expect(res.ok()).toBeTruthy();
     const body = await res.json();
@@ -74,7 +74,7 @@ test.describe('Security hardening (SEC-1)', () => {
     const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
 
     // > 1mb string di field yang divalidasi @IsString (mapel nama, misalnya)
-    // — cukup untuk memicu body-parser limit sebelum ValidationPipe jalan.
+    // â€” cukup untuk memicu body-parser limit sebelum ValidationPipe jalan.
     const bigString = 'A'.repeat(1.5 * 1024 * 1024);
     const res = await request.post('/api/kurikulum/mapel', {
       headers: { Authorization: `Bearer ${token}` },

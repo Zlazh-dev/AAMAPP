@@ -7,10 +7,11 @@ import { Badge, roleLabel, roleVariant, statusVariant, statusLabel } from '../..
 import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 import { FilterBar } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 import { Table, ColumnDef } from '../../../components/Table';
+import { Pagination } from '../../../components/Pagination';
 
 /**
  * /admin/akun — Daftar Akun (sub-halaman route per v0.10.4 / T10.5).
@@ -27,15 +28,17 @@ export function AkunDaftarPage() {
   const [pendingCount, setPendingCount] = useState(0);
 
   // Debounce search input
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
     return () => clearTimeout(t);
   }, [search]);
 
   const { data: users, total, loading } = useCachedList<AdminUser>(
-    () => api.adminGetUsers({ q: debouncedSearch || undefined, limit: 200 }),
-    `/admin/users?q=${debouncedSearch}`,
-    [debouncedSearch],
+    () => api.adminGetUsers({ q: debouncedSearch || undefined, page, limit: 25 }),
+    `/admin/users?q=${debouncedSearch}&p=${page}`,
+    [debouncedSearch, page],
   );
 
   useEffect(() => {
@@ -96,14 +99,13 @@ export function AkunDaftarPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg', badge: pendingCount > 0 ? pendingCount : undefined },
-          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices' },
-          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history' },
+          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg', badge: pendingCount > 0 ? pendingCount : undefined, description: 'Antrean akun menunggu' },
+          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices', description: 'Perangkat yg sedang login' },
+          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history', description: 'Log aktivitas akun' },
         ]}
-      />
+      >
 
       {/* FilterBar (search) */}
       <div className="mb-4">
@@ -120,6 +122,7 @@ export function AkunDaftarPage() {
       </div>
 
       {loading ? <TableSkeleton rows={4} cols={5} /> : (
+        <>
         <Table<AdminUser>
           columns={[
             {
@@ -167,7 +170,10 @@ export function AkunDaftarPage() {
           emptyMessage="Tidak ada akun ditemukan"
           onRowClick={(u) => navigate(`/admin/akun/${u.id}`)}
         />
+        <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+        </>
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

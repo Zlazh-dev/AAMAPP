@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * T16-SPRINT lanjutan — Matriks Tahun Ajaran: tambah (SaveSuccess route) ->
+ * T16-SPRINT lanjutan â€” Matriks Tahun Ajaran: tambah (SaveSuccess route) ->
  * AKTIFKAN (ConfirmDialog tegas) -> hanya 1 aktif -> hapus TA aktif = 409
  * (tombol Hapus dinonaktifkan di UI utk TA aktif; tetap uji ConfirmDialog
- * hapus utk TA non-aktif berjalan normal). §12.17e: nama TA unik per run
+ * hapus utk TA non-aktif berjalan normal). Â§12.17e: nama TA unik per run
  * (tahun acak jauh dr data nyata) + cleanup via API di afterEach.
  */
 test.describe('Tahun Ajaran (Matriks T16 lanjutan)', () => {

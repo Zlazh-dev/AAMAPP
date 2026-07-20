@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError, Guru, Penugasan, TahunAjaran } from '../../api/client';
@@ -12,12 +12,13 @@ import { PageMenu } from '../../components/PageMenu';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { SearchSelect } from '../../components/SearchSelect';
 import { useToast } from '../../components/Toast';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { BackLink } from '../../components/BackLink';
+import { Pagination } from '../../components/Pagination';
 
 /** Sub dari Penugasan Mapel (IA-HIERARCHY-V2). */
 const PENUGASAN_SUB_LINKS = [
-  { key: 'jadwal', label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month' },
+  { key: 'jadwal', label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month', description: 'Slot jam per kelas dan hari' },
 ];
 
 /**
@@ -37,28 +38,32 @@ export function PenugasanPage() {
   const [gantiGuruId, setGantiGuruId] = useState<number | null>(null);
   const [gantiSaving, setGantiSaving] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [ta, guruRes] = await Promise.all([
-          api.getTahunAjaranAktif(),
-          api.adminGetGuru({ limit: 1000 }),
-        ]);
-        if (cancelled) return;
-        setTaAktif(ta);
-        setGuruList(guruRes.data);
-        if (ta) {
-          const list = await api.getPenugasan({ taId: ta.id });
-          if (!cancelled) setPenugasanList(list);
-        }
-      } catch (err) {
-        // silent
-      } finally {
-        if (!cancelled) setLoading(false);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 25 });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const ta = await api.getTahunAjaranAktif();
+      setTaAktif(ta);
+      if (ta) {
+        const res = await api.getPenugasan({ taId: ta.id, page, limit: 25 });
+        setPenugasanList(res.data);
+        setMeta({ total: res.total, page: res.page, limit: res.limit });
       }
-    })();
-    return () => { cancelled = true; };
+    } catch (err) {
+      // silent
+    } finally {
+      setLoading(false);
+    }
+  }, [page]);
+
+  useEffect(() => { load(); }, [load]);
+
+  // Pencarian guru sisi-server (bukan ambil 1000 baris).
+  const searchGuru = useCallback(async (q: string) => {
+    const res = await api.adminGetGuru({ q: q || undefined, limit: 20 });
+    return res.data.map((g) => ({ value: g.id, label: g.nama }));
   }, []);
 
   const handleDelete = async () => {
@@ -83,16 +88,9 @@ export function PenugasanPage() {
     setGantiSaving(true);
     try {
       await api.updatePenugasan(gantiTarget.id, { guruId: gantiGuruId });
-      const guruBaru = guruList.find((g) => g.id === gantiGuruId);
       toast.show('success', 'Guru pengampu berhasil diganti');
-      setPenugasanList((prev) =>
-        prev.map((p) =>
-          p.id === gantiTarget.id
-            ? { ...p, guruId: gantiGuruId, guruNama: guruBaru?.nama ?? p.guruNama }
-            : p,
-        ),
-      );
       setGantiTarget(null);
+      load(); // reload untuk update guruNama dari server
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Gagal mengganti guru';
       toast.show('error', msg);
@@ -120,8 +118,8 @@ export function PenugasanPage() {
             Buka Pengaturan Tahun Ajaran
           </Button>
         </Card>
-      </PageContainer>
-    );
+    </PageContainer>
+     );
   }
 
   return (
@@ -152,7 +150,7 @@ export function PenugasanPage() {
       </div>
 
       <BackLink to="/kurikulum/mapel" />
-      <SubPageLinks links={PENUGASAN_SUB_LINKS} />
+      <SubPageLayout links={PENUGASAN_SUB_LINKS}>
 
       {/* Desktop: Table */}
       <div className="hidden md:block">
@@ -224,6 +222,8 @@ export function PenugasanPage() {
         )}
       </div>
 
+      <Pagination page={meta.page} limit={meta.limit} total={meta.total} onPageChange={setPage} loading={loading} />
+
       {/* Delete confirm */}
       <ConfirmDialog
         open={!!deleteTarget}
@@ -250,11 +250,12 @@ export function PenugasanPage() {
             </p>
             <label className="block text-sm font-medium text-aam-text mb-1.5">Guru baru</label>
             <SearchSelect
-              options={guruList.map((g) => ({ value: g.id, label: g.nama, subtitle: g.nip ?? undefined }))}
+              options={gantiGuruId ? [{ value: gantiGuruId, label: guruList.find((g) => g.id === gantiGuruId)?.nama ?? `Guru #${gantiGuruId}` }] : []}
               value={gantiGuruId}
               onChange={(v) => setGantiGuruId(v as number | null)}
               placeholder="Pilih guru…"
               searchPlaceholder="Cari guru…"
+              onSearch={searchGuru}
             />
             <div className="flex items-center justify-end gap-2 mt-4">
               <Button variant="secondary" size="sm" onClick={() => setGantiTarget(null)} disabled={gantiSaving}>
@@ -274,6 +275,7 @@ export function PenugasanPage() {
         </div>,
         document.body,
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

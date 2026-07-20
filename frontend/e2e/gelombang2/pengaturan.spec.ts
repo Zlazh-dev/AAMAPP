@@ -1,12 +1,12 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * T16-SPRINT lanjutan — Matriks Pengaturan: 5 sub-halaman nilai global
+ * T16-SPRINT lanjutan â€” Matriks Pengaturan: 5 sub-halaman nilai global
  * (Profil Sekolah, Jam Presensi, KKM, Lokasi + peta klik). Setiap sub:
  * ubah nilai -> Simpan -> reload -> nilai MEMANTUL (persist) +
  * "Terakhir disimpan oleh {nama}" tampil. Tidak perlu seed/cleanup API
- * (pengaturan adalah singleton global) — nilai dikembalikan ke semula
+ * (pengaturan adalah singleton global) â€” nilai dikembalikan ke semula
  * di akhir tiap test agar tak mengganggu spec lain.
  */
 test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
@@ -15,7 +15,7 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
   });
 
   test('Profil Sekolah: ubah nama -> Simpan -> reload -> memantul + "Terakhir disimpan oleh"', async ({ page }) => {
-    await page.goto('/admin/sekolah');
+    await page.goto('/tu/pengaturan/sekolah');
     await expect(page.getByRole('heading', { name: 'Profil Sekolah' })).toBeVisible();
 
     const namaInput = page.locator('#sekolah-nama');
@@ -123,7 +123,7 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
     // IA-HIERARCHY-V2: Pengaturan TU = /tu/pengaturan (induk Jam KBM, Hari Libur, Lokasi).
     await page.goto('/tu/pengaturan');
     await expect(page.getByRole('heading', { name: 'Pengaturan', level: 2 })).toBeVisible();
-    // Klik kartu "Jam KBM" — kartu (bukan SubPageLinks) punya icon + deskripsi.
+    // Klik kartu "Jam KBM" â€” kartu (bukan SubPageLinks) punya icon + deskripsi.
     await page.locator('a[href="/tu/pengaturan/jam"]').first().click();
     await page.waitForURL('**/tu/pengaturan/jam');
     await expect(page.getByRole('heading', { name: 'Jam Presensi' })).toBeVisible();

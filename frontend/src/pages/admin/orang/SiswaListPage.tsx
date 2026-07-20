@@ -7,7 +7,8 @@ import { Badge } from '../../../components/Badge';
 import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
+import { Pagination } from '../../../components/Pagination';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 import { Table, ColumnDef } from '../../../components/Table';
@@ -32,13 +33,18 @@ export function SiswaListPage() {
     loadKelasOptions();
   }, []);
 
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
     loadSiswa();
-  }, [search, filters]);
+  }, [search, filters, page]);
+
+  useEffect(() => { setPage(1); }, [search, filters]);
 
   const loadKelasOptions = async () => {
     try {
-      const res = await api.adminGetKelas({ limit: 1000 });
+      // Kelas count terbatas (sekolah menengah ±20 kelas) — load semua utk filter dropdown.
+      const res = await api.adminGetKelas({ limit: 100 });
       setKelasOptions(res.data.map((k) => ({ value: String(k.id), label: k.nama })));
     } catch {}
   };
@@ -50,7 +56,8 @@ export function SiswaListPage() {
         q: search || undefined,
         kelasId: filters.kelasId ? parseInt(filters.kelasId) : undefined,
         status: filters.status || undefined,
-        limit: 200,
+        page,
+        limit: 25,
       });
       setData(res.data);
       setTotal(res.total);
@@ -109,13 +116,12 @@ export function SiswaListPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school' },
-          { key: 'import', label: 'Import', path: '/kurikulum/orang/import', icon: 'upload_file' },
+          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school', description: 'Data induk guru' },
+          { key: 'import', label: 'Import', path: '/kurikulum/orang/import', icon: 'upload_file', description: 'Impor massal guru & siswa' },
         ]}
-      />
+      >
 
       {/* FilterBar */}
       <div className="mb-4">
@@ -206,9 +212,11 @@ export function SiswaListPage() {
                 {s.nisn && <span>NISN: {s.nisn}</span>}
               </div>
             </Card>
-          ))
-        )}
-      </div>
+           ))
+         )}
+       </div>
+       <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+      </SubPageLayout>
     </PageContainer>
   );
 }

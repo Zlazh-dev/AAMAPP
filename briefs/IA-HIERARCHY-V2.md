@@ -18,7 +18,7 @@
 
 ## ADMIN
 
-**Sidebar:** Dashboard · Akun · Profil Sekolah
+**Sidebar:** Dashboard · Akun
 
 ```
 Akun
@@ -30,8 +30,9 @@ Akun
 - **Dashboard admin hanya menampilkan AKTIVITAS AKUN.** Buang semua statistik
   kehadiran guru/siswa/KBM dari dashboard admin (StatCard kehadiran, grid status
   guru, dsb) — itu milik kesiswaan & TU.
-- **Profil Sekolah dikembalikan ke sidebar.** Sempat dihapus agent demi
-  meloloskan locator tes; itu salah arah — perbaiki spec-nya, bukan menu.
+- **Profil Sekolah PINDAH ke Pengaturan milik TU** (revisi 2026-07-20). Admin
+  menyusut jadi dua item. Konsekuensi otorisasi: TU kini berwenang mengubah
+  profil sekolah → endpoint pengaturan sekolah `@Roles('tu','admin')`.
 
 ## KURIKULUM
 
@@ -86,7 +87,8 @@ Presensi Guru
 Pengaturan                          (halaman utama tersendiri)
 ├── Jam KBM                         (sub)
 ├── Hari Libur                      (sub)
-└── Lokasi Presensi                 (sub)
+├── Lokasi Presensi                 (sub)
+└── Profil Sekolah                  (sub — pindahan dari admin, revisi 2026-07-20)
 ```
 
 - **Dashboard TU** = monitoring **kehadiran guru saja**, dalam bentuk stats.

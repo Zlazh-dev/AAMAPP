@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F6d — Ekstrakurikuler Frontend E2E (MANDIRI-DATA §12.17e).
+ * F6d â€” Ekstrakurikuler Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend F6d paralel (AG-2) → UI routing + komponen render tests.
+ * Backend F6d paralel (AG-2) â†’ UI routing + komponen render tests.
  * Navigasi by-id (NOT daftar paginasi). EmptyState bila API belum live.
  */
 
-test.describe('F6d — Ekstrakurikuler Frontend', () => {
+test.describe('F6d â€” Ekstrakurikuler Frontend', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Admin: Kelola Ekskul ─────────────────────────────────────────────────────
+  // â”€â”€ Admin: Kelola Ekskul â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Kelola Ekskul (Admin)', () => {
     test('Halaman /kurikulum/ekskul dapat diakses', async ({ page }) => {
       await page.goto('/kurikulum/ekskul');
@@ -34,7 +34,7 @@ test.describe('F6d — Ekstrakurikuler Frontend', () => {
     });
   });
 
-  // ── Pembina: Kelola Detail Ekskul ────────────────────────────────────────────
+  // â”€â”€ Pembina: Kelola Detail Ekskul â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Kelola Detail Ekskul (Pembina)', () => {
     test('Halaman /kurikulum/ekskul/:id dapat diakses', async ({ page }) => {
       await page.goto('/kurikulum/ekskul/1');
@@ -95,7 +95,7 @@ test.describe('F6d — Ekstrakurikuler Frontend', () => {
     });
   });
 
-  // ── Guru Pembina ──────────────────────────────────────────────────────────────
+  // â”€â”€ Guru Pembina â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Guru Ekskul', () => {
     test('Halaman /guru/ekskul dapat diakses', async ({ page }) => {
       await page.goto('/guru/ekskul');
@@ -110,7 +110,7 @@ test.describe('F6d — Ekstrakurikuler Frontend', () => {
     });
   });
 
-  // ── Rapor Ekskul ─────────────────────────────────────────────────────────────
+  // â”€â”€ Rapor Ekskul â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Rapor Ekskul', () => {
     test('Halaman /ekskul/rapor/:siswaId dapat diakses', async ({ page }) => {
       await page.goto('/ekskul/rapor/1');
@@ -127,12 +127,12 @@ test.describe('F6d — Ekstrakurikuler Frontend', () => {
     test('Tombol Kembali ada di rapor ekskul', async ({ page }) => {
       await page.goto('/ekskul/rapor/1');
       await page.waitForTimeout(2000);
-      // UX-POLISH §A: admin tidak punya akses guru; test kondisional
+      // UX-POLISH Â§A: admin tidak punya akses guru; test kondisional
       const hasSemesterSelect = await page.locator('#select-semester-rapor-ekskul').isVisible().catch(() => false);
       if (hasSemesterSelect) {
         await expect(page.locator('#btn-back-rapor-ekskul')).toBeVisible();
       } else {
-        // Admin di-redirect karena §A — acceptable
+        // Admin di-redirect karena Â§A â€” acceptable
         expect(true).toBe(true);
       }
     });
@@ -145,7 +145,7 @@ test.describe('F6d — Ekstrakurikuler Frontend', () => {
     });
   });
 
-  // ── Menu ──────────────────────────────────────────────────────────────────────
+  // â”€â”€ Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Menu Ekskul', () => {
     test('Sidebar admin menampilkan Ekstrakurikuler', async ({ page }) => {
       await page.goto('/kurikulum/ekskul');

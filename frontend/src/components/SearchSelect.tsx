@@ -15,8 +15,17 @@ interface SearchSelectProps {
   placeholder?: string;
   searchPlaceholder?: string;
   disabled?: boolean;
-  /** Clearable — show "x" to clear selection */
   clearable?: boolean;
+  /**
+   * Pencarian sisi-server (async). Bila disediakan, SearchSelect tidak
+   * menyaring `options` di browser — mengirim `q` ke server (debounce
+   * ±300ms, ambil ±20 hasil teratas). `options` dipakai hanya sbg cache
+   * opsi terpilih (supaya label terpilih tetap tampil).
+   *
+   * Alasan: dgn >200 siswa, siswa ke-201 tak bisa dipilih bila filter
+   * sisi-browser memotong ke 200.
+   */
+  onSearch?: (q: string) => Promise<SearchSelectOption[]>;
 }
 
 /**
@@ -35,12 +44,47 @@ export function SearchSelect({
   searchPlaceholder = 'Cari...',
   disabled = false,
   clearable = false,
+  onSearch,
 }: SearchSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // ── Async server-side search ──────────────────────────────────────────
+  // Bila onSearch disediakan, hasil dropdown diambil dari server (debounce
+  // ±300ms), bukan difilter di browser. `options` tetap dipakai sbg cache
+  // opsi terpilih (supaya label terpilih tampil saat dropdown tertutup).
+  const [asyncOptions, setAsyncOptions] = useState<SearchSelectOption[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const asyncAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!onSearch || !open) return;
+    let cancelled = false;
+    setSearchLoading(true);
+    // Hentikan pencarian sebelumnya (debounce 300ms).
+    if (asyncAbortRef.current) asyncAbortRef.current.abort();
+    const ac = new AbortController();
+    asyncAbortRef.current = ac;
+    const timer = setTimeout(async () => {
+      try {
+        const results = await onSearch(search);
+        if (!cancelled && !ac.signal.aborted) {
+          setAsyncOptions(results);
+        }
+      } catch {
+        // Aborted atau error — biarkan hasil sebelumnya.
+      } finally {
+        if (!cancelled && !ac.signal.aborted) setSearchLoading(false);
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [search, open, onSearch]);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -72,16 +116,20 @@ export function SearchSelect({
     return () => { document.body.style.overflow = ''; };
   }, [open, isMobile]);
 
-  const selected = options.find((o) => o.value === value) || null;
+  // Opsi terpilih: cari di `options` (cache induk) atau `asyncOptions`.
+  const selected = options.find((o) => o.value === value) || asyncOptions.find((o) => o.value === value) || null;
 
-  const filtered = options.filter((o) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return (
-      o.label.toLowerCase().includes(s) ||
-      (o.subtitle?.toLowerCase().includes(s) ?? false)
-    );
-  });
+  // Hasil dropdown: bila onSearch, pakai asyncOptions; jika tidak, filter sisi-browser.
+  const filtered = onSearch
+    ? asyncOptions
+    : options.filter((o) => {
+        if (!search) return true;
+        const s = search.toLowerCase();
+        return (
+          o.label.toLowerCase().includes(s) ||
+          (o.subtitle?.toLowerCase().includes(s) ?? false)
+        );
+      });
 
   const handleSelect = (val: string | number | null) => {
     onChange(val);
@@ -217,9 +265,11 @@ export function SearchSelect({
             />
           </div>
           <div className="overflow-y-auto flex-1">
-            {filtered.length === 0 ? (
+            {searchLoading ? (
+              <p className="px-3 py-4 text-sm text-aam-text-muted text-center">Mencari…</p>
+            ) : filtered.length === 0 ? (
               <p className="px-3 py-4 text-sm text-aam-text-muted text-center">
-                Tidak ada hasil
+                {onSearch && !search ? 'Ketik untuk mencari…' : 'Tidak ada hasil'}
               </p>
             ) : (
               filtered.map((opt) => (
@@ -292,9 +342,11 @@ export function SearchSelect({
             </div>
             {/* Options */}
             <div className="px-2 pb-4 max-h-[50vh] overflow-y-auto">
-              {filtered.length === 0 ? (
+              {searchLoading ? (
+                <p className="px-3 py-6 text-sm text-aam-text-muted text-center">Mencari…</p>
+              ) : filtered.length === 0 ? (
                 <p className="px-3 py-6 text-sm text-aam-text-muted text-center">
-                  Tidak ada hasil
+                  {onSearch && !search ? 'Ketik untuk mencari…' : 'Tidak ada hasil'}
                 </p>
               ) : (
                 filtered.map((opt) => (

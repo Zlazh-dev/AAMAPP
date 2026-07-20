@@ -8,7 +8,7 @@ import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
 import { BackLink } from '../../../components/BackLink';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 
@@ -93,14 +93,13 @@ export function AkunAktivitasPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group' },
-          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg' },
-          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices' },
+          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group', description: 'Semua akun pengguna' },
+          { key: 'persetujuan', label: 'Persetujuan', path: '/admin/akun/persetujuan', icon: 'how_to_reg', description: 'Antrean akun menunggu' },
+          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices', description: 'Perangkat yg sedang login' },
         ]}
-      />
+      >
 
       {/* FilterBar */}
       <div className="mb-4">
@@ -226,6 +225,7 @@ export function AkunAktivitasPage() {
           </div>
         </div>
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

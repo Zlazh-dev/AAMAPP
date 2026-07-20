@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F6-INTEGRASI — Rapor PDF Penuh E2E (MANDIRI §12.17e).
+ * F6-INTEGRASI â€” Rapor PDF Penuh E2E (MANDIRI Â§12.17e).
  *
  * Backend integrasi paralel (AG-2). Tests:
  * - RaporDetailPage menampilkan 3 bagian (akademik, kokurikuler, ekskul).
@@ -12,13 +12,13 @@ import { loginAsAdmin } from '../helpers/auth';
  * Navigasi by-id (NOT daftar paginasi).
  */
 
-test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
+test.describe('F6-INTEGRASI â€” Rapor PDF Penuh', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Rapor Detail 3 Bagian ─────────────────────────────────────────────────
-  test.describe('RaporDetailPage — 3 Bagian Terintegrasi', () => {
+  // â”€â”€ Rapor Detail 3 Bagian â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test.describe('RaporDetailPage â€” 3 Bagian Terintegrasi', () => {
     test('Halaman /guru/rapor/:siswaId dapat diakses', async ({ page }) => {
       await page.goto('/guru/rapor/1');
       await page.waitForTimeout(2000);
@@ -35,7 +35,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
       if (hasBack) {
         expect(hasBtn).toBe(true);
       } else {
-        // API not live yet — page render acceptable
+        // API not live yet â€” page render acceptable
         expect(true).toBe(true);
       }
     });
@@ -59,7 +59,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
       await page.waitForTimeout(2000);
       const hasBack = await page.locator('#btn-back-rapor').isVisible().catch(() => false);
       if (hasBack) {
-        // Rapor loaded — section must exist
+        // Rapor loaded â€” section must exist
         await expect(page.locator('#section-kokurikuler')).toBeVisible();
       }
     });
@@ -86,7 +86,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
     });
   });
 
-  // ── PDF Lazy Check ──────────────────────────────────────────────────────────
+  // â”€â”€ PDF Lazy Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('PDF Lazy Import (tidak di main bundle)', () => {
     test('exportRaporPenuh tidak diimpor di main bundle (lazy)', async ({ page }) => {
       // Monitor network requests: pdfmake should NOT be in initial load
@@ -103,7 +103,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
     });
   });
 
-  // ── Finalisasi & Read-only ───────────────────────────────────────────────────
+  // â”€â”€ Finalisasi & Read-only â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Finalisasi rapor', () => {
     test('Tombol Finalisasi ada bila status DRAFT', async ({ page }) => {
       await page.goto('/guru/rapor/1');
@@ -125,7 +125,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
     });
   });
 
-  // ── Kokurikuler Content ──────────────────────────────────────────────────────
+  // â”€â”€ Kokurikuler Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Kokurikuler section content', () => {
     test('Kokurikuler section menampilkan tabel atau pesan empty', async ({ page }) => {
       await page.goto('/guru/rapor/1');
@@ -139,7 +139,7 @@ test.describe('F6-INTEGRASI — Rapor PDF Penuh', () => {
     });
   });
 
-  // ── Ekskul Content ───────────────────────────────────────────────────────────
+  // â”€â”€ Ekskul Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Ekskul section content', () => {
     test('Ekskul section menampilkan data atau pesan empty', async ({ page }) => {
       await page.goto('/guru/rapor/1');

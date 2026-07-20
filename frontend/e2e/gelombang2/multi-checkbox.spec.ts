@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran } from '../helpers/api';
 
 /**
- * Spec komponen: multi-checkbox kelas (Poin 3 Perluasan T16 — §12.17).
+ * Spec komponen: multi-checkbox kelas (Poin 3 Perluasan T16 â€” Â§12.17).
  * Diuji lewat PenugasanFormPage: pilih 1 guru + 1 mapel + CENTANG 2 kelas
  * -> Simpan -> backend menerima SATU request createPenugasan PER kelas
  * tercentang -> verifikasi via API bahwa 2 baris penugasan terbentuk.

@@ -117,16 +117,20 @@ export class KokurikulerService {
   // KEGIATAN CRUD
   // ─────────────────────────────────────────────────────────────────────────
 
-  async listKegiatan(tahunAjaranId?: number, semester?: number) {
+  async listKegiatan(tahunAjaranId?: number, semester?: number, page?: number, limit?: number) {
     const taId = tahunAjaranId ?? (await this.taAktif()).id;
     const where: any = { tahunAjaranId: taId };
     if (semester) where.semester = semester;
-    const list = await this.kegiatanRepo.find({
+    const pageNum = Math.max(1, page ?? 1);
+    const limitNum = Math.min(100, Math.max(1, limit ?? 25));
+    const [list, total] = await this.kegiatanRepo.findAndCount({
       where,
       relations: ['targets', 'tim'],
       order: { createdAt: 'DESC' },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     });
-    return { data: list, total: list.length };
+    return { data: list, total, page: pageNum, limit: limitNum };
   }
 
   async getKegiatan(id: number) {

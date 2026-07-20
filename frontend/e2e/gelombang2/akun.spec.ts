@@ -1,14 +1,14 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * T16-SPRINT lanjutan — Matriks Akun: tambah akun (RoleSelector) -> ubah
+ * T16-SPRINT lanjutan â€” Matriks Akun: tambah akun (RoleSelector) -> ubah
  * peran -> hapus akun. Persetujuan/penolakan pendaftar via
  * conditional-skip: pendaftaran memakai Google OAuth (`register-google`)
  * yang memerlukan GOOGLE_CLIENT_ID -- di lingkungan dev/CI variabel ini
  * kosong (`throw 'Login Google belum dikonfigurasi'`), jadi tak ada jalur
  * API untuk men-seed user berstatus 'pending' tanpa kredensial Google
- * asli. §12.17e: email unik per run + cleanup via API di afterEach.
+ * asli. Â§12.17e: email unik per run + cleanup via API di afterEach.
  */
 test.describe('Akun (Matriks T16 lanjutan)', () => {
   const createdIds: number[] = [];
@@ -66,7 +66,7 @@ test.describe('Akun (Matriks T16 lanjutan)', () => {
     expect(afterEdit.roles).toContain('kurikulum');
     expect(afterEdit.roles).not.toContain('guru');
 
-    // 3. Hapus akun via PageMenu (overflow ⋮) di halaman detail.
+    // 3. Hapus akun via PageMenu (overflow â‹®) di halaman detail.
     await page.goto(`/admin/akun/${created.id}`);
     await expect(page.getByRole('heading', { name: nama })).toBeVisible();
     await page.getByRole('button', { name: 'Menu halaman' }).click();
@@ -79,7 +79,7 @@ test.describe('Akun (Matriks T16 lanjutan)', () => {
     createdIds.length = 0; // sudah dihapus via UI
   });
 
-  test.skip('Setujui/Tolak pendaftar via halaman Persetujuan (butuh GOOGLE_CLIENT_ID utk seed via register-google — tidak tersedia di lingkungan ini)', async () => {
+  test.skip('Setujui/Tolak pendaftar via halaman Persetujuan (butuh GOOGLE_CLIENT_ID utk seed via register-google â€” tidak tersedia di lingkungan ini)', async () => {
     // Conditional-skip resmi: pendaftaran hanya via Google OAuth
     // (POST /api/auth/register-google) yg memvalidasi idToken via
     // GoogleClient -- tanpa GOOGLE_CLIENT_ID/kredensial nyata, tak ada

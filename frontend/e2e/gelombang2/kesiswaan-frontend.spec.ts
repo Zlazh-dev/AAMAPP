@@ -1,23 +1,23 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F5a — KESISWAAN Frontend E2E (MANDIRI-DATA §12.17e).
+ * F5a â€” KESISWAAN Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend kesiswaan belum live → e2e test UI routing + komponen render.
- * Semua API calls akan mendapat 404/401 → halaman merender EmptyState.
+ * Backend kesiswaan belum live â†’ e2e test UI routing + komponen render.
+ * Semua API calls akan mendapat 404/401 â†’ halaman merender EmptyState.
  * Yang diuji: route accessible, heading ada, menu ada, form elements hadir.
  *
  * Saat backend F5a live (AG-2 selesai), spec ini akan LANGSUNG hijau penuh
  * karena sudah memakai kontrak API yang benar.
  */
 
-test.describe('F5a — Kesiswaan Frontend', () => {
+test.describe('F5a â€” Kesiswaan Frontend', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Tata Tertib ──────────────────────────────────────────────────────────
+  // â”€â”€ Tata Tertib â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Tata Tertib CRUD', () => {
     test('Halaman /kesiswaan/tata-tertib dapat diakses oleh admin', async ({ page }) => {
       await page.goto('/kesiswaan/tata-tertib');
@@ -45,16 +45,16 @@ test.describe('F5a — Kesiswaan Frontend', () => {
       await page.goto('/kesiswaan/tata-tertib');
       await page.getByRole('button', { name: /Tambah Butir/i }).click();
       await expect(page.locator('#select-kategori-form')).toBeVisible();
-      // Pilih S → poin harus 25
+      // Pilih S â†’ poin harus 25
       await page.locator('#select-kategori-form').selectOption('S');
       await expect(page.locator('#input-poin')).toHaveValue('25');
-      // Pilih B → poin harus 50
+      // Pilih B â†’ poin harus 50
       await page.locator('#select-kategori-form').selectOption('B');
       await expect(page.locator('#input-poin')).toHaveValue('50');
     });
   });
 
-  // ── Pelanggaran ──────────────────────────────────────────────────────────
+  // â”€â”€ Pelanggaran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Pelanggaran Siswa', () => {
     test('Halaman /kesiswaan/pelanggaran dapat diakses oleh admin', async ({ page }) => {
       await page.goto('/kesiswaan/pelanggaran');
@@ -81,7 +81,7 @@ test.describe('F5a — Kesiswaan Frontend', () => {
     });
   });
 
-  // ── Verifikasi ──────────────────────────────────────────────────────────
+  // â”€â”€ Verifikasi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Verifikasi Pelanggaran', () => {
     test('Halaman /kesiswaan/verifikasi dapat diakses oleh admin', async ({ page }) => {
       await page.goto('/kesiswaan/verifikasi');
@@ -98,10 +98,10 @@ test.describe('F5a — Kesiswaan Frontend', () => {
     });
   });
 
-  // ── Menu Kesiswaan ───────────────────────────────────────────────────────
+  // â”€â”€ Menu Kesiswaan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Menu KESISWAAN', () => {
     test('Sidebar admin menampilkan main Kesiswaan; sub lewat SubPageLinks', async ({ page }) => {
-      // IA-HIERARCHY-V2: sidebar = Dashboard · Laporan Demerit · Presensi Siswa · Presensi Guru
+      // IA-HIERARCHY-V2: sidebar = Dashboard Â· Laporan Demerit Â· Presensi Siswa Â· Presensi Guru
       // Tata Tertib / Pelanggaran = sub (bukan sidebar).
       await page.goto('/kesiswaan');
       const sidebar = page.locator('aside');
@@ -115,8 +115,8 @@ test.describe('F5a — Kesiswaan Frontend', () => {
     });
   });
 
-  // ── Guru Pelanggaran ──────────────────────────────────────────────────────
-  test.describe('Guru — Lapor Pelanggaran', () => {
+  // â”€â”€ Guru Pelanggaran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test.describe('Guru â€” Lapor Pelanggaran', () => {
     test('Halaman /guru/pelanggaran dapat diakses oleh admin', async ({ page }) => {
       await page.goto('/guru/pelanggaran');
       await expect(page.getByRole('heading', { name: 'Laporan Pelanggaran' })).toBeVisible();

@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F6c Backend — Kokurikuler
+ * F6c Backend â€” Kokurikuler
  *
- *  1. POST kegiatan → created
- *  2. GET kegiatan list → muncul
- *  3. POST target dimensi (valid dari 8) → created
- *  4. POST target dimensi tidak valid → 400
- *  5. POST tim penilai (guru1 kelas) → created
- *  6. GET asesmen guru tim → siswa × dimensi (nilai null awal)
- *  7. PUT asesmen guru1 → tersimpan
- *  8. PUT asesmen guru2 → tersimpan (multi-penilai)
- *  9. GET rapor siswa → rata 2 penilai benar (SB=4, B=3 → rata=3.5 → >3.5 false → Baik)
- * 10. Non-anggota tim → 403 saat GET/PUT asesmen
+ *  1. POST kegiatan â†’ created
+ *  2. GET kegiatan list â†’ muncul
+ *  3. POST target dimensi (valid dari 8) â†’ created
+ *  4. POST target dimensi tidak valid â†’ 400
+ *  5. POST tim penilai (guru1 kelas) â†’ created
+ *  6. GET asesmen guru tim â†’ siswa Ã— dimensi (nilai null awal)
+ *  7. PUT asesmen guru1 â†’ tersimpan
+ *  8. PUT asesmen guru2 â†’ tersimpan (multi-penilai)
+ *  9. GET rapor siswa â†’ rata 2 penilai benar (SB=4, B=3 â†’ rata=3.5 â†’ >3.5 false â†’ Baik)
+ * 10. Non-anggota tim â†’ 403 saat GET/PUT asesmen
  */
 
 let adminToken: string;
@@ -30,10 +30,10 @@ let target1Id: number;
 let target2Id: number;
 let suffix: string;
 
-test.describe('F6c Backend — Kokurikuler', () => {
+test.describe('F6c Backend â€” Kokurikuler', () => {
   test.beforeAll(async ({ request }) => {
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     adminToken = (await login.json()).accessToken;
     suffix = Date.now().toString().slice(-6);
@@ -94,8 +94,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     if (guru2UserId) await request.delete(`/api/admin/users/${guru2UserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 
-  // ─── 1. Create kegiatan ────────────────────────────────────────────────────
-  test('1. POST kegiatan → created dengan tema + semester', async ({ request }) => {
+  // â”€â”€â”€ 1. Create kegiatan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. POST kegiatan â†’ created dengan tema + semester', async ({ request }) => {
     const res = await request.post('/api/kokurikuler/kegiatan', {
       headers: authHeaders(adminToken),
       data: { semester: 1, tema: `Proyek Kewargaan ${suffix}` },
@@ -107,8 +107,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(body.semester).toBe(1);
   });
 
-  // ─── 2. List kegiatan ──────────────────────────────────────────────────────
-  test('2. GET kegiatan list → kegiatan muncul', async ({ request }) => {
+  // â”€â”€â”€ 2. List kegiatan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. GET kegiatan list â†’ kegiatan muncul', async ({ request }) => {
     const res = await request.get('/api/kokurikuler/kegiatan', {
       headers: authHeaders(adminToken),
     });
@@ -117,8 +117,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(body.data.some((k: any) => k.id === kegiatanId)).toBeTruthy();
   });
 
-  // ─── 3. Add target dimensi valid ──────────────────────────────────────────
-  test('3. POST target dimensi valid (Kreativitas) → created', async ({ request }) => {
+  // â”€â”€â”€ 3. Add target dimensi valid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. POST target dimensi valid (Kreativitas) â†’ created', async ({ request }) => {
     const res = await request.post(`/api/kokurikuler/kegiatan/${kegiatanId}/target`, {
       headers: authHeaders(adminToken),
       data: { namaDimensi: 'Kreativitas' },
@@ -138,8 +138,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     target2Id = (await res2.json()).id;
   });
 
-  // ─── 4. Target dimensi invalid → 400 ─────────────────────────────────────
-  test('4. POST target dimensi tidak valid → 400', async ({ request }) => {
+  // â”€â”€â”€ 4. Target dimensi invalid â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. POST target dimensi tidak valid â†’ 400', async ({ request }) => {
     const res = await request.post(`/api/kokurikuler/kegiatan/${kegiatanId}/target`, {
       headers: authHeaders(adminToken),
       data: { namaDimensi: 'Dimensi Palsu XYZ' },
@@ -147,8 +147,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(res.status()).toBe(400);
   });
 
-  // ─── 5. Add tim penilai ───────────────────────────────────────────────────
-  test('5. POST tim penilai guru1 + guru2 → created', async ({ request }) => {
+  // â”€â”€â”€ 5. Add tim penilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. POST tim penilai guru1 + guru2 â†’ created', async ({ request }) => {
     const res1 = await request.post(`/api/kokurikuler/kegiatan/${kegiatanId}/tim`, {
       headers: authHeaders(adminToken),
       data: { kelasId, guruId: guru1Id },
@@ -162,8 +162,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(res2.ok(), `tim guru2: ${await res2.text()}`).toBeTruthy();
   });
 
-  // ─── 6. GET asesmen guru1 → null semua ───────────────────────────────────
-  test('6. GET asesmen guru tim → siswa × dimensi (nilai null awal)', async ({ request }) => {
+  // â”€â”€â”€ 6. GET asesmen guru1 â†’ null semua â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. GET asesmen guru tim â†’ siswa Ã— dimensi (nilai null awal)', async ({ request }) => {
     const res = await request.get(`/api/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
       headers: authHeaders(guru1Token),
     });
@@ -176,7 +176,7 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(s.dimensi.every((d: any) => d.nilai === null)).toBeTruthy();
   });
 
-  // ─── 7. PUT asesmen guru1 ─────────────────────────────────────────────────
+  // â”€â”€â”€ 7. PUT asesmen guru1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('7. PUT asesmen guru1: Kreativitas=Sangat Baik, Kolaborasi=Baik', async ({ request }) => {
     const res = await request.put(`/api/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
       headers: authHeaders(guru1Token),
@@ -191,7 +191,7 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect((await res.json()).saved).toBe(2);
   });
 
-  // ─── 8. PUT asesmen guru2 ─────────────────────────────────────────────────
+  // â”€â”€â”€ 8. PUT asesmen guru2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('8. PUT asesmen guru2: Kreativitas=Baik, Kolaborasi=Cukup', async ({ request }) => {
     const res = await request.put(`/api/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
       headers: authHeaders(guru2Token),
@@ -206,8 +206,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect((await res.json()).saved).toBe(2);
   });
 
-  // ─── 9. Rapor: rata multi-penilai benar ───────────────────────────────────
-  test('9. GET rapor siswa → rata-rata 2 penilai benar', async ({ request }) => {
+  // â”€â”€â”€ 9. Rapor: rata multi-penilai benar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. GET rapor siswa â†’ rata-rata 2 penilai benar', async ({ request }) => {
     const res = await request.get(`/api/kokurikuler/rapor/${siswaId}`, {
       headers: authHeaders(adminToken),
     });
@@ -218,13 +218,13 @@ test.describe('F6c Backend — Kokurikuler', () => {
     const kg = body.kegiatan.find((k: any) => k.kegiatanId === kegiatanId);
     expect(kg, 'kegiatan harus ada di rapor').toBeTruthy();
 
-    // Kreativitas: guru1=SB(4), guru2=B(3) → rata=3.5 → TIDAK >3.5 → Baik
+    // Kreativitas: guru1=SB(4), guru2=B(3) â†’ rata=3.5 â†’ TIDAK >3.5 â†’ Baik
     const kreativitas = kg.dimensi.find((d: any) => d.namaDimensi === 'Kreativitas');
     expect(kreativitas, 'dimensi Kreativitas harus ada').toBeTruthy();
     expect(kreativitas.rata).toBe(3.5);
-    expect(kreativitas.nilaiAkhir).toBe('Baik'); // 3.5 NOT > 3.5 → Baik per spec
+    expect(kreativitas.nilaiAkhir).toBe('Baik'); // 3.5 NOT > 3.5 â†’ Baik per spec
 
-    // Kolaborasi: guru1=B(3), guru2=C(2) → rata=2.5 → NOT >2.5 → Cukup
+    // Kolaborasi: guru1=B(3), guru2=C(2) â†’ rata=2.5 â†’ NOT >2.5 â†’ Cukup
     const kolaborasi = kg.dimensi.find((d: any) => d.namaDimensi === 'Kolaborasi');
     expect(kolaborasi.rata).toBe(2.5);
     expect(kolaborasi.nilaiAkhir).toBe('Cukup');
@@ -234,8 +234,8 @@ test.describe('F6c Backend — Kokurikuler', () => {
     expect(body.deskripsi).toContain('Cukup pada Kolaborasi');
   });
 
-  // ─── 10. Non-tim → 403 ────────────────────────────────────────────────────
-  test('10. Guru bukan anggota tim → 403 GET/PUT asesmen', async ({ request }) => {
+  // â”€â”€â”€ 10. Non-tim â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('10. Guru bukan anggota tim â†’ 403 GET/PUT asesmen', async ({ request }) => {
     // Buat guru ketiga yang tidak ada di tim
     const u3 = await request.post('/api/admin/users', {
       headers: authHeaders(adminToken),
@@ -250,13 +250,13 @@ test.describe('F6c Backend — Kokurikuler', () => {
     const l3 = await request.post('/api/auth/login', { data: { email: `f6cg3${suffix}@test.com`, password: 'pass1234' } });
     const guru3Token = (await l3.json()).accessToken;
 
-    // GET asesmen → 403
+    // GET asesmen â†’ 403
     const getRes = await request.get(`/api/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
       headers: authHeaders(guru3Token),
     });
     expect(getRes.status()).toBe(403);
 
-    // PUT asesmen → 403
+    // PUT asesmen â†’ 403
     const putRes = await request.put(`/api/kokurikuler/asesmen?kegiatanId=${kegiatanId}&kelasId=${kelasId}`, {
       headers: authHeaders(guru3Token),
       data: { entri: [{ siswaId, targetId: target1Id, nilai: 'Baik' }] },

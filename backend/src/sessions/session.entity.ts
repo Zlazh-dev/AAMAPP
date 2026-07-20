@@ -34,6 +34,15 @@ export class Session {
   @Column({ type: 'varchar', length: 255 })
   deviceSummary: string;
 
+  /**
+   * Identitas perangkat sungguhan — cookie acak httpOnly sameSite=lax
+   * umur ±1 tahun. Dipakai untuk dedupe sesi: login kedua dari perangkat
+   * yg sama memperbarui baris yg ada, bukan menyisipkan baris baru.
+   * Bukan dedupe by deviceSummary (label "Chrome - Windows" menyatu semua).
+   */
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  deviceId: string | null;
+
   @Column({ type: 'varchar', length: 50 })
   loginMethod: string; // 'password' | 'google'
 

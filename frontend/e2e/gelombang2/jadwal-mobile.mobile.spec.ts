@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran } from '../helpers/api';
 
 /**
- * T16-SPRINT lanjutan — Jadwal KBM mobile: pemilih hari segmented (Senin..
- * Sabtu) menyaring daftar sesi vertikal per hari (project mobile 375×812).
- * §12.17e: entitas unik per run + cleanup via API di afterEach.
+ * T16-SPRINT lanjutan â€” Jadwal KBM mobile: pemilih hari segmented (Senin..
+ * Sabtu) menyaring daftar sesi vertikal per hari (project mobile 375Ã—812).
+ * Â§12.17e: entitas unik per run + cleanup via API di afterEach.
  */
 test.describe('Jadwal KBM Mobile (Matriks T16 lanjutan)', () => {
   const createdGuruIds: number[] = [];
@@ -89,13 +89,13 @@ test.describe('Jadwal KBM Mobile (Matriks T16 lanjutan)', () => {
     await page.locator('select').first().selectOption({ value: String(kelas.id) });
 
     // Default hari terpilih = Senin -> sesi Senin (07:00) tampil.
-    await expect(page.getByText('07:00:00–07:40:00')).toBeVisible();
-    await expect(page.getByText('08:00:00–08:40:00')).not.toBeVisible();
+    await expect(page.getByText('07:00:00â€“07:40:00')).toBeVisible();
+    await expect(page.getByText('08:00:00â€“08:40:00')).not.toBeVisible();
 
     // Pindah ke Selasa -> hanya sesi Selasa (08:00) tampil, Senin hilang.
     await page.getByRole('button', { name: 'Sel' }).click();
-    await expect(page.getByText('08:00:00–08:40:00')).toBeVisible();
-    await expect(page.getByText('07:00:00–07:40:00')).not.toBeVisible();
+    await expect(page.getByText('08:00:00â€“08:40:00')).toBeVisible();
+    await expect(page.getByText('07:00:00â€“07:40:00')).not.toBeVisible();
   });
 });
 

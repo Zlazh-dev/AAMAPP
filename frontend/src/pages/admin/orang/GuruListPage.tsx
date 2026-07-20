@@ -7,7 +7,8 @@ import { Badge } from '../../../components/Badge';
 import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
+import { Pagination } from '../../../components/Pagination';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 import { Table, ColumnDef } from '../../../components/Table';
@@ -26,10 +27,13 @@ export function GuruListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<FilterValues>({});
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     loadGuru();
-  }, [search, filters]);
+  }, [search, filters, page]);
+
+  useEffect(() => { setPage(1); }, [search, filters]);
 
   const loadGuru = async () => {
     setLoading(true);
@@ -37,7 +41,8 @@ export function GuruListPage() {
       const res = await api.adminGetGuru({
         q: search || undefined,
         status: filters.status || undefined,
-        limit: 200,
+        page,
+        limit: 25,
       });
       setData(res.data);
       setTotal(res.total);
@@ -90,13 +95,12 @@ export function GuruListPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'siswa', label: 'Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
-          { key: 'import', label: 'Import', path: '/kurikulum/orang/import', icon: 'upload_file' },
+          { key: 'siswa', label: 'Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3', description: 'Data induk siswa' },
+          { key: 'import', label: 'Import', path: '/kurikulum/orang/import', icon: 'upload_file', description: 'Impor massal guru & siswa' },
         ]}
-      />
+      >
 
       {/* FilterBar */}
       <div className="mb-4">
@@ -189,9 +193,11 @@ export function GuruListPage() {
                 <span>{g.jumlahPaket} paket</span>
               </div>
             </Card>
-          ))
-        )}
-      </div>
+           ))
+         )}
+       </div>
+       <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+      </SubPageLayout>
     </PageContainer>
   );
 }

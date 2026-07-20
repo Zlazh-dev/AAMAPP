@@ -8,12 +8,13 @@ import { EmptyState } from '../../../components/EmptyState';
 import { Table } from '../../../components/Table';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
+import { Pagination } from '../../../components/Pagination';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 
 const KELAS_SUB_LINKS = [
-  { key: 'wali', label: 'Wali Kelas', path: '/kurikulum/wali-kelas', icon: 'manage_accounts' },
+  { key: 'wali', label: 'Wali Kelas', path: '/kurikulum/wali-kelas', icon: 'manage_accounts', description: 'Penugasan wali kelas' },
 ];
 
 /**
@@ -28,11 +29,14 @@ export function KelasListPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<FilterValues>({});
 
   useEffect(() => {
     loadKelas();
-  }, [search, filters]);
+  }, [search, filters, page]);
+
+  useEffect(() => { setPage(1); }, [search, filters]);
 
   const loadKelas = async () => {
     setLoading(true);
@@ -40,7 +44,8 @@ export function KelasListPage() {
       const res = await api.adminGetKelas({
         q: search || undefined,
         tingkat: filters.tingkat ? parseInt(filters.tingkat) : undefined,
-        limit: 200,
+        page,
+        limit: 25,
       });
       setData(res.data);
       setTotal(res.total);
@@ -91,7 +96,7 @@ export function KelasListPage() {
         />
       </div>
 
-      <SubPageLinks links={KELAS_SUB_LINKS} />
+      <SubPageLayout links={KELAS_SUB_LINKS}>
 
       {/* FilterBar */}
       <div className="mb-4">
@@ -107,6 +112,7 @@ export function KelasListPage() {
       {loading ? (
         <TableSkeleton rows={4} cols={4} />
       ) : (
+        <>
         <Table
           columns={[
             { header: 'Nama', cell: (k: any) => <span className="font-medium text-aam-text">{k.nama}</span> },
@@ -120,7 +126,10 @@ export function KelasListPage() {
           emptyMessage="Belum ada data kelas"
           onRowClick={(k: any) => navigate(`/kurikulum/kelas/${k.id}`)}
         />
+        <Pagination page={page} limit={25} total={total} onPageChange={setPage} loading={loading} />
+        </>
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

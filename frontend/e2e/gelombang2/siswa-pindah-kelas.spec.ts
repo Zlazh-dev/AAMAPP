@@ -1,11 +1,11 @@
-import { test, expect, request as pwRequest } from '@playwright/test';
+﻿import { test, expect, request as pwRequest } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
  * Pindah antar-kelas + Keluarkan dari kelas (multi-select).
  *
- * Skenario ini sebelumnya TIDAK punya tes sama sekali — itulah sebabnya
+ * Skenario ini sebelumnya TIDAK punya tes sama sekali â€” itulah sebabnya
  * bug "save() mengutamakan objek relasi kelas" lolos. Spec ini membuktikan
  * lewat DATABASE (bukan pesan sukses layar) bahwa kelasId benar-benar
  * berubah.
@@ -42,7 +42,7 @@ test.describe('Pindah antar-kelas & Keluarkan dari kelas (DB proof)', () => {
     adminToken = await loginViaApi(ctx);
   });
 
-  test('Pindahkan siswa antar-kelas via API — kelasId berubah di DB', async ({ request }) => {
+  test('Pindahkan siswa antar-kelas via API â€” kelasId berubah di DB', async ({ request }) => {
     const headers = authHeaders(adminToken);
     const suffix = Date.now();
 
@@ -80,7 +80,7 @@ test.describe('Pindah antar-kelas & Keluarkan dari kelas (DB proof)', () => {
     // DB proof: siswa kelasId = kelasB.id (BUKAN kelasA.id).
     expect(await dbKelasIdOf(siswa.id)).toBe(String(kelasB.id));
 
-    // Pindahkan kembali ke kelas A — verifikasi perubahan dua arah.
+    // Pindahkan kembali ke kelas A â€” verifikasi perubahan dua arah.
     const pindahKembaliRes = await request.patch(`/api/admin/siswa/${siswa.id}`, {
       headers,
       data: { kelasId: kelasA.id },
@@ -94,7 +94,7 @@ test.describe('Pindah antar-kelas & Keluarkan dari kelas (DB proof)', () => {
     await request.delete(`/api/admin/kelas/${kelasB.id}`, { headers }).catch(() => {});
   });
 
-  test('Keluarkan siswa dari kelas via UI — kelasId = NULL di DB', async ({ page, request }) => {
+  test('Keluarkan siswa dari kelas via UI â€” kelasId = NULL di DB', async ({ page, request }) => {
     const headers = authHeaders(adminToken);
     const suffix = Date.now() + 1;
 
@@ -136,8 +136,8 @@ test.describe('Pindah antar-kelas & Keluarkan dari kelas (DB proof)', () => {
 });
 
 async function loginViaApi(ctx: import('@playwright/test').APIRequestContext): Promise<string> {
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'e2e-admin@aamapp.sch.id';
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'e2e-admin-pass';
   const res = await ctx.post('/api/auth/login', { data: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD } });
   const body = await res.json();
   return body.accessToken;

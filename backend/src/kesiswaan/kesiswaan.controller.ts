@@ -128,6 +128,17 @@ export class KesiswaanController {
   }
 
   /**
+   * GET /api/kesiswaan/pelanggaran/:id — detail satu pelanggaran by id.
+   * Endpoint terpisah, BUKAN ambil seluruh daftar lalu saring di frontend.
+   * Peran: kesiswaan|admin|kepsek|guru (hak baca).
+   */
+  @Get('pelanggaran/:id')
+  @Roles('kesiswaan', 'admin', 'kepsek', 'guru')
+  getPelanggaranDetail(@Param('id', ParseIntPipe) id: number) {
+    return this.svc.getPelanggaranDetail(id);
+  }
+
+  /**
    * GET /api/kesiswaan/verifikasi?page&limit
    * Antrean MENUNGGU; wali → hanya kelasnya
    * kesiswaan|admin|guru (wali)

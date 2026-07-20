@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, ApiError, Kelas, Guru, GuruListResponse, Siswa, SiswaListResponse, KelasListResponse } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -80,7 +80,7 @@ export function KelasDetailPage() {
     if (!assignOpen || !kelas) return;
     let cancelled = false;
     setAssignLoading(true);
-    api.adminGetSiswa({ q: assignDebounced || undefined, limit: 50 })
+    api.adminGetSiswa({ q: assignDebounced || undefined, limit: 20 })
       .then((res) => {
         if (cancelled) return;
         // Kecualikan siswa yang sudah jadi anggota kelas INI (bukan kelas lain —
@@ -91,35 +91,46 @@ export function KelasDetailPage() {
     return () => { cancelled = true; };
   }, [assignOpen, assignDebounced, kelas]);
 
+  // Pencarian sisi-server untuk pemilih guru wali (bukan ambil 1000).
+  const searchGuru = useCallback(async (q: string) => {
+    const res = await api.adminGetGuru({ q: q || undefined, status: 'aktif', limit: 20 });
+    setGuruOptions((prev) => {
+      const seen = new Set(prev.map((o: any) => o.value));
+      const newOpts = res.data.map((g) => ({ value: g.id, label: g.nama, subtitle: g.nip || undefined, icon: 'school' }));
+      return [...prev, ...newOpts.filter((o: any) => !seen.has(o.value))];
+    });
+    return res.data.map((g) => ({ value: g.id, label: g.nama, subtitle: g.nip || undefined, icon: 'school' }));
+  }, []);
+
+  // Pencarian sisi-server untuk pemilih kelas tujuan (bukan ambil 1000).
+  const searchKelas = useCallback(async (q: string) => {
+    const kelasId = parseInt(id!, 10);
+    const res = await api.adminGetKelas({ q: q || undefined, limit: 20 });
+    setKelasOptions((prev) => {
+      const seen = new Set(prev.map((o: any) => o.value));
+      const newOpts = res.data.filter((k2) => k2.id !== kelasId).map((k2) => ({ value: k2.id, label: k2.nama, subtitle: `Tingkat ${k2.tingkat}`, icon: 'meeting_room' }));
+      return [...prev, ...newOpts.filter((o: any) => !seen.has(o.value))];
+    });
+    return res.data.filter((k2) => k2.id !== kelasId).map((k2) => ({ value: k2.id, label: k2.nama, subtitle: `Tingkat ${k2.tingkat}`, icon: 'meeting_room' }));
+  }, [id]);
+
   const loadAll = async () => {
     setLoading(true);
     try {
       const kelasId = parseInt(id!, 10);
-      const [k, siswa, guru, allKelas, siswaSistem] = await Promise.all([
+      const [k, siswa, siswaSistem] = await Promise.all([
         api.adminGetKelasById(kelasId),
-        api.adminGetSiswa({ kelasId, limit: 500 }),
-        api.adminGetGuru({ status: 'aktif', limit: 1000 }),
-        api.adminGetKelas({ limit: 1000 }),
-        api.adminGetSiswa({ limit: 1 }),
+        api.adminGetSiswa({ kelasId, limit: 500 }), // daftar anggota kelas ini — ±30 siswa, wajar dimuat penuh.
+        api.adminGetSiswa({ limit: 1 }), // total siswa sistem (count only).
       ]);
       setKelas(k);
       setSiswaList(siswa.data);
       setTotalSiswaSistem(siswaSistem.total);
       setSelectedGuruId(k.waliGuruId);
-      setGuruOptions(guru.data.map((g) => ({
-        value: g.id,
-        label: g.nama,
-        subtitle: g.nip || undefined,
-        icon: 'school',
-      })));
-      setKelasOptions(allKelas.data
-        .filter((k2) => k2.id !== kelasId)
-        .map((k2) => ({
-          value: k2.id,
-          label: k2.nama,
-          subtitle: `Tingkat ${k2.tingkat}`,
-          icon: 'meeting_room',
-        })));
+      // Cache wali saat ini supaya label tampil di SearchSelect (bukan ambil 1000 guru).
+      if (k.waliGuruId) {
+        setGuruOptions([{ value: k.waliGuruId, label: k.waliGuru?.nama ?? `Guru #${k.waliGuruId}`, subtitle: undefined, icon: 'school' }]);
+      }
     } catch (err) {
       show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Kelas tidak ditemukan');
       navigate('/kurikulum/kelas');
@@ -386,6 +397,7 @@ export function KelasDetailPage() {
               placeholder="Pilih wali kelas..."
               searchPlaceholder="Cari nama guru..."
               clearable
+              onSearch={searchGuru}
             />
           </div>
           <Button onClick={handleSaveWali} loading={savingWali} disabled={selectedGuruId === kelas.waliGuruId}>
@@ -697,6 +709,7 @@ export function KelasDetailPage() {
                       onChange={setTargetKelasId}
                       placeholder="Pilih kelas tujuan..."
                       searchPlaceholder="Cari kelas..."
+                      onSearch={searchKelas}
                     />
                   </div>
                   <div className="flex gap-2">

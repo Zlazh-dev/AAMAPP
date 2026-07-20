@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 /**
- * E2E spec F4b — Dashboard + Laporan + Export lazy.
+ * E2E spec F4b â€” Dashboard + Laporan + Export lazy.
  *
  * Strategy:
  * 1. Dashboard accessible (mocked + fallback statis).
  * 2. Laporan HUB: 3 sub-link cards visible.
- * 3. Laporan harian guru: filter + tampilkan → tabel muncul.
+ * 3. Laporan harian guru: filter + tampilkan â†’ tabel muncul.
  * 4. Export buttons exist on laporan pages.
  * 5. exceljs dan pdfmake TIDAK ada di main chunk (bundle check).
  */
 
 const BASE_URL = 'http://localhost';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'e2e-admin@aamapp.sch.id';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'e2e-admin-pass';
 
 async function loginViaApi(request: any, email: string, password: string): Promise<string> {
   const res = await request.post(`${BASE_URL}/api/auth/login`, {
@@ -28,14 +28,14 @@ async function setToken(page: any, token: string) {
   await page.evaluate((t: string) => localStorage.setItem('aamapp_token', t), token);
 }
 
-test.describe('F4b — Dashboard + Laporan + Export', () => {
+test.describe('F4b â€” Dashboard + Laporan + Export', () => {
   let adminToken: string;
 
   test.beforeAll(async ({ request }) => {
     adminToken = await loginViaApi(request, ADMIN_EMAIL, ADMIN_PASSWORD);
   });
 
-  test('Dashboard admin accessible — hanya aktivitas akun (IA-HIERARCHY-V2)', async ({ page }) => {
+  test('Dashboard admin accessible â€” hanya aktivitas akun (IA-HIERARCHY-V2)', async ({ page }) => {
     await setToken(page, adminToken);
 
     // Mock aktivitas akun (satu-satunya yang ditampilkan di dashboard admin).
@@ -82,14 +82,14 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
     await expect(page.getByText('Kehadiran Guru Hari Ini').or(page.getByText('Guru Hadir'))).toBeVisible({ timeout: 5_000 });
   });
 
-  test('Laporan area berpisah — /tu/laporan/harian-guru accessible', async ({ page }) => {
+  test('Laporan area berpisah â€” /tu/laporan/harian-guru accessible', async ({ page }) => {
     await setToken(page, adminToken);
     // /admin/laporan hub dibubarkan (IA migration). Test area baru saja.
     await page.goto('/tu/laporan/harian-guru');
     await expect(page.locator('h2, h1').first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test('Sub-halaman laporan harian guru — filter + tabel', async ({ page }) => {
+  test('Sub-halaman laporan harian guru â€” filter + tabel', async ({ page }) => {
     await setToken(page, adminToken);
 
     // Mock laporan harian guru
@@ -146,7 +146,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
     await expect(btnPdf).not.toBeDisabled();
   });
 
-  test('Laporan keterlaksanaan KBM — accessible', async ({ page }) => {
+  test('Laporan keterlaksanaan KBM â€” accessible', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/laporan/keterlaksanaan-kbm**', async route => {
@@ -161,7 +161,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
     await expect(page.locator('#btn-tampilkan-kbm')).toBeVisible();
   });
 
-  test('Laporan siswa — accessible', async ({ page }) => {
+  test('Laporan siswa â€” accessible', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/laporan/siswa**', async route => {
@@ -193,7 +193,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       }
     });
 
-    // Hub /admin/laporan bubar — pakai /admin (dashboard) untuk test lazy bundle
+    // Hub /admin/laporan bubar â€” pakai /admin (dashboard) untuk test lazy bundle
     await page.goto('/admin');
     await page.waitForLoadState('networkidle');
 

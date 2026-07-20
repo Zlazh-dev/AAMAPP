@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 test.describe('Cabut Sesi (Regresi F0)', () => {
@@ -9,7 +9,7 @@ test.describe('Cabut Sesi (Regresi F0)', () => {
     // If there is only one session (the current one), revoking it logs us out.
     // Let's create a dummy session via API first.
     const loginRes = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' }
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' }
     });
     const { sessionInfo } = await loginRes.json();
 

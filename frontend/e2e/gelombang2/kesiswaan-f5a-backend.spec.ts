@@ -1,20 +1,20 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F5a Backend — Kesiswaan / Demerit
+ * F5a Backend â€” Kesiswaan / Demerit
  *
- *  1. GET /api/kesiswaan/katalog → 28 butir seed §7.2
+ *  1. GET /api/kesiswaan/katalog â†’ 28 butir seed Â§7.2
  *  2. R-07 di nomor 7: Terlambat masuk kelas, R, 10
- *  3. RBAC guru bisa baca katalog → 200
- *  4. Catat langsung (kesiswaan/admin) → DISETUJUI, saldo turun
- *  5. Lapor (guru biasa) → MENUNGGU, saldo BELUM turun
- *  6. Verifikasi setujui → DISETUJUI, saldo turun
- *  7. Tolak wajib alasan → DITOLAK
- *  8. Tolak tanpa alasan → 400
+ *  3. RBAC guru bisa baca katalog â†’ 200
+ *  4. Catat langsung (kesiswaan/admin) â†’ DISETUJUI, saldo turun
+ *  5. Lapor (guru biasa) â†’ MENUNGGU, saldo BELUM turun
+ *  6. Verifikasi setujui â†’ DISETUJUI, saldo turun
+ *  7. Tolak wajib alasan â†’ DITOLAK
+ *  8. Tolak tanpa alasan â†’ 400
  *  9. RBAC: guru lain tidak bisa langsung (MENUNGGU, bukan DISETUJUI)
- * 10. Hook R-07: simpan roster dengan siswa T → draft R-07 MENUNGGU, saldo tidak berubah
+ * 10. Hook R-07: simpan roster dengan siswa T â†’ draft R-07 MENUNGGU, saldo tidak berubah
  */
 
 let adminToken: string;
@@ -25,11 +25,11 @@ let kelasId: number;
 let katalogR07Id: number;
 let suffix: string;
 
-test.describe('F5a Backend — Kesiswaan / Demerit', () => {
+test.describe('F5a Backend â€” Kesiswaan / Demerit', () => {
   test.beforeAll(async ({ request }) => {
     // Login admin
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     const loginBody = await login.json();
     adminToken = loginBody.token ?? loginBody.accessToken ?? loginBody.access_token;
@@ -83,8 +83,8 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     if (guruUserId) await request.delete(`/api/admin/users/${guruUserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 
-  // ─── 1. Seed 28 butir ────────────────────────────────────────────────────
-  test('1. GET /api/kesiswaan/katalog → 28 butir seed §7.2', async ({ request }) => {
+  // â”€â”€â”€ 1. Seed 28 butir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. GET /api/kesiswaan/katalog â†’ 28 butir seed Â§7.2', async ({ request }) => {
     const res = await request.get('/api/kesiswaan/katalog?limit=50', {
       headers: authHeaders(adminToken),
     });
@@ -94,7 +94,7 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(body.data.length).toBeGreaterThanOrEqual(28);
   });
 
-  // ─── 2. R-07 = nomor 7 ────────────────────────────────────────────────────
+  // â”€â”€â”€ 2. R-07 = nomor 7 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('2. R-07 = nomor 7 "Terlambat masuk kelas" R 10 poin', async ({ request }) => {
     const res = await request.get('/api/kesiswaan/katalog?q=Terlambat&limit=5', {
       headers: authHeaders(adminToken),
@@ -108,16 +108,16 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     katalogR07Id = r07.id;
   });
 
-  // ─── 3. Guru bisa baca katalog ────────────────────────────────────────────
-  test('3. RBAC: guru bisa baca katalog → 200', async ({ request }) => {
+  // â”€â”€â”€ 3. Guru bisa baca katalog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. RBAC: guru bisa baca katalog â†’ 200', async ({ request }) => {
     const res = await request.get('/api/kesiswaan/katalog', {
       headers: authHeaders(guruToken),
     });
     expect(res.ok(), await res.text()).toBeTruthy();
   });
 
-  // ─── 4. Catat langsung (admin) → DISETUJUI, saldo turun ──────────────────
-  test('4. Catat langsung (admin/kesiswaan) → DISETUJUI, saldo turun 10', async ({ request }) => {
+  // â”€â”€â”€ 4. Catat langsung (admin) â†’ DISETUJUI, saldo turun â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. Catat langsung (admin/kesiswaan) â†’ DISETUJUI, saldo turun 10', async ({ request }) => {
     // Saldo awal
     const saldo0 = await request.get(`/api/kesiswaan/saldo?siswaId=${siswaId}`, {
       headers: authHeaders(adminToken),
@@ -148,8 +148,8 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(saldo1Nilai).toBe(saldo0Nilai - 10);
   });
 
-  // ─── 5. Lapor (guru biasa) → MENUNGGU, saldo belum berubah ───────────────
-  test('5. Lapor (guru biasa bukan kesiswaan) → MENUNGGU, saldo tidak berubah', async ({ request }) => {
+  // â”€â”€â”€ 5. Lapor (guru biasa) â†’ MENUNGGU, saldo belum berubah â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. Lapor (guru biasa bukan kesiswaan) â†’ MENUNGGU, saldo tidak berubah', async ({ request }) => {
     const saldo0 = await request.get(`/api/kesiswaan/saldo?siswaId=${siswaId}`, {
       headers: authHeaders(adminToken),
     });
@@ -180,8 +180,8 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     (test as any)._pelanggaranMenungguId = pelanggaran.id;
   });
 
-  // ─── 6. Verifikasi setujui → DISETUJUI, saldo turun ─────────────────────
-  test('6. Setujui pelanggaran MENUNGGU → DISETUJUI, saldo turun', async ({ request }) => {
+  // â”€â”€â”€ 6. Verifikasi setujui â†’ DISETUJUI, saldo turun â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. Setujui pelanggaran MENUNGGU â†’ DISETUJUI, saldo turun', async ({ request }) => {
     // Ambil antrean MENUNGGU
     const antrean = await request.get('/api/kesiswaan/verifikasi', {
       headers: authHeaders(adminToken),
@@ -210,8 +210,8 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(saldo1Nilai).toBeLessThan(saldo0Nilai);
   });
 
-  // ─── 7. Tolak dengan alasan ────────────────────────────────────────────────
-  test('7. Guru lapor → catat baru → admin tolak dengan alasan → DITOLAK', async ({ request }) => {
+  // â”€â”€â”€ 7. Tolak dengan alasan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. Guru lapor â†’ catat baru â†’ admin tolak dengan alasan â†’ DITOLAK', async ({ request }) => {
     // Catat satu pelanggaran MENUNGGU baru
     const res = await request.post('/api/kesiswaan/pelanggaran', {
       headers: authHeaders(guruToken),
@@ -234,8 +234,8 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(tolakBody.alasanKeputusan).toBeTruthy();
   });
 
-  // ─── 8. Tolak tanpa alasan → 400 ─────────────────────────────────────────
-  test('8. Tolak pelanggaran tanpa alasan → 400 BadRequest', async ({ request }) => {
+  // â”€â”€â”€ 8. Tolak tanpa alasan â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Tolak pelanggaran tanpa alasan â†’ 400 BadRequest', async ({ request }) => {
     // Catat satu pelanggaran MENUNGGU baru
     const res = await request.post('/api/kesiswaan/pelanggaran', {
       headers: authHeaders(guruToken),
@@ -250,20 +250,20 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(tolakRes.status()).toBe(400);
   });
 
-  // ─── 9. RBAC: guru biasa → MENUNGGU (tidak langsung) ─────────────────────
-  test('9. RBAC: guru biasa bukan kesiswaan → catat hanya bisa LAPORAN/MENUNGGU', async ({ request }) => {
+  // â”€â”€â”€ 9. RBAC: guru biasa â†’ MENUNGGU (tidak langsung) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. RBAC: guru biasa bukan kesiswaan â†’ catat hanya bisa LAPORAN/MENUNGGU', async ({ request }) => {
     const res = await request.post('/api/kesiswaan/pelanggaran', {
       headers: authHeaders(guruToken),
       data: { siswaId, katalogId: katalogR07Id, tanggal: '2026-07-14' },
     });
     expect(res.ok(), await res.text()).toBeTruthy();
     const body = await res.json();
-    // Guru biasa tidak berhak langsung → MENUNGGU
+    // Guru biasa tidak berhak langsung â†’ MENUNGGU
     expect(body.status).toBe('MENUNGGU');
   });
 
-  // ─── 10. Saldo query batch via kelasId ────────────────────────────────────
-  test('10. GET /api/kesiswaan/saldo?kelasId= → batch anti-N+1, saldo benar', async ({ request }) => {
+  // â”€â”€â”€ 10. Saldo query batch via kelasId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('10. GET /api/kesiswaan/saldo?kelasId= â†’ batch anti-N+1, saldo benar', async ({ request }) => {
     const res = await request.get(`/api/kesiswaan/saldo?kelasId=${kelasId}`, {
       headers: authHeaders(adminToken),
     });

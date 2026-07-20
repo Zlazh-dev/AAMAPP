@@ -14,8 +14,14 @@ export class SessionsService {
   ) {}
 
   /**
-   * Buat sesi baru. Token mentah dikembalikan (hanya sekali),
+   * Buat atau perbarui sesi. Token mentah dikembalikan (hanya sekali),
    * di DB hanya simpan hash sha256.
+   *
+   * Dedupe by (userId, deviceId): bila sudah ada sesi aktif untuk
+   * perangkat ini, perbarui baris itu (tokenHash, lastActiveAt, expiresAt,
+   * loginMethod, ipAddress, userAgent, deviceSummary). JANGAN dedupe by
+   * deviceSummary — label "Chrome - Windows" menyatu semua perangkat
+   * sejenis, mematikan fungsi keamanan halaman sesi.
    */
   async createSession(
     user: User,
@@ -28,6 +34,7 @@ export class SessionsService {
     const userAgent = req.headers?.['user-agent'] || '';
     const ipAddress = getIpAddress(req);
     const deviceSummary = getDeviceSummary(userAgent);
+    const deviceId: string | null = req.cookies?.['deviceId'] ?? null;
 
     const absoluteHours = parseInt(
       process.env.SESSION_ABSOLUTE_HOURS || '24',
@@ -36,12 +43,33 @@ export class SessionsService {
     const now = new Date();
     const expiresAt = new Date(now.getTime() + absoluteHours * 60 * 60 * 1000);
 
+    // Dedupe: cari sesi aktif (userId, deviceId) yg belum di-revoke.
+    if (deviceId) {
+      const existing = await this.sessionRepo.findOne({
+        where: { userId: user.id, deviceId, revokedAt: IsNull() as any },
+        order: { lastActiveAt: 'DESC' },
+      });
+      if (existing) {
+        existing.tokenHash = tokenHash;
+        existing.lastActiveAt = now;
+        existing.expiresAt = expiresAt;
+        existing.loginMethod = loginMethod;
+        existing.ipAddress = ipAddress;
+        existing.userAgent = userAgent;
+        existing.deviceSummary = deviceSummary;
+        existing.revokedAt = null;
+        await this.sessionRepo.save(existing);
+        return { token: rawToken, session: existing };
+      }
+    }
+
     const session = this.sessionRepo.create({
       userId: user.id,
       tokenHash,
       ipAddress,
       userAgent,
       deviceSummary,
+      deviceId,
       loginMethod,
       lastActiveAt: now,
       expiresAt,

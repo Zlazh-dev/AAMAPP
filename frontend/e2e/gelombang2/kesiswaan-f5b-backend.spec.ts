@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F5b Backend — Tindak Lanjut + Reward + Laporan Demerit
+ * F5b Backend â€” Tindak Lanjut + Reward + Laporan Demerit
  *
- *  1. Siswa dengan terpotong ≥200 → PERINGATAN_1 auto dibuat
- *  2. Auto-trigger idempoten (trigger lagi → tidak duplikasi)
- *  3. List tindak lanjut → ada PERINGATAN_1
- *  4. Selesai tindak lanjut → status SELESAI
- *  5. Tindak lanjut SELESAI tidak bisa diselesaikan lagi → 400
- *  6. Reward: siswa 0 pelanggaran → sangatBaik
- *  7. Reward: siswa terpotong 10 → baik
- *  8. Reward: siswa terpotong ≥100 → tidak di sangatBaik/baik
- *  9. Laporan demerit → agregat per siswa
- * 10. Laporan demerit filter kelasId → hanya siswa kelas itu
+ *  1. Siswa dengan terpotong â‰¥200 â†’ PERINGATAN_1 auto dibuat
+ *  2. Auto-trigger idempoten (trigger lagi â†’ tidak duplikasi)
+ *  3. List tindak lanjut â†’ ada PERINGATAN_1
+ *  4. Selesai tindak lanjut â†’ status SELESAI
+ *  5. Tindak lanjut SELESAI tidak bisa diselesaikan lagi â†’ 400
+ *  6. Reward: siswa 0 pelanggaran â†’ sangatBaik
+ *  7. Reward: siswa terpotong 10 â†’ baik
+ *  8. Reward: siswa terpotong â‰¥100 â†’ tidak di sangatBaik/baik
+ *  9. Laporan demerit â†’ agregat per siswa
+ * 10. Laporan demerit filter kelasId â†’ hanya siswa kelas itu
  */
 
 let adminToken: string;
@@ -23,11 +23,11 @@ let katalogR07Id: number;
 let katalogBId: number;
 let suffix: string;
 
-test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => {
+test.describe('F5b Backend â€” Tindak Lanjut + Reward + Laporan Demerit', () => {
   test.beforeAll(async ({ request }) => {
     // Login admin
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     adminToken = (await login.json()).accessToken;
     suffix = Date.now().toString();
@@ -82,8 +82,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     }
   }
 
-  // ─── 1. Auto-trigger PERINGATAN_1 ─────────────────────────────────────────
-  test('1. Catat pelanggaran hingga terpotong ≥200 → PERINGATAN_1 auto muncul', async ({ request }) => {
+  // â”€â”€â”€ 1. Auto-trigger PERINGATAN_1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. Catat pelanggaran hingga terpotong â‰¥200 â†’ PERINGATAN_1 auto muncul', async ({ request }) => {
     // Siswa 0: 20 pelanggaran R-07 (10 poin each = 200 total)
     await catatPelanggaran(request, siswaIds[0], katalogR07Id, 20);
 
@@ -102,9 +102,9 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(p1.status).toBe('BARU');
   });
 
-  // ─── 2. Idempoten ──────────────────────────────────────────────────────────
-  test('2. Auto-trigger idempoten — trigger lagi tidak duplikasi', async ({ request }) => {
-    // Tambah 1 pelanggaran lagi → trigger lagi
+  // â”€â”€â”€ 2. Idempoten â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. Auto-trigger idempoten â€” trigger lagi tidak duplikasi', async ({ request }) => {
+    // Tambah 1 pelanggaran lagi â†’ trigger lagi
     await request.post('/api/kesiswaan/pelanggaran', {
       headers: authHeaders(adminToken),
       data: { siswaId: siswaIds[0], katalogId: katalogR07Id, tanggal: '2026-07-25' },
@@ -120,8 +120,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(p1List.length).toBe(1);
   });
 
-  // ─── 3. List tindak lanjut filter status BARU ─────────────────────────────
-  test('3. List tindak lanjut?status=BARU → berisi PERINGATAN_1 siswa 0', async ({ request }) => {
+  // â”€â”€â”€ 3. List tindak lanjut filter status BARU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. List tindak lanjut?status=BARU â†’ berisi PERINGATAN_1 siswa 0', async ({ request }) => {
     const res = await request.get('/api/kesiswaan/tindak-lanjut?status=BARU', {
       headers: authHeaders(adminToken),
     });
@@ -131,8 +131,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(found).toBeTruthy();
   });
 
-  // ─── 4. Selesai tindak lanjut ─────────────────────────────────────────────
-  test('4. PATCH tindak-lanjut/:id/selesai → status SELESAI', async ({ request }) => {
+  // â”€â”€â”€ 4. Selesai tindak lanjut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. PATCH tindak-lanjut/:id/selesai â†’ status SELESAI', async ({ request }) => {
     const tlRes = await request.get(`/api/kesiswaan/tindak-lanjut?kelasId=${kelasId}&status=BARU`, {
       headers: authHeaders(adminToken),
     });
@@ -148,8 +148,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(body.catatanPelaksanaan).toBe('Sudah dipanggil wali dan orang tua');
   });
 
-  // ─── 5. Selesai dua kali → 400 ────────────────────────────────────────────
-  test('5. PATCH selesai dua kali → 400 BadRequest', async ({ request }) => {
+  // â”€â”€â”€ 5. Selesai dua kali â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. PATCH selesai dua kali â†’ 400 BadRequest', async ({ request }) => {
     const tlRes = await request.get(`/api/kesiswaan/tindak-lanjut?kelasId=${kelasId}&status=SELESAI`, {
       headers: authHeaders(adminToken),
     });
@@ -163,8 +163,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(res.status()).toBe(400);
   });
 
-  // ─── 6. Reward: siswa tanpa pelanggaran → sangatBaik ─────────────────────
-  test('6. Reward: siswa baru tanpa pelanggaran → masuk sangatBaik (saldo 500)', async ({ request }) => {
+  // â”€â”€â”€ 6. Reward: siswa tanpa pelanggaran â†’ sangatBaik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. Reward: siswa baru tanpa pelanggaran â†’ masuk sangatBaik (saldo 500)', async ({ request }) => {
     // Siswa 2 belum ada pelanggaran
     const res = await request.get('/api/kesiswaan/reward', {
       headers: authHeaders(adminToken),
@@ -177,9 +177,9 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(inSangatBaik.saldo).toBe(500);
   });
 
-  // ─── 7. Reward: siswa terpotong 10 → baik ────────────────────────────────
-  test('7. Reward: siswa terpotong 10 (saldo 490) → masuk baik', async ({ request }) => {
-    // Siswa 1: 1 pelanggaran R (10 poin) → saldo 490
+  // â”€â”€â”€ 7. Reward: siswa terpotong 10 â†’ baik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. Reward: siswa terpotong 10 (saldo 490) â†’ masuk baik', async ({ request }) => {
+    // Siswa 1: 1 pelanggaran R (10 poin) â†’ saldo 490
     await request.post('/api/kesiswaan/pelanggaran', {
       headers: authHeaders(adminToken),
       data: { siswaId: siswaIds[1], katalogId: katalogR07Id, tanggal: '2026-07-01' },
@@ -195,9 +195,9 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(inBaik.saldo).toBe(490);
   });
 
-  // ─── 8. Reward: siswa terpotong ≥100 → tidak di baik/sangatBaik ──────────
-  test('8. Reward: siswa terpotong ≥110 → tidak di sangatBaik, tidak di baik', async ({ request }) => {
-    // Siswa 0 sudah terpotong 200+ → tidak di sangatBaik dan tidak di baik
+  // â”€â”€â”€ 8. Reward: siswa terpotong â‰¥100 â†’ tidak di baik/sangatBaik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Reward: siswa terpotong â‰¥110 â†’ tidak di sangatBaik, tidak di baik', async ({ request }) => {
+    // Siswa 0 sudah terpotong 200+ â†’ tidak di sangatBaik dan tidak di baik
     const res = await request.get('/api/kesiswaan/reward', {
       headers: authHeaders(adminToken),
     });
@@ -208,8 +208,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(inBaik).toBeFalsy();
   });
 
-  // ─── 9. Laporan demerit → agregat per siswa ───────────────────────────────
-  test('9. GET laporan/demerit → hasil agregat per siswa anti-N+1', async ({ request }) => {
+  // â”€â”€â”€ 9. Laporan demerit â†’ agregat per siswa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. GET laporan/demerit â†’ hasil agregat per siswa anti-N+1', async ({ request }) => {
     const res = await request.get('/api/kesiswaan/laporan/demerit', {
       headers: authHeaders(adminToken),
     });
@@ -224,8 +224,8 @@ test.describe('F5b Backend — Tindak Lanjut + Reward + Laporan Demerit', () => 
     expect(s0.saldo).toBe(500 - s0.terpotong);
   });
 
-  // ─── 10. Laporan demerit filter kelasId ───────────────────────────────────
-  test('10. GET laporan/demerit?kelasId= → hanya siswa kelas itu', async ({ request }) => {
+  // â”€â”€â”€ 10. Laporan demerit filter kelasId â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('10. GET laporan/demerit?kelasId= â†’ hanya siswa kelas itu', async ({ request }) => {
     const res = await request.get(`/api/kesiswaan/laporan/demerit?kelasId=${kelasId}`, {
       headers: authHeaders(adminToken),
     });

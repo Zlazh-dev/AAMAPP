@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
+import { ActivityLog } from '../audit/activity-log.entity';
 import { Request } from 'express';
 import { KatalogPelanggaran } from './katalog-pelanggaran.entity';
 import { Pelanggaran } from './pelanggaran.entity';
@@ -89,6 +90,8 @@ export class KesiswaanService implements OnModuleInit {
     private kelasRepo: Repository<Kelas>,
     @InjectRepository(TahunAjaran)
     private taRepo: Repository<TahunAjaran>,
+    @InjectRepository(ActivityLog)
+    private activityLogRepo: Repository<ActivityLog>,
     private audit: AuditService,
   ) {}
 
@@ -512,6 +515,85 @@ export class KesiswaanService implements OnModuleInit {
       .getManyAndCount();
 
     return { total, page, limit, data };
+  }
+
+  /**
+   * GET /api/kesiswaan/pelanggaran/:id — detail satu pelanggaran by id.
+   * Endpoint terpisah, BUKAN ambil seluruh daftar lalu saring di frontend.
+   * Mengembalikan: data siswa, katalog/poin, pelapor, verifikator, status,
+   * tindak lanjut terkait (bila ada), dan riwayat perubahan dari audit log.
+   */
+  async getPelanggaranDetail(id: number) {
+    const row = await this.pelanggaranRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.siswa', 'siswa')
+      .leftJoinAndSelect('p.katalog', 'katalog')
+      .leftJoinAndSelect('p.pelapor', 'pelapor')
+      .leftJoinAndSelect('p.verifikator', 'verifikator')
+      .leftJoinAndSelect('siswa.kelas', 'kelas')
+      .where('p.id = :id', { id })
+      .getOne();
+
+    if (!row) throw new NotFoundException('Pelanggaran tidak ditemukan');
+
+    // Tindak lanjut terkait (bila ada, join by siswaId + tahunAjaranId).
+    const tindakLanjut = await this.tindakLanjutRepo
+      .createQueryBuilder('t')
+      .leftJoinAndSelect('t.siswa', 'tsiswa')
+      .where('t.siswaId = :siswaId', { siswaId: row.siswaId })
+      .orderBy('t.createdAt', 'DESC')
+      .limit(10)
+      .getMany();
+
+    // Riwayat perubahan dari audit log (entity = 'pelanggaran', entityId = id).
+    const riwayat = await this.activityLogRepo.find({
+      where: { entity: 'pelanggaran', entityId: String(id) },
+      order: { createdAt: 'ASC' },
+      take: 50,
+    });
+
+    return {
+      id: row.id,
+      siswa: {
+        id: row.siswa?.id,
+        nama: row.siswa?.nama,
+        nis: row.siswa?.nis,
+        kelas: row.siswa?.kelas?.nama ?? null,
+      },
+      katalog: row.katalog
+        ? { id: row.katalog.id, nomor: row.katalog.nomor, bentuk: row.katalog.bentuk }
+        : null,
+      kategori: row.kategori,
+      poin: row.poin,
+      tanggal: row.tanggal,
+      catatan: row.catatan,
+      buktiUrl: row.buktiUrl,
+      sumber: row.sumber,
+      status: row.status,
+      pelapor: row.pelapor
+        ? { id: row.pelapor.id, name: row.pelapor.name }
+        : null,
+      verifikator: row.verifikator
+        ? { id: row.verifikator.id, name: row.verifikator.name }
+        : null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      tindakLanjut: tindakLanjut.map((t) => ({
+        id: t.id,
+        tahap: t.tahap,
+        ambang: t.ambang,
+        status: t.status,
+        catatanPelaksanaan: t.catatanPelaksanaan,
+        dilaksanakanPada: t.dilaksanakanPada,
+      })),
+      riwayat: riwayat.map((r) => ({
+        id: r.id,
+        action: r.action,
+        summary: r.summary,
+        userName: r.userName,
+        createdAt: r.createdAt,
+      })),
+    };
   }
 
   // ─────────────────────────────────────────────────────────────────────────

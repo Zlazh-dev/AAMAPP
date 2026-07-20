@@ -1,21 +1,21 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAs, loginAsAdmin, ADMIN_EMAIL, ADMIN_PASSWORD } from '../helpers/auth';
 import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
 
 /**
- * F2-REKAP-FRONTEND e2e — halaman /guru/rekap (Rekap Presensi per kelas).
+ * F2-REKAP-FRONTEND e2e â€” halaman /guru/rekap (Rekap Presensi per kelas).
  *
- * UX-POLISH §A: admin tidak lagi punya bypass ke halaman guru.
- * Perbaikan: buat guru + akun peran guru + jadikan wali kelas → login sbg guru itu.
+ * UX-POLISH Â§A: admin tidak lagi punya bypass ke halaman guru.
+ * Perbaikan: buat guru + akun peran guru + jadikan wali kelas â†’ login sbg guru itu.
  *
  * Setup data murni via API (admin token) lalu verifikasi UI: pilih kelas +
- * rentang tanggal → tabel Σ H/S/I/A/T per siswa muncul, paginasi berfungsi.
+ * rentang tanggal â†’ tabel Î£ H/S/I/A/T per siswa muncul, paginasi berfungsi.
  */
 
 const GURU_EMAIL_PREFIX = 'rktest';
 const GURU_PASSWORD = 'Test12345!';
 
-test.describe('F2 — Rekap Presensi (UI)', () => {
+test.describe('F2 â€” Rekap Presensi (UI)', () => {
   const createdGuruIds: number[] = [];
   const createdKelasIds: number[] = [];
   const createdMapelIds: number[] = [];
@@ -144,13 +144,13 @@ test.describe('F2 — Rekap Presensi (UI)', () => {
 
     const tanggal = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
 
-    // 6. Simpan roster siswa = Hadir (pakai admin token — guru belum punya akun confirmed)
+    // 6. Simpan roster siswa = Hadir (pakai admin token â€” guru belum punya akun confirmed)
     await request.post(`/api/guru/kbm/${jadwal.id}/roster`, {
       headers,
       data: { tanggal, entri: [{ siswaId: siswa.id, status: 'H' }] },
     });
 
-    // 7. Login sebagai guru (§ UX-POLISH — admin tidak bypass lagi)
+    // 7. Login sebagai guru (Â§ UX-POLISH â€” admin tidak bypass lagi)
     // Coba login sebagai guru dulu; fallback ke admin bila pembuatan akun gagal
     let guruLoginOk = false;
     try {
@@ -158,7 +158,7 @@ test.describe('F2 — Rekap Presensi (UI)', () => {
       guruLoginOk = true;
     } catch {
       // Akun guru belum bisa dibuat (endpoint /api/admin/akun belum menerima),
-      // fallback admin — test masih bermakna untuk UI rekap
+      // fallback admin â€” test masih bermakna untuk UI rekap
       await loginAsAdmin(page);
     }
 
@@ -169,7 +169,7 @@ test.describe('F2 — Rekap Presensi (UI)', () => {
     // Heading harus ada
     const headingVisible = await page.locator('h2').filter({ hasText: /rekap presensi/i }).first().isVisible().catch(() => false);
     if (!headingVisible) {
-      // Guru login → RequireRole mungkin redirect (wali kelas belum set via API)
+      // Guru login â†’ RequireRole mungkin redirect (wali kelas belum set via API)
       // Fallback ke admin login dan coba lagi
       await loginAsAdmin(page);
       await page.goto('/guru/rekap');
@@ -196,13 +196,13 @@ test.describe('F2 — Rekap Presensi (UI)', () => {
     const tabelVisible = await tabel.isVisible().catch(() => false);
 
     if (forbiddenMsg) {
-      // Guru bukan wali kelas yang ditugaskan — RBAC berlaku, test valid
+      // Guru bukan wali kelas yang ditugaskan â€” RBAC berlaku, test valid
       expect(forbiddenMsg).toBe(true);
     } else if (emptyMsg) {
-      // Halaman terbuka tapi kelas tidak auto-selected — UI oke
+      // Halaman terbuka tapi kelas tidak auto-selected â€” UI oke
       expect(emptyMsg).toBe(true);
     } else if (tabelVisible) {
-      // Tabel muncul — periksa siswa dan kolom H
+      // Tabel muncul â€” periksa siswa dan kolom H
       await expect(tabel.getByText(`Siswa Rekap ${suffix}`)).toBeVisible({ timeout: 8000 });
       if (guruLoginOk) {
         const row = tabel.locator('tr', { hasText: `Siswa Rekap ${suffix}` });
@@ -212,7 +212,7 @@ test.describe('F2 — Rekap Presensi (UI)', () => {
         expect(hVal?.trim()).toBe('1');
       }
     } else {
-      // Halaman terbuka (heading ada) — cukup membuktikan navigasi berfungsi
+      // Halaman terbuka (heading ada) â€” cukup membuktikan navigasi berfungsi
       const heading = await page.locator('h2').filter({ hasText: /rekap presensi/i }).first().isVisible().catch(() => false);
       expect(heading).toBe(true);
     }

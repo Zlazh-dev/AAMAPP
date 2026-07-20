@@ -38,7 +38,7 @@ export function KokurikulerTimPage() {
       const [timRes, kelasRes, guruRes] = await Promise.all([
         (api as any).getKokurikulerTim?.(Number(kegiatanId)),
         api.adminGetKelas({ limit: 100 }),
-        (api as any).getGuruList?.({ limit: 200 }).catch(() => ({ data: [] })),
+        (api as any).getGuruList?.({ limit: 50 }).catch(() => ({ data: [] })),
       ]);
       setTim(timRes?.data ?? timRes ?? []);
       setKelasList(kelasRes?.data ?? []);

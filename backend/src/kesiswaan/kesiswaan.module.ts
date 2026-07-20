@@ -8,6 +8,7 @@ import { Kelas } from '../kelas/kelas.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { Session } from '../sessions/session.entity';
 import { User } from '../users/user.entity';
+import { ActivityLog } from '../audit/activity-log.entity';
 import { KesiswaanService } from './kesiswaan.service';
 import { KesiswaanController } from './kesiswaan.controller';
 import { AuditModule } from '../audit/audit.module';
@@ -23,6 +24,7 @@ import { AuditModule } from '../audit/audit.module';
       TahunAjaran,
       Session,
       User,
+      ActivityLog,
     ]),
     AuditModule,
   ],

@@ -17,6 +17,13 @@ interface AdaptiveSelectProps {
   disabled?: boolean;
   /** Extra class for the trigger button */
   className?: string;
+  /**
+   * Pencarian sisi-server (async). Bila disediakan, AdaptiveSelect tidak
+   * menyaring `options` di browser — mengirim `q` ke server (debounce
+   * ±300ms, ambil ±20 hasil teratas). `options` dipakai hanya sbg cache
+   * opsi terpilih (supaya label terpilih tetap tampil).
+   */
+  onSearch?: (q: string) => Promise<AdaptiveSelectOption[]>;
 }
 
 /**
@@ -36,6 +43,7 @@ export function AdaptiveSelect({
   placeholder = 'Pilih...',
   disabled = false,
   className = '',
+  onSearch,
 }: AdaptiveSelectProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,6 +53,29 @@ export function AdaptiveSelect({
   const sheetRef = useRef<HTMLDivElement>(null);
   const sheetSearchRef = useRef<HTMLInputElement>(null);
   const reactId = useId();
+
+  // ── Async server-side search ──────────────────────────────────────────
+  const [asyncOptions, setAsyncOptions] = useState<AdaptiveSelectOption[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const asyncAbortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!onSearch || !open) return;
+    let cancelled = false;
+    setSearchLoading(true);
+    if (asyncAbortRef.current) asyncAbortRef.current.abort();
+    const ac = new AbortController();
+    asyncAbortRef.current = ac;
+    const timer = setTimeout(async () => {
+      try {
+        const results = await onSearch(searchQuery);
+        if (!cancelled && !ac.signal.aborted) setAsyncOptions(results);
+      } catch { } finally {
+        if (!cancelled && !ac.signal.aborted) setSearchLoading(false);
+      }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [searchQuery, open, onSearch]);
 
   // Track viewport for adaptive rendering
   useEffect(() => {
@@ -172,11 +203,13 @@ export function AdaptiveSelect({
     };
   }, [open, isMobile]);
 
-  const filteredOptions = searchQuery
-    ? options.filter((o) =>
-        o.label.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : options;
+  const filteredOptions = onSearch
+    ? asyncOptions
+    : searchQuery
+      ? options.filter((o) =>
+          o.label.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+      : options;
 
   const inputClass =
     'w-full rounded-md border border-aam-border px-3 py-2 text-sm outline-none focus:border-aam-green focus:ring-1 focus:ring-aam-green/30';
@@ -253,7 +286,7 @@ export function AdaptiveSelect({
           ))}
           {filteredOptions.length === 0 && (
             <p className="px-3 py-2 text-sm text-aam-text-muted">
-              Tidak ada opsi cocok
+              {searchLoading ? 'Mencari…' : onSearch && !searchQuery ? 'Ketik untuk mencari…' : 'Tidak ada opsi cocok'}
             </p>
           )}
         </div>,
@@ -341,7 +374,7 @@ export function AdaptiveSelect({
                 ))}
                 {filteredOptions.length === 0 && (
                   <p className="px-4 py-3 text-sm text-aam-text-muted">
-                    Tidak ada opsi cocok
+                    {searchLoading ? 'Mencari…' : onSearch && !searchQuery ? 'Ketik untuk mencari…' : 'Tidak ada opsi cocok'}
                   </p>
                 )}
               </div>

@@ -43,7 +43,7 @@ export function EkskulAdminPage() {
     try {
       const [eRes, gRes] = await Promise.all([
         (api as any).getEkskul?.(),
-        (api as any).getGuruList?.({ limit: 200 }).catch(() => ({ data: [] })),
+        (api as any).getGuruList?.({ limit: 50 }).catch(() => ({ data: [] })),
       ]);
       setRows(eRes?.data ?? eRes ?? []);
       setGuruList(gRes?.data ?? []);

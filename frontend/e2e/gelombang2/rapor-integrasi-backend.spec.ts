@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F6-INTEGRASI Backend — Rapor Lengkap 3 Bagian
+ * F6-INTEGRASI Backend â€” Rapor Lengkap 3 Bagian
  *
  *  Setup:
  *   - Guru wali kelas + siswa di kelasnya
@@ -11,13 +11,13 @@ import { authHeaders } from '../helpers/api';
  *   - Ekskul + nilai + kehadiran (ekstrakurikuler)
  *
  *  Test:
- *  1. GET rapor siswa → memuat bagian akademik (mapel + nilai)
- *  2. GET rapor siswa → memuat bagian kokurikuler (dimensi + nilai)
- *  3. GET rapor siswa → memuat bagian ekstrakurikuler (nama + kehadiran% + tujuan)
- *  4. PATCH finalisasi → status FINAL
- *  5. GET rapor FINAL → dari snapshot; snapshot memuat 3 bagian (immutable beku)
- *  6. Override setelah FINAL → 400
- *  7. PATCH batal-final → kembali DRAFT (muat ulang dari derived)
+ *  1. GET rapor siswa â†’ memuat bagian akademik (mapel + nilai)
+ *  2. GET rapor siswa â†’ memuat bagian kokurikuler (dimensi + nilai)
+ *  3. GET rapor siswa â†’ memuat bagian ekstrakurikuler (nama + kehadiran% + tujuan)
+ *  4. PATCH finalisasi â†’ status FINAL
+ *  5. GET rapor FINAL â†’ dari snapshot; snapshot memuat 3 bagian (immutable beku)
+ *  6. Override setelah FINAL â†’ 400
+ *  7. PATCH batal-final â†’ kembali DRAFT (muat ulang dari derived)
  */
 
 let adminToken: string;
@@ -34,10 +34,10 @@ let ekskulId: number;
 let pesertaId: number;
 let suffix: string;
 
-test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
+test.describe('F6-INTEGRASI Backend â€” Rapor 3 Bagian', () => {
   test.beforeAll(async ({ request }) => {
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     adminToken = (await login.json()).accessToken;
     suffix = Date.now().toString().slice(-6);
@@ -68,7 +68,7 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     });
     siswaId = (await siswaRes.json()).id;
 
-    // ─── AKADEMIK: mapel + penugasan + penilaian + nilai ─────────────────────
+    // â”€â”€â”€ AKADEMIK: mapel + penugasan + penilaian + nilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const mapelRes = await request.post('/api/kurikulum/mapel', {
       headers: authHeaders(adminToken),
       data: { nama: `INT-Mapel-${suffix}`, kode: `INTM${suffix}` },
@@ -98,7 +98,7 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
       data: { entri: [{ siswaId, nilai: 90 }] },
     });
 
-    // ─── KOKURIKULER: kegiatan + target + tim + asesmen ──────────────────────
+    // â”€â”€â”€ KOKURIKULER: kegiatan + target + tim + asesmen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const kgRes = await request.post('/api/kokurikuler/kegiatan', {
       headers: authHeaders(adminToken),
       data: { semester: 1, tema: `INT Proyek ${suffix}` },
@@ -118,7 +118,7 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
       data: { entri: [{ siswaId, targetId, nilai: 'Sangat Baik' }] },
     });
 
-    // ─── EKSKUL: ekskul + peserta + tujuan + nilai + kehadiran ───────────────
+    // â”€â”€â”€ EKSKUL: ekskul + peserta + tujuan + nilai + kehadiran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const ekRes = await request.post('/api/ekskul', {
       headers: authHeaders(adminToken),
       data: { nama: `INT Pramuka ${suffix}`, pembinaGuruId: waliGuruId },
@@ -156,8 +156,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     if (waliUserId) await request.delete(`/api/admin/users/${waliUserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 
-  // ─── 1. Akademik ─────────────────────────────────────────────────────────
-  test('1. GET rapor siswa → bagian akademik (mapel + nilai)', async ({ request }) => {
+  // â”€â”€â”€ 1. Akademik â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. GET rapor siswa â†’ bagian akademik (mapel + nilai)', async ({ request }) => {
     const res = await request.get(`/api/rapor/siswa/${siswaId}`, {
       headers: authHeaders(waliToken),
     });
@@ -171,8 +171,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect(m.nilaiAkhir).toBe(90);
   });
 
-  // ─── 2. Kokurikuler ───────────────────────────────────────────────────────
-  test('2. GET rapor siswa → bagian kokurikuler (dimensi Kreativitas=Sangat Baik)', async ({ request }) => {
+  // â”€â”€â”€ 2. Kokurikuler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. GET rapor siswa â†’ bagian kokurikuler (dimensi Kreativitas=Sangat Baik)', async ({ request }) => {
     const res = await request.get(`/api/rapor/siswa/${siswaId}`, {
       headers: authHeaders(waliToken),
     });
@@ -184,8 +184,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect(kreativitas.nilai).toBe('Sangat Baik');
   });
 
-  // ─── 3. Ekstrakurikuler ───────────────────────────────────────────────────
-  test('3. GET rapor siswa → bagian ekstrakurikuler (ekskul + kehadiran% + tujuan)', async ({ request }) => {
+  // â”€â”€â”€ 3. Ekstrakurikuler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. GET rapor siswa â†’ bagian ekstrakurikuler (ekskul + kehadiran% + tujuan)', async ({ request }) => {
     const res = await request.get(`/api/rapor/siswa/${siswaId}`, {
       headers: authHeaders(waliToken),
     });
@@ -200,8 +200,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect(ek.tujuan[0].nilai).toBe('Baik');
   });
 
-  // ─── 4. Finalisasi → FINAL ───────────────────────────────────────────────
-  test('4. PATCH finalisasi → status FINAL', async ({ request }) => {
+  // â”€â”€â”€ 4. Finalisasi â†’ FINAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. PATCH finalisasi â†’ status FINAL', async ({ request }) => {
     const res = await request.patch(`/api/rapor/siswa/${siswaId}/finalisasi`, {
       headers: authHeaders(waliToken),
     });
@@ -209,8 +209,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect((await res.json()).status).toBe('FINAL');
   });
 
-  // ─── 5. Snapshot FINAL memuat 3 bagian ────────────────────────────────────
-  test('5. GET rapor FINAL → snapshot memuat 3 bagian (immutable)', async ({ request }) => {
+  // â”€â”€â”€ 5. Snapshot FINAL memuat 3 bagian â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. GET rapor FINAL â†’ snapshot memuat 3 bagian (immutable)', async ({ request }) => {
     const res = await request.get(`/api/rapor/siswa/${siswaId}`, {
       headers: authHeaders(waliToken),
     });
@@ -237,8 +237,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect(ek?.kehadiranPersen).toBe(80);
   });
 
-  // ─── 6. Override setelah FINAL → 400 ─────────────────────────────────────
-  test('6. Override setelah FINAL → 400', async ({ request }) => {
+  // â”€â”€â”€ 6. Override setelah FINAL â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. Override setelah FINAL â†’ 400', async ({ request }) => {
     const res = await request.put(`/api/rapor/siswa/${siswaId}/mapel/${mapelId}`, {
       headers: authHeaders(waliToken),
       data: { nilaiKatrol: 95 },
@@ -246,8 +246,8 @@ test.describe('F6-INTEGRASI Backend — Rapor 3 Bagian', () => {
     expect(res.status()).toBe(400);
   });
 
-  // ─── 7. Batal-final → DRAFT ───────────────────────────────────────────────
-  test('7. PATCH batal-final (admin) → kembali DRAFT + derived kembali', async ({ request }) => {
+  // â”€â”€â”€ 7. Batal-final â†’ DRAFT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. PATCH batal-final (admin) â†’ kembali DRAFT + derived kembali', async ({ request }) => {
     const res = await request.patch(`/api/rapor/siswa/${siswaId}/batal-final`, {
       headers: authHeaders(adminToken),
     });

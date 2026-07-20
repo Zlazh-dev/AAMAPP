@@ -1,22 +1,22 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F5b — KESISWAAN Frontend E2E (MANDIRI-DATA §12.17e).
+ * F5b â€” KESISWAAN Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend F5b belum live → e2e test UI routing + komponen render.
+ * Backend F5b belum live â†’ e2e test UI routing + komponen render.
  * EmptyState ditampilkan bila API 404. Yang diuji: route accessible,
  * heading ada, form elements hadir, export buttons ada.
  *
  * Saat AG-2 deploy backend F5b, spec ini langsung validasi data nyata.
  */
 
-test.describe('F5b — Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', () => {
+test.describe('F5b â€” Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Tindak Lanjut ──────────────────────────────────────────────────────────
+  // â”€â”€ Tindak Lanjut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Tindak Lanjut Otomatis', () => {
     test('Halaman /kesiswaan/tindak-lanjut dapat diakses admin', async ({ page }) => {
       await page.goto('/kesiswaan/tindak-lanjut');
@@ -47,7 +47,7 @@ test.describe('F5b — Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', (
     });
   });
 
-  // ── Reward ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Reward â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Reward Semester', () => {
     test('Halaman /kesiswaan/reward dapat diakses admin', async ({ page }) => {
       await page.goto('/kesiswaan/reward');
@@ -69,7 +69,7 @@ test.describe('F5b — Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', (
     });
   });
 
-  // ── Laporan Demerit ────────────────────────────────────────────────────────
+  // â”€â”€ Laporan Demerit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Laporan Demerit', () => {
     test('Halaman /kesiswaan/laporan dapat diakses admin', async ({ page }) => {
       await page.goto('/kesiswaan/laporan');
@@ -93,12 +93,12 @@ test.describe('F5b — Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', (
       await page.goto('/kesiswaan/laporan');
       await expect(page.locator('#btn-filter-demerit')).toBeVisible();
       await page.locator('#btn-filter-demerit').click();
-      // Tidak error — heading masih ada
+      // Tidak error â€” heading masih ada
       await expect(page.getByRole('heading', { name: /Laporan Demerit/i }).first()).toBeVisible();
     });
   });
 
-  // ── Menu Kesiswaan F5b ─────────────────────────────────────────────────────
+  // â”€â”€ Menu Kesiswaan F5b â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Menu KESISWAAN F5b', () => {
     test('Sub halaman Tindak Lanjut render + BackLink ke Pelanggaran (IA-HIERARCHY-V2)', async ({ page }) => {
       // IA-HIERARCHY-V2: Tindak Lanjut = sub dari Pelanggaran (bukan sidebar).

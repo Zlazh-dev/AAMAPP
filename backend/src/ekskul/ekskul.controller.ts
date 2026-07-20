@@ -20,7 +20,7 @@ export class EkskulController {
   private user(req: Request) { return (req as any).user as { id: number; roles: string[] }; }
 
   // ─── EKSKUL CRUD (admin) ──────────────────────────────────────────────────
-  @Get()           @Roles('admin','kepsek','guru','kurikulum')  listEkskul()                                               { return this.svc.listEkskul(); }
+  @Get()           @Roles('admin','kepsek','guru','kurikulum')  listEkskul(@Query('page') page?: string, @Query('limit') limit?: string)                         { return this.svc.listEkskul(page ? parseInt(page,10) : undefined, limit ? parseInt(limit,10) : undefined); }
   @Get(':id')      @Roles('admin','kepsek','guru','kurikulum')  getEkskul(@Param('id', ParseIntPipe) id: number)           { return this.svc.getEkskul(id); }
   @Post()          @Roles('admin','kurikulum')                  createEkskul(@Body() dto: CreateEkskulDto, @Req() req: Request)         { return this.svc.createEkskul(dto, this.user(req).id, req); }
   @Patch(':id')    @Roles('admin','kurikulum')                  updateEkskul(@Param('id',ParseIntPipe) id:number, @Body() dto:UpdateEkskulDto, @Req() req:Request) { return this.svc.updateEkskul(id,dto,this.user(req).id,req); }

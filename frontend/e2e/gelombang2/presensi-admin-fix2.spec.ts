@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin, loginAs } from '../helpers/auth';
 import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
 
 /**
- * F2-ADMIN-E2E — mengunci 4 perilaku dari F2-ADMIN-FIX2 (commit 5136bfb) di
+ * F2-ADMIN-E2E â€” mengunci 4 perilaku dari F2-ADMIN-FIX2 (commit 5136bfb) di
  * `/kesiswaan/presensi-siswa` (MatriksPresensiSiswaPage + RosterDetailSheet),
  * supaya tidak regresi diam-diam:
  *
@@ -17,16 +17,16 @@ import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
  *    dirty (status diubah, belum disimpan) -> Esc diabaikan.
  *
  * Setup data murni via API (guru, mapel, kelas, siswa, penugasan, jadwal)
- * mengikuti pola `presensi-siswa.spec.ts` — nama kelas/mapel diberi suffix
+ * mengikuti pola `presensi-siswa.spec.ts` â€” nama kelas/mapel diberi suffix
  * unik per test agar bisa dipakai sbg penanda visual di assertion (mis.
  * memastikan matriks kelas B tampil, bukan kelas A, tanpa bergantung pada
  * urutan render).
  */
-test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () => {
+test.describe('F2-ADMIN-FIX2 â€” Matriks Presensi Siswa (regresi terkunci)', () => {
   // Matriks bergantung jadwal "hari ini"; MINGGU = hari 7 tanpa KBM. Skip di
   // hari Minggu agar suite hijau (produk benar, bukan bug).
   const _wibDay = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'short' });
-  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) — matriks hari-ini tidak berlaku');
+  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) â€” matriks hari-ini tidak berlaku');
 
   const createdGuruIds: number[] = [];
   const createdKelasIds: number[] = [];
@@ -199,7 +199,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     createdUserIds.push(kepsekUser.id);
 
     // --- Sebagai ADMIN (sesi dari beforeEach) ---
-    // IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak
+    // IA-HIERARCHY-V2 Â§Keputusan otorisasi: koreksi presensi siswa = hak
     // murni guru pengampu. Admin & kepsek sama-sama read-only di matriks.
     await page.goto('/kesiswaan/presensi-siswa');
     await expect(page.getByRole('heading', { name: 'Matriks Presensi Siswa' })).toBeVisible();
@@ -258,7 +258,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     expect(emptyDateRequests).toHaveLength(0);
   });
 
-  // IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak murni
+  // IA-HIERARCHY-V2 Â§Keputusan otorisasi: koreksi presensi siswa = hak murni
   // guru pengampu. RosterDetailSheet tak lagi bisa dibuka admin di matriks
   // (GET /api/guru/kbm/:id/roster = @Roles('guru') -> admin 403). ESC behavior
   // diuji lewat sheet guru di /guru/kbm bila dibutuhkan; spec ini di-skip.

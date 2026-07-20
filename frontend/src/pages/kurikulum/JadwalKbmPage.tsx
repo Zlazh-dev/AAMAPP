@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, JadwalKbm, Penugasan, Kelas, TahunAjaran , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
@@ -8,6 +8,7 @@ import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { PageMenu } from '../../components/PageMenu';
 import { BackLink } from '../../components/BackLink';
+import { SearchSelect } from '../../components/SearchSelect';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
 
@@ -40,6 +41,16 @@ export function JadwalKbmPage() {
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<JadwalKbm | null>(null);
 
+  // Pencarian kelas sisi-server (bukan ambil 1000 baris).
+  const searchKelas = useCallback(async (q: string) => {
+    const res = await api.adminGetKelas({ q: q || undefined, limit: 20 });
+    setKelasList((prev) => {
+      const seen = new Set(prev.map((k) => k.id));
+      return [...prev, ...res.data.filter((k: Kelas) => !seen.has(k.id))];
+    });
+    return res.data.map((k: Kelas) => ({ value: k.id, label: k.nama }));
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -47,9 +58,9 @@ export function JadwalKbmPage() {
         const ta = await api.getTahunAjaranAktif();
         if (cancelled) return;
         setTaAktif(ta);
-        const kelasRes = await api.adminGetKelas({ limit: 1000 });
+        // Ambil 1 kelas pertama untuk auto-select (bukan 1000).
+        const kelasRes = await api.adminGetKelas({ limit: 1 });
         if (cancelled) return;
-        setKelasList(kelasRes.data);
         if (kelasRes.data.length > 0) {
           setSelectedKelas(kelasRes.data[0].id);
         }
@@ -73,7 +84,7 @@ export function JadwalKbmPage() {
         ]);
         if (cancelled) return;
         setJadwalList(jadwal);
-        setPenugasanList(penugasan);
+        setPenugasanList(penugasan.data);
       } catch (err) {
         if (!cancelled) toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat jadwal');
       }
@@ -202,15 +213,14 @@ export function JadwalKbmPage() {
       {/* Kelas selector */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-aam-text mb-1.5">Pilih Kelas</label>
-        <select
-          value={selectedKelas ?? ''}
-          onChange={(e) => setSelectedKelas(e.target.value ? parseInt(e.target.value, 10) : null)}
-          className="w-full md:max-w-xs rounded-md border border-aam-border px-3 py-2.5 text-sm outline-none focus:border-aam-green focus:ring-1 focus:ring-aam-green/30 min-h-[44px]"
-        >
-          {kelasList.map((k) => (
-            <option key={k.id} value={k.id}>{k.nama}</option>
-          ))}
-        </select>
+        <SearchSelect
+          options={selectedKelas ? [{ value: selectedKelas, label: kelasList.find((k) => k.id === selectedKelas)?.nama ?? `Kelas #${selectedKelas}` }] : []}
+          value={selectedKelas}
+          onChange={(v) => setSelectedKelas(v as number | null)}
+          placeholder="Pilih kelas…"
+          searchPlaceholder="Cari nama kelas…"
+          onSearch={searchKelas}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_200px] gap-4">

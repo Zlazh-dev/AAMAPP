@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * T16-SPRINT — Matriks Kelas: Tambah (409 nama duplikat), Edit
+ * T16-SPRINT â€” Matriks Kelas: Tambah (409 nama duplikat), Edit
  * (auto-fase), Hapus (409 siswa aktif), Wali force (409 -> pindah).
- * §12.17e: nama unik per run + cleanup via API di afterEach.
+ * Â§12.17e: nama unik per run + cleanup via API di afterEach.
  */
 test.describe('CRUD Kelas (Matriks T16)', () => {
   let namaKelas: string;
@@ -118,7 +118,7 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     await page.getByRole('button', { name: /Hapus Permanen/i }).click();
     // Sukses -> redirect ke daftar kelas.
     await page.waitForURL('**/kurikulum/kelas', { timeout: 10_000 });
-    // Siswa tetap ada (dikeluarkan, bukan dihapus) — verifikasi via API.
+    // Siswa tetap ada (dikeluarkan, bukan dihapus) â€” verifikasi via API.
     const siswaAfterRes = await request.get(`/api/admin/siswa/${siswa.id}`, { headers });
     expect(siswaAfterRes.ok()).toBe(true);
     const siswaAfter = await siswaAfterRes.json();
@@ -154,7 +154,7 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     await page.goto(`/kurikulum/kelas/${kelasBaru.id}`);
     await page.getByRole('button', { name: 'Pilih wali kelas... expand_more' }).click();
     await page.getByPlaceholder('Cari nama guru...').fill(`Guru WaliForce ${suffix}`);
-    // Option button mungkin mengandung icon text 'school' — gunakan regex.
+    // Option button mungkin mengandung icon text 'school' â€” gunakan regex.
     await page.getByRole('button', { name: new RegExp(`Guru WaliForce ${suffix}`) }).first().click();
     await page.getByRole('button', { name: 'Simpan Wali' }).click();
 

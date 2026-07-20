@@ -5,12 +5,13 @@ import { APIRequestContext, Browser, request as pwRequest } from '@playwright/te
  * lalu tulis token ke localStorage sebelum spec membuka halaman —
  * BUKAN mengetik form login di tiap spec.
  *
- * Kredensial admin: default seed (backend/src/seed/seed.service.ts)
- * — bisa ditimpa lewat env ADMIN_EMAIL / ADMIN_PASSWORD agar konsisten
- * dengan konfigurasi .env proyek.
+ * Akun admin khusus e2e (TERPISAH dari admin pemilik produk) supaya
+ * suite e2e tidak mengotori daftar sesi admin sungguhan. Akun ini dibuat
+ * seed.service.ts (seedE2EAdmin): e2e-admin@aamapp.sch.id / e2e-admin-pass.
+ * Bisa ditimpa lewat env ADMIN_EMAIL / ADMIN_PASSWORD.
  */
-export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+export const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'e2e-admin@aamapp.sch.id';
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'e2e-admin-pass';
 
 export interface LoginResult {
   accessToken: string;

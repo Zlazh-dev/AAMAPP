@@ -1,10 +1,10 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran } from '../helpers/api';
 
 /**
- * T16-SPRINT — Matriks Mapel: Tambah, Edit, Hapus 409 (dipakai penugasan).
- * §12.17e: kode/nama unik per run + cleanup via API di afterEach.
+ * T16-SPRINT â€” Matriks Mapel: Tambah, Edit, Hapus 409 (dipakai penugasan).
+ * Â§12.17e: kode/nama unik per run + cleanup via API di afterEach.
  */
 test.describe('CRUD Mapel (Matriks T16)', () => {
   let namaMapel: string;
@@ -96,10 +96,14 @@ test.describe('CRUD Mapel (Matriks T16)', () => {
     // MapelListPage kini punya tombol Hapus per-baris yang memanggil
     // setDeleteTarget()).
     await page.goto('/kurikulum/mapel');
+    // Cari mapel ini di search bar (paginasi 25 — mapel mungkin di halaman lain).
+    await page.getByPlaceholder(/Cari nama atau kode mapel/i).first().fill(namaBaru);
+    await page.waitForTimeout(500); // debounce 300ms
     const row = page.locator('tr', { hasText: namaBaru });
     await row.getByRole('button', { name: 'Hapus' }).click();
     await page.getByRole('button', { name: 'Hapus', exact: true }).click();
-    await expect(page.getByText(/gagal menghapus/i)).toBeVisible();
+    // 409 -> toast error muncul (pesan dari backend).
+    await expect(page.getByText(/digunakan|gagal menghapus/i).first()).toBeVisible({ timeout: 5000 });
     // Baris TIDAK hilang dari daftar (penghapusan gagal, sesuai 409 backend).
     await expect(row).toBeVisible();
     const stillThereRes = await request.get(`/api/kurikulum/mapel/${mapelId}`, { headers });

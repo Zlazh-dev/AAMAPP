@@ -5,6 +5,7 @@ import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { BackLink } from '../../components/BackLink';
+import { SearchSelect } from '../../components/SearchSelect';
 import { UnsavedGuard } from '../../components/UnsavedGuard';
 import { useToast } from '../../components/Toast';
 
@@ -31,20 +32,28 @@ export function PenugasanFormPage() {
   const [mapelId, setMapelId] = useState<number | null>(null);
   const [selectedKelas, setSelectedKelas] = useState<Set<number>>(new Set());
 
+  // Pencarian sisi-server untuk guru & mapel (bukan ambil 1000 baris).
+  // Kelas tetap checkbox multi-select (jumlah kelas terbatas, butuh lihat semua).
+  const searchGuru = React.useCallback(async (q: string) => {
+    const res = await api.adminGetGuru({ q: q || undefined, limit: 20 });
+    return res.data.map((g) => ({ value: g.id, label: `${g.nama}${g.nip ? ` — ${g.nip}` : ''}` }));
+  }, []);
+
+  const searchMapel = React.useCallback(async (q: string) => {
+    const res = await api.getMapel({ q: q || undefined, limit: 20 });
+    return res.data.map((m) => ({ value: m.id, label: `${m.nama} (${m.kode})` }));
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [ta, guruRes, mapelRes, kelasRes] = await Promise.all([
+        const [ta, kelasRes] = await Promise.all([
           api.getTahunAjaranAktif(),
-          api.adminGetGuru({ limit: 1000 }),
-          api.getMapel({ limit: 1000 }),
-          api.adminGetKelas({ limit: 1000 }),
+          api.adminGetKelas({ limit: 100 }),
         ]);
         if (cancelled) return;
         setTaAktif(ta);
-        setGuruList(guruRes.data);
-        setMapelList(mapelRes.data);
         setKelasList(kelasRes.data);
       } catch (err) {
         if (!cancelled) toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data');
@@ -131,34 +140,28 @@ export function PenugasanFormPage() {
           <div className="space-y-5">
             {/* Guru */}
             <div>
-              <label className={labelClass} htmlFor="penugasan-guru">Guru</label>
-              <select
-                id="penugasan-guru"
-                value={guruId ?? ''}
-                onChange={(e) => setGuruId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                className={inputClass}
-              >
-                <option value="">Pilih guru…</option>
-                {guruList.map((g) => (
-                  <option key={g.id} value={g.id}>{g.nama}{g.nip ? ` — ${g.nip}` : ''}</option>
-                ))}
-              </select>
+              <label className={labelClass}>Guru</label>
+              <SearchSelect
+                options={guruId ? [{ value: guruId, label: guruList.find((g) => g.id === guruId)?.nama ?? `Guru #${guruId}` }] : []}
+                value={guruId}
+                onChange={(v) => setGuruId(v as number | null)}
+                placeholder="Pilih guru…"
+                searchPlaceholder="Cari nama/NIP guru…"
+                onSearch={searchGuru}
+              />
             </div>
 
             {/* Mapel */}
             <div>
-              <label className={labelClass} htmlFor="penugasan-mapel">Mata Pelajaran</label>
-              <select
-                id="penugasan-mapel"
-                value={mapelId ?? ''}
-                onChange={(e) => setMapelId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                className={inputClass}
-              >
-                <option value="">Pilih mapel…</option>
-                {mapelList.map((m) => (
-                  <option key={m.id} value={m.id}>{m.nama} ({m.kode})</option>
-                ))}
-              </select>
+              <label className={labelClass}>Mata Pelajaran</label>
+              <SearchSelect
+                options={mapelId ? [{ value: mapelId, label: mapelList.find((m) => m.id === mapelId)?.nama ?? `Mapel #${mapelId}` }] : []}
+                value={mapelId}
+                onChange={(v) => setMapelId(v as number | null)}
+                placeholder="Pilih mapel…"
+                searchPlaceholder="Cari nama mapel…"
+                onSearch={searchMapel}
+              />
             </div>
 
             {/* Kelas multi-select */}

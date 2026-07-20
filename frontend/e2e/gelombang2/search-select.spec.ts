@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * Spec komponen: <SearchSelect> (Poin 2 Perluasan T16 — §12.17).
- * Diuji lewat KelasDetailPage (kartu "Wali Kelas" — SearchSelect guru).
+ * Spec komponen: <SearchSelect> (Poin 2 Perluasan T16 â€” Â§12.17).
+ * Diuji lewat KelasDetailPage (kartu "Wali Kelas" â€” SearchSelect guru).
  *
- * Desktop: ketik cari → hasil menyempit → pilih → dropdown tertutup.
+ * Desktop: ketik cari â†’ hasil menyempit â†’ pilih â†’ dropdown tertutup.
  * Mobile: trigger membuka BOTTOM SHEET, search box DI DALAM sheet.
  */
 test.describe('SearchSelect (Poin 2 Perluasan T16)', () => {
@@ -69,7 +69,7 @@ test.describe('SearchSelect (Poin 2 Perluasan T16)', () => {
     const searchBox = page.getByPlaceholder('Cari nama guru...');
     await expect(searchBox).toBeVisible();
 
-    // Tunggu opsi dimuat (loadAll async) — cek ada konten dropdown
+    // Tunggu opsi dimuat (loadAll async) â€” cek ada konten dropdown
     await expect(
       page.locator('[placeholder="Cari nama guru..."]').or(page.getByText('Tidak ada hasil')).first(),
     ).toBeVisible({ timeout: 8_000 });

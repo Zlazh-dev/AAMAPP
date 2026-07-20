@@ -201,20 +201,26 @@ export class KurikulumService {
     guruId?: number;
     kelasId?: number;
     mapelId?: number;
+    page?: number;
+    limit?: number;
   }) {
     const taId =
       filter.taId ??
       (await this.getActiveTaIdOrThrow());
+    const page = Math.max(1, filter.page ?? 1);
+    const limit = Math.min(200, Math.max(1, filter.limit ?? 25));
     const where: any = { tahunAjaranId: taId };
     if (filter.guruId) where.guruId = filter.guruId;
     if (filter.kelasId) where.kelasId = filter.kelasId;
     if (filter.mapelId) where.mapelId = filter.mapelId;
-    const rows = await this.penugasanRepo.find({
+    const [rows, total] = await this.penugasanRepo.findAndCount({
       where,
       relations: ['mapel', 'kelas', 'guru', 'tahunAjaran'],
       order: { kelasId: 'ASC', mapelId: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
     });
-    return { data: rows, taId };
+    return { data: rows, total, page, limit, taId };
   }
 
   /**

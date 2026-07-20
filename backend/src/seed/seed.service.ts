@@ -37,6 +37,7 @@ export class SeedService implements OnModuleInit {
 
   async onModuleInit() {
     await this.seedAdmin();
+    await this.seedE2EAdmin();
     await this.pengaturanService.seedDefaults();
     await this.seedTahunAjaran();
     await this.housekeeping();
@@ -83,6 +84,29 @@ export class SeedService implements OnModuleInit {
       deviceSummary: 'System',
     });
     await this.logRepo.save(log);
+  }
+
+  // ── 1b. E2E admin terpisah ──────────────────────────────────────────────────
+  // Akun admin khusus tes otomatis, TERPISAH dari admin pemilik produk.
+  // Supaya suite e2e tidak mengotori daftar sesi admin sungguhan.
+  private async seedE2EAdmin() {
+    const E2E_EMAIL = 'e2e-admin@aamapp.sch.id';
+    const E2E_PASSWORD = 'e2e-admin-pass';
+    const existing = await this.userRepo.findOne({ where: { email: E2E_EMAIL } });
+    if (existing) return; // idempotent
+    const passwordHash = await bcrypt.hash(E2E_PASSWORD, 10);
+    const e2eAdmin = this.userRepo.create({
+      name: 'E2E Test Admin',
+      email: E2E_EMAIL,
+      passwordHash,
+      googleSub: null,
+      status: 'active',
+      roles: ['admin'],
+      requestedRoles: [],
+      registrationNote: 'Akun khusus tes otomatis — jangan dipakai produksi',
+    });
+    await this.userRepo.save(e2eAdmin);
+    this.logger.log(`E2E admin dibuat: ${E2E_EMAIL}`);
   }
 
   // ── 2. Tahun Ajaran aktif ──────────────────────────────────────────────────

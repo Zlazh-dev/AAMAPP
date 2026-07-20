@@ -6,7 +6,7 @@ import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
 import { Badge, roleLabel, roleVariant } from '../../../components/Badge';
 import { BackLink } from '../../../components/BackLink';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 import { EmptyState } from '../../../components/EmptyState';
 import { Skeleton } from '../../../components/Skeleton';
 import { PageContainer } from '../../../components/PageContainer';
@@ -40,14 +40,13 @@ export function PersetujuanPage() {
         Persetujuan Pendaftaran
       </h2>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group' },
-          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices' },
-          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history' },
+          { key: 'daftar', label: 'Daftar Akun', path: '/admin/akun', icon: 'group', description: 'Semua akun pengguna' },
+          { key: 'sesi', label: 'Sesi Aktif', path: '/admin/akun/sesi', icon: 'devices', description: 'Perangkat yg sedang login' },
+          { key: 'aktivitas', label: 'Aktivitas', path: '/admin/akun/aktivitas', icon: 'history', description: 'Log aktivitas akun' },
         ]}
-      />
+      >
 
       {loading ? (
         <div className="space-y-3">
@@ -97,6 +96,7 @@ export function PersetujuanPage() {
           ))}
         </div>
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

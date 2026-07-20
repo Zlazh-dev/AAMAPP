@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { bulkHapusLibur } from '../helpers/api';
 
 /**
- * T16-SPRINT lanjutan — Matriks Kalender Libur: seleksi tanggal + Tandai
+ * T16-SPRINT lanjutan â€” Matriks Kalender Libur: seleksi tanggal + Tandai
  * Libur (via bar aksi UI), + Rentang (multi-tanggal via dialog), Hapus satu
- * baris rentang dari daftar "Libur bulan ini". §12.17e: tanggal unik per
+ * baris rentang dari daftar "Libur bulan ini". Â§12.17e: tanggal unik per
  * run (jauh di masa depan, hindari collision antar spec) + cleanup via
  * API di afterEach.
  */
@@ -34,7 +34,7 @@ test.describe('Kalender Libur (Matriks T16 lanjutan)', () => {
     const day = 1 + (Date.now() % 27); // 1..27, aman utk semua bulan
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-    // Keterangan unik per tanggal — mencegah locator ambiguous bila spec
+    // Keterangan unik per tanggal â€” mencegah locator ambiguous bila spec
     // sebelumnya meninggalkan baris dengan keterangan generik yang sama.
     const keterangan = `Libur Uji E2E ${dateStr}`;
 

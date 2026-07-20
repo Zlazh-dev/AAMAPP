@@ -1,14 +1,14 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * UX-POLISH-FE Gelombang 1 — E2E MANDIRI (§12.17e).
+ * UX-POLISH-FE Gelombang 1 â€” E2E MANDIRI (Â§12.17e).
  *
  * Tests:
- * A. ADMIN_EXTRA_AREAS — admin sidebar tidak ada menu Guru area.
- * B. Kiosk — route /kiosk tidak ada, menu kiosk tidak muncul.
- * C. Laporan HUB — /admin/laporan berisi Presensi Siswa/Guru + Izin Guru + 3 laporan.
- * D. Validasi Wajah — detail guru punya card wajah + status.
+ * A. ADMIN_EXTRA_AREAS â€” admin sidebar tidak ada menu Guru area.
+ * B. Kiosk â€” route /kiosk tidak ada, menu kiosk tidak muncul.
+ * C. Laporan HUB â€” /admin/laporan berisi Presensi Siswa/Guru + Izin Guru + 3 laporan.
+ * D. Validasi Wajah â€” detail guru punya card wajah + status.
  */
 
 test.describe('UX-POLISH-FE Gelombang 1', () => {
@@ -16,7 +16,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
     await loginAsAdmin(page);
   });
 
-  // ── A. ADMIN_EXTRA_AREAS ──────────────────────────────────────────────────
+  // â”€â”€ A. ADMIN_EXTRA_AREAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('A. Admin sidebar tidak ada area GURU', () => {
     test('Sidebar tidak menampilkan menu KBM Hari Ini (milik guru)', async ({ page }) => {
       await page.goto('/admin');
@@ -40,8 +40,8 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
     });
   });
 
-  // ── B. Kiosk dihapus ─────────────────────────────────────────────────────
-  test.describe('B. Kiosk — dihapus bersih', () => {
+  // â”€â”€ B. Kiosk dihapus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test.describe('B. Kiosk â€” dihapus bersih', () => {
     test('Route /kiosk tidak ada (redirects atau 404 graceful)', async ({ page }) => {
       await page.goto('/kiosk');
       await page.waitForTimeout(1500);
@@ -74,7 +74,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
     });
   });
 
-  // ── C. Laporan — area-based (hub /admin/laporan dibubarkan IA migration) ──
+  // â”€â”€ C. Laporan â€” area-based (hub /admin/laporan dibubarkan IA migration) â”€â”€
   test.describe('C. Laporan \u2014 area-based paths', () => {
     test('/tu/laporan/harian-guru accessible', async ({ page }) => {
       await page.goto('/tu/laporan/harian-guru');
@@ -114,7 +114,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
     test('Route /admin/laporan tidak ada lagi (redirect)', async ({ page }) => {
       await page.goto('/admin/laporan');
       await page.waitForTimeout(1500);
-      // Hub dibubarkan — harus redirect ke admin atau 403, bukan render hub
+      // Hub dibubarkan â€” harus redirect ke admin atau 403, bukan render hub
       const url = page.url();
       const hasHub = await page.getByText(/Laporan.*Presensi|6 sub/i).isVisible().catch(() => false);
       // Either redirected away OR still accessible but hub content gone
@@ -127,7 +127,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
       await page.goto('/admin');
       await page.waitForTimeout(1500);
       // IA migration: Presensi Siswa kini di grup KESISWAAN.
-      // Admin melihatnya via ADMIN_EXTRA_AREAS — link boleh ada (dari grup kesiswaan)
+      // Admin melihatnya via ADMIN_EXTRA_AREAS â€” link boleh ada (dari grup kesiswaan)
       const bodyLen = await page.locator('body').innerText().then(t => t.length).catch(() => 0);
       expect(bodyLen).toBeGreaterThan(10); // halaman loads
     });
@@ -141,7 +141,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
     });
   });
 
-  // ── D. Validasi Wajah di Detail Guru ──────────────────────────────────────
+  // â”€â”€ D. Validasi Wajah di Detail Guru â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('D. Validasi Wajah di detail guru', () => {
     test('/kurikulum/orang/guru/:id accessible', async ({ page }) => {
       await page.goto('/kurikulum/orang/guru/1');
@@ -191,7 +191,7 @@ test.describe('UX-POLISH-FE Gelombang 1', () => {
           await expect(page.locator('#btn-terima-wajah')).toBeVisible();
           await expect(page.locator('#btn-tolak-wajah')).toBeVisible();
         }
-        // Else: status not menunggu — OK, buttons not required
+        // Else: status not menunggu â€” OK, buttons not required
         expect(true).toBe(true);
       }
     });

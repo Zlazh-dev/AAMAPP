@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * Spec CRUD Siswa — Bukti-fix P0 2026-07-16.
+ * Spec CRUD Siswa â€” Bukti-fix P0 2026-07-16.
  *
  * P0: CreateSiswaDto/UpdateSiswaDto hanya mewhitelist sebagian kecil
  * field siswa. Karena main.ts memakai `forbidNonWhitelisted: true` dan
@@ -16,11 +16,11 @@ import { loginAsAdmin } from '../helpers/auth';
  * Spec ini submit form TANPA mock (network asli) untuk membuktikan
  * DTO backend benar-benar menerima payload penuh dari UI.
  *
- * §12.17e higiene data uji: NIS unik per run (suffix timestamp) +
- * cleanup via API di afterEach — spec SELF-CONTAINED dan idempoten.
+ * Â§12.17e higiene data uji: NIS unik per run (suffix timestamp) +
+ * cleanup via API di afterEach â€” spec SELF-CONTAINED dan idempoten.
  *
  * T16-SPRINT poin 1: backend q= siswa diperluas mencocokkan nama ATAU
- * nis ATAU nisn (bukan hanya nama) — dibuktikan lewat pencarian via NIS
+ * nis ATAU nisn (bukan hanya nama) â€” dibuktikan lewat pencarian via NIS
  * di kotak cari daftar siswa.
  */
 test.describe('CRUD Siswa (P0 Perbaikan DTO fotoUrl+field lengkap)', () => {

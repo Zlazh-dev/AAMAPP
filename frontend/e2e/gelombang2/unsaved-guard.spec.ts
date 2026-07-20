@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
  * Spec komponen: UnsavedGuard / useUnsavedChanges (Poin 6 Perluasan
- * T16 — §12.17). Diuji lewat SiswaFormPage:
+ * T16 â€” Â§12.17). Diuji lewat SiswaFormPage:
  *
  * 1. Isi form -> coba navigasi via BackLink -> dialog konfirmasi muncul.
  * 2. "Lanjut Mengedit" (cancel) -> tetap di form, isian utuh.

@@ -1,4 +1,5 @@
 ﻿import React, { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, PelanggaranEntry, KatalogEntry, StatusPelanggaran , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
@@ -9,8 +10,9 @@ import { useToast } from '../../components/Toast';
 import { SearchSelect } from '../../components/SearchSelect';
 import { Table, ColumnDef } from '../../components/Table';
 import { FormDrawer } from '../../components/FormDrawer';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { BackLink } from '../../components/BackLink';
+import { Pagination } from '../../components/Pagination';
 import { PageMenu } from '../../components/PageMenu';
 
 const KATEGORI_VARIANT: Record<string, 'gray' | 'yellow' | 'red' | 'blue'> = {
@@ -32,12 +34,13 @@ function todayWIB(): string {
 
 /** Sub dari Tata Tertib (IA-HIERARCHY-V2). */
 const PELANGGARAN_SUB_LINKS = [
-  { key: 'verifikasi', label: 'Verifikasi', path: '/kesiswaan/verifikasi', icon: 'task_alt' },
-  { key: 'tindak-lanjut', label: 'Tindak Lanjut', path: '/kesiswaan/tindak-lanjut', icon: 'assignment_late' },
-  { key: 'reward', label: 'Reward', path: '/kesiswaan/reward', icon: 'emoji_events' },
+  { key: 'verifikasi', label: 'Verifikasi', path: '/kesiswaan/verifikasi', icon: 'task_alt', description: 'Antrean persetujuan pelanggaran' },
+  { key: 'tindak-lanjut', label: 'Tindak Lanjut', path: '/kesiswaan/tindak-lanjut', icon: 'assignment_late', description: 'Tindak lanjut pelanggaran berat' },
+  { key: 'reward', label: 'Reward', path: '/kesiswaan/reward', icon: 'emoji_events', description: 'Daftar siswa berprestasi' },
 ];
 
 export function PelanggaranPage() {
+  const navigate = useNavigate();
   const toast = useToast();
   const [rows, setRows] = useState<PelanggaranEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,12 +58,15 @@ export function PelanggaranPage() {
   const [saving, setSaving] = useState(false);
 
   const [saldoMap, setSaldoMap] = useState<Record<number, number>>({});
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 25 });
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.getPelanggaran({ status: statusFilter || undefined, limit: 50 });
+      const res = await api.getPelanggaran({ status: statusFilter || undefined, page, limit: 25 });
       setRows(res.data);
+      setMeta({ total: res.total, page: res.page, limit: res.limit });
       const siswaIds: number[] = [...new Set(res.data.map((r: PelanggaranEntry) => r.siswaId))];
       const saldos: Record<number, number> = {};
       await Promise.all(siswaIds.map(async (sid: number) => {
@@ -73,23 +79,52 @@ export function PelanggaranPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [statusFilter, page]);
 
   useEffect(() => { load(); }, [load]);
 
-  useEffect(() => {
-    api.adminGetSiswa({ limit: 200 }).then((r: any) =>
-      setSiswaOptions((r.data ?? []).map((s: any) => ({ value: s.id as number, label: `${s.nama} (${s.nis ?? '-'})` })))
-    ).catch(() => {});
-    api.getKatalog({ limit: 200 }).then((r: any) => {
-      const active: KatalogEntry[] = r.data.filter((k: KatalogEntry) => k.aktif);
-      setKatalog(active);
-      setKatalogOptions(active.map((k: KatalogEntry) => ({
-        value: k.id as number,
-        label: `[${k.kategori}] ${k.bentuk} (${k.poin} poin)`,
-      })));
-    }).catch(() => {});
+  // Reset ke halaman 1 saat filter berubah.
+  useEffect(() => { setPage(1); }, [statusFilter]);
+
+  // Pencarian siswa sisi-server (bukan ambil 200 baris).
+  const searchSiswa = useCallback(async (q: string) => {
+    const r: any = await api.adminGetSiswa({ q: q || undefined, limit: 20 });
+    const opts = (r.data ?? []).map((s: any) => ({ value: s.id as number, label: `${s.nama} (${s.nis ?? '-'})` }));
+    // Cache opsi terpilih supaya label tampil saat dropdown tertutup.
+    setSiswaOptions((prev) => {
+      const seen = new Set(prev.map((o: any) => o.value));
+      return [...prev, ...opts.filter((o: any) => !seen.has(o.value))];
+    });
+    return opts;
   }, []);
+
+  // Pencarian katalog sisi-server (hanya katalog aktif).
+  const searchKatalog = useCallback(async (q: string) => {
+    const r: any = await api.getKatalog({ q: q || undefined, limit: 20 });
+    const active: KatalogEntry[] = (r.data ?? []).filter((k: KatalogEntry) => k.aktif);
+    const opts = active.map((k: KatalogEntry) => ({
+      value: k.id as number,
+      label: `[${k.kategori}] ${k.bentuk} (${k.poin} poin)`,
+    }));
+    setKatalog((prev) => {
+      const seen = new Set(prev.map((k) => k.id));
+      return [...prev, ...active.filter((k) => !seen.has(k.id))];
+    });
+    setKatalogOptions((prev) => {
+      const seen = new Set(prev.map((o) => o.value));
+      return [...prev, ...opts.filter((o) => !seen.has(o.value))];
+    });
+    return opts;
+  }, []);
+
+  // Bila sudah ada siswaId/katalogId (edit mode), cache opsinya sekali.
+  useEffect(() => {
+    if (siswaId != null && siswaOptions.length === 0) {
+      api.adminGetSiswaById(Number(siswaId)).then((s) => {
+        setSiswaOptions([{ value: s.id, label: `${s.nama} (${s.nis ?? '-'})` }]);
+      }).catch(() => {});
+    }
+  }, [siswaId]);
 
   const selectedKatalog = katalog.find(k => k.id === Number(katalogId));
 
@@ -148,7 +183,7 @@ export function PelanggaranPage() {
       </div>
 
       <BackLink to="/kesiswaan/tata-tertib" />
-      <SubPageLinks links={PELANGGARAN_SUB_LINKS} />
+      <SubPageLayout links={PELANGGARAN_SUB_LINKS}>
 
       {/* Filter */}
       <Card>
@@ -167,9 +202,11 @@ export function PelanggaranPage() {
             columns={columns}
             data={rows}
             rowKey={(r) => r.id}
+            onRowClick={(r) => navigate(`/kesiswaan/pelanggaran/${r.id}`)}
             emptyMessage="Belum ada data pelanggaran."
           />
         )}
+        <Pagination page={meta.page} limit={meta.limit} total={meta.total} onPageChange={setPage} loading={loading} />
       </Card>
 
       {/* FormDrawer — desktop modal / mobile bottom sheet */}
@@ -191,6 +228,7 @@ export function PelanggaranPage() {
               placeholder="Cari dan pilih siswa..."
               searchPlaceholder="Ketik nama/NIS siswa..."
               clearable
+              onSearch={searchSiswa}
             />
           </div>
           <div>
@@ -201,6 +239,7 @@ export function PelanggaranPage() {
               placeholder="Pilih butir tata tertib..."
               searchPlaceholder="Cari butir..."
               clearable
+              onSearch={searchKatalog}
             />
           </div>
           {selectedKatalog && (
@@ -222,6 +261,7 @@ export function PelanggaranPage() {
           </div>
         </div>
       </FormDrawer>
+      </SubPageLayout>
     </PageContainer>
   );
 }

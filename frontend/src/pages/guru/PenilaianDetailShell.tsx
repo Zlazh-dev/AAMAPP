@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Outlet, useNavigate } from 'react-router-dom';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { PageContainer } from '../../components/PageContainer';
 import { Button } from '../../components/Button';
 
@@ -12,11 +12,11 @@ export function PenilaianDetailShell() {
  const { penugasanId } = useParams<{ penugasanId: string }>();
  const navigate = useNavigate();
 
- const links = [
- { key: 'tp', label: 'Tujuan Pembelajaran', path: `/guru/penilaian/${penugasanId}/tp` },
- { key: 'penilaian', label: 'Penilaian', path: `/guru/penilaian/${penugasanId}/penilaian` },
- { key: 'rekap', label: 'Rekap Nilai Akhir', path: `/guru/penilaian/${penugasanId}/rekap` },
- ];
+  const links = [
+  { key: 'tp', label: 'Tujuan Pembelajaran', path: `/guru/penilaian/${penugasanId}/tp`, icon: 'menu_book', description: 'Daftar TP untuk paket ini' },
+  { key: 'penilaian', label: 'Penilaian', path: `/guru/penilaian/${penugasanId}/penilaian`, icon: 'grading', description: 'Input nilai per siswa' },
+  { key: 'rekap', label: 'Rekap Nilai Akhir', path: `/guru/penilaian/${penugasanId}/rekap`, icon: 'summarize', description: 'Rekap nilai akhir kelas' },
+  ];
 
  return (
  <PageContainer>
@@ -26,9 +26,10 @@ export function PenilaianDetailShell() {
  </Button>
  <h2 className="text-lg font-bold text-aam-text">Detail Paket Penilaian</h2>
  </div>
- <SubPageLinks links={links} />
+  <SubPageLayout links={links}>
  <Outlet />
- </PageContainer>
+  </SubPageLayout>
+  </PageContainer>
  );
 }
 

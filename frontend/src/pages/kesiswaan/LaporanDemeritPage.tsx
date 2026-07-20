@@ -8,12 +8,13 @@ import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
 import { Table, ColumnDef } from '../../components/Table';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
+import { Pagination } from '../../components/Pagination';
 import { PageMenu } from '../../components/PageMenu';
 
 /** Sub halaman Laporan Demerit (IA-HIERARCHY-V2). */
 const DEMERIT_SUB_LINKS = [
-  { key: 'tata-tertib', label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel' },
+  { key: 'tata-tertib', label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel', description: 'Katalog butir pelanggaran & poin' },
 ];
 
 interface DemeritRow {
@@ -100,6 +101,9 @@ export function LaporanDemeritPage() {
     api.adminGetKelas({ limit: 100 }).then((r: any) => setKelasOptions(r.data ?? [])).catch(() => {});
   }, []);
 
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 25 });
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -107,17 +111,20 @@ export function LaporanDemeritPage() {
         dari,
         sampai,
         kelasId: kelasId ? Number(kelasId) : undefined,
-        limit: 200,
+        page,
+        limit: 25,
       });
       setRows(res?.data ?? res ?? []);
+      if (res?.total != null) setMeta({ total: res.total, page: res.page ?? 1, limit: res.limit ?? 25 });
     } catch (err) {
       toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat laporan demerit.');
     } finally {
       setLoading(false);
     }
-  }, [dari, sampai, kelasId]);
+  }, [dari, sampai, kelasId, page]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { setPage(1); }, [dari, sampai, kelasId]);
 
   // Total row
   const totalRow: DemeritRow | null = rows.length > 0 ? {
@@ -168,7 +175,7 @@ export function LaporanDemeritPage() {
         </div>
       </div>
 
-      <SubPageLinks links={DEMERIT_SUB_LINKS} />
+      <SubPageLayout links={DEMERIT_SUB_LINKS}>
 
       {/* Filter */}
       <Card>
@@ -230,9 +237,11 @@ export function LaporanDemeritPage() {
               </div>
             )}
             <p className="text-xs text-aam-text-muted px-3 pb-2">Total siswa: {rows.length}</p>
+            <Pagination page={meta.page} limit={meta.limit} total={meta.total} onPageChange={setPage} loading={loading} />
           </>
         )}
       </Card>
+      </SubPageLayout>
     </PageContainer>
   );
 }

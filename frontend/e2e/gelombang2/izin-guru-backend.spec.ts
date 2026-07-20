@@ -1,23 +1,23 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F4a Backend — izin guru + status turunan deriveStatusHarian
+ * F4a Backend â€” izin guru + status turunan deriveStatusHarian
  *
  * Pola: loginAsAdmin via page (seperti spec lain yang berjalan),
  * setup data lewat REST setelah token admin didapat.
  *
  * Test suite:
- *  1. ajukan izin → MENUNGGU
- *  2. admin list izin → shape valid
- *  3. tolak tanpa alasan → 400
- *  4. ajukan + approve → DISETUJUI; monitor tampil IZIN/SAKIT
- *  5. RBAC: endpoint admin tidak bisa diakses guru → 403
+ *  1. ajukan izin â†’ MENUNGGU
+ *  2. admin list izin â†’ shape valid
+ *  3. tolak tanpa alasan â†’ 400
+ *  4. ajukan + approve â†’ DISETUJUI; monitor tampil IZIN/SAKIT
+ *  5. RBAC: endpoint admin tidak bisa diakses guru â†’ 403
  *  6. Monitor harian: setiap baris punya statusHarian valid
- *  7. Monitor LIBUR: tanggal kalender libur → semua LIBUR
- *  8. Tolak dengan alasan → DITOLAK
- *  9. listDiri (guru) → hanya izin sendiri (array)
+ *  7. Monitor LIBUR: tanggal kalender libur â†’ semua LIBUR
+ *  8. Tolak dengan alasan â†’ DITOLAK
+ *  9. listDiri (guru) â†’ hanya izin sendiri (array)
  * 10. Monitor shape: statusHarian + presensi field ada
  */
 
@@ -27,7 +27,7 @@ let guruId: number;
 let guruUserId: number;
 let suffix: string;
 
-test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
+test.describe('F4a Backend â€” Izin Guru + deriveStatusHarian', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     adminToken = (await page.evaluate(() =>
@@ -82,8 +82,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     guruUserId = 0;
   });
 
-  // ─── 1. Ajukan izin → MENUNGGU ───────────────────────────────────────────
-  test('1. Guru ajukan izin SAKIT → status MENUNGGU', async ({ request }) => {
+  // â”€â”€â”€ 1. Ajukan izin â†’ MENUNGGU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. Guru ajukan izin SAKIT â†’ status MENUNGGU', async ({ request }) => {
     const res = await request.post('/api/izin/guru', {
       headers: authHeaders(guruToken),
       data: {
@@ -100,8 +100,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     expect(body.jenis).toBe('SAKIT');
   });
 
-  // ─── 2. Admin list izin → shape valid ────────────────────────────────────
-  test('2. Admin list izin → shape valid, paginasi, guruNama ada', async ({
+  // â”€â”€â”€ 2. Admin list izin â†’ shape valid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. Admin list izin â†’ shape valid, paginasi, guruNama ada', async ({
     request,
   }) => {
     // Ajukan dulu agar ada data
@@ -132,8 +132,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     expect(item.jenis).toBeTruthy();
   });
 
-  // ─── 3. Tolak tanpa alasan → 400 ─────────────────────────────────────────
-  test('3. Tolak tanpa alasan → 400 BadRequest', async ({ request }) => {
+  // â”€â”€â”€ 3. Tolak tanpa alasan â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. Tolak tanpa alasan â†’ 400 BadRequest', async ({ request }) => {
     // Buat izin baru
     const ajukanRes = await request.post('/api/izin/guru', {
       headers: authHeaders(guruToken),
@@ -159,8 +159,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     });
   });
 
-  // ─── 4. Approve + monitor statusHarian=SAKIT ─────────────────────────────
-  test('4. Approve → DISETUJUI; monitor harian tanggal tsb → statusHarian SAKIT/LIBUR', async ({
+  // â”€â”€â”€ 4. Approve + monitor statusHarian=SAKIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. Approve â†’ DISETUJUI; monitor harian tanggal tsb â†’ statusHarian SAKIT/LIBUR', async ({
     request,
   }) => {
     const ajukanRes = await request.post('/api/izin/guru', {
@@ -197,8 +197,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     expect(['SAKIT', 'LIBUR']).toContain(row.statusHarian);
   });
 
-  // ─── 5. RBAC: guru tidak bisa akses admin endpoint → 403 ─────────────────
-  test('5. RBAC: guru tidak bisa PATCH /api/admin/izin/guru/:id/setujui → 403', async ({
+  // â”€â”€â”€ 5. RBAC: guru tidak bisa akses admin endpoint â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. RBAC: guru tidak bisa PATCH /api/admin/izin/guru/:id/setujui â†’ 403', async ({
     request,
   }) => {
     // Buat izin dulu
@@ -213,7 +213,7 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     });
     const izin = await ajukanRes.json();
 
-    // Guru coba approve sendiri — harus 403
+    // Guru coba approve sendiri â€” harus 403
     const approveRes = await request.patch(
       `/api/admin/izin/guru/${izin.id}/setujui`,
       {
@@ -230,7 +230,7 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     });
   });
 
-  // ─── 6. Monitor harian: statusHarian valid untuk semua guru ──────────────
+  // â”€â”€â”€ 6. Monitor harian: statusHarian valid untuk semua guru â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('6. Monitor harian: setiap baris punya statusHarian yang valid', async ({
     request,
   }) => {
@@ -249,8 +249,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     }
   });
 
-  // ─── 7. Monitor LIBUR: semua guru LIBUR di hari libur kalender ───────────
-  test('7. Monitor LIBUR: tanggal kalender libur → statusHarian LIBUR semua', async ({
+  // â”€â”€â”€ 7. Monitor LIBUR: semua guru LIBUR di hari libur kalender â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. Monitor LIBUR: tanggal kalender libur â†’ statusHarian LIBUR semua', async ({
     request,
   }) => {
     // Gunakan tanggal libur yang pasti tidak ada presensi/izin
@@ -274,8 +274,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     }
   });
 
-  // ─── 8. Tolak dengan alasan → DITOLAK ────────────────────────────────────
-  test('8. Admin tolak dengan alasan → DITOLAK + alasanKeputusan tersimpan', async ({
+  // â”€â”€â”€ 8. Tolak dengan alasan â†’ DITOLAK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Admin tolak dengan alasan â†’ DITOLAK + alasanKeputusan tersimpan', async ({
     request,
   }) => {
     const ajukanRes = await request.post('/api/izin/guru', {
@@ -302,8 +302,8 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     expect(body.alasanKeputusan).toBe('Tidak ada pengganti mengajar');
   });
 
-  // ─── 9. listDiri (guru) → array berisi izin sendiri ─────────────────────
-  test('9. GET /api/izin/guru → guru lihat daftar izin sendiri (array)', async ({
+  // â”€â”€â”€ 9. listDiri (guru) â†’ array berisi izin sendiri â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. GET /api/izin/guru â†’ guru lihat daftar izin sendiri (array)', async ({
     request,
   }) => {
     // Pastikan ada minimal 1 izin
@@ -334,7 +334,7 @@ test.describe('F4a Backend — Izin Guru + deriveStatusHarian', () => {
     }
   });
 
-  // ─── 10. Monitor shape: statusHarian + presensi field ada ────────────────
+  // â”€â”€â”€ 10. Monitor shape: statusHarian + presensi field ada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('10. Monitor harian shape: statusHarian + presensi sub-object ada', async ({
     request,
   }) => {

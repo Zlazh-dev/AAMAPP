@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * kelas-assign-siswa.spec.ts — FIX-ASSIGN-SISWA-KELAS.
+ * kelas-assign-siswa.spec.ts â€” FIX-ASSIGN-SISWA-KELAS.
  *
  * Bug: kelas kosong menampilkan tombol "Tambah Siswa" yang navigasi ke
  * form CREATE siswa baru, padahal alur nyata = siswa sudah ada (dari

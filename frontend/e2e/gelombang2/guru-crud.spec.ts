@@ -1,9 +1,9 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * §12.17e higiene data uji: nama/NIP unik per run (suffix timestamp) +
- * cleanup via API di afterEach — spec ini SELF-CONTAINED dan idempoten
+ * Â§12.17e higiene data uji: nama/NIP unik per run (suffix timestamp) +
+ * cleanup via API di afterEach â€” spec ini SELF-CONTAINED dan idempoten
  * (harus lolos berulang kali tanpa reset DB di antaranya).
  */
 test.describe('CRUD Guru (Poin 1 T16)', () => {
@@ -59,7 +59,7 @@ test.describe('CRUD Guru (Poin 1 T16)', () => {
     // Pastikan tidak kembali ke form (back history test).
     // Alur history: /guru -> /guru/baru (push) -> /guru/sukses (REPLACE atas /baru)
     // -> klik "Lihat Daftar Guru" -> /guru (push). Jadi stack: [guru, sukses, guru].
-    // goBack() akan mendarat di halaman SUKSES (bukan form) — ini tetap memenuhi
+    // goBack() akan mendarat di halaman SUKSES (bukan form) â€” ini tetap memenuhi
     // syarat "back tidak kembali ke form".
     await page.waitForURL('**/kurikulum/orang/guru');
     await page.goBack();

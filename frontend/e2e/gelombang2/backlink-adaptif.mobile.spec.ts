@@ -1,14 +1,14 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * BACKLINK-ADAPTIF-MOBILE — spec MANDIRI-DATA (§12.17e).
+ * BACKLINK-ADAPTIF-MOBILE â€” spec MANDIRI-DATA (Â§12.17e).
  *
- * Keputusan user (zona jempol): di MOBILE, teks kecil "← Kembali" di atas
- * halaman sulit dijangkau → tombol full-width "← Kembali" (≥48px) MELAYANG
+ * Keputusan user (zona jempol): di MOBILE, teks kecil "â† Kembali" di atas
+ * halaman sulit dijangkau â†’ tombol full-width "â† Kembali" (â‰¥48px) MELAYANG
  * di paling bawah viewport (position: fixed). Desktop tetap tautan teks di atas.
  *
- * FIX: buat kelas via API beforeEach, navigasi by ID langsung — tidak klik
+ * FIX: buat kelas via API beforeEach, navigasi by ID langsung â€” tidak klik
  * "baris pertama" yang butuh data ambient.
  */
 test.describe('BackLink adaptif mobile', () => {
@@ -35,7 +35,7 @@ test.describe('BackLink adaptif mobile', () => {
   });
 
   test('Mobile: tombol "Kembali" melayang di bawah & berfungsi (halaman detail kelas)', async ({ page }) => {
-    // Navigasi langsung by ID — tidak bergantung kelas ambient.
+    // Navigasi langsung by ID â€” tidak bergantung kelas ambient.
     await page.goto(`/kurikulum/kelas/${kelasId}`);
     await page.waitForURL(/\/kurikulum\/kelas\/\d+$/);
 
@@ -48,7 +48,7 @@ test.describe('BackLink adaptif mobile', () => {
     const viewportHeight = page.viewportSize()!.height;
     expect(box!.y + box!.height).toBeGreaterThan(viewportHeight - 80);
 
-    // Tap → mendarat kembali di daftar kelas.
+    // Tap â†’ mendarat kembali di daftar kelas.
     await backButton.click();
     await page.waitForURL('**/kurikulum/kelas');
     await expect(page.getByRole('heading', { name: 'Data Kelas' })).toBeVisible();
@@ -60,7 +60,7 @@ test.describe('BackLink adaptif mobile', () => {
 
     // Halaman form TIDAK opt-in ke tombol mengambang (mobileButton={false}),
     // sehingga hanya SATU tautan "Kembali" (teks, selalu visible di semua
-    // ukuran layar untuk halaman form) yang dirender — bukan nol.
+    // ukuran layar untuk halaman form) yang dirender â€” bukan nol.
     const backLinks = page.getByRole('link', { name: /Kembali/ });
     await expect(backLinks).toHaveCount(1);
     await expect(backLinks.first()).toBeVisible();

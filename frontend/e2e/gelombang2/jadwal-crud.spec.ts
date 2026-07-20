@@ -1,11 +1,11 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran } from '../helpers/api';
 
 /**
- * T16-SPRINT lanjutan — Matriks Jadwal KBM: Tambah slot via panel UI,
+ * T16-SPRINT lanjutan â€” Matriks Jadwal KBM: Tambah slot via panel UI,
  * bentrok KELAS (409 di dalam panel), bentrok GURU lintas kelas (409 di
- * dalam panel), Hapus slot. §12.17e: entitas unik per run + cleanup via
+ * dalam panel), Hapus slot. Â§12.17e: entitas unik per run + cleanup via
  * API di afterEach.
  */
 test.describe('CRUD Jadwal KBM (Matriks T16 lanjutan)', () => {
@@ -84,12 +84,29 @@ test.describe('CRUD Jadwal KBM (Matriks T16 lanjutan)', () => {
     const penugasanB = (await penugasanBRes.json())[0];
     createdPenugasanIds.push(penugasanB.id);
 
+    // Helper: pilih kelas via SearchSelect (bukan native select).
+    const pilihKelas = async (namaKelas: string) => {
+      // Buka SearchSelect: klik label "Pilih Kelas" atau tombol trigger.
+      const trigger = page.locator('label:has-text("Pilih Kelas") + *').first();
+      await trigger.click().catch(async () => {
+        // Fallback: klik tombol dgn teks "Pilih kelas".
+        await page.getByRole('button').filter({ hasText: /Pilih kelas/i }).first().click();
+      });
+      // Ketik di input pencarian.
+      await page.waitForTimeout(300);
+      const searchInput = page.getByPlaceholder(/Cari nama kelas/i).first();
+      if (await searchInput.isVisible().catch(() => false)) {
+        await searchInput.fill(namaKelas);
+        await page.waitForTimeout(500);
+        // Klik hasil.
+        const results = page.locator('button').filter({ hasText: new RegExp(namaKelas) });
+        await results.last().click();
+      }
+    };
+
     // 1. Tambah slot pertama via UI panel: kelas A, Senin 07:00-07:40.
     await page.goto('/kurikulum/jadwal');
-    await page.locator('select').filter({ hasText: kelasA.nama }).selectOption({ value: String(kelasA.id) }).catch(async () => {
-      // Fallback bila filter di atas gagal karena select generik.
-      await page.locator('select').first().selectOption({ value: String(kelasA.id) });
-    });
+    await pilihKelas(kelasA.nama);
 
     // Klik slot kosong pertama pada kolom Senin -- selalu pakai baris "+
     // Tambah" paling bawah (baris terakhir tbody), krn baris per-jam bisa
@@ -108,7 +125,7 @@ test.describe('CRUD Jadwal KBM (Matriks T16 lanjutan)', () => {
 
     // 2. Bentrok KELAS: tambah slot lain di kelas A, Senin, waktu overlap.
     await page.reload();
-    await page.locator('select').first().selectOption({ value: String(kelasA.id) });
+    await pilihKelas(kelasA.nama);
     await page.locator('tbody tr').last().getByRole('button', { name: '+' }).nth(0).click();
     await page.locator('select').last().selectOption({ value: String(penugasanA.id) });
     await page.locator('input[type="time"]').first().fill('07:20');
@@ -119,7 +136,7 @@ test.describe('CRUD Jadwal KBM (Matriks T16 lanjutan)', () => {
     // 3. Bentrok GURU lintas kelas: kelas B, Senin, waktu overlap dgn guru sama.
     await page.getByRole('button', { name: 'Batal' }).click();
     await page.reload();
-    await page.locator('select').first().selectOption({ value: String(kelasB.id) });
+    await pilihKelas(kelasB.nama);
     await page.locator('tbody tr').last().getByRole('button', { name: '+' }).nth(0).click();
     await page.locator('select').last().selectOption({ value: String(penugasanB.id) });
     await page.locator('input[type="time"]').first().fill('07:00');
@@ -130,7 +147,7 @@ test.describe('CRUD Jadwal KBM (Matriks T16 lanjutan)', () => {
     // 4. Hapus slot: kembali ke kelas A, klik slot terisi -> confirm dialog.
     await page.getByRole('button', { name: 'Batal' }).click();
     await page.reload();
-    await page.locator('select').first().selectOption({ value: String(kelasA.id) });
+    await pilihKelas(kelasA.nama);
     const filledSlot = page.locator('.cursor-pointer', { hasText: mapel.nama });
     await expect(filledSlot).toBeVisible({ timeout: 10000 });
     await filledSlot.click();

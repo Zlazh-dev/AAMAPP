@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F6c — Kokurikuler Frontend E2E (MANDIRI-DATA §12.17e).
+ * F6c â€” Kokurikuler Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend F6c paralel (AG-2) → UI routing + komponen render tests.
+ * Backend F6c paralel (AG-2) â†’ UI routing + komponen render tests.
  * Navigasi by-id (NOT daftar paginasi). EmptyState bila API belum live.
  */
 
-test.describe('F6c — Kokurikuler Frontend', () => {
+test.describe('F6c â€” Kokurikuler Frontend', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Kurikulum: Kelola Kegiatan ────────────────────────────────────────────
+  // â”€â”€ Kurikulum: Kelola Kegiatan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Kelola Kegiatan Kokurikuler (Kurikulum)', () => {
     test('Halaman /kurikulum/kokurikuler dapat diakses', async ({ page }) => {
       await page.goto('/kurikulum/kokurikuler');
@@ -49,7 +49,7 @@ test.describe('F6c — Kokurikuler Frontend', () => {
     });
   });
 
-  // ── Tim Penilai ─────────────────────────────────────────────────────────────
+  // â”€â”€ Tim Penilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Tim Penilai Kokurikuler', () => {
     test('Halaman /kurikulum/kokurikuler/:id/tim dapat diakses', async ({ page }) => {
       await page.goto('/kurikulum/kokurikuler/1/tim');
@@ -75,7 +75,7 @@ test.describe('F6c — Kokurikuler Frontend', () => {
     });
   });
 
-  // ── Input Asesmen (Guru) ─────────────────────────────────────────────────────
+  // â”€â”€ Input Asesmen (Guru) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Input Asesmen (Guru)', () => {
     test('Halaman /guru/kokurikuler dapat diakses', async ({ page }) => {
       await page.goto('/guru/kokurikuler');
@@ -98,7 +98,7 @@ test.describe('F6c — Kokurikuler Frontend', () => {
     });
   });
 
-  // ── Rapor Kokurikuler ────────────────────────────────────────────────────────
+  // â”€â”€ Rapor Kokurikuler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Rapor Kokurikuler', () => {
     test('Halaman /kokurikuler/rapor/:siswaId dapat diakses', async ({ page }) => {
       await page.goto('/kokurikuler/rapor/1');
@@ -118,7 +118,7 @@ test.describe('F6c — Kokurikuler Frontend', () => {
     });
   });
 
-  // ── Menu ──────────────────────────────────────────────────────────────────────
+  // â”€â”€ Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Menu Kokurikuler', () => {
     test('Sidebar kurikulum menampilkan Kokurikuler', async ({ page }) => {
       await page.goto('/kurikulum/kokurikuler');

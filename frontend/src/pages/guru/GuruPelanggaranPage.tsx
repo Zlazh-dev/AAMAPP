@@ -48,23 +48,28 @@ export function GuruPelanggaranPage() {
  }
  }, []);
 
- useEffect(() => {
- load();
- // Load siswa & katalog for form
- api.adminGetSiswa({ limit: 200 }).then((r: any) =>
- setSiswaOptions((r.data ?? []).map((s: any) => ({ value: s.id, label: `${s.nama} (${s.nis ?? '-'})` })))
- ).catch(() => {});
- api.getKatalog({ limit: 200 }).then((r: any) => {
- const active = r.data.filter((k: KatalogEntry) => k.aktif);
- setKatalog(active);
- setKatalogOptions(active.map((k: KatalogEntry) => ({
- value: k.id,
- label: `[${k.kategori}] ${k.bentuk} (${k.poin} poin)`,
- })));
- }).catch(() => {});
- }, [load]);
+  useEffect(() => {
+  load();
+  }, [load]);
 
- const selectedKatalog = katalog.find(k => k.id === Number(katalogId));
+  // Pencarian sisi-server untuk pemilih siswa & katalog (bukan ambil 200 baris).
+  const searchSiswa = useCallback(async (q: string) => {
+  const r: any = await api.adminGetSiswa({ q: q || undefined, limit: 20 });
+  const opts = (r.data ?? []).map((s: any) => ({ value: s.id, label: `${s.nama} (${s.nis ?? '-'})` }));
+  setSiswaOptions((prev) => { const seen = new Set(prev.map((o: any) => o.value)); return [...prev, ...opts.filter((o: any) => !seen.has(o.value))]; });
+  return opts;
+  }, []);
+
+  const searchKatalog = useCallback(async (q: string) => {
+  const r: any = await api.getKatalog({ q: q || undefined, limit: 20 });
+  const active: KatalogEntry[] = (r.data ?? []).filter((k: KatalogEntry) => k.aktif);
+  const opts = active.map((k: KatalogEntry) => ({ value: k.id, label: `[${k.kategori}] ${k.bentuk} (${k.poin} poin)` }));
+  setKatalog((prev) => { const seen = new Set(prev.map((k) => k.id)); return [...prev, ...active.filter((k) => !seen.has(k.id))]; });
+  setKatalogOptions((prev) => { const seen = new Set(prev.map((o: any) => o.value)); return [...prev, ...opts.filter((o: any) => !seen.has(o.value))]; });
+  return opts;
+  }, []);
+
+  const selectedKatalog = katalog.find(k => k.id === Number(katalogId));
 
  const handleLapor = async () => {
  if (!siswaId) { toast.show('error', 'Pilih siswa.'); return; }
@@ -142,12 +147,12 @@ export function GuruPelanggaranPage() {
  <div className="space-y-4">
  <div>
  <label className="block text-xs font-medium text-aam-text-muted mb-1">Siswa *</label>
- <SearchSelect options={siswaOptions} value={siswaId} onChange={(v: string | number | null) => setSiswaId(v)}
+  <SearchSelect options={siswaOptions} value={siswaId} onChange={(v: string | number | null) => setSiswaId(v)} onSearch={searchSiswa}
  placeholder="Cari dan pilih siswa..." searchPlaceholder="Ketik nama/NIS..." clearable />
  </div>
  <div>
  <label className="block text-xs font-medium text-aam-text-muted mb-1">Butir Pelanggaran *</label>
- <SearchSelect options={katalogOptions} value={katalogId} onChange={(v: string | number | null) => setKatalogId(v)}
+  <SearchSelect options={katalogOptions} value={katalogId} onChange={(v: string | number | null) => setKatalogId(v)} onSearch={searchKatalog}
  placeholder="Pilih butir tata tertib..." searchPlaceholder="Cari butir..." clearable />
  </div>
  {selectedKatalog && (

@@ -1,13 +1,13 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { seedLibur, bulkHapusLibur } from '../helpers/api';
 
 /**
- * Gelombang 1 — spec (b): libur-rentang.
+ * Gelombang 1 â€” spec (b): libur-rentang.
  * Seed 3 tanggal BERURUTAN (hari 10-12 bulan depan) dgn keterangan sama
- * via API → halaman /admin/pengaturan/libur menampilkan SATU baris
+ * via API â†’ halaman /admin/pengaturan/libur menampilkan SATU baris
  * tergabung berisi "(3 hari)" di daftar "Libur bulan ini" (setelah
- * navigasi ke bulan tsb.) → klik tombol hapus baris → ketiga tanggal
+ * navigasi ke bulan tsb.) â†’ klik tombol hapus baris â†’ ketiga tanggal
  * hilang dari kalender (verifikasi via API GET /admin/libur).
  */
 test('libur: 3 tanggal beruntun tampil tergabung & hapus per baris', async ({ page, request }) => {
@@ -37,12 +37,12 @@ test('libur: 3 tanggal beruntun tampil tergabung & hapus per baris', async ({ pa
   // dari bulan berjalan, karena target = now.month + 1).
   await page.getByLabel('Bulan berikutnya').click();
 
-  // Baris tergabung "10–12 <Bulan> <Tahun> — Testing E2E Rentang (3 hari)"
+  // Baris tergabung "10â€“12 <Bulan> <Tahun> â€” Testing E2E Rentang (3 hari)"
   const row = page.locator('li', { hasText: keterangan });
   await expect(row).toBeVisible();
   await expect(row).toContainText('(3 hari)');
 
-  // Klik tombol hapus baris rentang → konfirmasi → ketiga tanggal hilang.
+  // Klik tombol hapus baris rentang â†’ konfirmasi â†’ ketiga tanggal hilang.
   await row.getByRole('button', { name: /Hapus libur/ }).click();
   await page.getByRole('button', { name: 'Hapus', exact: true }).click();
 

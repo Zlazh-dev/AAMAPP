@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * Spec komponen: <ImageUploader> (§12.17 perluasan Gelombang-2).
+ * Spec komponen: <ImageUploader> (Â§12.17 perluasan Gelombang-2).
  *
  * Membuktikan/membantah dugaan bug relatif-URL: endpoint upload
  * (`POST /api/admin/uploads`) mengembalikan path RELATIF
@@ -11,8 +11,8 @@ import { loginAsAdmin } from '../helpers/auth';
  * MENOLAK path relatif. Fix: DTO kini menerima path `/uploads/...`
  * ATAU URL http(s) penuh (create-guru.dto.ts).
  *
- * FIX MANDIRI-DATA (§12.17e):
- * - Setelah simpan sukses, cari guru by nama unik via API → dapat ID.
+ * FIX MANDIRI-DATA (Â§12.17e):
+ * - Setelah simpan sukses, cari guru by nama unik via API â†’ dapat ID.
  * - Navigasi langsung by ID ke /kurikulum/orang/guru/:id (bukan klik daftar).
  * - afterEach: hapus guru via API agar tidak menumpuk.
  */
@@ -65,10 +65,10 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
     // Simpan
     await page.getByRole('button', { name: 'Simpan' }).click();
 
-    // Bukti utama: jika bug relatif-URL masih ada → 400 → SaveSuccess tidak muncul.
+    // Bukti utama: jika bug relatif-URL masih ada â†’ 400 â†’ SaveSuccess tidak muncul.
     await expect(page.getByText(/berhasil ditambahkan/i).first()).toBeVisible({ timeout: 10_000 });
 
-    // Cari guru by nama unik via API → dapat ID → navigasi by ID.
+    // Cari guru by nama unik via API â†’ dapat ID â†’ navigasi by ID.
     const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
     const headers = { Authorization: `Bearer ${token}` };
     const searchRes = await request.get(
@@ -83,7 +83,7 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
 
     expect(createdGuruId, 'Guru yang baru dibuat harus ditemukan via API').not.toBeNull();
 
-    // Navigasi langsung ke detail by ID — tidak bergantung urutan daftar.
+    // Navigasi langsung ke detail by ID â€” tidak bergantung urutan daftar.
     await page.goto(`/kurikulum/orang/guru/${createdGuruId}`);
 
     // Detail: <img> foto guru tampil (bukan avatar inisial fallback).

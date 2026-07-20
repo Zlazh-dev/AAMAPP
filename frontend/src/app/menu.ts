@@ -39,7 +39,6 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     items: [
       { label: 'Dashboard', path: '/admin', icon: 'dashboard' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
-      { label: 'Profil Sekolah', path: '/admin/sekolah', icon: 'apartment' },
     ],
   },
   kurikulum: {

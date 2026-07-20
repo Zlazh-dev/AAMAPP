@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F6b — Rapor Frontend E2E (MANDIRI-DATA §12.17e).
+ * F6b â€” Rapor Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend F6b paralel (AG-2) → UI routing + komponen render tests.
+ * Backend F6b paralel (AG-2) â†’ UI routing + komponen render tests.
  * EmptyState/loading bila API belum live. Navigasi by-id (NOT daftar paginasi).
  */
 
-test.describe('F6b — Rapor Frontend', () => {
+test.describe('F6b â€” Rapor Frontend', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Rapor List ──────────────────────────────────────────────────────────────
+  // â”€â”€ Rapor List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Daftar Rapor Siswa', () => {
     test('Halaman /guru/rapor dapat diakses', async ({ page }) => {
       await page.goto('/guru/rapor');
@@ -30,7 +30,7 @@ test.describe('F6b — Rapor Frontend', () => {
     });
   });
 
-  // ── Rapor Detail ─────────────────────────────────────────────────────────────
+  // â”€â”€ Rapor Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Detail Rapor Siswa', () => {
     test('Halaman /guru/rapor/:siswaId dapat diakses', async ({ page }) => {
       await page.goto('/guru/rapor/1');
@@ -57,19 +57,19 @@ test.describe('F6b — Rapor Frontend', () => {
       await page.goto('/guru/rapor/1');
       // Wait for either rapor detail or "not found" state
       await page.waitForTimeout(2000);
-      // The page renders (no crash) — back button always present if detail loaded
+      // The page renders (no crash) â€” back button always present if detail loaded
       // Export button present when rapor data loaded
       const hasBack = await page.locator('#btn-back-rapor').isVisible().catch(() => false);
       const hasExport = await page.locator('#btn-export-rapor-pdf').isVisible().catch(() => false);
       // At minimum the page should have rendered (not blank)
       const bodyLen = await page.locator('body').innerText().then(t => t.length).catch(() => 0);
       expect(bodyLen).toBeGreaterThan(10);
-      // If back button present → export button must also be present
+      // If back button present â†’ export button must also be present
       if (hasBack) expect(hasExport).toBeTruthy();
     });
   });
 
-  // ── Rapor via /guru/rapor/:siswaId navigasi ─────────────────────────────────
+  // â”€â”€ Rapor via /guru/rapor/:siswaId navigasi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Navigasi Rapor by ID', () => {
     test('URL /guru/rapor/999 render halaman (tidak crash)', async ({ page }) => {
       await page.goto('/guru/rapor/999');
@@ -80,7 +80,7 @@ test.describe('F6b — Rapor Frontend', () => {
     });
   });
 
-  // ── Menu Guru Rapor ───────────────────────────────────────────────────────────
+  // â”€â”€ Menu Guru Rapor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Menu Guru Rapor', () => {
     test('Sidebar guru menampilkan item Rapor', async ({ page }) => {
       await page.goto('/guru/rapor');
@@ -88,7 +88,7 @@ test.describe('F6b — Rapor Frontend', () => {
     });
 
     test('Halaman /guru/rapor menampilkan konten rapor', async ({ page }) => {
-      // UX-POLISH §A: admin tidak mendapat menu guru di sidebar.
+      // UX-POLISH Â§A: admin tidak mendapat menu guru di sidebar.
       // Test ini cek konten halaman bukan sidebar admin.
       await page.goto('/guru/rapor');
       await page.waitForTimeout(1500);

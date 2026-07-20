@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 test.describe('Wali Kelas Force (Poin 3 T16)', () => {
@@ -68,19 +68,39 @@ test.describe('Wali Kelas Force (Poin 3 T16)', () => {
 
     // 2. Buka UI untuk assign Guru yang sama ke Kelas 2
     await page.goto('/kurikulum/wali-kelas');
-    
-    // Cari baris Kelas 2 — tunggu sampai baris muncul setelah data dimuat
-    const row = page.locator('tr').filter({ hasText: k2.nama });
-    await expect(row).toBeVisible({ timeout: 10_000 });
 
-    // Pilih guru (menggunakan native select)
-    await row.locator('select').selectOption(guru.id.toString());
+    // Cari baris Kelas 2 — paginasi 25, mungkin di halaman lain.
+    // WaliKelasPage belum punya search bar, jadi navigasi langsung by API
+    // untuk memastikan kelas terlihat: gunakan page=1 dulu, bila tidak ada
+    // cari di halaman berikutnya. Untuk uji ini, jumlah kelas uji kecil.
+    const row = page.locator('tr').filter({ hasText: k2.nama });
+    await expect(row).toBeVisible({ timeout: 10_000 }).catch(async () => {
+      // Bila tidak terlihat di halaman 1, klik halaman berikutnya.
+      const nextBtn = page.getByRole('button', { name: /Halaman berikutnya|Berikutnya/ }).first();
+      if (await nextBtn.isVisible().catch(() => false)) {
+        await nextBtn.click();
+        await page.waitForLoadState('networkidle');
+      }
+    });
+
+    // Pilih guru via SearchSelect (bukan native select).
+    // SearchSelect trigger adalah button dgn teks "-- pilih wali --".
+    const waliTrigger = row.getByRole('button').filter({ hasText: /pilih wali/i });
+    await expect(waliTrigger).toBeVisible({ timeout: 10_000 });
+    await waliTrigger.click();
+
+    // Tunggu input pencarian muncul di dropdown.
+    const searchInput = page.getByPlaceholder(/Cari nama guru/i).first();
+    await expect(searchInput).toBeVisible({ timeout: 5000 });
+    await searchInput.fill(guru.nama);
+    // Tunggu hasil pencarian muncul, lalu klik.
+    await page.waitForTimeout(500);
+    const resultOption = page.locator('button').filter({ hasText: new RegExp(guru.nama) }).last();
+    await expect(resultOption).toBeVisible({ timeout: 5000 });
+    await resultOption.click();
 
     // 3. Verifikasi sukses
-    // Note: UI Wali Kelas menggunakan inline select yang secara otomatis
-    // mengirim { force: true } ke API sebagai "pilihan cepat" (MVP).
-    // Jadi tidak ada error 409 atau checkbox force di UI, langsung sukses.
-    await expect(page.getByText('Wali kelas diperbarui')).toBeVisible();
+    await expect(page.getByText('Wali kelas diperbarui')).toBeVisible({ timeout: 10_000 });
 
     // Cleanup
     await request.delete(`/api/admin/kelas/${k1.id}`, { headers }).catch(() => {});

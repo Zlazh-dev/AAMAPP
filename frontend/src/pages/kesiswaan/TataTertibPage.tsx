@@ -8,8 +8,9 @@ import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
 import { Table, ColumnDef } from '../../components/Table';
 import { FormDrawer } from '../../components/FormDrawer';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { BackLink } from '../../components/BackLink';
+import { Pagination } from '../../components/Pagination';
 import { PageMenu } from '../../components/PageMenu';
 
 const KATEGORI_LABEL: Record<KategoriPelanggaran, string> = {
@@ -23,13 +24,15 @@ const KATEGORI_VARIANT: Record<string, 'gray' | 'yellow' | 'red' | 'blue'> = {
 
 /** Sub dari Tata Tertib (IA-HIERARCHY-V2). */
 const TATA_TERTIB_SUB_LINKS = [
-  { key: 'pelanggaran', label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning' },
+  { key: 'pelanggaran', label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning', description: 'Catat dan pantau pelanggaran siswa' },
 ];
 
 export function TataTertibPage() {
   const toast = useToast();
   const [rows, setRows] = useState<KatalogEntry[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 25 });
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState('');
   const [kategoriFilter, setKategoriFilter] = useState('');
@@ -44,17 +47,19 @@ export function TataTertibPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.getKatalog({ q, kategori: kategoriFilter, limit: 100 });
+      const res = await api.getKatalog({ q, kategori: kategoriFilter, page, limit: 25 });
       setRows(res.data);
       setTotal(res.total);
+      setMeta({ total: res.total, page: res.page, limit: res.limit });
     } catch (err) {
       toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat katalog tata tertib.');
     } finally {
       setLoading(false);
     }
-  }, [q, kategoriFilter]);
+  }, [q, kategoriFilter, page]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { setPage(1); }, [q, kategoriFilter]);
 
   const openNew = () => {
     setEditing(null);
@@ -139,7 +144,7 @@ export function TataTertibPage() {
         />
       </div>
 
-      <SubPageLinks links={TATA_TERTIB_SUB_LINKS} />
+      <SubPageLayout links={TATA_TERTIB_SUB_LINKS}>
 
       {/* Filter */}
       <Card>
@@ -172,6 +177,7 @@ export function TataTertibPage() {
             {rows.length > 0 && (
               <p className="text-xs text-aam-text-muted mt-2 px-1">Total: {total}</p>
             )}
+            <Pagination page={meta.page} limit={meta.limit} total={meta.total} onPageChange={setPage} loading={loading} />
           </>
         )}
       </Card>
@@ -209,6 +215,7 @@ export function TataTertibPage() {
           </div>
         </div>
       </FormDrawer>
+      </SubPageLayout>
     </PageContainer>
   );
 }

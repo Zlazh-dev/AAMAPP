@@ -1,15 +1,15 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F3a FRONTEND — UI smoke tests untuk halaman wajah & presensi guru.
+ * F3a FRONTEND â€” UI smoke tests untuk halaman wajah & presensi guru.
  *
  * Strategi: tidak buka kamera nyata (CI tidak bisa); uji navigasi,
  * render halaman, keberadaan elemen kunci. Scan API sudah diuji di
  * presensi-wajah.spec.ts (mock embedding backend tests).
  */
 
-test.describe('F3a Frontend — Wajah & Presensi Guru (UI)', () => {
+test.describe('F3a Frontend â€” Wajah & Presensi Guru (UI)', () => {
   test('Guru: /guru/kbm memiliki tombol Presensi Sekarang & Daftar Wajah', async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/guru/kbm');
@@ -19,15 +19,15 @@ test.describe('F3a Frontend — Wajah & Presensi Guru (UI)', () => {
     await expect(page.locator('#btn-daftar-wajah')).toBeVisible({ timeout: 3000 });
   });
 
-  test('Admin: validasi wajah guru ada di detail guru (UX-POLISH §D)', async ({ page }) => {
+  test('Admin: validasi wajah guru ada di detail guru (UX-POLISH Â§D)', async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/kurikulum/orang/guru/1');
     await page.waitForTimeout(2000);
-    // Detail guru harus ada card wajah (bagian baru §D)
+    // Detail guru harus ada card wajah (bagian baru Â§D)
     const hasCard = await page.locator('#card-wajah-guru').isVisible().catch(() => false);
     const hasGuru = await page.locator('h2').first().isVisible().catch(() => false);
     if (hasGuru) {
-      // Guru detail loaded — card wajah HARUS ada
+      // Guru detail loaded â€” card wajah HARUS ada
       expect(hasCard).toBe(true);
     } else {
       expect(true).toBe(true);
@@ -53,7 +53,7 @@ test.describe('F3a Frontend — Wajah & Presensi Guru (UI)', () => {
     await expect(page.locator('#btn-mulai-enroll-guru')).toBeVisible({ timeout: 5000 });
   });
 
-  test('Admin: /kurikulum/orang/guru/:guruId memiliki card wajah (UX-POLISH §D)', async ({
+  test('Admin: /kurikulum/orang/guru/:guruId memiliki card wajah (UX-POLISH Â§D)', async ({
     page,
     request,
   }) => {

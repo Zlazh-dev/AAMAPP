@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 test.describe('Mobile Bottom Sheet (Poin 12/15 T16)', () => {
@@ -11,7 +11,7 @@ test.describe('Mobile Bottom Sheet (Poin 12/15 T16)', () => {
     // Wait for the list to load
     await expect(page.getByRole('heading', { name: 'Data Guru' })).toBeVisible();
 
-    // Click the ⋮ ("Menu halaman") trigger button — PageMenu renders this
+    // Click the â‹® ("Menu halaman") trigger button â€” PageMenu renders this
     // as an accessible button with aria-label="Menu halaman".
     await page.getByRole('button', { name: 'Menu halaman' }).click();
 

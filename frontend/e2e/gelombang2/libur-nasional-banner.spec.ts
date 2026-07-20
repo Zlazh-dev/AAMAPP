@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * T16-SPRINT lanjutan — Sel matriks kecil: banner deteksi otomatis
+ * T16-SPRINT lanjutan â€” Sel matriks kecil: banner deteksi otomatis
  * "Impor Libur Nasional" di /tu/pengaturan/libur. Provider pihak
  * ketiga (api-harilibur.vercel.app) diakses SERVER-SIDE oleh backend;
  * bila egress diblokir (Docker tanpa akses internet luar), endpoint
@@ -10,10 +10,10 @@ import { loginAsAdmin } from '../helpers/auth';
  * `{baru: 0}` (fail-open, lihat kurikulum.service.ts `cekNasional()`),
  * sehingga banner TIDAK PERNAH tampil dan skenario "review pratinjau"
  * tak bisa diuji end-to-end. Spec ini CEK dulu via API apakah `baru > 0`
- * (bukti egress berhasil) SEBELUM lanjut ke UI — bila tidak, skip resmi
+ * (bukti egress berhasil) SEBELUM lanjut ke UI â€” bila tidak, skip resmi
  * dgn alasan tercatat (conditional-skip sesuai arahan planner).
  */
-test.describe('Libur — Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)', () => {
+test.describe('Libur â€” Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
@@ -29,7 +29,7 @@ test.describe('Libur — Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)
       baru === 0,
       'Egress ke provider api-harilibur.vercel.app tampaknya diblokir di ' +
       'lingkungan ini (atau seluruh libur nasional tahun ini/depan sudah ' +
-      'diimpor) — cekNasional() fail-open mengembalikan {baru:0} dan ' +
+      'diimpor) â€” cekNasional() fail-open mengembalikan {baru:0} dan ' +
       'banner tidak akan tampil. Conditional-skip resmi per arahan planner.',
     );
 
@@ -44,9 +44,9 @@ test.describe('Libur — Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)
     // Buka dialog pratinjau via tombol "Tinjau & Impor" di banner.
     await page.getByRole('button', { name: 'Tinjau & Impor' }).click();
     await expect(page.getByRole('heading', { name: 'Impor Libur Nasional' })).toBeVisible();
-    await expect(page.locator('li', { hasText: /—/ }).first()).toBeVisible();
+    await expect(page.locator('li', { hasText: /â€”/ }).first()).toBeVisible();
 
-    // Tutup tanpa mengimpor (tidak mengubah data — spec ini murni verifikasi banner+dialog).
+    // Tutup tanpa mengimpor (tidak mengubah data â€” spec ini murni verifikasi banner+dialog).
     await page.getByRole('button', { name: 'Batal' }).click();
     await expect(page.getByRole('heading', { name: 'Impor Libur Nasional' })).not.toBeVisible();
   });

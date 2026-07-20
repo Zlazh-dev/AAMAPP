@@ -1,22 +1,22 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F3a BACKEND — E2E mock embedding (F3-SPEC §e2e-mock-strategy).
+ * F3a BACKEND â€” E2E mock embedding (F3-SPEC Â§e2e-mock-strategy).
  *
  * Strategi: kirim embedding dummy langsung via API (lewati kamera).
  * Agar cosine match, seed guru dengan faceEmbeddings yang cosine-nya
- * ≥ 0.6 terhadap embedding uji (gunakan vektor identik → cosine=1.0).
+ * â‰¥ 0.6 terhadap embedding uji (gunakan vektor identik â†’ cosine=1.0).
  *
  * Jalur yang diuji (per F3-SPEC):
- *  1. Sukses HADIR / TERLAMBAT — embedding match, geofence nonaktif
+ *  1. Sukses HADIR / TERLAMBAT â€” embedding match, geofence nonaktif
  *  2. Tolak wajah asing (embedding < threshold)
  *  3. Tolak luar radius (geofence aktif, koordinat di luar)
  *  4. Idempotent scan ganda check-in
  *  5. Input manual admin (alasan wajib)
  *
- * Semua murni REST-API (request fixture) — tidak ada UI yang dibuka
+ * Semua murni REST-API (request fixture) â€” tidak ada UI yang dibuka
  * kecuali untuk mendapat token awal via loginAsAdmin helper.
  */
 
@@ -25,7 +25,7 @@ function makeDummyEmbedding(val = 1.0, dim = 128): number[] {
   return Array(dim).fill(val);
 }
 
-test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
+test.describe('F3a Backend â€” Presensi Wajah Guru (mock embedding)', () => {
   let adminToken: string;
   let guruId: number;
   let guruUserId: number | null = null;
@@ -75,7 +75,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
 
   test.afterEach(async ({ request }) => {
     const headers = authHeaders(adminToken);
-    // Reset geofence ke nonaktif — test 5 mengaktifkan geofence, pastikan dibersihkan.
+    // Reset geofence ke nonaktif â€” test 5 mengaktifkan geofence, pastikan dibersihkan.
     await request.patch('/api/admin/pengaturan/lokasi', {
       headers,
       data: { value: { aktif: false } },
@@ -104,10 +104,10 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     return body.accessToken as string;
   }
 
-  // ─────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // 1. Enrollment wajah via admin PUT /api/admin/wajah/:guruId
-  // ─────────────────────────────────────────────────────────
-  test('1. Enrollment wajah berhasil — 3 pose via admin endpoint', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. Enrollment wajah berhasil â€” 3 pose via admin endpoint', async ({
     request,
   }) => {
     const headers = authHeaders(adminToken);
@@ -126,7 +126,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body.ok).toBe(true);
     expect(body.poses).toBe(3);
 
-    // Cek status via GET /api/admin/wajah — limit besar agar guru uji muncul
+    // Cek status via GET /api/admin/wajah â€” limit besar agar guru uji muncul
     const listRes = await request.get('/api/admin/wajah?limit=999', { headers });
     expect(listRes.ok()).toBeTruthy();
     const list = await listRes.json();
@@ -136,9 +136,9 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(found.poses).toBe(3);
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 2. Belum enroll → 400 saat scan
-  // ─────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 2. Belum enroll â†’ 400 saat scan
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('2. Scan gagal 400 bila wajah belum didaftarkan', async ({
     page,
     request,
@@ -155,16 +155,16 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body.message).toMatch(/belum didaftarkan/i);
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 3. Sukses HADIR — embedding match, geofence nonaktif
-  // ─────────────────────────────────────────────────────────
-  test('3. Scan sukses → HADIR atau TERLAMBAT (embedding match, geofence off)', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 3. Sukses HADIR â€” embedding match, geofence nonaktif
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. Scan sukses â†’ HADIR atau TERLAMBAT (embedding match, geofence off)', async ({
     page,
     request,
   }) => {
     const headers = authHeaders(adminToken);
 
-    // Seed embedding (vektor identik → cosine = 1.0 > threshold 0.6)
+    // Seed embedding (vektor identik â†’ cosine = 1.0 > threshold 0.6)
     const refVec = makeDummyEmbedding(1.0);
     await request.put(`/api/admin/wajah/${guruId}`, {
       headers,
@@ -191,17 +191,17 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body.checkInAt).toBeTruthy();
   });
 
-  // ─────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // 4. Tolak wajah asing (similarity < threshold)
-  // ─────────────────────────────────────────────────────────
-  test('4. Scan tolak wajah asing — similarity < threshold → 401', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. Scan tolak wajah asing â€” similarity < threshold â†’ 401', async ({
     request,
   }) => {
     const headers = authHeaders(adminToken);
 
     // Seed dengan vektor [1,1,1,...] (normalized)
     const refVec = makeDummyEmbedding(1.0);
-    // Vektor asing ortogonal: alternating ±1 (cosine ≈ 0 vs all-1 vector)
+    // Vektor asing ortogonal: alternating Â±1 (cosine â‰ˆ 0 vs all-1 vector)
     const asingVec = Array.from({ length: 128 }, (_, i) =>
       i % 2 === 0 ? 1 : -1,
     );
@@ -226,10 +226,10 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body.message).toMatch(/tidak dikenali/i);
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 5. Tolak luar radius — geofence aktif, koordinat jauh
-  // ─────────────────────────────────────────────────────────
-  test('5. Scan tolak luar area sekolah — geofence aktif → 403', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 5. Tolak luar radius â€” geofence aktif, koordinat jauh
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. Scan tolak luar area sekolah â€” geofence aktif â†’ 403', async ({
     request,
   }) => {
     const headers = authHeaders(adminToken);
@@ -269,10 +269,10 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body.message).toMatch(/luar area sekolah/i);
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 6. Idempotent — scan ganda check-in tidak error
-  // ─────────────────────────────────────────────────────────
-  test('6. Scan ganda check-in idempotent — sudah tercatat', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 6. Idempotent â€” scan ganda check-in tidak error
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. Scan ganda check-in idempotent â€” sudah tercatat', async ({
     request,
   }) => {
     const headers = authHeaders(adminToken);
@@ -296,7 +296,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     });
     expect(res1.ok(), await res1.text()).toBeTruthy();
 
-    // Scan kedua (ganda check-in) → 200 idempotent
+    // Scan kedua (ganda check-in) â†’ 200 idempotent
     const res2 = await request.post('/api/guru/presensi-scan', {
       headers: authHeaders(guruToken),
       data: { embedding: refVec, mode: 'masuk' },
@@ -306,16 +306,16 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(body2.pesan).toMatch(/sudah tercatat/i);
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 7. Input manual admin — alasan wajib
-  // ─────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 7. Input manual admin â€” alasan wajib
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('7. Manual admin: alasan wajib, upsert berhasil', async ({ request }) => {
     const headers = authHeaders(adminToken);
     const today = new Date().toLocaleDateString('en-CA', {
       timeZone: 'Asia/Jakarta',
     });
 
-    // Tanpa alasan → 400
+    // Tanpa alasan â†’ 400
     const resBad = await request.post('/api/admin/presensi-guru/manual', {
       headers,
       data: {
@@ -326,7 +326,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     });
     expect(resBad.status()).toBe(400);
 
-    // Dengan alasan → 201 atau 200
+    // Dengan alasan â†’ 201 atau 200
     const resOk = await request.post('/api/admin/presensi-guru/manual', {
       headers,
       data: {
@@ -350,16 +350,16 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     const monitor = await monitorRes.json();
     const entry = monitor.data.find((g: any) => g.guruId === guruId);
     expect(entry, `guruId ${guruId} not found in monitor data`).toBeDefined();
-    // presensiHarian comes from LEFT JOIN — check truthiness before strict assert
+    // presensiHarian comes from LEFT JOIN â€” check truthiness before strict assert
     expect(entry.presensi, 'presensi should not be null after manual insert').not.toBeNull();
     expect(entry.presensi.status).toBe('HADIR');
     expect(entry.presensi.source).toBe('MANUAL');
   });
 
-  // ─────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // 8. Guard: 401 tanpa token
-  // ─────────────────────────────────────────────────────────
-  test('8. Endpoint ter-guard — 401 tanpa token', async ({ request }) => {
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Endpoint ter-guard â€” 401 tanpa token', async ({ request }) => {
     const today = new Date().toLocaleDateString('en-CA', {
       timeZone: 'Asia/Jakarta',
     });
@@ -391,10 +391,10 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     }
   });
 
-  // ─────────────────────────────────────────────────────────
-  // 9. DELETE wajah — bersih setelah hapus
-  // ─────────────────────────────────────────────────────────
-  test('9. DELETE /api/admin/wajah/:guruId — clear embeddings', async ({
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // 9. DELETE wajah â€” bersih setelah hapus
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. DELETE /api/admin/wajah/:guruId â€” clear embeddings', async ({
     request,
   }) => {
     const headers = authHeaders(adminToken);
@@ -414,7 +414,7 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     const delBody = await delRes.json();
     expect(delBody.ok).toBe(true);
 
-    // Cek status → enrolled=false (limit=999 agar guru uji ada di halaman pertama)
+    // Cek status â†’ enrolled=false (limit=999 agar guru uji ada di halaman pertama)
     const listRes = await request.get('/api/admin/wajah?limit=999', { headers });
     const list = await listRes.json();
     const found = list.data.find((g: any) => g.id === guruId);

@@ -7,14 +7,14 @@ import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
 import { BackLink } from '../../../components/BackLink';
 import { PageMenu } from '../../../components/PageMenu';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 import { PageContainer } from '../../../components/PageContainer';
 
 type Step = 1 | 2 | 3 | 4; // 1=template, 2=upload+preview, 3=commit, 4=done
 type Jenis = 'guru' | 'siswa';
 
 /**
- * /kurikulum/orang/import — wizard 3 langkah:
+ * /kurikulum/orang/import ï¿½ wizard 3 langkah:
  * 1. Unduh template (per jenis guru/siswa)
  * 2. Upload & pratinjau (baris error merah + pesan)
  * 3. Konfirmasi & commit ? ringkasan {tersimpan, dilewati}
@@ -115,13 +115,12 @@ export function ImportPage() {
         />
       </div>
 
-      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
-      <SubPageLinks
+      <SubPageLayout
         links={[
-          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school' },
-          { key: 'siswa', label: 'Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
+          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school', description: 'Data induk guru' },
+          { key: 'siswa', label: 'Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3', description: 'Data induk siswa' },
         ]}
-      />
+      >
 
       {/* Stepper */}
       <div className="flex items-center gap-2 mb-6 overflow-x-auto">
@@ -281,7 +280,7 @@ export function ImportPage() {
                       <div className="text-sm">
                         <p className="text-red-700 font-medium">Baris {err.baris}</p>
                         <p className="text-red-600 text-xs">
-                          {err.kolom && `Kolom: ${err.kolom} — `}{err.pesan}
+                          {err.kolom && `Kolom: ${err.kolom} ï¿½ `}{err.pesan}
                         </p>
                       </div>
                     </div>
@@ -307,7 +306,7 @@ export function ImportPage() {
                       {preview.valid.slice(0, 10).map((row, i) => (
                         <tr key={i} className="border-b border-aam-border/30">
                           {Object.values(row).slice(0, 4).map((v: any, j: number) => (
-                            <td key={j} className="py-1.5 pr-3 text-aam-text">{String(v ?? '—')}</td>
+                            <td key={j} className="py-1.5 pr-3 text-aam-text">{String(v ?? 'ï¿½')}</td>
                           ))}
                         </tr>
                       ))}
@@ -368,6 +367,7 @@ export function ImportPage() {
           </div>
         </Card>
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

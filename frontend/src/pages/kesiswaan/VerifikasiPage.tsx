@@ -9,6 +9,7 @@ import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
 import { FormDrawer } from '../../components/FormDrawer';
 import { BackLink } from '../../components/BackLink';
+import { Pagination } from '../../components/Pagination';
 import { PageMenu } from '../../components/PageMenu';
 
 const KATEGORI_VARIANT: Record<string, 'gray' | 'yellow' | 'red' | 'blue'> = {
@@ -26,18 +27,22 @@ export function VerifikasiPage() {
   const [alasan, setAlasan] = useState('');
   const [processing, setProcessing] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 25 });
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.getVerifikasiAntrean({ limit: 50 });
+      const res = await api.getVerifikasiAntrean({ page, limit: 25 });
       setRows(res.data);
       setTotal(res.total);
+      setMeta({ total: res.total, page: res.page, limit: res.limit });
     } catch (err) {
       toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat antrean verifikasi.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -133,6 +138,7 @@ export function VerifikasiPage() {
             ))}
           </div>
         )}
+        <Pagination page={meta.page} limit={meta.limit} total={meta.total} onPageChange={setPage} loading={loading} />
       </Card>
 
       {/* Tolak FormDrawer — desktop modal / mobile bottom sheet */}

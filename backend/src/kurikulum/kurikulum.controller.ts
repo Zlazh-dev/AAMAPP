@@ -98,12 +98,16 @@ export class KurikulumController {
     @Query('guruId') guruId?: string,
     @Query('kelasId') kelasId?: string,
     @Query('mapelId') mapelId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return this.svc.listPenugasan({
       taId: taId ? parseInt(taId, 10) : undefined,
       guruId: guruId ? parseInt(guruId, 10) : undefined,
       kelasId: kelasId ? parseInt(kelasId, 10) : undefined,
       mapelId: mapelId ? parseInt(mapelId, 10) : undefined,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
     });
   }
 

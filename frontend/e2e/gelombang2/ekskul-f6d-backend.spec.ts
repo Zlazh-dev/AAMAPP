@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F6d Backend — Ekstrakurikuler
+ * F6d Backend â€” Ekstrakurikuler
  *
- *  1. POST ekskul → created
- *  2. GET ekskul list → muncul
- *  3. POST peserta → added
- *  4. POST tujuan (semester 1) → 2 tujuan created
- *  5. PUT nilai batch → saved
- *  6. PUT kehadiran batch (hadir=7, total=10 → 70%; hadir=6,total=10 → 60% <70% flagMerah)
- *  7. GET rapor siswa → nilai per tujuan + kehadiran% + flagMerah
+ *  1. POST ekskul â†’ created
+ *  2. GET ekskul list â†’ muncul
+ *  3. POST peserta â†’ added
+ *  4. POST tujuan (semester 1) â†’ 2 tujuan created
+ *  5. PUT nilai batch â†’ saved
+ *  6. PUT kehadiran batch (hadir=7, total=10 â†’ 70%; hadir=6,total=10 â†’ 60% <70% flagMerah)
+ *  7. GET rapor siswa â†’ nilai per tujuan + kehadiran% + flagMerah
  *  8. Deskripsi otomatis: benar berdasarkan nilai tujuan
- *  9. Non-pembina → 403 saat aksi pembina
- * 10. DELETE peserta → removed
+ *  9. Non-pembina â†’ 403 saat aksi pembina
+ * 10. DELETE peserta â†’ removed
  */
 
 let adminToken: string;
@@ -33,10 +33,10 @@ let tujuan1Id: number;
 let tujuan2Id: number;
 let suffix: string;
 
-test.describe('F6d Backend — Ekstrakurikuler', () => {
+test.describe('F6d Backend â€” Ekstrakurikuler', () => {
   test.beforeAll(async ({ request }) => {
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     adminToken = (await login.json()).accessToken;
     suffix = Date.now().toString().slice(-6);
@@ -103,8 +103,8 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     if (nonPembinaUserId) await request.delete(`/api/admin/users/${nonPembinaUserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 
-  // ─── 1. Create ekskul ──────────────────────────────────────────────────────
-  test('1. POST ekskul → created dengan pembina', async ({ request }) => {
+  // â”€â”€â”€ 1. Create ekskul â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. POST ekskul â†’ created dengan pembina', async ({ request }) => {
     const res = await request.post('/api/ekskul', {
       headers: authHeaders(adminToken),
       data: { nama: `Pramuka ${suffix}`, pembinaGuruId },
@@ -116,16 +116,16 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect(body.pembinaGuruId).toBe(pembinaGuruId);
   });
 
-  // ─── 2. List ekskul ────────────────────────────────────────────────────────
-  test('2. GET ekskul list → ekskul muncul', async ({ request }) => {
+  // â”€â”€â”€ 2. List ekskul â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. GET ekskul list â†’ ekskul muncul', async ({ request }) => {
     const res = await request.get('/api/ekskul', { headers: authHeaders(adminToken) });
     expect(res.ok(), await res.text()).toBeTruthy();
     const body = await res.json();
     expect(body.data.some((e: any) => e.id === ekskulId)).toBeTruthy();
   });
 
-  // ─── 3. Add peserta ────────────────────────────────────────────────────────
-  test('3. POST peserta siswa1 + siswa2 → added', async ({ request }) => {
+  // â”€â”€â”€ 3. Add peserta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('3. POST peserta siswa1 + siswa2 â†’ added', async ({ request }) => {
     const r1 = await request.post(`/api/ekskul/${ekskulId}/peserta`, {
       headers: authHeaders(pembinaToken),
       data: { siswaId: siswa1Id },
@@ -141,8 +141,8 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     peserta2Id = (await r2.json()).id;
   });
 
-  // ─── 4. Create tujuan ──────────────────────────────────────────────────────
-  test('4. POST tujuan (2 tujuan semester 1) → created', async ({ request }) => {
+  // â”€â”€â”€ 4. Create tujuan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('4. POST tujuan (2 tujuan semester 1) â†’ created', async ({ request }) => {
     const t1 = await request.post(`/api/ekskul/${ekskulId}/tujuan`, {
       headers: authHeaders(pembinaToken),
       data: { semester: 1, deskripsi: 'Menguasai baris berbaris dengan disiplin' },
@@ -158,8 +158,8 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     tujuan2Id = (await t2.json()).id;
   });
 
-  // ─── 5. Upsert nilai ───────────────────────────────────────────────────────
-  test('5. PUT nilai batch → saved (siswa1: SB+B; siswa2: C+B)', async ({ request }) => {
+  // â”€â”€â”€ 5. Upsert nilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('5. PUT nilai batch â†’ saved (siswa1: SB+B; siswa2: C+B)', async ({ request }) => {
     const res = await request.put(`/api/ekskul/${ekskulId}/nilai`, {
       headers: authHeaders(pembinaToken),
       data: {
@@ -176,15 +176,15 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect((await res.json()).saved).toBe(4);
   });
 
-  // ─── 6. Upsert kehadiran ───────────────────────────────────────────────────
-  test('6. PUT kehadiran → siswa1=70%(aman), siswa2=60%(merah)', async ({ request }) => {
+  // â”€â”€â”€ 6. Upsert kehadiran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. PUT kehadiran â†’ siswa1=70%(aman), siswa2=60%(merah)', async ({ request }) => {
     const res = await request.put(`/api/ekskul/${ekskulId}/kehadiran`, {
       headers: authHeaders(pembinaToken),
       data: {
         semester: 1,
         entri: [
-          { pesertaId: peserta1Id, jumlahHadir: 7, totalPertemuan: 10 }, // 70% → OK
-          { pesertaId: peserta2Id, jumlahHadir: 6, totalPertemuan: 10 }, // 60% → MERAH
+          { pesertaId: peserta1Id, jumlahHadir: 7, totalPertemuan: 10 }, // 70% â†’ OK
+          { pesertaId: peserta2Id, jumlahHadir: 6, totalPertemuan: 10 }, // 60% â†’ MERAH
         ],
       },
     });
@@ -192,8 +192,8 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect((await res.json()).saved).toBe(2);
   });
 
-  // ─── 7. Rapor siswa1 → kehadiran 70%, tidak merah ─────────────────────────
-  test('7. GET rapor siswa1 → kehadiran 70% tidak flagMerah', async ({ request }) => {
+  // â”€â”€â”€ 7. Rapor siswa1 â†’ kehadiran 70%, tidak merah â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('7. GET rapor siswa1 â†’ kehadiran 70% tidak flagMerah', async ({ request }) => {
     const res = await request.get(`/api/ekskul/rapor/${siswa1Id}?semester=1`, {
       headers: authHeaders(adminToken),
     });
@@ -209,14 +209,14 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     const n2 = ek.nilaiPerTujuan.find((n: any) => n.tujuanId === tujuan2Id);
     expect(n2.nilai).toBe('Baik');
 
-    // Kehadiran 70% → NOT flagMerah
+    // Kehadiran 70% â†’ NOT flagMerah
     const keh = ek.kehadiran.find((k: any) => k.semester === 1);
     expect(keh.persen).toBe(70);
     expect(keh.flagMerah).toBe(false);
   });
 
-  // ─── 8. Rapor siswa2 → kehadiran 60% flagMerah + deskripsi ────────────────
-  test('8. GET rapor siswa2 → kehadiran 60% flagMerah=true + deskripsi benar', async ({ request }) => {
+  // â”€â”€â”€ 8. Rapor siswa2 â†’ kehadiran 60% flagMerah + deskripsi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. GET rapor siswa2 â†’ kehadiran 60% flagMerah=true + deskripsi benar', async ({ request }) => {
     const res = await request.get(`/api/ekskul/rapor/${siswa2Id}?semester=1`, {
       headers: authHeaders(adminToken),
     });
@@ -225,7 +225,7 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     const ek = body.ekskul.find((e: any) => e.ekskulId === ekskulId);
     expect(ek).toBeTruthy();
 
-    // Kehadiran 60% → flagMerah
+    // Kehadiran 60% â†’ flagMerah
     const keh = ek.kehadiran.find((k: any) => k.semester === 1);
     expect(keh.persen).toBe(60);
     expect(keh.flagMerah).toBe(true);
@@ -235,8 +235,8 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect(ek.deskripsi).toContain('Cukup pada');
   });
 
-  // ─── 9. Non-pembina → 403 ─────────────────────────────────────────────────
-  test('9. Non-pembina → 403 saat peserta/tujuan/nilai/kehadiran', async ({ request }) => {
+  // â”€â”€â”€ 9. Non-pembina â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. Non-pembina â†’ 403 saat peserta/tujuan/nilai/kehadiran', async ({ request }) => {
     // Peserta list
     const r1 = await request.get(`/api/ekskul/${ekskulId}/peserta`, {
       headers: authHeaders(nonPembinaToken),
@@ -265,14 +265,14 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect(r4.status()).toBe(403);
   });
 
-  // ─── 10. Delete peserta ────────────────────────────────────────────────────
-  test('10. DELETE peserta → removed', async ({ request }) => {
+  // â”€â”€â”€ 10. Delete peserta â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('10. DELETE peserta â†’ removed', async ({ request }) => {
     // Tambah peserta sementara lalu hapus
     const addRes = await request.post(`/api/ekskul/${ekskulId}/peserta`, {
       headers: authHeaders(pembinaToken),
-      data: { siswaId: siswa1Id }, // akan conflict (sudah ada) → tambah siswa baru
+      data: { siswaId: siswa1Id }, // akan conflict (sudah ada) â†’ tambah siswa baru
     });
-    // peserta1 sudah ada → conflict 409, OK lanjut hapus peserta2
+    // peserta1 sudah ada â†’ conflict 409, OK lanjut hapus peserta2
     const delRes = await request.delete(`/api/ekskul/${ekskulId}/peserta/${peserta2Id}`, {
       headers: authHeaders(pembinaToken),
     });

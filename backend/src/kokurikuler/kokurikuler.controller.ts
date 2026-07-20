@@ -42,10 +42,14 @@ export class KokurikulerController {
   listKegiatan(
     @Query('tahunAjaranId') taIdStr?: string,
     @Query('semester') semStr?: string,
+    @Query('page') pageStr?: string,
+    @Query('limit') limitStr?: string,
   ) {
     const taId = taIdStr ? parseInt(taIdStr, 10) : undefined;
     const sem = semStr ? parseInt(semStr, 10) : undefined;
-    return this.svc.listKegiatan(taId, sem);
+    const page = pageStr ? parseInt(pageStr, 10) : undefined;
+    const limit = limitStr ? parseInt(limitStr, 10) : undefined;
+    return this.svc.listKegiatan(taId, sem, page, limit);
   }
 
   /** GET /api/kokurikuler/kegiatan/:id */

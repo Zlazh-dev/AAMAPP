@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * Spec komponen: <FilterBar> (Poin 5 Perluasan T16 — §12.17).
+ * Spec komponen: <FilterBar> (Poin 5 Perluasan T16 â€” Â§12.17).
  * Diuji lewat SiswaListPage: search (q= ke server) + filter kelas.
  *
  * Desktop: search inline + <select> filter kelas langsung mengubah hasil.
@@ -60,7 +60,7 @@ test.describe('FilterBar (Poin 5 Perluasan T16)', () => {
     const searchBox = page.getByPlaceholder('Cari nama siswa...').locator('visible=true');
     await searchBox.fill(siswaDalamKelasNama);
 
-    // Debounce/network — tunggu hasil menyempit
+    // Debounce/network â€” tunggu hasil menyempit
     await expect(page.getByText(siswaLuarKelasNama)).toHaveCount(0);
     await expect(page.getByText(siswaDalamKelasNama).first()).toBeVisible();
   });
@@ -82,7 +82,7 @@ test.describe('FilterBar (Poin 5 Perluasan T16)', () => {
     await expect(page.getByRole('button', { name: /Filter/ })).toContainText('1');
 
     // Hasil terfilter: hanya siswa dalam kelas ini yang muncul. Scope to the
-    // visible copy — the (hidden) desktop table row for this student is also
+    // visible copy â€” the (hidden) desktop table row for this student is also
     // in the DOM at mobile viewport width, and .first() would lock onto it.
     await expect(page.getByText(siswaDalamKelasNama).locator('visible=true').first()).toBeVisible();
     await expect(page.getByText(siswaLuarKelasNama).locator('visible=true')).toHaveCount(0);

@@ -1,18 +1,18 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * menu-admin.spec.ts — FIX-MENU-ADMIN (keputusan user: admin = superuser).
+ * menu-admin.spec.ts â€” FIX-MENU-ADMIN (keputusan user: admin = superuser).
  *
  * Regresi utk bug: login admin (peran ['admin']) tidak melihat grup menu
  * KURIKULUM di sidebar meski route-nya sudah mengizinkan admin
  * (RequireRole roles={['kurikulum','admin']}). Root cause: getMenuForUser
  * (frontend/src/app/menu.ts) hanya menambah grup bila
- * `user.roles.includes(area)` — admin tidak literally punya peran
+ * `user.roles.includes(area)` â€” admin tidak literally punya peran
  * 'kurikulum'. Fix: ADMIN_EXTRA_AREAS ditambahkan ke grup admin.
  *
  * Spec ini menutup celah "visibilitas menu tak pernah diuji" (baru
- * ditemukan setelah T15/T16) — sebelumnya semua spec CRUD kurikulum
+ * ditemukan setelah T15/T16) â€” sebelumnya semua spec CRUD kurikulum
  * mengakses langsung via page.goto(), tak pernah lewat klik sidebar.
  */
 test.describe('Menu Admin (FIX-MENU-ADMIN)', () => {
@@ -34,7 +34,7 @@ test.describe('Menu Admin (FIX-MENU-ADMIN)', () => {
     await page.waitForURL('**/kurikulum/mapel');
     await expect(page.getByRole('heading', { name: 'Mata Pelajaran', level: 2 })).toBeVisible();
 
-    // 4. Sidebar hanya main items (href-based — icon material ikut accessible name).
+    // 4. Sidebar hanya main items (href-based â€” icon material ikut accessible name).
     const sidebar = page.locator('aside');
     await expect(sidebar.locator('a[href="/kurikulum/mapel"]')).toBeVisible();
     await expect(sidebar.locator('a[href="/kurikulum/kelas"]')).toBeVisible();

@@ -1,19 +1,19 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 /**
- * E2E spec F4a — Izin Guru frontend.
+ * E2E spec F4a â€” Izin Guru frontend.
  *
  * Strategy:
- * 1. Login guru → /izin/guru → form ajukan izin → submit → muncul di daftar.
- * 2. Login admin → /tu/izin-guru → filter → baris item → sheet → setujui.
- * 3. Tolak tanpa alasan → validasi error.
- * 4. Backend F4a mungkin belum live saat suite dijalankan → pakai route mock
+ * 1. Login guru â†’ /izin/guru â†’ form ajukan izin â†’ submit â†’ muncul di daftar.
+ * 2. Login admin â†’ /tu/izin-guru â†’ filter â†’ baris item â†’ sheet â†’ setujui.
+ * 3. Tolak tanpa alasan â†’ validasi error.
+ * 4. Backend F4a mungkin belum live saat suite dijalankan â†’ pakai route mock
  *    untuk endpoints izin agar test tidak bergantung pada timing backend AG-2.
  */
 
 const BASE_URL = 'http://localhost';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@aamapp.sch.id';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin12345';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'e2e-admin@aamapp.sch.id';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'e2e-admin-pass';
 
 // Contoh seed guru (dari backend seed default)
 const GURU_EMAIL = process.env.GURU_EMAIL || 'guru@aamapp.sch.id';
@@ -32,13 +32,13 @@ async function setToken(page: any, token: string) {
   await page.evaluate((t: string) => localStorage.setItem('aamapp_token', t), token);
 }
 
-test.describe('F4a — Izin Guru (guru: form + daftar)', () => {
+test.describe('F4a â€” Izin Guru (guru: form + daftar)', () => {
   test('Halaman /izin/guru accessible oleh guru', async ({ page, request }) => {
     const token = await loginViaApi(request, GURU_EMAIL, GURU_PASSWORD).catch(() => null);
     if (!token) { test.skip(); return; }
     await setToken(page, token);
 
-    // Mock GET /api/izin/guru → empty list
+    // Mock GET /api/izin/guru â†’ empty list
     await page.route('/api/izin/guru', async (route) => {
       if (route.request().method() === 'GET') {
         await route.fulfill({
@@ -56,7 +56,7 @@ test.describe('F4a — Izin Guru (guru: form + daftar)', () => {
     await expect(page.locator('#btn-ajukan-izin')).toBeVisible();
   });
 
-  test('Form ajukan izin — validasi keterangan kosong', async ({ page, request }) => {
+  test('Form ajukan izin â€” validasi keterangan kosong', async ({ page, request }) => {
     const token = await loginViaApi(request, GURU_EMAIL, GURU_PASSWORD).catch(() => null);
     if (!token) { test.skip(); return; }
     await setToken(page, token);
@@ -72,12 +72,12 @@ test.describe('F4a — Izin Guru (guru: form + daftar)', () => {
     // Form tampil
     await expect(page.locator('#btn-submit-izin')).toBeVisible({ timeout: 5_000 });
 
-    // Submit tanpa keterangan → error
+    // Submit tanpa keterangan â†’ error
     await page.locator('#btn-submit-izin').click();
     await expect(page.getByText('Keterangan wajib diisi')).toBeVisible();
   });
 
-  test('Form ajukan izin → submit sukses → muncul di daftar', async ({ page, request }) => {
+  test('Form ajukan izin â†’ submit sukses â†’ muncul di daftar', async ({ page, request }) => {
     const token = await loginViaApi(request, GURU_EMAIL, GURU_PASSWORD).catch(() => null);
     if (!token) { test.skip(); return; }
     await setToken(page, token);
@@ -117,13 +117,13 @@ test.describe('F4a — Izin Guru (guru: form + daftar)', () => {
     // Setelah submit, toast sukses muncul + form tutup
     await expect(page.getByText(/berhasil diajukan/i)).toBeVisible({ timeout: 8_000 });
 
-    // Daftar reload → item muncul
+    // Daftar reload â†’ item muncul
     await expect(page.getByText('Sakit')).toBeVisible({ timeout: 8_000 });
     await expect(page.getByText('Menunggu')).toBeVisible();
   });
 });
 
-test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
+test.describe('F4a â€” Admin izin guru (list + setujui/tolak)', () => {
   let adminToken: string;
 
   test.beforeAll(async ({ request }) => {
@@ -159,7 +159,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
     await expect(page.getByText('Menunggu')).toBeVisible();
   });
 
-  test('Admin: klik baris → sheet muncul', async ({ page }) => {
+  test('Admin: klik baris â†’ sheet muncul', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/izin/guru**', async route => {
@@ -181,13 +181,13 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
     await page.goto('/tu/izin-guru');
     await expect(page.getByText('Siti Rahayu')).toBeVisible({ timeout: 8_000 });
 
-    // Klik baris → sheet tampil
+    // Klik baris â†’ sheet tampil
     await page.getByText('Siti Rahayu').click();
     await expect(page.locator('#btn-setujui-izin')).toBeVisible({ timeout: 5_000 });
     await expect(page.locator('#btn-tolak-izin')).toBeVisible();
   });
 
-  test('Admin: tolak tanpa alasan → validasi error', async ({ page }) => {
+  test('Admin: tolak tanpa alasan â†’ validasi error', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/izin/guru**', async route => {
@@ -212,12 +212,12 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
 
     await expect(page.locator('#btn-tolak-izin')).toBeVisible({ timeout: 5_000 });
 
-    // Klik tolak tanpa isi alasan → validasi muncul
+    // Klik tolak tanpa isi alasan â†’ validasi muncul
     await page.locator('#btn-tolak-izin').click();
     await expect(page.getByText(/Alasan wajib diisi/i)).toBeVisible();
   });
 
-  test('Admin: setujui izin → sukses', async ({ page }) => {
+  test('Admin: setujui izin â†’ sukses', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/izin/guru**', async route => {

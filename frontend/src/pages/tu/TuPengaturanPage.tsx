@@ -1,13 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PageContainer } from '../../components/PageContainer';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { PageMenu } from '../../components/PageMenu';
 
 const PENGATURAN_LINKS = [
-  { key: 'jam', label: 'Jam KBM', path: '/tu/pengaturan/jam', icon: 'schedule' },
-  { key: 'libur', label: 'Hari Libur', path: '/tu/pengaturan/libur', icon: 'event_busy' },
-  { key: 'lokasi', label: 'Lokasi Presensi', path: '/tu/pengaturan/lokasi', icon: 'location_on' },
+  { key: 'jam', label: 'Jam KBM', path: '/tu/pengaturan/jam', icon: 'schedule', description: 'Jam masuk, pulang, toleransi, cutoff' },
+  { key: 'libur', label: 'Hari Libur', path: '/tu/pengaturan/libur', icon: 'event_busy', description: 'Kalender libur sekolah' },
+  { key: 'lokasi', label: 'Lokasi Presensi', path: '/tu/pengaturan/lokasi', icon: 'location_on', description: 'Geofence sekolah & radius' },
+  { key: 'sekolah', label: 'Profil Sekolah', path: '/tu/pengaturan/sekolah', icon: 'apartment', description: 'Nama, NPSN, identitas sekolah' },
 ];
 
 const CARDS = [
@@ -32,11 +33,18 @@ const CARDS = [
     title: 'Lokasi Presensi',
     desc: 'Geofence sekolah: koordinat dan radius absensi.',
   },
+  {
+    key: 'sekolah',
+    path: '/tu/pengaturan/sekolah',
+    icon: 'apartment',
+    title: 'Profil Sekolah',
+    desc: 'Nama, alamat, NPSN, dan identitas sekolah.',
+  },
 ];
 
 /**
- * /tu/pengaturan — halaman induk Pengaturan TU (IA-HIERARCHY-V2).
- * Sub: Jam KBM · Hari Libur · Lokasi Presensi.
+ * /tu/pengaturan — halaman induk Pengaturan TU (IA-HIERARCHY-V2 revisi 2026-07-20).
+ * Sub: Jam KBM · Hari Libur · Lokasi Presensi · Profil Sekolah.
  */
 export function TuPengaturanPage() {
   return (
@@ -49,9 +57,9 @@ export function TuPengaturanPage() {
         <PageMenu menuTitle="Menu Pengaturan" links={PENGATURAN_LINKS} />
       </div>
 
-      <SubPageLinks links={PENGATURAN_LINKS} />
+      <SubPageLayout links={PENGATURAN_LINKS}>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
         {CARDS.map((c) => (
           <Link
             key={c.key}
@@ -66,6 +74,7 @@ export function TuPengaturanPage() {
           </Link>
         ))}
       </div>
+      </SubPageLayout>
     </PageContainer>
   );
 }

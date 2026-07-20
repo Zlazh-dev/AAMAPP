@@ -1,23 +1,23 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
 
 /**
- * F2-SPEC e2e — Presensi Siswa per KBM.
- * §12.17e: spec wajib — simpan roster, cutoff 403, koreksi guru pengampu,
+ * F2-SPEC e2e â€” Presensi Siswa per KBM.
+ * Â§12.17e: spec wajib â€” simpan roster, cutoff 403, koreksi guru pengampu,
  * matriks batch, rekap.
  *
  * Setup murni via API (guru, mapel, kelas, siswa, penugasan, jadwal)
  * karena F2 backend tidak bergantung pada UI guru untuk diverifikasi.
- * IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak murni
- * guru pengampu. Admin TIDAK lagi lolos @Roles('guru') — panggilan
+ * IA-HIERARCHY-V2 Â§Keputusan otorisasi: koreksi presensi siswa = hak murni
+ * guru pengampu. Admin TIDAK lagi lolos @Roles('guru') â€” panggilan
  * /api/guru/* wajib pakai token guru pengampu jadwal itu.
  */
-test.describe('F2 — Presensi Siswa per KBM', () => {
+test.describe('F2 â€” Presensi Siswa per KBM', () => {
   // Alur KBM "hari ini" tidak berlaku pada MINGGU (produk: hari 7 = tak ada
   // KBM). Skip agar suite tetap hijau di hari Minggu (bukan bug produk).
   const _wibDay = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Jakarta', weekday: 'short' });
-  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) — alur presensi hari-ini tidak berlaku');
+  test.skip(_wibDay === 'Sun', 'Minggu: tidak ada KBM (hari 7) â€” alur presensi hari-ini tidak berlaku');
 
   const createdGuruIds: number[] = [];
   const createdKelasIds: number[] = [];
@@ -178,7 +178,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     expect(sesiMatriks.ringkasan.I).toBe(1);
 
     // 4. Koreksi guru pengampu (PATCH) untuk tanggal LAMPAU -> 403 (cutoff).
-    //    IA-HIERARCHY-V2 §Keputusan otorisasi: guru pengampu tidak bisa
+    //    IA-HIERARCHY-V2 Â§Keputusan otorisasi: guru pengampu tidak bisa
     //    mengoreksi tanggal lampau (melewati cutoff) -> 403, bukan 400.
     const kemarin = new Date(Date.now() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     const koreksiTanpaAlasanRes = await request.patch(`/api/guru/kbm/${jadwal.id}/roster`, {

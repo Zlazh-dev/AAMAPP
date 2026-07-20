@@ -10,11 +10,11 @@ import { PageContainer } from '../../../components/PageContainer';
 import { AdaptiveSelect } from '../../../components/AdaptiveSelect';
 import { RosterDetailSheet } from './RosterDetailSheet';
 import { BackLink } from '../../../components/BackLink';
-import { SubPageLinks } from '../../../components/SubPageLinks';
+import { SubPageLayout } from '../../../components/SubPageLinks';
 
 /** Sub halaman Presensi Siswa (IA-HIERARCHY-V2). */
 const PRESENSI_SISWA_SUB_LINKS = [
-  { key: 'laporan-kehadiran', label: 'Laporan Kehadiran Siswa', path: '/kesiswaan/laporan-kehadiran', icon: 'bar_chart' },
+  { key: 'laporan-kehadiran', label: 'Laporan Kehadiran Siswa', path: '/kesiswaan/laporan-kehadiran', icon: 'bar_chart', description: 'Rekap kehadiran siswa per periode' },
 ];
 
 type MatriksPresensiSiswaResponse = Awaited<ReturnType<typeof api.getMatriksPresensiSiswa>>;
@@ -77,8 +77,7 @@ export function MatriksPresensiSiswaPage() {
     (async () => {
       setLoadingKelas(true);
       try {
-        const res = await api.adminGetKelas({ limit: 1000 });
-        setKelasOptions(res.data);
+        const res = await api.adminGetKelas({ limit: 1 });
         if (res.data.length > 0) setKelasId(String(res.data[0].id));
       } catch (err) {
         show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar kelas');
@@ -86,6 +85,16 @@ export function MatriksPresensiSiswaPage() {
         setLoadingKelas(false);
       }
     })();
+  }, []);
+
+  // Pencarian kelas sisi-server (bukan ambil 1000 baris).
+  const searchKelas = useCallback(async (q: string) => {
+    const res = await api.adminGetKelas({ q: q || undefined, limit: 20 });
+    setKelasOptions((prev) => {
+      const seen = new Set(prev.map((k) => k.id));
+      return [...prev, ...res.data.filter((k: Kelas) => !seen.has(k.id))];
+    });
+    return res.data.map((k: Kelas) => ({ value: String(k.id), label: `${k.nama} (Tingkat ${k.tingkat})` }));
   }, []);
 
   // FIX2-#1: race-condition guard — ganti filter cepat saat respons lama
@@ -156,7 +165,7 @@ export function MatriksPresensiSiswaPage() {
   return (
     <PageContainer size="xl">
       <BackLink to="/kesiswaan" />
-      <SubPageLinks links={PRESENSI_SISWA_SUB_LINKS} />
+      <SubPageLayout links={PRESENSI_SISWA_SUB_LINKS}>
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="min-w-0">
@@ -178,6 +187,7 @@ export function MatriksPresensiSiswaPage() {
               value={kelasId}
               onChange={setKelasId}
               options={kelasSelectOptions}
+              onSearch={searchKelas}
               label="Pilih Kelas"
               placeholder={loadingKelas ? 'Memuat kelas...' : 'Pilih kelas...'}
               disabled={loadingKelas || kelasSelectOptions.length === 0}
@@ -359,6 +369,7 @@ export function MatriksPresensiSiswaPage() {
           }}
         />
       )}
+      </SubPageLayout>
     </PageContainer>
   );
 }

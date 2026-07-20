@@ -1040,26 +1040,34 @@ export const api = {
     .then((result) => { invalidateCache('/kurikulum/mapel'); return result; }),
 
   // --- Kurikulum: Penugasan (T15) ---
-  getPenugasan: (params?: { taId?: number; guruId?: number; kelasId?: number; mapelId?: number }) => {
+  getPenugasan: (params?: { taId?: number; guruId?: number; kelasId?: number; mapelId?: number; page?: number; limit?: number }) => {
     const search = new URLSearchParams();
     if (params?.taId) search.set('taId', String(params.taId));
     if (params?.guruId) search.set('guruId', String(params.guruId));
     if (params?.kelasId) search.set('kelasId', String(params.kelasId));
     if (params?.mapelId) search.set('mapelId', String(params.mapelId));
-    return request<{ data: any[]; taId: number }>(`/kurikulum/penugasan?${search.toString()}`)
-      .then((res) => res.data.map((p: any) => ({
-        id: p.id,
-        guruId: p.guruId,
-        guruNama: p.guru?.nama ?? '—',
-        mapelId: p.mapelId,
-        mapelNama: p.mapel?.nama ?? '—',
-        kelasId: p.kelasId,
-        kelasNama: p.kelas?.nama ?? '—',
-        tahunAjaranId: p.tahunAjaranId,
-        tahunAjaranNama: p.tahunAjaran?.nama ?? '—',
-        createdAt: p.createdAt,
-        updatedAt: p.updatedAt,
-      })) as Penugasan[]);
+    if (params?.page) search.set('page', String(params.page));
+    if (params?.limit) search.set('limit', String(params.limit));
+    return request<{ data: any[]; total: number; page: number; limit: number; taId: number }>(`/kurikulum/penugasan?${search.toString()}`)
+      .then((res) => ({
+        total: res.total,
+        page: res.page,
+        limit: res.limit,
+        taId: res.taId,
+        data: res.data.map((p: any) => ({
+          id: p.id,
+          guruId: p.guruId,
+          guruNama: p.guru?.nama ?? '—',
+          mapelId: p.mapelId,
+          mapelNama: p.mapel?.nama ?? '—',
+          kelasId: p.kelasId,
+          kelasNama: p.kelas?.nama ?? '—',
+          tahunAjaranId: p.tahunAjaranId,
+          tahunAjaranNama: p.tahunAjaran?.nama ?? '—',
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+        })) as Penugasan[],
+      }));
   },
 
   createPenugasan: (data: { guruId: number; mapelId: number; kelasIds: number[] }) =>
@@ -1534,6 +1542,32 @@ export const api = {
       `/kesiswaan/pelanggaran?${q}`,
     );
   },
+
+  getPelanggaranDetail: (id: number) =>
+    request<{
+      id: number;
+      siswa: { id: number; nama: string; nis: string; kelas: string | null };
+      katalog: { id: number; nomor: number; bentuk: string } | null;
+      kategori: string;
+      poin: number;
+      tanggal: string;
+      catatan: string | null;
+      buktiUrl: string | null;
+      sumber: string;
+      status: string;
+      pelapor: { id: number; name: string } | null;
+      verifikator: { id: number; name: string } | null;
+      createdAt: string;
+      updatedAt: string;
+      tindakLanjut: Array<{
+        id: number; tahap: string; ambang: number; status: string;
+        catatanPelaksanaan: string | null; dilaksanakanPada: string | null;
+      }>;
+      riwayat: Array<{
+        id: number; action: string; summary: string | null;
+        userName: string | null; createdAt: string;
+      }>;
+    }>(`/kesiswaan/pelanggaran/${id}`),
 
   getVerifikasiAntrean: (params?: { page?: number; limit?: number }) => {
     const q = new URLSearchParams();

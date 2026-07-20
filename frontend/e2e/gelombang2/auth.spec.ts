@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 test.describe('Auth (Login/Logout)', () => {
   test('Login berhasil, lalu logout kembali ke login form', async ({ page }) => {
@@ -7,8 +7,8 @@ test.describe('Auth (Login/Logout)', () => {
     await expect(page.getByText('AAMAPP').first()).toBeVisible();
 
     // 2. Isi form
-    await page.locator('input[type="email"]').fill('admin@aamapp.sch.id');
-    await page.locator('input[type="password"]').fill('admin12345');
+    await page.locator('input[type="email"]').fill('e2e-admin@aamapp.sch.id');
+    await page.locator('input[type="password"]').fill('e2e-admin-pass');
     await page.getByRole('button', { name: 'Masuk' }).click();
 
     // 3. Verifikasi masuk ke dashboard (home)

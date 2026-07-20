@@ -1,18 +1,18 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { authHeaders } from '../helpers/api';
 
 /**
- * F6a Backend — Penilaian Inti
+ * F6a Backend â€” Penilaian Inti
  *
- *  1. GET paket guru → paket muncul untuk guru yang ditugaskan
- *  2. GET paket → kosong untuk guru yang belum ditugaskan
+ *  1. GET paket guru â†’ paket muncul untuk guru yang ditugaskan
+ *  2. GET paket â†’ kosong untuk guru yang belum ditugaskan
  *  3. TP CRUD: create, list, update, soft-delete
  *  4. Penilaian CRUD: Formatif + Sumatif (dengan tpIds)
  *  5. Input nilai: GET siswa list (null = belum diisi), PUT upsert
- *  6. Rekap nilai akhir: round(Σ(nilai×bobot)/Σbobot) Sumatif only
+ *  6. Rekap nilai akhir: round(Î£(nilaiÃ—bobot)/Î£bobot) Sumatif only
  *  7. Formatif tidak masuk rekap nilai akhir
- *  8. Guru lain (bukan pemilik paket) → 403
- *  9. Nilai 0–100 validasi (nilai 101 → 400)
+ *  8. Guru lain (bukan pemilik paket) â†’ 403
+ *  9. Nilai 0â€“100 validasi (nilai 101 â†’ 400)
  * 10. Nilai akhir masih ada meski penilaian sumatif baru belum diisi
  */
 
@@ -30,10 +30,10 @@ let penugasanId: number;
 let siswaIds: number[] = [];
 let suffix: string;
 
-test.describe('F6a Backend — Penilaian Inti', () => {
+test.describe('F6a Backend â€” Penilaian Inti', () => {
   test.beforeAll(async ({ request }) => {
     const login = await request.post('/api/auth/login', {
-      data: { email: 'admin@aamapp.sch.id', password: 'admin12345' },
+      data: { email: 'e2e-admin@aamapp.sch.id', password: 'e2e-admin-pass' },
     });
     adminToken = (await login.json()).accessToken;
     suffix = Date.now().toString().slice(-6);
@@ -149,8 +149,8 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     if (guru2UserId) await request.delete(`/api/admin/users/${guru2UserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 
-  // ─── 1. Daftar paket guru ─────────────────────────────────────────────────
-  test('1. GET paket guru → paket muncul untuk guru yang ditugaskan', async ({ request }) => {
+  // â”€â”€â”€ 1. Daftar paket guru â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('1. GET paket guru â†’ paket muncul untuk guru yang ditugaskan', async ({ request }) => {
     const res = await request.get('/api/guru/penilaian', {
       headers: authHeaders(guruToken),
     });
@@ -163,8 +163,8 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(paket.jumlahSiswa).toBe(3);
   });
 
-  // ─── 2. Paket kosong untuk guru 2 ────────────────────────────────────────
-  test('2. GET paket → kosong untuk guru belum ditugaskan', async ({ request }) => {
+  // â”€â”€â”€ 2. Paket kosong untuk guru 2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('2. GET paket â†’ kosong untuk guru belum ditugaskan', async ({ request }) => {
     const res = await request.get('/api/guru/penilaian', {
       headers: authHeaders(guru2Token),
     });
@@ -177,7 +177,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
 
   let tpId: number;
 
-  // ─── 3. TP CRUD ────────────────────────────────────────────────────────────
+  // â”€â”€â”€ 3. TP CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('3. TP CRUD: create, list, update, soft-delete', async ({ request }) => {
     const createRes = await request.post(`/api/guru/penilaian/${penugasanId}/tp`, {
       headers: authHeaders(guruToken),
@@ -218,7 +218,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
   let penilaianSumatif1Id: number;
   let penilaianSumatif2Id: number;
 
-  // ─── 4. Penilaian CRUD ─────────────────────────────────────────────────────
+  // â”€â”€â”€ 4. Penilaian CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('4. Penilaian CRUD: Formatif dan Sumatif', async ({ request }) => {
     // Buat TP baru untuk dipakai di Sumatif TP
     const tpRes = await request.post(`/api/guru/penilaian/${penugasanId}/tp`, {
@@ -261,7 +261,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(listBody.data.length).toBeGreaterThanOrEqual(3);
   });
 
-  // ─── 5. Input nilai ───────────────────────────────────────────────────────
+  // â”€â”€â”€ 5. Input nilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('5. GET daftar nilai siswa (null belum diisi) + PUT upsert nilai', async ({ request }) => {
     const getRes = await request.get(`/api/guru/penilaian/penilaian/${penilaianSumatif1Id}/nilai`, {
       headers: authHeaders(guruToken),
@@ -292,8 +292,8 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(s0.catatan).toBe('Baik');
   });
 
-  // ─── 6. Rekap nilai akhir ─────────────────────────────────────────────────
-  test('6. Rekap nilai akhir: formula sumatif round(Σ(nilai×bobot)/Σbobot)', async ({ request }) => {
+  // â”€â”€â”€ 6. Rekap nilai akhir â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('6. Rekap nilai akhir: formula sumatif round(Î£(nilaiÃ—bobot)/Î£bobot)', async ({ request }) => {
     // Isi nilai Sumatif-2 (bobot 3)
     // Siswa[0]: sumatif1(bobot=2)=80, sumatif2(bobot=3)=60
     // Nilai akhir = round((80*2 + 60*3)/(2+3)) = round(340/5) = round(68) = 68
@@ -323,7 +323,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(s1.nilaiAkhir).toBe(84);
   });
 
-  // ─── 7. Formatif tidak masuk rekap ────────────────────────────────────────
+  // â”€â”€â”€ 7. Formatif tidak masuk rekap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('7. Formatif tidak masuk rekap nilai akhir', async ({ request }) => {
     await request.put(`/api/guru/penilaian/penilaian/${penilaianFormatifId}/nilai`, {
       headers: authHeaders(guruToken),
@@ -339,16 +339,16 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(s0.nilaiAkhir).toBe(68);
   });
 
-  // ─── 8. Guru lain → 403 ───────────────────────────────────────────────────
-  test('8. Guru lain bukan pemilik paket → 403', async ({ request }) => {
+  // â”€â”€â”€ 8. Guru lain â†’ 403 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('8. Guru lain bukan pemilik paket â†’ 403', async ({ request }) => {
     const res = await request.get(`/api/guru/penilaian/${penugasanId}/tp`, {
       headers: authHeaders(guru2Token),
     });
     expect(res.status()).toBe(403);
   });
 
-  // ─── 9. Nilai > 100 → 400 ─────────────────────────────────────────────────
-  test('9. Input nilai > 100 → 400 BadRequest', async ({ request }) => {
+  // â”€â”€â”€ 9. Nilai > 100 â†’ 400 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  test('9. Input nilai > 100 â†’ 400 BadRequest', async ({ request }) => {
     const res = await request.put(`/api/guru/penilaian/penilaian/${penilaianSumatif1Id}/nilai`, {
       headers: authHeaders(guruToken),
       data: { entri: [{ siswaId: siswaIds[0], nilai: 101 }] },
@@ -356,7 +356,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     expect(res.status()).toBe(400);
   });
 
-  // ─── 10. Rekap valid meski sumatif baru belum semua diisi ─────────────────
+  // â”€â”€â”€ 10. Rekap valid meski sumatif baru belum semua diisi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test('10. Rekap tetap valid meski ada sumatif baru belum diisi', async ({ request }) => {
     // Buat penilaian sumatif baru tanpa input nilai
     const newPRes = await request.post(`/api/guru/penilaian/${penugasanId}/penilaian`, {
@@ -373,7 +373,7 @@ test.describe('F6a Backend — Penilaian Inti', () => {
     const body = await res.json();
     const s0 = body.data.find((d: any) => d.siswaId === siswaIds[0]);
     // Nilai akhir berubah: sumBobot = 2+3+1=6, sumNilaiBobot = 80*2+60*3+0=340 (sumatif baru belum diisi)
-    // Karena sumatif baru belum ada nilai → tidak masuk sumBobot → sumBobot masih 5
+    // Karena sumatif baru belum ada nilai â†’ tidak masuk sumBobot â†’ sumBobot masih 5
     expect(s0.nilaiAkhir).not.toBeNull();
   });
 });

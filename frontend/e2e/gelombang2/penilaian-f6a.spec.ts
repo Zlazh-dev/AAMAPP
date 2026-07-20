@@ -1,20 +1,20 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from '../helpers/auth';
 
 /**
- * F6a — Penilaian Guru Frontend E2E (MANDIRI-DATA §12.17e).
+ * F6a â€” Penilaian Guru Frontend E2E (MANDIRI-DATA Â§12.17e).
  *
- * Backend F6a belum live (AG-2 paralel) → e2e test UI routing + komponen render.
+ * Backend F6a belum live (AG-2 paralel) â†’ e2e test UI routing + komponen render.
  * EmptyState bila API 404. Yang diuji: routing, heading, form elements, SubPageLinks.
  * Navigasi by-id (TIDAK lookup daftar paginasi).
  */
 
-test.describe('F6a — Penilaian Guru Frontend', () => {
+test.describe('F6a â€” Penilaian Guru Frontend', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  // ── Dashboard Paket ───────────────────────────────────────────────────────
+  // â”€â”€ Dashboard Paket â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Dashboard Penilaian', () => {
     test('Halaman /guru/penilaian dapat diakses', async ({ page }) => {
       await page.goto('/guru/penilaian');
@@ -31,7 +31,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
     });
   });
 
-  // ── Detail Paket — nested routes ─────────────────────────────────────────
+  // â”€â”€ Detail Paket â€” nested routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Detail Paket (Shell + SubPageLinks)', () => {
     test('Navigasi ke detail paket ID=1 menampilkan SubPageLinks', async ({ page }) => {
       await page.goto('/guru/penilaian/1/tp');
@@ -48,7 +48,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
     });
   });
 
-  // ── Tujuan Pembelajaran ──────────────────────────────────────────────────
+  // â”€â”€ Tujuan Pembelajaran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Tujuan Pembelajaran CRUD', () => {
     test('Halaman TP dapat diakses dan tombol Tambah TP ada', async ({ page }) => {
       await page.goto('/guru/penilaian/1/tp');
@@ -64,7 +64,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
     });
   });
 
-  // ── Penilaian CRUD ────────────────────────────────────────────────────────
+  // â”€â”€ Penilaian CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Penilaian CRUD', () => {
     test('Halaman penilaian dapat diakses dan tombol Tambah ada', async ({ page }) => {
       await page.goto('/guru/penilaian/1/penilaian');
@@ -81,7 +81,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
       await expect(page.locator('#btn-simpan-penilaian')).toBeVisible();
     });
 
-    test('Pilih Sumatif → sub-jenis select muncul', async ({ page }) => {
+    test('Pilih Sumatif â†’ sub-jenis select muncul', async ({ page }) => {
       await page.goto('/guru/penilaian/1/penilaian');
       await page.locator('#btn-tambah-penilaian').click();
       await expect(page.locator('#select-jenis-penilaian')).toBeVisible();
@@ -97,7 +97,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
     });
   });
 
-  // ── Input Nilai ───────────────────────────────────────────────────────────
+  // â”€â”€ Input Nilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Input Nilai', () => {
     test('Halaman /guru/penilaian/nilai/:id dapat diakses', async ({ page }) => {
       await page.goto('/guru/penilaian/nilai/1');
@@ -113,7 +113,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
     });
   });
 
-  // ── Rekap Nilai ────────────────────────────────────────────────────────────
+  // â”€â”€ Rekap Nilai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   test.describe('Rekap Nilai Akhir', () => {
     test('Halaman rekap dapat diakses', async ({ page }) => {
       await page.goto('/guru/penilaian/1/rekap');
@@ -132,7 +132,7 @@ test.describe('F6a — Penilaian Guru Frontend', () => {
       // Test: route /guru/penilaian accessible (RequireRole=['guru','admin'])
       await page.goto('/guru/penilaian');
       await page.waitForTimeout(1500);
-      // Halaman harus render (bukan blank/403) — ada heading atau EmptyState
+      // Halaman harus render (bukan blank/403) â€” ada heading atau EmptyState
       const bodyLen = await page.locator('body').innerText().then(t => t.length).catch(() => 0);
       expect(bodyLen).toBeGreaterThan(10);
     });

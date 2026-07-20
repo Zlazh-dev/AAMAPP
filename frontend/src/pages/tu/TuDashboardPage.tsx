@@ -5,7 +5,7 @@ import { Card } from '../../components/Card';
 import { Skeleton } from '../../components/Skeleton';
 import { PageContainer } from '../../components/PageContainer';
 import { Badge } from '../../components/Badge';
-import { SubPageLinks } from '../../components/SubPageLinks';
+import { SubPageLayout } from '../../components/SubPageLinks';
 import { PageMenu } from '../../components/PageMenu';
 
 function todayWIB(): string {
@@ -18,9 +18,9 @@ function todayWIB(): string {
 }
 
 const PRESENSI_GURU_LINKS = [
-  { key: 'rekap', label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize' },
-  { key: 'harian', label: 'Laporan Harian', path: '/tu/laporan/harian-guru', icon: 'assessment' },
-  { key: 'izin', label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available' },
+  { key: 'rekap', label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize', description: 'Rekap bulanan kehadiran guru' },
+  { key: 'harian', label: 'Laporan Harian', path: '/tu/laporan/harian-guru', icon: 'assessment', description: 'Laporan harian per guru' },
+  { key: 'izin', label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available', description: 'Antrean izin dan persetujuan' },
 ];
 
 function StatCard({ icon, label, value, sub }: {
@@ -110,6 +110,10 @@ export function TuDashboardPage() {
         />
       </div>
 
+      <SubPageLayout links={[
+        { key: 'presensi', label: 'Presensi Hari Ini', path: '/tu/presensi-guru', icon: 'badge' },
+        ...PRESENSI_GURU_LINKS,
+      ]}>
       <div className="space-y-4">
         {izinMenunggu > 0 && (
           <Card className="border-l-4 border-yellow-400">
@@ -151,14 +155,8 @@ export function TuDashboardPage() {
           </Card>
         )}
 
-        <div>
-          <h3 className="text-sm font-semibold text-aam-text mb-2">Akses Cepat Presensi Guru</h3>
-          <SubPageLinks links={[
-            { key: 'presensi', label: 'Presensi Hari Ini', path: '/tu/presensi-guru', icon: 'badge' },
-            ...PRESENSI_GURU_LINKS,
-          ]} />
-        </div>
       </div>
+      </SubPageLayout>
     </PageContainer>
   );
 }

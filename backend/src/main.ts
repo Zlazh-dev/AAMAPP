@@ -5,9 +5,11 @@ import { ValidationPipe, BadRequestException, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AppDataSource } from './data-source';
 import helmet from 'helmet';
-import { json, urlencoded } from 'express';
+import { json, urlencoded, Request, Response, NextFunction } from 'express';
+import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
+import * as crypto from 'crypto';
 
 const migrLogger = new Logger('Migration');
 
@@ -51,6 +53,25 @@ async function bootstrap() {
   // jadi penurunan ini tidak memengaruhi fitur upload.
   app.use(json({ limit: '1mb' }));
   app.use(urlencoded({ limit: '1mb', extended: true }));
+  app.use(cookieParser());
+
+  // === Device ID cookie ===
+  // Identitas perangkat sungguhan (bukan label "Chrome - Windows").
+  // Cookie acak httpOnly sameSite=lax umur ±1 tahun, dipasang saat
+  // kunjungan pertama bila belum ada. Dipakai untuk dedupe sesi.
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    let did = req.cookies?.['deviceId'];
+    if (!did || typeof did !== 'string' || did.length < 16) {
+      did = crypto.randomBytes(24).toString('hex');
+      res.cookie('deviceId', did, {
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 365 * 24 * 60 * 60 * 1000, // ±1 tahun
+        path: '/',
+      });
+    }
+    next();
+  });
 
   // === Serve uploaded photos via /uploads/:filename ===
   // Disini kita mount static asset supaya nginx bisa proxy ke backend

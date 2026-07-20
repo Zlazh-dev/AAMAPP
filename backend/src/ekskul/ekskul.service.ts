@@ -108,12 +108,16 @@ export class EkskulService {
   // EKSKUL CRUD (admin)
   // ─────────────────────────────────────────────────────────────────────────
 
-  async listEkskul() {
-    const list = await this.ekskulRepo.find({
+  async listEkskul(page?: number, limit?: number) {
+    const pageNum = Math.max(1, page ?? 1);
+    const limitNum = Math.min(100, Math.max(1, limit ?? 25));
+    const [list, total] = await this.ekskulRepo.findAndCount({
       relations: ['pembina'],
       order: { nama: 'ASC' },
+      skip: (pageNum - 1) * limitNum,
+      take: limitNum,
     });
-    return { data: list, total: list.length };
+    return { data: list, total, page: pageNum, limit: limitNum };
   }
 
   async getEkskul(id: number) {
