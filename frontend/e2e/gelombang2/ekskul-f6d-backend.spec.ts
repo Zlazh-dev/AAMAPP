@@ -280,3 +280,4 @@ test.describe('F6d Backend — Ekstrakurikuler', () => {
     expect((await delRes.json()).ok).toBe(true);
   });
 });
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, ApiError, Guru } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -11,10 +11,26 @@ import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { PageMenu } from '../../../components/PageMenu';
 import { PageContainer } from '../../../components/PageContainer';
 
+type FaceStatus = 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
+
+const FACE_STATUS_LABEL: Record<FaceStatus, string> = {
+  BELUM: 'Belum Mendaftar',
+  MENUNGGU_VALIDASI: 'Menunggu Validasi',
+  TERVALIDASI: 'Tervalidasi',
+  DITOLAK: 'Ditolak',
+};
+
+const FACE_STATUS_VARIANT: Record<FaceStatus, 'gray' | 'yellow' | 'green' | 'red'> = {
+  BELUM: 'gray',
+  MENUNGGU_VALIDASI: 'yellow',
+  TERVALIDASI: 'green',
+  DITOLAK: 'red',
+};
+
 /**
- * /admin/orang/guru/:id — POLA A detail.
- * Kartu: biodata, status wajah placeholder, akun tertaut, jumlah paket.
- * Header: Edit & Hapus (desktop inline / mobile PageMenu).
+ * /kurikulum/orang/guru/:id � POLA A detail.
+ * Kartu: biodata, akun/penugasan, status wajah (validasi admin �D).
+ * Admin dapat Terima/Tolak wajah bila status MENUNGGU_VALIDASI.
  */
 export function GuruDetailPage() {
   const { id } = useParams();
@@ -24,35 +40,49 @@ export function GuruDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [validating, setValidating] = useState(false);
 
-  useEffect(() => {
-    loadGuru();
-  }, [id]);
+  const guruId = parseInt(id!, 10);
 
-  const loadGuru = async () => {
+  const loadGuru = useCallback(async () => {
     setLoading(true);
     try {
-      const g = await api.adminGetGuruById(parseInt(id!, 10));
+      const g = await api.adminGetGuruById(guruId);
       setGuru(g);
-    } catch {
-      show('error', 'Guru tidak ditemukan');
-      navigate('/admin/orang/guru');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Guru tidak ditemukan');
+      navigate('/kurikulum/orang/guru');
     } finally {
       setLoading(false);
     }
-  };
+  }, [guruId]);
+
+  useEffect(() => { loadGuru(); }, [loadGuru]);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await api.adminDeleteGuru(parseInt(id!, 10));
+      await api.adminDeleteGuru(guruId);
       show('success', 'Guru berhasil dihapus');
-      navigate('/admin/orang/guru');
+      navigate('/kurikulum/orang/guru');
     } catch (err: any) {
       show('error', err instanceof ApiError ? err.body?.message : 'Gagal menghapus');
       setDeleteOpen(false);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleValidasiWajah = async (aksi: 'terima' | 'tolak') => {
+    setValidating(true);
+    try {
+      await (api as any).validasiWajahGuru?.(guruId, { aksi });
+      show('success', aksi === 'terima' ? 'Wajah guru diterima.' : 'Wajah guru ditolak.');
+      loadGuru();
+    } catch (err: any) {
+      show('error', err instanceof ApiError ? err.body?.message : 'Gagal validasi wajah.');
+    } finally {
+      setValidating(false);
     }
   };
 
@@ -68,16 +98,19 @@ export function GuruDetailPage() {
 
   if (!guru) return null;
 
+  // faceStatus from API (may not exist yet, backend AG-2 adds it)
+  const faceStatus: FaceStatus = (guru as any).faceStatus ?? 'BELUM';
+
   const detailRows = [
-    { label: 'NIP', value: guru.nip || '—' },
+    { label: 'NIP', value: guru.nip || '�' },
     { label: 'Jenis Kelamin', value: guru.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
-    { label: 'Telepon', value: guru.telepon || '—' },
+    { label: 'Telepon', value: guru.telepon || '�' },
     { label: 'Status', value: guru.status === 'aktif' ? 'Aktif' : 'Nonaktif' },
   ];
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to="/admin/orang/guru" />
+      <BackLink to="/kurikulum/orang/guru" />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
@@ -109,7 +142,7 @@ export function GuruDetailPage() {
               label: 'Edit',
               icon: 'edit',
               variant: 'primary',
-              onClick: () => navigate(`/admin/orang/guru/${guru.id}/edit`),
+              onClick: () => navigate(`/kurikulum/orang/guru/${guru.id}/edit`),
             },
             {
               key: 'hapus',
@@ -120,15 +153,15 @@ export function GuruDetailPage() {
             },
           ]}
           links={[
-            { key: 'daftar', label: 'Daftar Guru', path: '/admin/orang/guru', icon: 'school' },
-            { key: 'siswa', label: 'Data Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
+            { key: 'daftar', label: 'Daftar Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+            { key: 'siswa', label: 'Data Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
           ]}
         />
       </div>
 
-      {/* Biodata */}
+      {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card icon="person" className="p-5">
+        <Card icon="person">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Biodata</h3>
           <dl className="space-y-2">
             {detailRows.map((row) => (
@@ -140,8 +173,8 @@ export function GuruDetailPage() {
           </dl>
         </Card>
 
-        <Card icon="account_circle" className="p-5">
-          <h3 className="text-sm font-semibold text-aam-text mb-3">Akun & Penugasan</h3>
+        <Card icon="account_circle">
+          <h3 className="text-sm font-semibold text-aam-text mb-3">Akun &amp; Penugasan</h3>
           <dl className="space-y-2">
             <div className="flex justify-between text-sm">
               <dt className="text-aam-text-muted">Akun Tertaut</dt>
@@ -160,12 +193,53 @@ export function GuruDetailPage() {
           </dl>
         </Card>
 
-        <Card icon="face" className="p-5">
-          <h3 className="text-sm font-semibold text-aam-text mb-3">Status Wajah</h3>
-          <div className="flex items-center gap-2">
-            <Badge variant="gray">Belum — fitur F3</Badge>
+        {/* Wajah Validation Card � UX-POLISH �D */}
+        <div id="card-wajah-guru">
+        <Card icon="face_retouching_natural" className="md:col-span-2">
+          <h3 className="text-sm font-semibold text-aam-text mb-3">Pendaftaran Wajah</h3>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div id="badge-face-status"><Badge variant={FACE_STATUS_VARIANT[faceStatus]}>
+              {FACE_STATUS_LABEL[faceStatus]}
+            </Badge></div>
+
+            {faceStatus === 'MENUNGGU_VALIDASI' && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleValidasiWajah('terima')}
+                  disabled={validating}
+                  id="btn-terima-wajah"
+                >
+                  {validating ? 'Memproses...' : 'Terima'}
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => handleValidasiWajah('tolak')}
+                  disabled={validating}
+                  id="btn-tolak-wajah"
+                >
+                  Tolak
+                </Button>
+              </div>
+            )}
+
+            {faceStatus === 'BELUM' && (
+              <p className="text-xs text-aam-text-muted">
+                Guru belum mendaftarkan wajah. Guru dapat mendaftar sendiri melalui menu Daftar Wajah.
+              </p>
+            )}
+            {faceStatus === 'TERVALIDASI' && (
+              <p className="text-xs text-aam-text-muted">
+                Wajah guru sudah tervalidasi dan dapat digunakan untuk presensi.
+              </p>
+            )}
+            {faceStatus === 'DITOLAK' && (
+              <p className="text-xs text-red-600">
+                Wajah ditolak. Guru perlu mendaftar ulang melalui menu Daftar Wajah.
+              </p>
+            )}
           </div>
         </Card>
+        </div>
       </div>
 
       {/* Delete dialog */}

@@ -37,7 +37,7 @@ export class PenilaianController {
    * Guru → hanya paketnya; Admin → semua.
    */
   @Get()
-  @Roles('guru', 'admin')
+  @Roles('guru')
   daftarPaket(@Req() req: Request) {
     return this.svc.daftarPaket(this.user(req));
   }
@@ -49,7 +49,7 @@ export class PenilaianController {
    * Daftar TP mapel paket (auth: pemilik paket atau admin)
    */
   @Get(':penugasanId/tp')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   listTp(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Req() req: Request,
@@ -62,7 +62,7 @@ export class PenilaianController {
    * Tambah TP baru di mapel paket.
    */
   @Post(':penugasanId/tp')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   createTp(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Body() dto: CreateTpDto,
@@ -76,7 +76,7 @@ export class PenilaianController {
    * Edit TP.
    */
   @Patch(':penugasanId/tp/:tpId')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   updateTp(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Param('tpId', ParseIntPipe) tpId: number,
@@ -91,7 +91,7 @@ export class PenilaianController {
    * Soft-delete TP (aktif=false).
    */
   @Delete(':penugasanId/tp/:tpId')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   deleteTp(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Param('tpId', ParseIntPipe) tpId: number,
@@ -106,7 +106,7 @@ export class PenilaianController {
    * GET /api/guru/penilaian/:penugasanId/penilaian
    */
   @Get(':penugasanId/penilaian')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   listPenilaian(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Req() req: Request,
@@ -118,7 +118,7 @@ export class PenilaianController {
    * POST /api/guru/penilaian/:penugasanId/penilaian
    */
   @Post(':penugasanId/penilaian')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   createPenilaian(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Body() dto: CreatePenilaianDto,
@@ -131,7 +131,7 @@ export class PenilaianController {
    * PATCH /api/guru/penilaian/:penugasanId/penilaian/:id
    */
   @Patch(':penugasanId/penilaian/:id')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   updatePenilaian(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Param('id', ParseIntPipe) id: number,
@@ -145,7 +145,7 @@ export class PenilaianController {
    * DELETE /api/guru/penilaian/:penugasanId/penilaian/:id
    */
   @Delete(':penugasanId/penilaian/:id')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   deletePenilaian(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Param('id', ParseIntPipe) id: number,
@@ -161,7 +161,7 @@ export class PenilaianController {
    * Daftar siswa aktif kelas + nilai (null = belum diisi).
    */
   @Get('penilaian/:penilaianId/nilai')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   getDaftarNilai(
     @Param('penilaianId', ParseIntPipe) penilaianId: number,
     @Req() req: Request,
@@ -174,7 +174,7 @@ export class PenilaianController {
    * Upsert nilai batch: { entri: [{siswaId, nilai, catatan?}] }
    */
   @Put('penilaian/:penilaianId/nilai')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   upsertNilai(
     @Param('penilaianId', ParseIntPipe) penilaianId: number,
     @Body() dto: UpsertNilaiDto,
@@ -190,7 +190,7 @@ export class PenilaianController {
    * Nilai akhir per siswa: round(Σ(nilai×bobot)/Σbobot) Sumatif only.
    */
   @Get(':penugasanId/rekap')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   rekap(
     @Param('penugasanId', ParseIntPipe) penugasanId: number,
     @Req() req: Request,

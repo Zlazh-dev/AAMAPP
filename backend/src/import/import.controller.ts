@@ -27,7 +27,7 @@ import { ImportService } from './import.service';
  */
 @Controller('api/admin/import')
 @UseGuards(SessionAuthGuard, RolesGuard)
-@Roles('admin')
+@Roles('admin', 'kurikulum')
 export class ImportController {
   constructor(private readonly svc: ImportService) {}
 

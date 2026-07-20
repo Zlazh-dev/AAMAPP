@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, JadwalKbm, Penugasan, Kelas, TahunAjaran } from '../../api/client';
+import { api, JadwalKbm, Penugasan, Kelas, TahunAjaran , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { PageMenu } from '../../components/PageMenu';
+import { BackLink } from '../../components/BackLink';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
 
@@ -16,8 +17,8 @@ const HARI_NUM: Record<string, number> = { Senin: 1, Selasa: 2, Rabu: 3, Kamis: 
 /**
  * /kurikulum/jadwal — Jadwal KBM (T15 §14.10.3).
  * Desktop: grid Senin-Sabtu × sesi.
- * Mobile: pemilih hari segmented → daftar sesi vertikal.
- * No TA active → panel arahan.
+ * Mobile: pemilih hari segmented ? daftar sesi vertikal.
+ * No TA active ? panel arahan.
  * 409 bentrok tampil di dalam panel slot.
  * Badge total jam per guru di panel bantu.
  */
@@ -52,7 +53,7 @@ export function JadwalKbmPage() {
         if (kelasRes.data.length > 0) {
           setSelectedKelas(kelasRes.data[0].id);
         }
-      } catch {
+      } catch (err) {
         // silent
       } finally {
         if (!cancelled) setLoading(false);
@@ -73,8 +74,8 @@ export function JadwalKbmPage() {
         if (cancelled) return;
         setJadwalList(jadwal);
         setPenugasanList(penugasan);
-      } catch {
-        if (!cancelled) toast.show('error', 'Gagal memuat jadwal');
+      } catch (err) {
+        if (!cancelled) toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat jadwal');
       }
     })();
     return () => { cancelled = true; };
@@ -147,19 +148,19 @@ export function JadwalKbmPage() {
       toast.show('success', 'Slot dihapus');
       setDeleteTarget(null);
       setJadwalList((prev) => prev.filter((j) => j.id !== deleteTarget.id));
-    } catch {
-      toast.show('error', 'Gagal menghapus slot');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal menghapus slot');
     }
   };
 
-  // No TA active → panel arahan
+  // No TA active ? panel arahan
   if (!loading && !taAktif) {
     return (
       <PageContainer size="xl">
         <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
           Jadwal KBM
         </h2>
-        <Card className="p-8 text-center">
+        <Card className="text-center">
           <span className="material-symbols-outlined text-aam-text-muted mb-3" style={{ fontSize: '3rem' }}>
             calendar_off
           </span>
@@ -167,8 +168,8 @@ export function JadwalKbmPage() {
           <p className="text-xs text-aam-text-muted mb-4 max-w-sm mx-auto">
             Jadwal KBM memerlukan tahun ajaran aktif. Buat dan aktifkan tahun ajaran di Pengaturan.
           </p>
-          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/admin/pengaturan/tahun-ajaran')}>
-            Buka Pengaturan
+          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/kurikulum/tahun-ajaran-kkm')}>
+            Buka Tahun Ajaran & KKM
           </Button>
         </Card>
       </PageContainer>
@@ -185,8 +186,9 @@ export function JadwalKbmPage() {
 
   return (
     <PageContainer size="xl">
+      <BackLink to="/kurikulum/penugasan" />
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex items-center justify-between gap-3 mb-4 mt-2">
         <div className="min-w-0">
           <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
             Jadwal KBM
@@ -225,7 +227,7 @@ export function JadwalKbmPage() {
                     'px-3 py-2 rounded-md text-xs font-medium whitespace-nowrap transition-colors min-h-[44px]',
                     selectedDay === h
                       ? 'bg-aam-green text-white'
-                      : 'bg-aam-bg text-aam-text-muted border border-aam-border',
+                      : 'bg-aam-page text-aam-text-muted border border-aam-border',
                   ].join(' ')}
                 >
                   {h.slice(0, 3)}
@@ -237,7 +239,7 @@ export function JadwalKbmPage() {
           {/* Mobile: Vertical list for selected day */}
           <div className="md:hidden space-y-2">
             {(jadwalByHari.get(selectedDay) || []).map((j) => (
-              <Card key={j.id} icon="schedule" className="p-3">
+              <Card key={j.id} icon="schedule">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-aam-text">{j.mapelNama}</p>
@@ -255,7 +257,7 @@ export function JadwalKbmPage() {
             ))}
             <button
               onClick={() => setSlotPanel({ hari: selectedDay, jamKe: 1 })}
-              className="w-full rounded-md border border-dashed border-aam-border py-3 text-sm text-aam-text-muted hover:bg-aam-bg transition-colors min-h-[44px]"
+              className="w-full rounded-md border border-dashed border-aam-border py-3 text-sm text-aam-text-muted hover:bg-aam-page transition-colors min-h-[44px]"
             >
               + Tambah Slot
             </button>
@@ -284,7 +286,7 @@ export function JadwalKbmPage() {
                           {slot ? (
                             <div
                               onClick={() => setDeleteTarget(slot)}
-                              className="rounded-md bg-aam-bg border border-aam-border p-2 cursor-pointer hover:bg-gray-100 transition-colors"
+                              className="rounded-md bg-aam-page border border-aam-border p-2 cursor-pointer hover:bg-gray-100 transition-colors"
                             >
                               <p className="text-xs font-medium text-aam-text">{slot.mapelNama}</p>
                               <p className="text-xs text-aam-text-muted">{slot.guruNama}</p>
@@ -292,7 +294,7 @@ export function JadwalKbmPage() {
                           ) : (
                             <button
                               onClick={() => setSlotPanel({ hari: h, jamKe: 1 })}
-                              className="w-full rounded-md border border-dashed border-aam-border py-2 text-xs text-aam-text-muted hover:bg-aam-bg transition-colors min-h-[44px]"
+                              className="w-full rounded-md border border-dashed border-aam-border py-2 text-xs text-aam-text-muted hover:bg-aam-page transition-colors min-h-[44px]"
                             >
                               +
                             </button>
@@ -309,7 +311,7 @@ export function JadwalKbmPage() {
                     <td key={h} className="py-2 px-1">
                       <button
                         onClick={() => setSlotPanel({ hari: h, jamKe: 1 })}
-                        className="w-full rounded-md border border-dashed border-aam-border py-2 text-xs text-aam-text-muted hover:bg-aam-bg transition-colors min-h-[44px]"
+                        className="w-full rounded-md border border-dashed border-aam-border py-2 text-xs text-aam-text-muted hover:bg-aam-page transition-colors min-h-[44px]"
                       >
                         +
                       </button>
@@ -323,7 +325,7 @@ export function JadwalKbmPage() {
 
         {/* Panel bantu: badge total jam per guru (load balancing) */}
         <div className="lg:block">
-          <Card className="p-4">
+          <Card>
             <h3 className="text-xs font-medium text-aam-text mb-3">Beban per Guru</h3>
             {guruHours.length === 0 ? (
               <p className="text-xs text-aam-text-muted">Belum ada jadwal</p>

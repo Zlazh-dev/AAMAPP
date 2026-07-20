@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -7,6 +7,14 @@ import { Badge } from '../../components/Badge';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
+import { Table, ColumnDef } from '../../components/Table';
+import { SubPageLinks } from '../../components/SubPageLinks';
+import { PageMenu } from '../../components/PageMenu';
+
+/** Sub halaman Laporan Demerit (IA-HIERARCHY-V2). */
+const DEMERIT_SUB_LINKS = [
+  { key: 'tata-tertib', label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel' },
+];
 
 interface DemeritRow {
   siswaId: number;
@@ -102,8 +110,8 @@ export function LaporanDemeritPage() {
         limit: 200,
       });
       setRows(res?.data ?? res ?? []);
-    } catch {
-      toast.show('error', 'Gagal memuat laporan demerit.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat laporan demerit.');
     } finally {
       setLoading(false);
     }
@@ -130,8 +138,8 @@ export function LaporanDemeritPage() {
     try {
       if (fmt === 'excel') await doExportExcel(rows, totalRow);
       else await doExportPdf(rows, totalRow);
-    } catch {
-      toast.show('error', `Gagal export ${fmt.toUpperCase()}.`);
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : `Gagal export ${fmt.toUpperCase()}.`);
     } finally {
       setExporting(null);
     }
@@ -145,38 +153,38 @@ export function LaporanDemeritPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Laporan Demerit</h2>
-          <p className="text-sm text-aam-muted mt-0.5">Rekap Σ pelanggaran per siswa: per kategori, terpotong, saldo.</p>
+          <p className="text-sm text-aam-text-muted mt-0.5">Rekap Σ pelanggaran per siswa: per kategori, terpotong, saldo.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => handleExport('excel')}
-            disabled={exporting !== null} id="btn-export-excel-demerit">
-            {exporting === 'excel' ? 'Mengekspor...' : '↓ Excel'}
+          <Button size="sm" variant="secondary" icon="table_view" onClick={() => handleExport('excel')} disabled={!!exporting} id="btn-export-excel-demerit">
+            {exporting === 'excel' ? 'Mengekspor...' : 'Excel'}
           </Button>
-          <Button variant="secondary" onClick={() => handleExport('pdf')}
-            disabled={exporting !== null} id="btn-export-pdf-demerit">
-            {exporting === 'pdf' ? 'Mengekspor...' : '↓ PDF'}
+          <Button size="sm" variant="secondary" icon="picture_as_pdf" onClick={() => handleExport('pdf')} disabled={!!exporting} id="btn-export-pdf-demerit">
+            {exporting === 'pdf' ? 'Mengekspor...' : 'PDF'}
           </Button>
         </div>
       </div>
 
+      <SubPageLinks links={DEMERIT_SUB_LINKS} />
+
       {/* Filter */}
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Dari</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Dari</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm"
               value={dari} onChange={e => setDari(e.target.value)} id="input-dari-demerit" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Sampai</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Sampai</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm"
               value={sampai} onChange={e => setSampai(e.target.value)} id="input-sampai-demerit" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Kelas</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Kelas</label>
             <select className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
               value={kelasId} onChange={e => setKelasId(e.target.value)} id="select-kelas-demerit">
               <option value="">Semua Kelas</option>
@@ -192,53 +200,37 @@ export function LaporanDemeritPage() {
       </Card>
 
       {/* Tabel */}
-      <Card>
+      <Card icon="bar_chart">
         {loading ? <TableSkeleton rows={6} /> : rows.length === 0 ? (
           <EmptyState icon="bar_chart" message="Tidak ada data pelanggaran pada rentang yang dipilih." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  {COLS.map(c => (
-                    <th key={c.key} className={`px-3 py-2.5 font-semibold text-aam-muted border-b border-aam-border whitespace-nowrap ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
-                      {c.header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-aam-border">
-                {rows.map(row => (
-                  <tr key={row.siswaId} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 font-medium">{row.siswaNama}</td>
-                    <td className="px-3 py-2 text-aam-muted">{row.siswaKelas ?? '—'}</td>
-                    <td className="px-3 py-2 text-right">{row.poinR}</td>
-                    <td className="px-3 py-2 text-right">{row.poinS}</td>
-                    <td className="px-3 py-2 text-right">{row.poinB}</td>
-                    <td className="px-3 py-2 text-right">{row.poinSB}</td>
-                    <td className="px-3 py-2 text-right font-medium">{row.terpotong}</td>
-                    <td className="px-3 py-2 text-right">
-                      <Badge variant={saldoVariant(row.saldo)}>{row.saldo}</Badge>
-                    </td>
-                  </tr>
-                ))}
-                {/* TOTAL row */}
-                {totalRow && (
-                  <tr className="bg-gray-100 font-bold">
-                    <td className="px-3 py-2.5">TOTAL</td>
-                    <td className="px-3 py-2.5"></td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.poinR}</td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.poinS}</td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.poinB}</td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.poinSB}</td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.terpotong}</td>
-                    <td className="px-3 py-2.5 text-right">{totalRow.saldo}</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            <p className="text-xs text-aam-muted mt-2 px-3 pb-2">Total siswa: {rows.length}</p>
-          </div>
+          <>
+            <Table
+              columns={[
+                { header: 'Nama Siswa', cell: (r) => <span className="font-medium">{r.siswaNama}</span> },
+                { header: 'Kelas', cell: (r) => <span className="text-aam-text-muted">{r.siswaKelas ?? '—'}</span> },
+                { header: 'R', align: 'right', cell: (r) => String(r.poinR) },
+                { header: 'S', align: 'right', cell: (r) => String(r.poinS) },
+                { header: 'B', align: 'right', cell: (r) => String(r.poinB) },
+                { header: 'SB', align: 'right', cell: (r) => String(r.poinSB) },
+                { header: 'Terpotong', align: 'right', cell: (r) => <span className="font-medium">{r.terpotong}</span> },
+                { header: 'Saldo', align: 'right', cell: (r) => <Badge variant={saldoVariant(r.saldo)}>{r.saldo}</Badge> },
+              ] as ColumnDef<DemeritRow>[]}
+              data={rows}
+              rowKey={(r) => r.siswaId}
+            />
+            {totalRow && (
+              <div className="border-t border-aam-border bg-gray-50 px-3 py-2 flex flex-wrap gap-4 text-sm font-bold text-aam-text">
+                <span>TOTAL:</span>
+                <span>R={totalRow.poinR}</span>
+                <span>S={totalRow.poinS}</span>
+                <span>B={totalRow.poinB}</span>
+                <span>SB={totalRow.poinSB}</span>
+                <span>Terpotong={totalRow.terpotong}</span>
+              </div>
+            )}
+            <p className="text-xs text-aam-text-muted px-3 pb-2">Total siswa: {rows.length}</p>
+          </>
         )}
       </Card>
     </PageContainer>

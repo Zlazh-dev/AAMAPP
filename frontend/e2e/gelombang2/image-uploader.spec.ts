@@ -13,7 +13,7 @@ import { loginAsAdmin } from '../helpers/auth';
  *
  * FIX MANDIRI-DATA (§12.17e):
  * - Setelah simpan sukses, cari guru by nama unik via API → dapat ID.
- * - Navigasi langsung by ID ke /admin/orang/guru/:id (bukan klik daftar).
+ * - Navigasi langsung by ID ke /kurikulum/orang/guru/:id (bukan klik daftar).
  * - afterEach: hapus guru via API agar tidak menumpuk.
  */
 
@@ -41,7 +41,7 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
   });
 
   test('Upload foto nyata -> pratinjau -> simpan -> foto tampil di detail -> hapus foto', async ({ page, request }) => {
-    await page.goto('/admin/orang/guru/baru');
+    await page.goto('/kurikulum/orang/guru/baru');
     await expect(page.getByRole('heading', { name: 'Tambah Guru' })).toBeVisible();
 
     const namaUnik = `Guru Foto ${Date.now()}`;
@@ -84,7 +84,7 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
     expect(createdGuruId, 'Guru yang baru dibuat harus ditemukan via API').not.toBeNull();
 
     // Navigasi langsung ke detail by ID — tidak bergantung urutan daftar.
-    await page.goto(`/admin/orang/guru/${createdGuruId}`);
+    await page.goto(`/kurikulum/orang/guru/${createdGuruId}`);
 
     // Detail: <img> foto guru tampil (bukan avatar inisial fallback).
     await expect(page.getByRole('heading', { name: namaUnik })).toBeVisible({ timeout: 8_000 });
@@ -101,3 +101,4 @@ test.describe('ImageUploader (Poin 4 Perluasan T16)', () => {
     await expect(page.getByText(/tersimpan/i).first()).toBeVisible();
   });
 });
+

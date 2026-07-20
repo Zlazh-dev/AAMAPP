@@ -1,12 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { api, KatalogEntry, KategoriPelanggaran } from '../../api/client';
+﻿import React, { useState, useCallback, useEffect } from 'react';
+import { api, KatalogEntry, KategoriPelanggaran , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
-import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
+import { Table, ColumnDef } from '../../components/Table';
+import { FormDrawer } from '../../components/FormDrawer';
+import { SubPageLinks } from '../../components/SubPageLinks';
+import { BackLink } from '../../components/BackLink';
+import { PageMenu } from '../../components/PageMenu';
 
 const KATEGORI_LABEL: Record<KategoriPelanggaran, string> = {
   R: 'Ringan (10 poin)', S: 'Sedang (25 poin)', B: 'Berat (50 poin)',
@@ -17,6 +21,11 @@ const KATEGORI_VARIANT: Record<string, 'gray' | 'yellow' | 'red' | 'blue'> = {
   R: 'blue', S: 'yellow', B: 'red', SB: 'red', KHUSUS: 'gray',
 };
 
+/** Sub dari Tata Tertib (IA-HIERARCHY-V2). */
+const TATA_TERTIB_SUB_LINKS = [
+  { key: 'pelanggaran', label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning' },
+];
+
 export function TataTertibPage() {
   const toast = useToast();
   const [rows, setRows] = useState<KatalogEntry[]>([]);
@@ -25,7 +34,7 @@ export function TataTertibPage() {
   const [q, setQ] = useState('');
   const [kategoriFilter, setKategoriFilter] = useState('');
 
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<KatalogEntry | null>(null);
   const [bentuk, setBentuk] = useState('');
   const [kategori, setKategori] = useState<KategoriPelanggaran>('R');
@@ -38,8 +47,8 @@ export function TataTertibPage() {
       const res = await api.getKatalog({ q, kategori: kategoriFilter, limit: 100 });
       setRows(res.data);
       setTotal(res.total);
-    } catch {
-      toast.show('error', 'Gagal memuat katalog tata tertib.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat katalog tata tertib.');
     } finally {
       setLoading(false);
     }
@@ -50,13 +59,13 @@ export function TataTertibPage() {
   const openNew = () => {
     setEditing(null);
     setBentuk(''); setKategori('R'); setPoin('10');
-    setSheetOpen(true);
+    setDrawerOpen(true);
   };
 
   const openEdit = (row: KatalogEntry) => {
     setEditing(row);
     setBentuk(row.bentuk); setKategori(row.kategori); setPoin(String(row.poin));
-    setSheetOpen(true);
+    setDrawerOpen(true);
   };
 
   const handleKategoriChange = (kat: KategoriPelanggaran) => {
@@ -76,7 +85,7 @@ export function TataTertibPage() {
         await api.createKatalog({ bentuk: bentuk.trim(), kategori, poin: poinNum });
       }
       toast.show('success', editing ? 'Butir diperbarui.' : 'Butir ditambahkan.');
-      setSheetOpen(false);
+      setDrawerOpen(false);
       load();
     } catch (e: any) {
       toast.show('error', e.message ?? 'Gagal menyimpan.');
@@ -96,17 +105,44 @@ export function TataTertibPage() {
     }
   };
 
+  const columns: ColumnDef<KatalogEntry>[] = [
+    { header: 'No.', width: 'w-12', cell: (r) => <span className="text-aam-text-muted">{r.nomor}</span> },
+    { header: 'Bentuk Pelanggaran', cell: (r) => r.bentuk },
+    { header: 'Kat.', width: 'w-16', cell: (r) => <Badge variant={KATEGORI_VARIANT[r.kategori]}>{r.kategori}</Badge> },
+    { header: 'Poin', width: 'w-16', align: 'right', cell: (r) => <span className="font-medium">{r.poin}</span> },
+    { header: 'Status', width: 'w-24', cell: (r) => <Badge variant={r.aktif ? 'gray' : 'red'}>{r.aktif ? 'Aktif' : 'Nonaktif'}</Badge> },
+    {
+      header: '',
+      width: 'w-28',
+      align: 'right',
+      cell: (r) => (
+        <span className="flex gap-2 justify-end">
+          <button className="text-blue-600 hover:underline text-xs" onClick={() => openEdit(r)} id={`btn-edit-katalog-${r.id}`}>Edit</button>
+          {r.aktif && <button className="text-red-500 hover:underline text-xs" onClick={() => handleDelete(r)}>Nonaktif</button>}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <PageContainer>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <BackLink to="/kesiswaan/laporan" />
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-3 mt-2">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Tata Tertib</h2>
-          <p className="text-sm text-aam-muted mt-0.5">Katalog butir pelanggaran &amp; poin demerit.</p>
+          <p className="text-sm text-aam-text-muted mt-0.5">Katalog butir pelanggaran &amp; poin demerit.</p>
         </div>
-        <Button onClick={openNew} id="btn-tambah-katalog">+ Tambah Butir</Button>
+        <PageMenu
+          menuTitle="Menu Tata Tertib"
+          actions={[{ key: 'tambah', label: 'Tambah Butir', icon: 'add', variant: 'primary', id: 'btn-tambah-katalog', onClick: openNew }]}
+        />
       </div>
 
-      <Card className="mb-4">
+      <SubPageLinks links={TATA_TERTIB_SUB_LINKS} />
+
+      {/* Filter */}
+      <Card>
         <div className="flex flex-wrap gap-3">
           <input type="text" placeholder="Cari butir pelanggaran..."
             className="rounded-md border border-aam-border px-3 py-2 text-sm flex-1 min-w-[180px]"
@@ -121,79 +157,58 @@ export function TataTertibPage() {
         </div>
       </Card>
 
-      <Card>
-        {loading ? <TableSkeleton rows={5} /> : rows.length === 0 ? (
-          <EmptyState icon="gavel" message="Belum ada butir tata tertib." />
+      {/* Tabel */}
+      <Card icon="gavel">
+        {loading ? (
+          <TableSkeleton rows={5} />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  {['No.','Bentuk Pelanggaran','Kat.','Poin','Status',''].map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b border-aam-border whitespace-nowrap">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-aam-border">
-                {rows.map(row => (
-                  <tr key={row.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 text-aam-muted">{row.nomor}</td>
-                    <td className="px-3 py-2">{row.bentuk}</td>
-                    <td className="px-3 py-2"><Badge variant={KATEGORI_VARIANT[row.kategori]}>{row.kategori}</Badge></td>
-                    <td className="px-3 py-2 text-right font-medium">{row.poin}</td>
-                    <td className="px-3 py-2"><Badge variant={row.aktif ? 'gray' : 'red'}>{row.aktif ? 'Aktif' : 'Nonaktif'}</Badge></td>
-                    <td className="px-3 py-2 text-right whitespace-nowrap">
-                      <button className="text-blue-600 hover:underline text-xs mr-3" onClick={() => openEdit(row)} id={`btn-edit-katalog-${row.id}`}>Edit</button>
-                      {row.aktif && <button className="text-red-500 hover:underline text-xs" onClick={() => handleDelete(row)}>Nonaktifkan</button>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="text-xs text-aam-muted mt-2 px-3 pb-2">Total: {total}</p>
-          </div>
+          <>
+            <Table
+              columns={columns}
+              data={rows}
+              rowKey={(r) => r.id}
+              emptyMessage="Belum ada butir tata tertib."
+            />
+            {rows.length > 0 && (
+              <p className="text-xs text-aam-text-muted mt-2 px-1">Total: {total}</p>
+            )}
+          </>
         )}
       </Card>
 
-      {/* Inline sheet */}
-      {sheetOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setSheetOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <h3 className="font-bold text-aam-text text-lg mb-4">{editing ? 'Edit Butir' : 'Tambah Butir Tata Tertib'}</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Bentuk Pelanggaran *</label>
-                <textarea className="w-full rounded-md border border-aam-border px-3 py-2 text-sm" rows={3}
-                  value={bentuk} onChange={e => setBentuk(e.target.value)} id="input-bentuk-pelanggaran"
-                  placeholder="Deskripsi bentuk pelanggaran..." />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Kategori *</label>
-                <select className="w-full rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
-                  value={kategori} onChange={e => handleKategoriChange(e.target.value as KategoriPelanggaran)} id="select-kategori-form">
-                  {(['R','S','B','SB','KHUSUS'] as KategoriPelanggaran[]).map(k => (
-                    <option key={k} value={k}>{KATEGORI_LABEL[k]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Poin *</label>
-                <input type="number" className="w-full rounded-md border border-aam-border px-3 py-2 text-sm"
-                  value={poin} onChange={e => setPoin(e.target.value)} min={0} id="input-poin" />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <Button variant="secondary" onClick={() => setSheetOpen(false)}>Batal</Button>
-                <Button onClick={handleSave} disabled={saving} id="btn-simpan-katalog">
-                  {saving ? 'Menyimpan...' : 'Simpan'}
-                </Button>
-              </div>
-            </div>
+      {/* FormDrawer — adaptif desktop modal / mobile bottom sheet */}
+      <FormDrawer
+        open={drawerOpen}
+        title={editing ? 'Edit Butir Tata Tertib' : 'Tambah Butir Tata Tertib'}
+        onClose={() => setDrawerOpen(false)}
+        onSubmit={handleSave}
+        submitting={saving}
+        submitLabel={editing ? 'Perbarui' : 'Simpan'}
+        submitId="btn-simpan-katalog"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Bentuk Pelanggaran *</label>
+            <textarea className="w-full rounded-md border border-aam-border px-3 py-2 text-sm" rows={3}
+              value={bentuk} onChange={e => setBentuk(e.target.value)} id="input-bentuk-pelanggaran"
+              placeholder="Deskripsi bentuk pelanggaran..." />
           </div>
-        </>
-      )}
+          <div>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Kategori *</label>
+            <select className="w-full rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
+              value={kategori} onChange={e => handleKategoriChange(e.target.value as KategoriPelanggaran)} id="select-kategori-form">
+              {(['R','S','B','SB','KHUSUS'] as KategoriPelanggaran[]).map(k => (
+                <option key={k} value={k}>{KATEGORI_LABEL[k]}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Poin *</label>
+            <input type="number" className="w-full rounded-md border border-aam-border px-3 py-2 text-sm"
+              value={poin} onChange={e => setPoin(e.target.value)} min={0} id="input-poin" />
+          </div>
+        </div>
+      </FormDrawer>
     </PageContainer>
   );
 }
-

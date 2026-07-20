@@ -13,7 +13,7 @@ const labelClass = 'block text-sm font-medium text-aam-text mb-1.5';
 const EMPTY: KkmPengaturan = { nilai: 75 };
 
 /**
- * /admin/pengaturan/kkm â€” KKM global (T14, Â§15.3).
+ * /kurikulum/kkm — KKM global (T14, §15.3).
  */
 export function PengaturanKkmPage() {
   const toast = useToast();
@@ -66,8 +66,8 @@ export function PengaturanKkmPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/admin/pengaturan" />
-        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuatâ€¦</div>
+        <BackLink to="/kurikulum" />
+        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
   }
@@ -75,11 +75,11 @@ export function PengaturanKkmPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="sm" bottomBar>
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/kurikulum" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">KKM (Kriteria Ketuntasan Minimal)</h2>
         <p className="text-xs text-aam-text-muted mb-6">Nilai KKM global untuk semua mapel</p>
 
-        <Card icon="flag" className="p-6">
+        <Card icon="flag">
           <div className="space-y-5">
             <div>
               <label className={labelClass} htmlFor="kkm-nilai">Nilai KKM</label>
@@ -92,14 +92,14 @@ export function PengaturanKkmPage() {
                 onChange={(e) => setData((prev) => ({ ...prev, nilai: parseInt(e.target.value) || 0 }))}
                 className={inputClass}
               />
-              <p className="text-xs text-aam-text-muted mt-1.5">Rentang 0â€“100. Nilai default 75.</p>
+              <p className="text-xs text-aam-text-muted mt-1.5">Rentang 0–100. Nilai default 75.</p>
             </div>
 
             {/* Save + footer */}
             <div className="border-t border-aam-border pt-4 flex items-center justify-between gap-4 flex-wrap">
               <div className="text-xs text-aam-text-muted">
                 {updatedByName && (
-                  <span>Terakhir disimpan oleh <strong className="text-aam-text">{updatedByName}</strong>{updatedAt && ` â€” ${new Date(updatedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}`}</span>
+                  <span>Terakhir disimpan oleh <strong className="text-aam-text">{updatedByName}</strong>{updatedAt && ` — ${new Date(updatedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}`}</span>
                 )}
               </div>
               <Button onClick={handleSave} loading={saving} disabled={!dirty} icon="save">Simpan</Button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { api, ApiError, Kelas } from '../../../api/client';
 import { useAuth } from '../../../app/AuthContext';
 import { useToast } from '../../../components/Toast';
@@ -9,6 +9,13 @@ import { TableSkeleton } from '../../../components/Skeleton';
 import { PageContainer } from '../../../components/PageContainer';
 import { AdaptiveSelect } from '../../../components/AdaptiveSelect';
 import { RosterDetailSheet } from './RosterDetailSheet';
+import { BackLink } from '../../../components/BackLink';
+import { SubPageLinks } from '../../../components/SubPageLinks';
+
+/** Sub halaman Presensi Siswa (IA-HIERARCHY-V2). */
+const PRESENSI_SISWA_SUB_LINKS = [
+  { key: 'laporan-kehadiran', label: 'Laporan Kehadiran Siswa', path: '/kesiswaan/laporan-kehadiran', icon: 'bar_chart' },
+];
 
 type MatriksPresensiSiswaResponse = Awaited<ReturnType<typeof api.getMatriksPresensiSiswa>>;
 type SesiMatriksRow = MatriksPresensiSiswaResponse['sesi'][number];
@@ -40,13 +47,13 @@ function ringkasanText(r: Record<string, number> | null): string {
 }
 
 /**
- * /admin/presensi-siswa — POLA khusus §15.3: matriks kelas × sesi (per
- * kelas terpilih, karena kontrak backend GET /api/admin/presensi-siswa
+ * /kesiswaan/presensi-siswa — POLA khusus §15.3: matriks kelas × sesi (per
+ * kelas terpilih, karena kontrak backend GET /api/kesiswaan/presensi-siswa
  * memang di-scope per kelasId — memilih SATU kelas dulu lalu tanggal).
  *
  * Sel = status sesi (TERLAKSANA hijau / BELUM merah) + ringkasan H/S/I/A/T.
- * Klik sel → buka RosterDetailSheet (baca roster + koreksi per siswa,
- * alasan wajib bila tanggal ≠ hari ini — sesuai F2-SPEC kontrak koreksi).
+ * Klik sel ? buka RosterDetailSheet (baca roster + koreksi per siswa,
+ * alasan wajib bila tanggal ? hari ini — sesuai F2-SPEC kontrak koreksi).
  */
 export function MatriksPresensiSiswaPage() {
   const { user } = useAuth();
@@ -59,12 +66,12 @@ export function MatriksPresensiSiswaPage() {
   const [loadingMatriks, setLoadingMatriks] = useState(false);
   const [selectedSesi, setSelectedSesi] = useState<SesiMatriksRow | null>(null);
 
-  // FIX2-#2: hanya admin yang boleh membuka sheet koreksi (GET/PATCH
-  // /guru/kbm/:id/roster adalah @Roles('guru','admin')). Kepsek/kesiswaan
-  // tetap bisa membaca ringkasan H/S/I/A/T di matriks (hak baca mereka),
-  // tapi baris menjadi read-only — tanpa cursor-pointer/chevron/hover dan
-  // tidak memanggil getGuruKbmRoster.
-  const canEdit = !!user?.roles.includes('admin');
+  // IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak murni
+  // guru pengampu. Admin/kepsek/kesiswaan hanya memantau (hak baca ringkasan
+  // H/S/I/A/T di matriks). RosterDetailSheet tidak dibuka di halaman ini
+  // karena GET /api/guru/kbm/:id/roster adalah @Roles('guru') — admin 403.
+  // Koreksi dilakukan guru pengampu di /guru/kbm.
+  const canEdit = false;
 
   useEffect(() => {
     (async () => {
@@ -73,8 +80,8 @@ export function MatriksPresensiSiswaPage() {
         const res = await api.adminGetKelas({ limit: 1000 });
         setKelasOptions(res.data);
         if (res.data.length > 0) setKelasId(String(res.data[0].id));
-      } catch {
-        show('error', 'Gagal memuat daftar kelas');
+      } catch (err) {
+        show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar kelas');
       } finally {
         setLoadingKelas(false);
       }
@@ -101,7 +108,7 @@ export function MatriksPresensiSiswaPage() {
       .catch((err) => {
         if (cancelled) return;
         // FIX2-#4: fallback teks bila respons non-JSON (mis. 502 proxy) —
-        // err.body?.message bisa undefined → toast merang tanpa teks.
+        // err.body?.message bisa undefined ? toast merang tanpa teks.
         show(
           'error',
           err instanceof ApiError
@@ -148,6 +155,8 @@ export function MatriksPresensiSiswaPage() {
 
   return (
     <PageContainer size="xl">
+      <BackLink to="/kesiswaan" />
+      <SubPageLinks links={PRESENSI_SISWA_SUB_LINKS} />
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="min-w-0">
@@ -161,7 +170,7 @@ export function MatriksPresensiSiswaPage() {
       </div>
 
       {/* Filter: kelas + tanggal */}
-      <Card icon="filter_alt" className="p-4 mb-4">
+      <Card icon="filter_alt">
         <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-3">
           <div>
             <label className="block text-xs font-medium text-aam-text-muted mb-1.5">Kelas</label>
@@ -179,7 +188,7 @@ export function MatriksPresensiSiswaPage() {
             <input
               type="date"
               value={tanggal}
-              // FIX2-#6: clear input date → '' direset ke hari ini WIB
+              // FIX2-#6: clear input date ? '' direset ke hari ini WIB
               // (server silently fallback ke hari ini; PATCH dengan ''
               // pasti 400 @IsDateString).
               onChange={(e) => setTanggal(e.target.value || todayWIB())}
@@ -203,7 +212,7 @@ export function MatriksPresensiSiswaPage() {
       )}
 
       {/* Matriks */}
-      <Card icon="grid_view" className="p-0 overflow-hidden">
+      <Card flush icon="grid_view" className="overflow-hidden">
         {loadingMatriks ? (
           <div className="p-4">
             <TableSkeleton rows={4} cols={4} />

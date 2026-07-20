@@ -15,7 +15,7 @@ test.describe('Cabut Sesi (Regresi F0)', () => {
 
     // Now login via UI to see the sessions
     await loginAsAdmin(page);
-    await page.goto('/admin/akun/1/sesi'); // Asumsi ID admin = 1
+    await page.goto('/admin/akun/sesi'); // path benar: /admin/akun/sesi
 
     // Ensure we see at least 2 sessions (one from setup, one current)
     // Wait for data

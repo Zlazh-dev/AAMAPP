@@ -51,7 +51,7 @@ test.describe('FilterBar (Poin 5 Perluasan T16)', () => {
   });
 
   test('Desktop: cari nama (q= ke server) menyempitkan hasil', async ({ page }) => {
-    await page.goto('/admin/orang/siswa');
+    await page.goto('/kurikulum/orang/siswa');
     await expect(page.getByText(siswaDalamKelasNama).first()).toBeVisible();
     await expect(page.getByText(siswaLuarKelasNama).first()).toBeVisible();
 
@@ -67,7 +67,7 @@ test.describe('FilterBar (Poin 5 Perluasan T16)', () => {
 
   test('Mobile: tombol Filter(n) -> sheet -> pilih chip kelas -> terapkan -> hasil terfilter', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/admin/orang/siswa');
+    await page.goto('/kurikulum/orang/siswa');
 
     // Button's accessible name includes the material-icon ligature text
     // ("tune") before the visible "Filter" label, so match on substring.
@@ -88,3 +88,4 @@ test.describe('FilterBar (Poin 5 Perluasan T16)', () => {
     await expect(page.getByText(siswaLuarKelasNama).locator('visible=true')).toHaveCount(0);
   });
 });
+

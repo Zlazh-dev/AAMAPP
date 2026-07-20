@@ -1,11 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { api } from '../../api/client';
+﻿import React, { useState, useCallback } from 'react';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
+import { Table, ColumnDef } from '../../components/Table';
 import { useToast } from '../../components/Toast';
+import { PageMenu } from '../../components/PageMenu';
+import { BackLink } from '../../components/BackLink';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -15,7 +18,6 @@ function currentMonthWIB(): string {
   }).formatToParts(new Date());
   const map: Record<string, string> = {};
   for (const p of parts) map[p.type] = p.value;
-  // Format as YYYY-MM
   return `${map.year}-${map.month}`;
 }
 
@@ -87,6 +89,22 @@ function buildTotalRow(rows: RekapRow[]): Record<string, string | number> {
   };
 }
 
+// ── Table columns ──────────────────────────────────────────────────────────
+
+const TABLE_COLS: ColumnDef<RekapRow>[] = [
+  { header: 'Nama Guru', cell: (r) => <span className="font-medium text-aam-text">{r.guruNama}</span> },
+  { header: 'NIP', cellClass: 'text-aam-text-muted', cell: (r) => r.nip ?? '-' },
+  { header: 'Hari Wajib', align: 'right', cell: (r) => String(r.hariWajib) },
+  { header: 'Hadir', align: 'right', cell: (r) => String(r.hadir) },
+  { header: 'Terlambat', align: 'right', cell: (r) => String(r.terlambat) },
+  { header: 'Izin', align: 'right', cell: (r) => String(r.izin) },
+  { header: 'Sakit', align: 'right', cell: (r) => String(r.sakit) },
+  { header: 'Dinas', align: 'right', cell: (r) => String(r.dinas) },
+  { header: 'Alpha', align: 'right', cell: (r) => <span className="text-red-600">{r.alpha}</span> },
+  { header: 'Libur', align: 'right', cell: (r) => String(r.libur) },
+  { header: '% Hadir', align: 'right', cell: (r) => <span className="font-medium">{r.persen}%</span> },
+];
+
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 /**
@@ -107,8 +125,8 @@ export function TuRekapGuruPage() {
       const res = await api.getTuRekapGuru(bulan);
       setRows(res.data);
       setHasLoaded(true);
-    } catch {
-      toast.show('error', 'Gagal memuat rekap guru. Pastikan backend F4c sudah live.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat rekap guru. Pastikan backend F4c sudah live.');
     } finally {
       setLoading(false);
     }
@@ -157,20 +175,43 @@ export function TuRekapGuruPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between mb-6">
+      <BackLink to="/tu/presensi-guru" />
+      <div className="flex items-center justify-between mb-6 mt-2">
         <div>
-          <h2 className="text-xl font-bold text-aam-text">Rekap Guru</h2>
-          <p className="text-sm text-aam-muted mt-0.5">
+          <h1 className="text-xl font-bold text-aam-text">Rekap Guru</h1>
+          <p className="text-sm text-aam-text-muted mt-1">
             Rekap kehadiran bulanan per guru (basis perhitungan gaji).
           </p>
         </div>
-      </div>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            icon="table_view"
+            onClick={handleExportExcel}
+            disabled={exporting}
+            id="btn-export-excel-rekap"
+          >
+            {exporting ? 'Mengekspor...' : 'Excel'}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon="picture_as_pdf"
+            onClick={handleExportPdf}
+            disabled={exporting}
+            id="btn-export-pdf-rekap"
+          >
+            {exporting ? 'Mengekspor...' : 'PDF'}
+          </Button>
+        </div>
 
       {/* Filter pemilih bulan */}
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Bulan</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Bulan</label>
             <input
               type="month"
               id="tu-rekap-bulan"
@@ -187,89 +228,33 @@ export function TuRekapGuruPage() {
 
       {/* Tabel hasil */}
       {hasLoaded && (
-        <Card>
-          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <h3 className="font-semibold text-aam-text">
-              Rekap {bulan ? bulanLabel(bulan) : ''}
-            </h3>
-            <div className="flex gap-2">
-              <Button
-                id="btn-export-excel-rekap"
-                variant="secondary"
-                onClick={handleExportExcel}
-                disabled={exporting || rows.length === 0}
-                className="text-xs"
-              >
-                📊 Excel
-              </Button>
-              <Button
-                id="btn-export-pdf-rekap"
-                variant="secondary"
-                onClick={handleExportPdf}
-                disabled={exporting || rows.length === 0}
-                className="text-xs"
-              >
-                📄 PDF
-              </Button>
-            </div>
-          </div>
-
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-aam-text mb-3">
+            Rekap {bulan ? bulanLabel(bulan) : ''}
+          </h3>
           {loading ? (
             <TableSkeleton rows={5} />
           ) : rows.length === 0 ? (
-            <EmptyState
-              icon="table_view"
-              message="Tidak ada data rekap untuk bulan yang dipilih."
-            />
+            <EmptyState icon="table_view" message="Tidak ada data rekap untuk bulan yang dipilih." />
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-aam-border">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {COLS.map(c => (
-                      <th key={c.key}
-                        className="px-3 py-2.5 font-semibold text-aam-muted text-left whitespace-nowrap border-b border-aam-border">
-                        {c.header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-aam-border">
-                  {rows.map(row => (
-                    <tr key={row.guruId} className="hover:bg-gray-50">
-                      <td className="px-3 py-2">{row.guruNama}</td>
-                      <td className="px-3 py-2 text-aam-muted">{row.nip ?? '-'}</td>
-                      <td className="px-3 py-2 text-right">{row.hariWajib}</td>
-                      <td className="px-3 py-2 text-right">{row.hadir}</td>
-                      <td className="px-3 py-2 text-right">{row.terlambat}</td>
-                      <td className="px-3 py-2 text-right">{row.izin}</td>
-                      <td className="px-3 py-2 text-right">{row.sakit}</td>
-                      <td className="px-3 py-2 text-right">{row.dinas}</td>
-                      <td className="px-3 py-2 text-right text-red-600">{row.alpha}</td>
-                      <td className="px-3 py-2 text-right">{row.libur}</td>
-                      <td className="px-3 py-2 text-right font-medium">{row.persen}%</td>
-                    </tr>
-                  ))}
-                  {/* Baris TOTAL */}
-                  <tr className="bg-yellow-50 font-semibold">
-                    <td className="px-3 py-2">TOTAL</td>
-                    <td className="px-3 py-2" />
-                    {(['hariWajib','hadir','terlambat','izin','sakit','dinas','alpha','libur'] as ColKey[]).map(k => (
-                      <td key={k} className="px-3 py-2 text-right">
-                        {rows.reduce((a, r) => a + (Number(r[k as keyof RekapRow]) || 0), 0)}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-right">
-                      {rows.length > 0
-                        ? Math.round(rows.reduce((a, r) => a + r.persen, 0) / rows.length) + '%'
-                        : ''}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <>
+              <Table
+                columns={TABLE_COLS}
+                data={rows}
+                rowKey={(r) => r.guruId}
+                id="table-rekap-guru"
+              />
+              {/* Baris TOTAL */}
+              <div className="mt-2 rounded-md border border-aam-border bg-yellow-50 px-3 py-2 flex flex-wrap gap-4 text-sm font-semibold text-aam-text">
+                <span>TOTAL:</span>
+                {(['hariWajib','hadir','terlambat','izin','sakit','dinas','alpha','libur'] as ColKey[]).map(k => (
+                  <span key={k}>{COLS.find(c=>c.key===k)?.header}={rows.reduce((a, r) => a + (Number(r[k as keyof RekapRow]) || 0), 0)}</span>
+                ))}
+                <span>%={rows.length > 0 ? Math.round(rows.reduce((a,r)=>a+r.persen,0)/rows.length)+'%' : '-'}</span>
+              </div>
+            </>
           )}
-        </Card>
+        </div>
       )}
     </PageContainer>
   );

@@ -15,6 +15,7 @@ export class LaporanController {
    * Agregat hari ini: guruStatus, kbm, siswa, perluPerhatian, feed.
    */
   @Get('dashboard')
+  @Roles('admin', 'kepsek')
   dashboard(@Query('tanggal') tanggal?: string) {
     return this.svc.dashboard(tanggal);
   }
@@ -24,6 +25,7 @@ export class LaporanController {
    * Σ status per guru + %hadir atas hari wajib.
    */
   @Get('laporan/harian-guru')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   laporanHarianGuru(
     @Query('dari') dari = '',
     @Query('sampai') sampai = '',
@@ -46,6 +48,7 @@ export class LaporanController {
    * Total KBM dijadwalkan vs terlaksana + %.
    */
   @Get('laporan/keterlaksanaan-kbm')
+  @Roles('admin', 'kepsek', 'kurikulum')
   laporanKeterlaksanaan(
     @Query('dari') dari = '',
     @Query('sampai') sampai = '',
@@ -72,6 +75,7 @@ export class LaporanController {
    * Σ H/S/I/A/T per siswa + %hadir.
    */
   @Get('laporan/siswa')
+  @Roles('admin', 'kepsek', 'kesiswaan')
   laporanSiswa(
     @Query('dari') dari = '',
     @Query('sampai') sampai = '',
@@ -99,7 +103,7 @@ export class LaporanController {
  */
 @Controller('api/tu')
 @UseGuards(SessionAuthGuard, RolesGuard)
-@Roles('tu', 'admin')
+@Roles('tu', 'admin', 'kepsek')
 export class TuController {
   constructor(private readonly svc: LaporanService) {}
 

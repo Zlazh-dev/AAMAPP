@@ -24,6 +24,7 @@ import { UpdateKkmDto } from './dto/update-kkm.dto';
 import { Guru } from '../guru/guru.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
+import { PresensiSesi } from '../presensi/presensi-sesi.entity';
 
 export interface MapelFilter {
   q?: string;
@@ -667,6 +668,21 @@ export class KurikulumService {
       relations: ['penugasan', 'penugasan.kelas', 'penugasan.mapel', 'penugasan.guru', 'penugasan.tahunAjaran'],
     });
     if (!row) throw new NotFoundException('Slot jadwal tidak ditemukan');
+
+    // presensi_sesi.jadwalKbmId = onDelete RESTRICT (riwayat presensi tidak
+    // boleh ikut terhapus). Periksa dulu supaya menolak dengan 409 + alasan,
+    // bukan meledak jadi 500 dari constraint database.
+    const sesiTerpakai = await this.jadwalRepo.manager.count(PresensiSesi, {
+      where: { jadwalKbmId: id },
+    });
+    if (sesiTerpakai > 0) {
+      throw new ConflictException(
+        `Slot jadwal ini sudah dipakai pada ${sesiTerpakai} sesi presensi yang tercatat. ` +
+          `Riwayat presensi tidak boleh dihapus. Ubah jadwalnya, atau hapus dari jadwal ` +
+          `tahun ajaran berikutnya.`,
+      );
+    }
+
     await this.jadwalRepo.remove(row);
 
     const pn = row.penugasan;

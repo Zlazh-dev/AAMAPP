@@ -7,7 +7,7 @@ import { loginAsAdmin } from '../helpers/auth';
  * Sebelumnya spec ini klik "baris pertama daftar" tanpa membuat
  * entitas sendiri → gagal di DB bersih. Sekarang:
  * 1. beforeEach: buat kelas via API, simpan id.
- * 2. Navigasi langsung ke /admin/kelas/:id (bukan klik baris pertama).
+ * 2. Navigasi langsung ke /kurikulum/kelas/:id (bukan klik baris pertama).
  * 3. afterEach: hapus kelas via API.
  */
 test.describe('BackLink adaptif desktop', () => {
@@ -35,8 +35,9 @@ test.describe('BackLink adaptif desktop', () => {
 
   test('Desktop: tautan teks "Kembali" tampil di atas halaman detail kelas', async ({ page }) => {
     // Navigasi langsung by ID — tidak bergantung baris pertama.
-    await page.goto(`/admin/kelas/${kelasId}`);
-    await page.waitForURL(/\/admin\/kelas\/\d+$/);
+    // IA-HIERARCHY-V2: rute kanonik /kurikulum/kelas/:id (bukan /admin/kelas/:id).
+    await page.goto(`/kurikulum/kelas/${kelasId}`);
+    await page.waitForURL(/\/kurikulum\/kelas\/\d+$/);
 
     // Elemen "Kembali" mobile pakai class `hidden` (display:none) di
     // desktop, sehingga TIDAK muncul di accessibility tree sama sekali —
@@ -46,3 +47,4 @@ test.describe('BackLink adaptif desktop', () => {
     await expect(backLinks.first()).toBeVisible();
   });
 });
+

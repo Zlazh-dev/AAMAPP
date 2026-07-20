@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, AdminUser, ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -40,8 +40,8 @@ export function PersetujuanDetailPage() {
       setUser(u);
       setRoles(u.requestedRoles);
       setOriginalRoles(u.requestedRoles);
-    } catch {
-      show('error', 'Akun tidak ditemukan');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Akun tidak ditemukan');
       navigate('/admin/akun/persetujuan');
     } finally {
       setLoading(false);
@@ -112,7 +112,7 @@ export function PersetujuanDetailPage() {
       </h2>
 
       {/* Identity card */}
-      <Card icon="person" className="p-5 mb-4">
+      <Card icon="person">
         <div className="flex items-center gap-4 mb-4">
           <div className="w-14 h-14 rounded-full bg-aam-yellow flex items-center justify-center text-yellow-900 text-lg font-medium flex-shrink-0">
             {user.name.charAt(0).toUpperCase()}
@@ -145,7 +145,7 @@ export function PersetujuanDetailPage() {
       </Card>
 
       {/* Role selection for approval */}
-      <Card icon="how_to_reg" className="p-5">
+      <Card icon="how_to_reg">
         <h3 className="text-sm font-semibold text-aam-text mb-2">Peran Final</h3>
         <p className="text-xs text-aam-text-muted mb-4">
           Peran berikut prefilled dari ajuan. Anda bebas mengubah sebelum menyetujui.

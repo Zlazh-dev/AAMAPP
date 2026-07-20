@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -59,8 +59,8 @@ export function KokurikulerAsesmenPage() {
         map[`${a.siswaId}-${a.targetId}`] = a.nilai;
       });
       setNilai(map);
-    } catch {
-      toast.show('error', 'Gagal memuat data asesmen.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data asesmen.');
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export function KokurikulerAsesmenPage() {
           </Button>
           <div>
             <h2 className="text-lg font-bold text-aam-text">Input Asesmen Kokurikuler</h2>
-            <p className="text-sm text-aam-muted">Klik tombol untuk set nilai; klik lagi untuk hapus.</p>
+            <p className="text-sm text-aam-text-muted">Klik tombol untuk set nilai; klik lagi untuk hapus.</p>
           </div>
         </div>
         <Button onClick={handleSimpan} disabled={saving} id="btn-simpan-asesmen">
@@ -119,7 +119,7 @@ export function KokurikulerAsesmenPage() {
       {/* Kelas selector */}
       {kelasList.length > 1 && (
         <div className="mb-3 flex items-center gap-2">
-          <label className="text-sm font-medium text-aam-muted">Kelas:</label>
+          <label className="text-sm font-medium text-aam-text-muted">Kelas:</label>
           <select className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
             value={kelasId ?? ''} onChange={e => setKelasId(Number(e.target.value))}
             id="select-kelas-asesmen">
@@ -136,15 +136,15 @@ export function KokurikulerAsesmenPage() {
             <Badge variant={filledCount === totalCells ? 'green' : 'yellow'}>
               {filledCount}/{totalCells} terisi
             </Badge>
-            <span className="text-xs text-aam-muted">Klik SB/B/C/K untuk set nilai (toggle).</span>
+            <span className="text-xs text-aam-text-muted">Klik SB/B/C/K untuk set nilai (toggle).</span>
           </div>
           <div className="overflow-x-auto">
             <table className="text-sm w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b border-aam-border sticky left-0 bg-gray-50 min-w-[150px]">Nama Siswa</th>
+                  <th className="px-3 py-2.5 text-left text-aam-text-muted font-semibold border-b border-aam-border sticky left-0 bg-gray-50 min-w-[150px]">Nama Siswa</th>
                   {targets.map(t => (
-                    <th key={t.id} className="px-2 py-2.5 text-center text-aam-muted font-semibold border-b border-aam-border whitespace-nowrap min-w-[120px]">
+                    <th key={t.id} className="px-2 py-2.5 text-center text-aam-text-muted font-semibold border-b border-aam-border whitespace-nowrap min-w-[120px]">
                       {t.namaDimensi}
                     </th>
                   ))}
@@ -171,7 +171,7 @@ export function KokurikulerAsesmenPage() {
                                     : opt === 'Baik' ? 'bg-blue-500 text-white border-blue-500'
                                     : opt === 'Cukup' ? 'bg-yellow-500 text-white border-yellow-500'
                                     : 'bg-red-500 text-white border-red-500'
-                                    : 'bg-white text-aam-muted border-aam-border hover:bg-gray-50'
+                                    : 'bg-white text-aam-text-muted border-aam-border hover:bg-gray-50'
                                 }`}
                               >
                                 {opt === 'Sangat Baik' ? 'SB' : opt === 'Baik' ? 'B' : opt === 'Cukup' ? 'C' : 'K'}

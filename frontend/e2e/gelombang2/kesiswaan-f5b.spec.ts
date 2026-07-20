@@ -100,11 +100,23 @@ test.describe('F5b — Kesiswaan Frontend (Tindak Lanjut + Reward + Laporan)', (
 
   // ── Menu Kesiswaan F5b ─────────────────────────────────────────────────────
   test.describe('Menu KESISWAAN F5b', () => {
-    test('Sidebar menampilkan Tindak Lanjut, Reward, Laporan', async ({ page }) => {
+    test('Sub halaman Tindak Lanjut render + BackLink ke Pelanggaran (IA-HIERARCHY-V2)', async ({ page }) => {
+      // IA-HIERARCHY-V2: Tindak Lanjut = sub dari Pelanggaran (bukan sidebar).
       await page.goto('/kesiswaan/tindak-lanjut');
-      await expect(page.getByText('Tindak Lanjut').first()).toBeVisible();
-      await expect(page.getByText('Reward').first()).toBeVisible();
-      await expect(page.getByText('Laporan').first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Tindak Lanjut/i }).first()).toBeVisible();
+      // BackLink mengarah ke induk Pelanggaran.
+      await expect(page.getByRole('link', { name: /Kembali/ })).toBeVisible();
+      // Sibling (Reward, Laporan) diakses dari induk, bukan dari sini.
+      const sidebar = page.locator('aside');
+      await expect(sidebar.locator('a[href="/kesiswaan/tindak-lanjut"]')).toHaveCount(0);
+      await expect(sidebar.locator('a[href="/kesiswaan/reward"]')).toHaveCount(0);
+    });
+
+    test('Pelanggaran menampilkan SubPageLinks: Verifikasi, Tindak Lanjut, Reward', async ({ page }) => {
+      await page.goto('/kesiswaan/pelanggaran');
+      await expect(page.getByRole('link', { name: /Tindak Lanjut/ })).toBeVisible();
+      await expect(page.getByRole('link', { name: /Reward/ })).toBeVisible();
+      await expect(page.getByRole('link', { name: /Verifikasi/ })).toBeVisible();
     });
   });
 });

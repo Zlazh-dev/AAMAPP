@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -48,7 +48,7 @@ export function AkunBaruPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Main column */}
           <div className="md:col-span-2 space-y-4">
-            <Card icon="person_add" className="p-5">
+            <Card icon="person_add">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Data Akun</h3>
               <div className="space-y-3">
                 <div>
@@ -86,7 +86,7 @@ export function AkunBaruPage() {
               </div>
             </Card>
 
-            <Card icon="badge" className="p-5">
+            <Card icon="badge">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Peran</h3>
               <RoleSelector selected={roles} onChange={(r) => { setRoles(r); setDirty(true); }} />
             </Card>
@@ -94,7 +94,7 @@ export function AkunBaruPage() {
 
           {/* Sidebar column */}
           <div className="md:sticky md:top-4 self-start">
-            <Card icon="save" className="p-5">
+            <Card icon="save">
               <div className="space-y-3">
                 <Button type="submit" loading={loading} className="w-full" size="lg">
                   Simpan

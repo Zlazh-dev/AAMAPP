@@ -28,25 +28,25 @@ export class GuruController {
   constructor(private readonly svc: GuruService) {}
 
   @Get()
-  @Roles('admin', 'kurikulum', 'kepsek')
+  @Roles('admin', 'kurikulum', 'kepsek', 'tu', 'kesiswaan')
   list(@Query() q: GuruFilter) {
     return this.svc.list(q);
   }
 
   @Get(':id')
-  @Roles('admin', 'kurikulum', 'kepsek', 'guru')
+  @Roles('admin', 'kurikulum', 'kepsek', 'guru', 'tu', 'kesiswaan')
   one(@Param('id', ParseIntPipe) id: number) {
     return this.svc.findOne(id);
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   create(@Body() body: CreateGuruDto, @Req() req: Request) {
     return this.svc.create(body, req);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateGuruDto,
@@ -56,7 +56,7 @@ export class GuruController {
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.svc.remove(id, req);
   }

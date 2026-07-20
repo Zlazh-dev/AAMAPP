@@ -4,7 +4,7 @@ import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
 
 /**
  * F2-ADMIN-E2E — mengunci 4 perilaku dari F2-ADMIN-FIX2 (commit 5136bfb) di
- * `/admin/presensi-siswa` (MatriksPresensiSiswaPage + RosterDetailSheet),
+ * `/kesiswaan/presensi-siswa` (MatriksPresensiSiswaPage + RosterDetailSheet),
  * supaya tidak regresi diam-diam:
  *
  * 1. Race guard: ganti kelas cepat -> matriks akhir menampilkan data kelas
@@ -159,7 +159,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
       await route.continue();
     });
 
-    await page.goto('/admin/presensi-siswa');
+    await page.goto('/kesiswaan/presensi-siswa');
     await expect(page.getByRole('heading', { name: 'Matriks Presensi Siswa' })).toBeVisible();
 
     // Pilih kelas A dulu (request lambat mulai berjalan di background)...
@@ -176,7 +176,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     await expect(page.getByText(a.mapel.nama)).toHaveCount(0);
   });
 
-  test('2. Role-gating: kepsek read-only (tak buka sheet), admin bisa klik buka sheet', async ({ page, request }) => {
+  test('2. Role-gating: admin & kepsek read-only (tak buka sheet koreksi)', async ({ page, request }) => {
     const token = (await page.evaluate(() => localStorage.getItem('aamapp_token'))) as string;
     const suffix = `${Date.now()}RG`;
     const { kelas, mapel, guru, siswa, jadwal } = await setupKelasDenganSesi(request, token, suffix);
@@ -198,22 +198,21 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     const kepsekUser = await userRes.json();
     createdUserIds.push(kepsekUser.id);
 
-    // --- Sebagai ADMIN dulu (sesi dari beforeEach, TANPA re-login) ---
-    // Urutan sengaja admin→kepsek: re-login balik ke admin di tengah test
-    // (setelah sesi kepsek) rapuh — app bisa redirect ke /login sebelum
-    // token admin sempat dipakai. Cek admin memakai sesi awal saja.
-    await page.goto('/admin/presensi-siswa');
+    // --- Sebagai ADMIN (sesi dari beforeEach) ---
+    // IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak
+    // murni guru pengampu. Admin & kepsek sama-sama read-only di matriks.
+    await page.goto('/kesiswaan/presensi-siswa');
     await expect(page.getByRole('heading', { name: 'Matriks Presensi Siswa' })).toBeVisible();
     await pilihKelas(page, kelas.nama);
     await expect(page.getByText(mapel.nama).first()).toBeVisible();
-    // Klik baris sesi -> sheet koreksi TERBUKA (admin boleh koreksi).
+    // Klik baris sesi -> TIDAK membuka sheet koreksi (read-only).
     await page.getByText(mapel.nama).first().click();
-    await expect(page.getByText(new RegExp(`Roster ${escapeRegex(mapel.nama)}`))).toBeVisible();
-    await page.getByRole('button', { name: 'Batal' }).click();
+    await expect(page.getByText(new RegExp(`Roster ${escapeRegex(mapel.nama)}`))).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Simpan Koreksi' })).toHaveCount(0);
 
     // --- Sebagai KEPSEK (turun peran, tak perlu balik ke admin lagi) ---
     await loginAs(page, kepsekEmail, kepsekPassword);
-    await page.goto('/admin/presensi-siswa');
+    await page.goto('/kesiswaan/presensi-siswa');
     await expect(page.getByRole('heading', { name: 'Matriks Presensi Siswa' })).toBeVisible();
     await pilihKelas(page, kelas.nama);
     await expect(page.getByText(mapel.nama).first()).toBeVisible();
@@ -242,7 +241,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
       await route.continue();
     });
 
-    await page.goto('/admin/presensi-siswa');
+    await page.goto('/kesiswaan/presensi-siswa');
     await pilihKelas(page, kelas.nama);
     await expect(page.getByText(mapel.nama).first()).toBeVisible();
 
@@ -259,7 +258,11 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     expect(emptyDateRequests).toHaveLength(0);
   });
 
-  test('4. Escape-to-close: tutup saat sheet bersih, diam saat sheet dirty', async ({ page, request }) => {
+  // IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak murni
+  // guru pengampu. RosterDetailSheet tak lagi bisa dibuka admin di matriks
+  // (GET /api/guru/kbm/:id/roster = @Roles('guru') -> admin 403). ESC behavior
+  // diuji lewat sheet guru di /guru/kbm bila dibutuhkan; spec ini di-skip.
+  test.skip('4. Escape-to-close: tutup saat sheet bersih, diam saat sheet dirty', async ({ page, request }) => {
     const token = (await page.evaluate(() => localStorage.getItem('aamapp_token'))) as string;
     const suffix = `${Date.now()}ESC`;
     const { kelas, mapel, guru, siswa, jadwal } = await setupKelasDenganSesi(request, token, suffix);
@@ -269,7 +272,7 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     createdSiswaIds.push(siswa.id);
     createdJadwalIds.push(jadwal.id);
 
-    await page.goto('/admin/presensi-siswa');
+    await page.goto('/kesiswaan/presensi-siswa');
     await pilihKelas(page, kelas.nama);
     await expect(page.getByText(mapel.nama).first()).toBeVisible();
     await page.getByText(mapel.nama).first().click();
@@ -292,3 +295,4 @@ test.describe('F2-ADMIN-FIX2 — Matriks Presensi Siswa (regresi terkunci)', () 
     await page.getByRole('button', { name: 'Batal' }).click();
   });
 });
+

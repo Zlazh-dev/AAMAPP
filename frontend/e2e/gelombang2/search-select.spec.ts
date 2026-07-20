@@ -59,7 +59,7 @@ test.describe('SearchSelect (Poin 2 Perluasan T16)', () => {
   });
 
   test('Desktop: ketik cari -> hasil menyempit -> pilih -> dropdown tertutup', async ({ page }) => {
-    await page.goto(`/admin/kelas/${kelasId}`);
+    await page.goto(`/kurikulum/kelas/${kelasId}`);
     await expect(page.getByRole('heading', { name: 'Wali Kelas' })).toBeVisible();
 
     const trigger = page.getByRole('button', { name: 'Pilih wali kelas...' });
@@ -87,7 +87,7 @@ test.describe('SearchSelect (Poin 2 Perluasan T16)', () => {
 
   test('Mobile: trigger membuka bottom sheet, cari di dalam sheet', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto(`/admin/kelas/${kelasId}`);
+    await page.goto(`/kurikulum/kelas/${kelasId}`);
     await expect(page.getByRole('heading', { name: 'Wali Kelas' })).toBeVisible();
 
     const trigger = page.getByRole('button', { name: 'Pilih wali kelas...' });
@@ -111,3 +111,4 @@ test.describe('SearchSelect (Poin 2 Perluasan T16)', () => {
     await expect(searchBox).toHaveCount(0);
   });
 });
+

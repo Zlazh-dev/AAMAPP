@@ -124,21 +124,23 @@ function IzinActionSheet({ item, onClose, onDone }: ActionSheetProps) {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/40 z-40"
+        className="fixed inset-0 z-40 bg-black/40 flex items-end md:items-center justify-center"
         onClick={onClose}
-      />
-      {/* Sheet */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
+      >
+        {/* Panel */}
+        <div
+          className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+          onClick={e => e.stopPropagation()}
+        >
 
-        <h3 className="font-bold text-aam-text text-lg mb-1">{item.guruNama}</h3>
+        <h3 className="text-sm font-semibold text-aam-text mb-1">{item.guruNama}</h3>
         <div className="flex gap-2 items-center mb-3">
           <Badge variant={STATUS_COLOR[item.status]}>{STATUS_LABEL[item.status]}</Badge>
-          <span className="text-sm text-aam-muted">{JENIS_LABEL[item.jenis]}</span>
-          <span className="text-sm text-aam-muted">·</span>
-          <span className="text-sm text-aam-muted">
+          <span className="text-sm text-aam-text-muted">{JENIS_LABEL[item.jenis]}</span>
+          <span className="text-sm text-aam-text-muted">·</span>
+          <span className="text-sm text-aam-text-muted">
             {formatTanggal(item.mulaiTanggal)}
             {item.mulaiTanggal !== item.selesaiTanggal && ` — ${formatTanggal(item.selesaiTanggal)}`}
             <span className="ml-1 text-xs">({hitungHari(item.mulaiTanggal, item.selesaiTanggal)} hari)</span>
@@ -163,7 +165,7 @@ function IzinActionSheet({ item, onClose, onDone }: ActionSheetProps) {
             <div>
               <label className="block text-sm font-medium text-aam-text mb-1.5">
                 Catatan / Alasan{' '}
-                <span className="text-aam-muted text-xs font-normal">(wajib saat menolak)</span>
+                <span className="text-aam-text-muted text-xs font-normal">(wajib saat menolak)</span>
               </label>
               <textarea
                 id="admin-izin-alasan"
@@ -198,12 +200,12 @@ function IzinActionSheet({ item, onClose, onDone }: ActionSheetProps) {
         ) : (
           <div className="mt-4">
             {item.alasanKeputusan && (
-              <p className="text-sm text-aam-muted italic mb-3">
+              <p className="text-sm text-aam-text-muted italic mb-3">
                 Alasan: {item.alasanKeputusan}
               </p>
             )}
             {item.disetujuiPada && (
-              <p className="text-xs text-aam-muted">
+              <p className="text-xs text-aam-text-muted">
                 Diproses: {new Date(item.disetujuiPada).toLocaleDateString('id-ID', {
                   day: 'numeric', month: 'long', year: 'numeric',
                 })}
@@ -214,6 +216,7 @@ function IzinActionSheet({ item, onClose, onDone }: ActionSheetProps) {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </>
   );
@@ -224,7 +227,7 @@ function IzinActionSheet({ item, onClose, onDone }: ActionSheetProps) {
 const PAGE_SIZE = 20;
 
 /**
- * /admin/izin-guru — Admin/kepsek: daftar izin guru berpaginasi + filter +
+ * /tu/izin-guru — Admin/kepsek: daftar izin guru berpaginasi + filter +
  * setujui/tolak via adaptive sheet.
  */
 export function AdminIzinGuruPage() {
@@ -255,8 +258,8 @@ export function AdminIzinGuruPage() {
       setList(res.data);
       setTotal(res.total);
       setPage(pg);
-    } catch {
-      toast.show('error', 'Gagal memuat daftar izin.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar izin.');
     } finally {
       setLoading(false);
     }
@@ -269,22 +272,22 @@ export function AdminIzinGuruPage() {
 
   return (
     <PageContainer>
-      <BackLink to="/admin" />
+      <BackLink to="/tu/presensi-guru" />
 
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Izin Guru</h2>
-          <p className="text-sm text-aam-muted mt-0.5">
+          <p className="text-sm text-aam-text-muted mt-0.5">
             Tinjau dan setujui/tolak permohonan izin guru.
           </p>
         </div>
       </div>
 
       {/* Filter bar */}
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Status</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Status</label>
             <AdaptiveSelect
               label="Filter Status"
               value={filterStatus}
@@ -294,7 +297,7 @@ export function AdminIzinGuruPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Dari</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Dari</label>
             <input
               type="date"
               className={inputClass}
@@ -304,7 +307,7 @@ export function AdminIzinGuruPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Sampai</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Sampai</label>
             <input
               type="date"
               className={inputClass}
@@ -346,11 +349,11 @@ export function AdminIzinGuruPage() {
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
                       <span className="font-semibold text-aam-text">{item.guruNama}</span>
                       <Badge variant={STATUS_COLOR[item.status]}>{STATUS_LABEL[item.status]}</Badge>
-                      <span className="text-xs text-aam-muted bg-aam-border/40 px-2 py-0.5 rounded-full">
+                      <span className="text-xs text-aam-text-muted bg-aam-border/40 px-2 py-0.5 rounded-full">
                         {JENIS_LABEL[item.jenis]}
                       </span>
                     </div>
-                    <p className="text-sm text-aam-muted">
+                    <p className="text-sm text-aam-text-muted">
                       {formatTanggal(item.mulaiTanggal)}
                       {item.mulaiTanggal !== item.selesaiTanggal && ` — ${formatTanggal(item.selesaiTanggal)}`}
                       <span className="ml-1.5 text-xs">
@@ -359,7 +362,7 @@ export function AdminIzinGuruPage() {
                     </p>
                     <p className="text-sm text-aam-text mt-1 line-clamp-1">{item.keterangan}</p>
                   </div>
-                  <span className="material-symbols-outlined text-aam-muted text-lg mt-0.5 shrink-0">
+                  <span className="material-symbols-outlined text-aam-text-muted text-lg mt-0.5 shrink-0">
                     chevron_right
                   </span>
                 </div>
@@ -378,7 +381,7 @@ export function AdminIzinGuruPage() {
               >
                 ‹ Prev
               </Button>
-              <span className="text-sm text-aam-muted flex items-center px-3">
+              <span className="text-sm text-aam-text-muted flex items-center px-3">
                 {page} / {totalPages} ({total} total)
               </span>
               <Button

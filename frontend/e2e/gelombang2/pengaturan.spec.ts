@@ -15,7 +15,7 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
   });
 
   test('Profil Sekolah: ubah nama -> Simpan -> reload -> memantul + "Terakhir disimpan oleh"', async ({ page }) => {
-    await page.goto('/admin/pengaturan/sekolah');
+    await page.goto('/admin/sekolah');
     await expect(page.getByRole('heading', { name: 'Profil Sekolah' })).toBeVisible();
 
     const namaInput = page.locator('#sekolah-nama');
@@ -39,7 +39,7 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
   });
 
   test('Jam Presensi: ubah toleransi -> Simpan -> reload -> memantul + pratinjau terupdate', async ({ page }) => {
-    await page.goto('/admin/pengaturan/jam');
+    await page.goto('/tu/pengaturan/jam');
     await expect(page.getByRole('heading', { name: 'Jam Presensi' })).toBeVisible();
 
     const toleransiInput = page.locator('#jam-toleransi');
@@ -60,8 +60,8 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
   });
 
   test('KKM: ubah nilai -> Simpan -> reload -> memantul', async ({ page }) => {
-    await page.goto('/admin/pengaturan/kkm');
-    await expect(page.getByRole('heading', { name: /KKM/ })).toBeVisible();
+    await page.goto('/kurikulum/tahun-ajaran-kkm');
+    await expect(page.getByRole('heading', { name: 'KKM (Kriteria Ketuntasan Minimal)' })).toBeVisible();
 
     const kkmInput = page.locator('#kkm-nilai');
     const original = await kkmInput.inputValue();
@@ -81,7 +81,7 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
   });
 
   test('Lokasi: klik peta mengubah input lat/lng -> Simpan -> reload -> memantul', async ({ page }) => {
-    await page.goto('/admin/pengaturan/lokasi');
+    await page.goto('/tu/pengaturan/lokasi');
     await expect(page.getByRole('heading', { name: 'Lokasi Sekolah' })).toBeVisible();
 
     const latInput = page.locator('#lokasi-lat');
@@ -119,11 +119,14 @@ test.describe('Pengaturan (Matriks T16 lanjutan)', () => {
     await expect(page.getByText(/pengaturan lokasi berhasil disimpan/i)).toBeVisible();
   });
 
-  test('Hub Pengaturan: navigasi ke tiap sub-halaman via kartu', async ({ page }) => {
-    await page.goto('/admin/pengaturan');
+  test('Hub Pengaturan TU: navigasi ke sub-halaman via kartu', async ({ page }) => {
+    // IA-HIERARCHY-V2: Pengaturan TU = /tu/pengaturan (induk Jam KBM, Hari Libur, Lokasi).
+    await page.goto('/tu/pengaturan');
     await expect(page.getByRole('heading', { name: 'Pengaturan', level: 2 })).toBeVisible();
-    await page.getByText('Profil Sekolah').click();
-    await page.waitForURL('**/admin/pengaturan/sekolah');
-    await expect(page.getByRole('heading', { name: 'Profil Sekolah' })).toBeVisible();
+    // Klik kartu "Jam KBM" — kartu (bukan SubPageLinks) punya icon + deskripsi.
+    await page.locator('a[href="/tu/pengaturan/jam"]').first().click();
+    await page.waitForURL('**/tu/pengaturan/jam');
+    await expect(page.getByRole('heading', { name: 'Jam Presensi' })).toBeVisible();
   });
 });
+

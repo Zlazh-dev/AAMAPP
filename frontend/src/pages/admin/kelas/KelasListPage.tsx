@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, Kelas, KelasListResponse } from '../../../api/client';
+import { api, Kelas, KelasListResponse , ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Badge } from '../../../components/Badge';
 import { EmptyState } from '../../../components/EmptyState';
+import { Table } from '../../../components/Table';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { PageMenu } from '../../../components/PageMenu';
+import { SubPageLinks } from '../../../components/SubPageLinks';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
 
+const KELAS_SUB_LINKS = [
+  { key: 'wali', label: 'Wali Kelas', path: '/kurikulum/wali-kelas', icon: 'manage_accounts' },
+];
+
 /**
- * /admin/kelas — POLA A list.
+ * /kurikulum/kelas — POLA A list.
  * Desktop: table (nama, tingkat/fase, wali, jumlah siswa).
  * Mobile: card-list.
  */
@@ -38,8 +44,8 @@ export function KelasListPage() {
       });
       setData(res.data);
       setTotal(res.total);
-    } catch {
-      show('error', 'Gagal memuat data kelas');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data kelas');
     } finally {
       setLoading(false);
     }
@@ -78,15 +84,14 @@ export function KelasListPage() {
               label: 'Tambah Kelas',
               icon: 'add',
               variant: 'primary',
-              onClick: () => navigate('/admin/kelas/baru'),
+              onClick: () => navigate('/kurikulum/kelas/baru'),
             },
           ]}
-          links={[
-            { key: 'guru', label: 'Data Guru', path: '/admin/orang/guru', icon: 'school' },
-            { key: 'siswa', label: 'Data Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
-          ]}
+          links={KELAS_SUB_LINKS}
         />
       </div>
+
+      <SubPageLinks links={KELAS_SUB_LINKS} />
 
       {/* FilterBar */}
       <div className="mb-4">
@@ -99,70 +104,24 @@ export function KelasListPage() {
         />
       </div>
 
-      {/* Desktop: Table */}
-      <div className="hidden md:block">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-aam-border text-left text-xs text-aam-text-muted">
-              <th className="pb-2 font-medium">Nama</th>
-              <th className="pb-2 font-medium">Tingkat</th>
-              <th className="pb-2 font-medium">Fase</th>
-              <th className="pb-2 font-medium">Wali Kelas</th>
-              <th className="pb-2 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            {loading ? (
-              <tr><td colSpan={5}><TableSkeleton rows={4} cols={4} /></td></tr>
-            ) : data.length === 0 ? (
-              <tr><td colSpan={5}><EmptyState icon="door_closed" message="Belum ada data kelas" /></td></tr>
-            ) : (
-              data.map((k) => (
-                <tr
-                  key={k.id}
-                  onClick={() => navigate(`/admin/kelas/${k.id}`)}
-                  className="border-b border-aam-border/50 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <td className="py-3 font-medium text-aam-text">{k.nama}</td>
-                  <td className="py-3 text-aam-text-muted">{k.tingkat}</td>
-                  <td className="py-3"><Badge variant="purple">Fase {k.fase}</Badge></td>
-                  <td className="py-3 text-aam-text-muted">{k.waliGuru?.nama || '—'}</td>
-                  <td className="py-3">
-                    <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile: Card list */}
-      <div className="md:hidden space-y-2">
-        {loading ? (
-          <TableSkeleton rows={3} cols={3} />
-        ) : data.length === 0 ? (
-          <EmptyState icon="door_closed" message="Belum ada data kelas" />
-        ) : (
-          data.map((k) => (
-            <Card
-              key={k.id}
-              icon="meeting_room"
-              onClick={() => navigate(`/admin/kelas/${k.id}`)}
-              className="p-4"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-aam-text">{k.nama}</p>
-                <Badge variant="purple">Fase {k.fase}</Badge>
-              </div>
-              <div className="text-xs text-aam-text-muted">
-                <span>Tingkat {k.tingkat}</span>
-                {k.waliGuru && <span className="ml-3">Wali: {k.waliGuru.nama}</span>}
-              </div>
-            </Card>
-          ))
-        )}
-      </div>
+      {loading ? (
+        <TableSkeleton rows={4} cols={4} />
+      ) : (
+        <Table
+          columns={[
+            { header: 'Nama', cell: (k: any) => <span className="font-medium text-aam-text">{k.nama}</span> },
+            { header: 'Tingkat', cell: (k: any) => <span className="text-aam-text-muted">{k.tingkat}</span> },
+            { header: 'Fase', cell: (k: any) => <Badge variant="purple">Fase {k.fase}</Badge> },
+            { header: 'Wali Kelas', cell: (k: any) => <span className="text-aam-text-muted">{k.waliGuru?.nama || '\u2014'}</span> },
+            { header: '', width: 'w-8', cell: () => <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span> },
+          ]}
+          data={data}
+          rowKey={(k: any) => k.id}
+          emptyMessage="Belum ada data kelas"
+          onRowClick={(k: any) => navigate(`/kurikulum/kelas/${k.id}`)}
+        />
+      )}
     </PageContainer>
   );
 }
+

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -37,8 +37,8 @@ export function RaporKokurikulerPage() {
     try {
       const res = await (api as any).getRaporKokurikuler?.(Number(siswaId), semester);
       setRapor(res?.data ?? res ?? null);
-    } catch {
-      toast.show('error', 'Gagal memuat rapor kokurikuler.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat rapor kokurikuler.');
     } finally {
       setLoading(false);
     }
@@ -52,10 +52,10 @@ export function RaporKokurikulerPage() {
         <Button variant="secondary" onClick={() => navigate(-1)} id="btn-back-rapor-kok">← Kembali</Button>
         <div>
           <h2 className="text-lg font-bold text-aam-text">Rapor Kokurikuler</h2>
-          {rapor && <p className="text-sm text-aam-muted">{rapor.nama} · {rapor.kelas}</p>}
+          {rapor && <p className="text-sm text-aam-text-muted">{rapor.nama} · {rapor.kelas}</p>}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <label className="text-sm text-aam-muted">Semester:</label>
+          <label className="text-sm text-aam-text-muted">Semester:</label>
           <select className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
             value={semester} onChange={e => setSemester(Number(e.target.value))}
             id="select-semester-rapor-kok">
@@ -75,7 +75,7 @@ export function RaporKokurikulerPage() {
               <thead className="bg-gray-50">
                 <tr>
                   {['Dimensi', 'Nilai Akhir', 'Deskripsi'].map(h => (
-                    <th key={h} className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b border-aam-border">{h}</th>
+                    <th key={h} className="px-3 py-2.5 text-left text-aam-text-muted font-semibold border-b border-aam-border">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -86,18 +86,18 @@ export function RaporKokurikulerPage() {
                     <td className="px-3 py-2">
                       {d.nilaiAkhir
                         ? <Badge variant={nilaiToVariant(d.nilaiAkhir)}>{d.nilaiAkhir}</Badge>
-                        : <span className="text-aam-muted text-xs">Belum dinilai</span>
+                        : <span className="text-aam-text-muted text-xs">Belum dinilai</span>
                       }
                     </td>
                     <td className="px-3 py-2 text-sm text-aam-text max-w-xs">
-                      {d.deskripsi || <span className="text-aam-muted italic">—</span>}
+                      {d.deskripsi || <span className="text-aam-text-muted italic">—</span>}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-aam-muted mt-2 px-1">
+          <p className="text-xs text-aam-text-muted mt-2 px-1">
             Formula: rata-rata skor penilai (SB=4, B=3, C=2, K=1) → &gt;3.5 SB · &gt;2.5 B · &gt;1.5 C · else K.
           </p>
         </Card>

@@ -9,13 +9,9 @@ import {
   Post,
   Query,
   Req,
-  Res,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 import { SiswaService, SiswaFilter } from './siswa.service';
 import { CreateSiswaDto, UpdateSiswaDto } from './dto/create-siswa.dto';
 import { SessionAuthGuard } from '../common/session-auth.guard';
@@ -44,13 +40,13 @@ export class SiswaController {
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   create(@Body() body: CreateSiswaDto, @Req() req: Request) {
     return this.svc.create(body, req);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateSiswaDto,
@@ -60,7 +56,7 @@ export class SiswaController {
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.svc.remove(id, req);
   }

@@ -112,8 +112,14 @@ export class SiswaService {
       if (row.kelasId != null) {
         const k = await this.kelasRepo.findOne({ where: { id: row.kelasId } });
         afterKelasNama = k?.nama ?? `(id=${row.kelasId})`;
+        // WAJIB: entity punya kolom `kelasId` DAN objek relasi `kelas` (dimuat
+        // via relations:['kelas']). save() mengutamakan objek relasi, jadi bila
+        // `kelas` tidak ikut disinkronkan ia menulis balik kelas LAMA dan
+        // perpindahan gagal diam-diam (tanpa error, audit tetap tercatat).
+        row.kelas = k ?? null;
       } else {
         afterKelasNama = '(tanpa kelas)';
+        row.kelas = null;
       }
     }
 

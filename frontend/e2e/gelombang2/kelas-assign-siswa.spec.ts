@@ -56,7 +56,7 @@ test.describe('Assign Siswa ke Kelas (FIX-ASSIGN-SISWA-KELAS)', () => {
   });
 
   test('Kelas kosong (siswa lain ada) -> tombol Assign Siswa -> pilih 2 -> keduanya jadi anggota', async ({ page, request }) => {
-    await page.goto(`/admin/kelas/${kelasKosongId}`);
+    await page.goto(`/kurikulum/kelas/${kelasKosongId}`);
 
     // Kelas kosong TAPI ada siswa lain di sistem -> tombol "Assign Siswa", BUKAN "Tambah Siswa"
     await expect(page.getByRole('button', { name: 'Assign Siswa' }).first()).toBeVisible();
@@ -83,3 +83,4 @@ test.describe('Assign Siswa ke Kelas (FIX-ASSIGN-SISWA-KELAS)', () => {
     expect(sB.kelasId).toBe(kelasKosongId);
   });
 });
+

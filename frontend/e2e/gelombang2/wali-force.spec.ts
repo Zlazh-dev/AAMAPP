@@ -88,3 +88,4 @@ test.describe('Wali Kelas Force (Poin 3 T16)', () => {
     await request.delete(`/api/admin/guru/${guru.id}`, { headers }).catch(() => {});
   });
 });
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -35,8 +35,8 @@ export function AkunEditPage() {
       setName(u.name);
       setEmail(u.email);
       setRoles(u.roles);
-    } catch {
-      show('error', 'Akun tidak ditemukan');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Akun tidak ditemukan');
       navigate('/admin/akun');
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ export function AkunEditPage() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2 space-y-4">
-            <Card icon="edit" className="p-5">
+            <Card icon="edit">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Data Akun</h3>
               <div className="space-y-3">
                 <div>
@@ -130,14 +130,14 @@ export function AkunEditPage() {
               </div>
             </Card>
 
-            <Card icon="badge" className="p-5">
+            <Card icon="badge">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Peran</h3>
               <RoleSelector selected={roles} onChange={(r) => { setRoles(r); setDirty(true); }} />
             </Card>
           </div>
 
           <div className="md:sticky md:top-4 self-start">
-            <Card icon="save" className="p-5">
+            <Card icon="save">
               <div className="space-y-3">
                 <Button type="submit" loading={saving} className="w-full" size="lg">
                   Simpan

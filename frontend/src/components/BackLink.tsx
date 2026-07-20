@@ -5,22 +5,10 @@ interface BackLinkProps {
   to: string;
   label?: string;
   className?: string;
-  /**
-   * BACKLINK-ADAPTIF-MOBILE (keputusan user): di layar <md, teks kecil
-   * "← Kembali" di atas halaman sulit dijangkau ibu jari. Default (`true`)
-   * merender ADAPTIF:
-   *  - Desktop (≥md): tautan teks kecil "← Kembali" di atas (perilaku lama).
-   *  - Mobile (<md): TIDAK ada teks atas; sebaliknya tombol full-width
-   *    "← Kembali" (≥48px) MELAYANG di paling bawah viewport (position:
-   *    fixed — otomatis "elemen terakhir" secara visual tanpa perlu
-   *    dipindah di JSX).
-   * Set `false` pada halaman FORM (sudah punya Simpan/Batal sendiri —
-   * "Batal" = jalan kembali) dan halaman SaveSuccess (tombol sendiri) agar
-   * tidak dobel, sesuai keputusan user.
-   */
   mobileButton?: boolean;
-  /** z-index tombol mobile — naikkan bila halaman punya sticky bar lain yang lebih tinggi. */
   mobileZ?: number;
+  /** ID untuk link — dipakai e2e locator. */
+  id?: string;
 }
 
 export function BackLink({
@@ -29,11 +17,13 @@ export function BackLink({
   className = '',
   mobileButton = true,
   mobileZ = 30,
+  id,
 }: BackLinkProps) {
   return (
     <>
       <Link
         to={to}
+        id={id}
         className={[
           'items-center gap-1 text-sm text-aam-text-muted hover:text-aam-text transition-colors',
           mobileButton ? 'hidden md:inline-flex' : 'inline-flex',

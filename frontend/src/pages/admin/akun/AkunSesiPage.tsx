@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { api, SessionInfo } from '../../../api/client';
+﻿import React, { useState } from 'react';
+import { api, SessionInfo , ApiError } from '../../../api/client';
 import { useCachedList } from '../../../hooks/useCachedList';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
@@ -33,8 +33,8 @@ export function AkunSesiPage() {
       show('success', 'Sesi berhasil dicabut');
       setRevokeTarget(null);
       refresh();
-    } catch {
-      show('error', 'Gagal mencabut sesi');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal mencabut sesi');
     }
   };
 
@@ -144,7 +144,7 @@ export function AkunSesiPage() {
           <EmptyState icon="devices_off" message="Tidak ada sesi aktif" />
         ) : (
           sessions.map((s) => (
-            <Card key={s.id} icon="devices" className="p-4">
+            <Card key={s.id} icon="devices">
               <div className="flex items-start justify-between mb-2">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-aam-text truncate">{s.user?.name}</p>

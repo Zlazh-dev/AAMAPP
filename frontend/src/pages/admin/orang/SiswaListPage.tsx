@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, Siswa, Kelas, KelasListResponse } from '../../../api/client';
+import { api, Siswa, Kelas, KelasListResponse , ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Badge } from '../../../components/Badge';
@@ -10,9 +10,10 @@ import { PageMenu } from '../../../components/PageMenu';
 import { SubPageLinks } from '../../../components/SubPageLinks';
 import { FilterBar, FilterValues } from '../../../components/FilterBar';
 import { PageContainer } from '../../../components/PageContainer';
+import { Table, ColumnDef } from '../../../components/Table';
 
 /**
- * /admin/orang/siswa — POLA A list.
+ * /kurikulum/orang/siswa — POLA A list.
  * Desktop: table (foto, nama, NISN/NIS, kelas, status).
  * Mobile: card-list.
  * FilterBar: search + filter kelas + filter status.
@@ -53,8 +54,8 @@ export function SiswaListPage() {
       });
       setData(res.data);
       setTotal(res.total);
-    } catch {
-      show('error', 'Gagal memuat data siswa');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data siswa');
     } finally {
       setLoading(false);
     }
@@ -83,10 +84,10 @@ export function SiswaListPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="min-w-0">
-          <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
+          <h1 className="text-xl font-bold text-aam-text">
             Data Siswa
-          </h2>
-          <p className="text-xs text-aam-text-muted">
+          </h1>
+          <p className="text-sm text-aam-text-muted mt-1">
             {loading ? 'Memuat...' : `${data.length} dari ${total} siswa`}
           </p>
         </div>
@@ -98,12 +99,12 @@ export function SiswaListPage() {
               label: 'Tambah Siswa',
               icon: 'person_add',
               variant: 'primary',
-              onClick: () => navigate('/admin/orang/siswa/baru'),
+              onClick: () => navigate('/kurikulum/orang/siswa/baru'),
             },
           ]}
           links={[
-            { key: 'guru', label: 'Data Guru', path: '/admin/orang/guru', icon: 'school' },
-            { key: 'import', label: 'Import Excel', path: '/admin/orang/import', icon: 'upload_file' },
+            { key: 'guru', label: 'Data Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+            { key: 'import', label: 'Import Excel', path: '/kurikulum/orang/import', icon: 'upload_file' },
           ]}
         />
       </div>
@@ -111,8 +112,8 @@ export function SiswaListPage() {
       {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
       <SubPageLinks
         links={[
-          { key: 'guru', label: 'Guru', path: '/admin/orang/guru', icon: 'school' },
-          { key: 'import', label: 'Import', path: '/admin/orang/import', icon: 'upload_file' },
+          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+          { key: 'import', label: 'Import', path: '/kurikulum/orang/import', icon: 'upload_file' },
         ]}
       />
 
@@ -129,61 +130,49 @@ export function SiswaListPage() {
 
       {/* Desktop: Table */}
       <div className="hidden md:block">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-aam-border text-left text-xs text-aam-text-muted">
-              <th className="pb-2 font-medium">Nama</th>
-              <th className="pb-2 font-medium">NIS</th>
-              <th className="pb-2 font-medium">NISN</th>
-              <th className="pb-2 font-medium">Kelas</th>
-              <th className="pb-2 font-medium">Status</th>
-              <th className="pb-2 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            {loading ? (
-              <tr><td colSpan={6}><TableSkeleton rows={4} cols={5} /></td></tr>
-            ) : data.length === 0 ? (
-              <tr><td colSpan={6}><EmptyState icon="person_off" message="Belum ada data siswa" /></td></tr>
-            ) : (
-              data.map((s) => (
-                <tr
-                  key={s.id}
-                  onClick={() => navigate(`/admin/orang/siswa/${s.id}`)}
-                  className="border-b border-aam-border/50 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      {s.fotoUrl ? (
-                        <img src={s.fotoUrl} alt={s.nama} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-aam-green flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                          {s.nama.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="font-medium text-aam-text">{s.nama}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 text-aam-text-muted">{s.nis}</td>
-                  <td className="py-3 text-aam-text-muted">{s.nisn || '—'}</td>
-                  <td className="py-3 text-aam-text-muted">{s.kelas?.nama || '—'}</td>
-                  <td className="py-3">
-                    <Badge variant={s.status === 'aktif' ? 'green' : 'gray'}>
-                      {s.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                    </Badge>
-                  </td>
-                  <td className="py-3">
-                    <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        {loading ? (
+          <TableSkeleton rows={4} cols={5} />
+        ) : data.length === 0 ? (
+          <EmptyState icon="person_off" message="Belum ada data siswa" />
+        ) : (
+          <Table<Siswa>
+            columns={[
+              {
+                header: 'Nama',
+                cell: (s) => (
+                  <div className="flex items-center gap-2">
+                    {s.fotoUrl ? (
+                      <img src={s.fotoUrl} alt={s.nama} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-aam-green flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                        {s.nama.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="font-medium text-aam-text">{s.nama}</span>
+                  </div>
+                ),
+              },
+              { header: 'NIS', cellClass: 'text-aam-text-muted', cell: (s) => s.nis },
+              { header: 'NISN', cellClass: 'text-aam-text-muted', cell: (s) => s.nisn || '—' },
+              { header: 'Kelas', cellClass: 'text-aam-text-muted', cell: (s) => s.kelas?.nama || '—' },
+              { header: 'Status', cell: (s) => (
+                <Badge variant={s.status === 'aktif' ? 'green' : 'gray'}>
+                  {s.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
+                </Badge>
+              )},
+              { header: '', align: 'right', cell: () => (
+                <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span>
+              )},
+            ] as ColumnDef<Siswa>[]}
+            data={data}
+            rowKey={(s) => s.id}
+            onRowClick={(s) => navigate(`/kurikulum/orang/siswa/${s.id}`)}
+          />
+        )}
       </div>
 
       {/* Mobile: Card list */}
-      <div className="md:hidden space-y-2">
+      <div className="md:hidden space-y-3">
         {loading ? (
           <TableSkeleton rows={3} cols={3} />
         ) : data.length === 0 ? (
@@ -193,7 +182,7 @@ export function SiswaListPage() {
             <Card
               key={s.id}
               icon="diversity_3"
-              onClick={() => navigate(`/admin/orang/siswa/${s.id}`)}
+              onClick={() => navigate(`/kurikulum/orang/siswa/${s.id}`)}
               className="p-4"
             >
               <div className="flex items-center gap-3 mb-2">

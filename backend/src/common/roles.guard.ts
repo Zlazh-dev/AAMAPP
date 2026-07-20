@@ -50,10 +50,6 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Akses ditolak');
     }
 
-    // admin lolos semua
-    if (user.roles.includes('admin')) {
-      return true;
-    }
 
     const hasRole = requiredRoles.some((role) => user.roles.includes(role));
     if (!hasRole) {

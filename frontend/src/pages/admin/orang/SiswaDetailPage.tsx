@@ -11,7 +11,7 @@ import { PageMenu } from '../../../components/PageMenu';
 import { PageContainer } from '../../../components/PageContainer';
 
 /**
- * /admin/orang/siswa/:id — POLA A detail.
+ * /kurikulum/orang/siswa/:id � POLA A detail.
  * Kartu: biodata lengkap, kelas, riwayat pindah (from activity_logs).
  */
 export function SiswaDetailPage() {
@@ -45,10 +45,10 @@ export function SiswaDetailPage() {
             (l.action.includes('PINDAH') || l.summary?.includes('Memindahkan')),
         );
         setRiwayat(pindahLogs);
-      } catch {}
-    } catch {
-      show('error', 'Siswa tidak ditemukan');
-      navigate('/admin/orang/siswa');
+      } catch (err) {}
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Siswa tidak ditemukan');
+      navigate('/kurikulum/orang/siswa');
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export function SiswaDetailPage() {
     try {
       await api.adminDeleteSiswa(parseInt(id!, 10));
       show('success', 'Siswa berhasil dihapus');
-      navigate('/admin/orang/siswa');
+      navigate('/kurikulum/orang/siswa');
     } catch (err: any) {
       show('error', err instanceof ApiError ? err.body?.message : 'Gagal menghapus');
       setDeleteOpen(false);
@@ -82,41 +82,41 @@ export function SiswaDetailPage() {
 
   const pribadiRows = [
     { label: 'NIS', value: siswa.nis },
-    { label: 'NISN', value: siswa.nisn || '—' },
+    { label: 'NISN', value: siswa.nisn || '�' },
     { label: 'Jenis Kelamin', value: siswa.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
-    { label: 'Tempat Lahir', value: siswa.tempatLahir || '—' },
-    { label: 'Tanggal Lahir', value: siswa.tanggalLahir ? new Date(siswa.tanggalLahir).toLocaleDateString('id-ID') : '—' },
-    { label: 'Agama', value: siswa.agama || '—' },
-    { label: 'Alamat', value: siswa.alamat || '—' },
-    { label: 'Telepon', value: siswa.telepon || '—' },
-    { label: 'Status Dalam Keluarga', value: siswa.statusDalamKeluarga || '—' },
-    { label: 'Anak Ke', value: siswa.anakKe ? String(siswa.anakKe) : '—' },
+    { label: 'Tempat Lahir', value: siswa.tempatLahir || '�' },
+    { label: 'Tanggal Lahir', value: siswa.tanggalLahir ? new Date(siswa.tanggalLahir).toLocaleDateString('id-ID') : '�' },
+    { label: 'Agama', value: siswa.agama || '�' },
+    { label: 'Alamat', value: siswa.alamat || '�' },
+    { label: 'Telepon', value: siswa.telepon || '�' },
+    { label: 'Status Dalam Keluarga', value: siswa.statusDalamKeluarga || '�' },
+    { label: 'Anak Ke', value: siswa.anakKe ? String(siswa.anakKe) : '�' },
   ];
 
   const ortuRows = [
-    { label: 'Nama Ayah', value: siswa.namaAyah || '—' },
-    { label: 'Pekerjaan Ayah', value: siswa.pekerjaanAyah || '—' },
-    { label: 'Nama Ibu', value: siswa.namaIbu || '—' },
-    { label: 'Pekerjaan Ibu', value: siswa.pekerjaanIbu || '—' },
+    { label: 'Nama Ayah', value: siswa.namaAyah || '�' },
+    { label: 'Pekerjaan Ayah', value: siswa.pekerjaanAyah || '�' },
+    { label: 'Nama Ibu', value: siswa.namaIbu || '�' },
+    { label: 'Pekerjaan Ibu', value: siswa.pekerjaanIbu || '�' },
   ];
 
   const waliRows = [
-    { label: 'Nama Wali', value: siswa.namaWali || '—' },
-    { label: 'Alamat Wali', value: siswa.alamatWali || '—' },
-    { label: 'Telepon Wali', value: siswa.teleponWali || '—' },
-    { label: 'Pekerjaan Wali', value: siswa.pekerjaanWali || '—' },
+    { label: 'Nama Wali', value: siswa.namaWali || '�' },
+    { label: 'Alamat Wali', value: siswa.alamatWali || '�' },
+    { label: 'Telepon Wali', value: siswa.teleponWali || '�' },
+    { label: 'Pekerjaan Wali', value: siswa.pekerjaanWali || '�' },
   ];
 
   const sekolahRows = [
-    { label: 'Sekolah Asal', value: siswa.sekolahAsal || '—' },
-    { label: 'Diterima di Kelas', value: siswa.diterimaDiKelas || '—' },
-    { label: 'Diterima Tanggal', value: siswa.diterimaTanggal ? new Date(siswa.diterimaTanggal).toLocaleDateString('id-ID') : '—' },
+    { label: 'Sekolah Asal', value: siswa.sekolahAsal || '�' },
+    { label: 'Diterima di Kelas', value: siswa.diterimaDiKelas || '�' },
+    { label: 'Diterima Tanggal', value: siswa.diterimaTanggal ? new Date(siswa.diterimaTanggal).toLocaleDateString('id-ID') : '�' },
     { label: 'Status', value: siswa.status === 'aktif' ? 'Aktif' : 'Nonaktif' },
   ];
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to="/admin/orang/siswa" />
+      <BackLink to="/kurikulum/orang/siswa" />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
@@ -146,7 +146,7 @@ export function SiswaDetailPage() {
               label: 'Edit',
               icon: 'edit',
               variant: 'primary',
-              onClick: () => navigate(`/admin/orang/siswa/${siswa.id}/edit`),
+              onClick: () => navigate(`/kurikulum/orang/siswa/${siswa.id}/edit`),
             },
             {
               key: 'hapus',
@@ -157,15 +157,15 @@ export function SiswaDetailPage() {
             },
           ]}
           links={[
-            { key: 'daftar', label: 'Daftar Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
-            { key: 'guru', label: 'Data Guru', path: '/admin/orang/guru', icon: 'school' },
+            { key: 'daftar', label: 'Daftar Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
+            { key: 'guru', label: 'Data Guru', path: '/kurikulum/orang/guru', icon: 'school' },
           ]}
         />
       </div>
 
       {/* Biodata cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <Card icon="person" className="p-5">
+        <Card icon="person">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Data Pribadi</h3>
           <dl className="space-y-2">
             {pribadiRows.map((r) => (
@@ -177,7 +177,7 @@ export function SiswaDetailPage() {
           </dl>
         </Card>
 
-        <Card icon="family_restroom" className="p-5">
+        <Card icon="family_restroom">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Orang Tua</h3>
           <dl className="space-y-2">
             {ortuRows.map((r) => (
@@ -189,7 +189,7 @@ export function SiswaDetailPage() {
           </dl>
         </Card>
 
-        <Card icon="guardian" className="p-5">
+        <Card icon="guardian">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Wali</h3>
           <dl className="space-y-2">
             {waliRows.map((r) => (
@@ -201,7 +201,7 @@ export function SiswaDetailPage() {
           </dl>
         </Card>
 
-        <Card icon="school" className="p-5">
+        <Card icon="school">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Sekolah</h3>
           <dl className="space-y-2">
             {sekolahRows.map((r) => (
@@ -215,7 +215,7 @@ export function SiswaDetailPage() {
       </div>
 
       {/* Riwayat pindah kelas */}
-      <Card icon="swap_horiz" className="p-5">
+      <Card icon="swap_horiz">
         <h3 className="text-sm font-semibold text-aam-text mb-3">Riwayat Pindah Kelas</h3>
         {riwayat.length === 0 ? (
           <p className="text-sm text-aam-text-muted">Belum ada riwayat pindah kelas.</p>
@@ -229,7 +229,7 @@ export function SiswaDetailPage() {
                 <div className="flex-1">
                   <p className="text-aam-text">{log.summary}</p>
                   <p className="text-xs text-aam-text-muted">
-                    {new Date(log.createdAt).toLocaleString('id-ID')} • {log.userName || '—'}
+                    {new Date(log.createdAt).toLocaleString('id-ID')} � {log.userName || '�'}
                   </p>
                 </div>
               </div>

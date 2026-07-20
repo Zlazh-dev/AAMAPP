@@ -33,7 +33,7 @@ export class IzinGuruController {
    * guruId dari sesi (bukan body).
    */
   @Post()
-  @Roles('guru', 'admin', 'kepsek')
+  @Roles('guru', 'kepsek')
   ajukan(@Body() dto: AjukanIzinDto, @Req() req: Request) {
     return this.svc.ajukan(dto, req);
   }
@@ -42,7 +42,7 @@ export class IzinGuruController {
    * GET /api/izin/guru — daftar izin milik sendiri.
    */
   @Get()
-  @Roles('guru', 'admin', 'kepsek')
+  @Roles('guru', 'kepsek')
   listDiri(@Req() req: Request) {
     return this.svc.listDiri(req);
   }
@@ -62,7 +62,7 @@ export class AdminIzinGuruController {
    * (admin|kepsek) — daftar semua izin berpaginasi + filter level DB.
    */
   @Get()
-  @Roles('admin', 'kepsek')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   listAdmin(
     @Query('status') status?: StatusIzin,
     @Query('dari') dari?: string,
@@ -87,7 +87,7 @@ export class AdminIzinGuruController {
    * Guru TAK boleh approve sendiri (divalidasi di service).
    */
   @Patch(':id/setujui')
-  @Roles('admin', 'kepsek')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   setujui(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: KeputusanDto,
@@ -102,7 +102,7 @@ export class AdminIzinGuruController {
    * alasan WAJIB (validasi di service).
    */
   @Patch(':id/tolak')
-  @Roles('admin', 'kepsek')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   tolak(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: KeputusanDto,

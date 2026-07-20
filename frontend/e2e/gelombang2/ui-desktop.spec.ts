@@ -5,7 +5,7 @@ test.describe('AdaptiveSelect Desktop (Poin 12/15 T16)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
     // Asumsikan di halaman Kelas form ada AdaptiveSelect untuk Pilih Wali Kelas
-    await page.goto('/admin/kelas/baru');
+    await page.goto('/kurikulum/kelas/baru');
   });
 
   test('AdaptiveSelect panel tampil utuh (tidak terpotong z-index) dan bisa dipilih', async ({ page }) => {
@@ -29,3 +29,4 @@ test.describe('AdaptiveSelect Desktop (Poin 12/15 T16)', () => {
     }
   });
 });
+

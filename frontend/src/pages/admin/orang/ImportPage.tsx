@@ -14,10 +14,10 @@ type Step = 1 | 2 | 3 | 4; // 1=template, 2=upload+preview, 3=commit, 4=done
 type Jenis = 'guru' | 'siswa';
 
 /**
- * /admin/orang/import â€” wizard 3 langkah:
+ * /kurikulum/orang/import — wizard 3 langkah:
  * 1. Unduh template (per jenis guru/siswa)
  * 2. Upload & pratinjau (baris error merah + pesan)
- * 3. Konfirmasi & commit â†’ ringkasan {tersimpan, dilewati}
+ * 3. Konfirmasi & commit ? ringkasan {tersimpan, dilewati}
  */
 export function ImportPage() {
   const navigate = useNavigate();
@@ -102,24 +102,24 @@ export function ImportPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to="/admin/orang/guru" />
+      <BackLink to="/kurikulum/orang/guru" />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">Import Data</h2>
         <PageMenu
           menuTitle="Menu Data Orang"
           links={[
-            { key: 'guru', label: 'Data Guru', path: '/admin/orang/guru', icon: 'school' },
-            { key: 'siswa', label: 'Data Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
+            { key: 'guru', label: 'Data Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+            { key: 'siswa', label: 'Data Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
           ]}
         />
       </div>
 
-      {/* SubPageLinks â€” desktop navigation to sibling sub-pages (v0.12.0) */}
+      {/* SubPageLinks — desktop navigation to sibling sub-pages (v0.12.0) */}
       <SubPageLinks
         links={[
-          { key: 'guru', label: 'Guru', path: '/admin/orang/guru', icon: 'school' },
-          { key: 'siswa', label: 'Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
+          { key: 'guru', label: 'Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+          { key: 'siswa', label: 'Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
         ]}
       />
 
@@ -135,7 +135,7 @@ export function ImportPage() {
                 'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold',
                 step > s.num ? 'bg-aam-green text-white' : step === s.num ? 'bg-aam-green text-white' : 'bg-gray-200 text-gray-500',
               ].join(' ')}>
-                {step > s.num ? 'âœ“' : s.num}
+                {step > s.num ? '?' : s.num}
               </span>
               {s.label}
             </div>
@@ -150,7 +150,7 @@ export function ImportPage() {
 
       {/* Step 1: Template + jenis selection */}
       {step === 1 && (
-        <Card icon="upload_file" className="p-6">
+        <Card icon="upload_file">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Pilih Jenis & Unduh Template</h3>
           <div className="space-y-4">
             <div>
@@ -210,7 +210,7 @@ export function ImportPage() {
 
       {/* Step 2: Upload & preview */}
       {step === 2 && (
-        <Card icon="upload" className="p-6">
+        <Card icon="upload">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Unggah File Excel</h3>
           <div className="space-y-4">
             <div>
@@ -253,7 +253,7 @@ export function ImportPage() {
 
       {/* Step 3: Preview results */}
       {step === 3 && preview && (
-        <Card icon="preview" className="p-6">
+        <Card icon="preview">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Pratinjau Data</h3>
           <div className="space-y-4">
             {/* Summary */}
@@ -281,7 +281,7 @@ export function ImportPage() {
                       <div className="text-sm">
                         <p className="text-red-700 font-medium">Baris {err.baris}</p>
                         <p className="text-red-600 text-xs">
-                          {err.kolom && `Kolom: ${err.kolom} â€” `}{err.pesan}
+                          {err.kolom && `Kolom: ${err.kolom} — `}{err.pesan}
                         </p>
                       </div>
                     </div>
@@ -307,7 +307,7 @@ export function ImportPage() {
                       {preview.valid.slice(0, 10).map((row, i) => (
                         <tr key={i} className="border-b border-aam-border/30">
                           {Object.values(row).slice(0, 4).map((v: any, j: number) => (
-                            <td key={j} className="py-1.5 pr-3 text-aam-text">{String(v ?? 'â€”')}</td>
+                            <td key={j} className="py-1.5 pr-3 text-aam-text">{String(v ?? '—')}</td>
                           ))}
                         </tr>
                       ))}
@@ -341,7 +341,7 @@ export function ImportPage() {
 
       {/* Step 4: Done */}
       {step === 4 && result && (
-        <Card icon="check_circle" className="p-6">
+        <Card icon="check_circle">
           <div className="text-center py-6">
             <span className="material-symbols-outlined text-aam-green mb-3" style={{ fontSize: '3rem' }}>
               task_alt
@@ -361,7 +361,7 @@ export function ImportPage() {
               <Button variant="secondary" onClick={reset} icon="refresh">
                 Import Lagi
               </Button>
-              <Button onClick={() => navigate(jenis === 'guru' ? '/admin/orang/guru' : '/admin/orang/siswa')} icon="list">
+              <Button onClick={() => navigate(jenis === 'guru' ? '/kurikulum/orang/guru' : '/kurikulum/orang/siswa')} icon="list">
                 Lihat {jenis === 'guru' ? 'Guru' : 'Siswa'}
               </Button>
             </div>

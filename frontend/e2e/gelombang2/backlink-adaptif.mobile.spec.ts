@@ -36,8 +36,8 @@ test.describe('BackLink adaptif mobile', () => {
 
   test('Mobile: tombol "Kembali" melayang di bawah & berfungsi (halaman detail kelas)', async ({ page }) => {
     // Navigasi langsung by ID — tidak bergantung kelas ambient.
-    await page.goto(`/admin/kelas/${kelasId}`);
-    await page.waitForURL(/\/admin\/kelas\/\d+$/);
+    await page.goto(`/kurikulum/kelas/${kelasId}`);
+    await page.waitForURL(/\/kurikulum\/kelas\/\d+$/);
 
     // Tombol Kembali mobile: full-width, min-height 48px, fixed di bawah viewport.
     const backButton = page.getByRole('link', { name: /Kembali/ });
@@ -50,12 +50,12 @@ test.describe('BackLink adaptif mobile', () => {
 
     // Tap → mendarat kembali di daftar kelas.
     await backButton.click();
-    await page.waitForURL('**/admin/kelas');
+    await page.waitForURL('**/kurikulum/kelas');
     await expect(page.getByRole('heading', { name: 'Data Kelas' })).toBeVisible();
   });
 
   test('Mobile: halaman FORM tidak menampilkan tombol Kembali mobile ganda (sudah ada Batal/Simpan sticky)', async ({ page }) => {
-    await page.goto('/admin/orang/guru/baru');
+    await page.goto('/kurikulum/orang/guru/baru');
     await expect(page.getByRole('heading', { name: 'Tambah Guru' })).toBeVisible();
 
     // Halaman form TIDAK opt-in ke tombol mengambang (mobileButton={false}),
@@ -69,3 +69,4 @@ test.describe('BackLink adaptif mobile', () => {
     await expect(page.getByRole('button', { name: 'Simpan' }).last()).toBeVisible();
   });
 });
+

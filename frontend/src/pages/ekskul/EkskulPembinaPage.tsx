@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -8,7 +8,8 @@ import { Badge } from '../../components/Badge';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
-import { NILAI_OPTIONS, NilaiKokurikuler, nilaiToVariant } from '../kokurikuler/kokurikulerConstants';
+import { BackLink } from '../../components/BackLink';
+import { NILAI_OPTIONS, NilaiKokurikuler } from '../kokurikuler/kokurikulerConstants';
 
 interface Peserta { id: number; siswaId: number; nama: string; nis: string | null; }
 interface Tujuan { id: number; semester: number; deskripsi: string; }
@@ -59,8 +60,8 @@ export function EkskulPembinaPage() {
         km[k.pesertaId] = { jumlahHadir: k.jumlahHadir, totalPertemuan: k.totalPertemuan };
       });
       setKehadiran(km);
-    } catch {
-      toast.show('error', 'Gagal memuat data ekskul.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data ekskul.');
     } finally {
       setLoading(false);
     }
@@ -143,8 +144,8 @@ export function EkskulPembinaPage() {
     try {
       const res = await api.adminGetSiswa({ q: cariSiswa, limit: 10 });
       setSiswaResults(res?.data ?? []);
-    } catch {
-      toast.show('error', 'Gagal mencari siswa.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal mencari siswa.');
     } finally {
       setSearchingS(false);
     }
@@ -180,13 +181,14 @@ export function EkskulPembinaPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <Button variant="secondary" onClick={() => navigate('/admin/ekskul')} id="btn-back-ekskul">← Ekskul</Button>
-        <div>
-          <h2 className="text-xl font-bold text-aam-text">{ekskul?.nama ?? 'Ekskul'}</h2>
+      <BackLink to="/kurikulum/ekskul" id="btn-back-ekskul" />
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold text-aam-text">{ekskul?.nama ?? 'Ekskul'}</h1>
+          <p className="text-sm text-aam-text-muted mt-1">Kelola tujuan, peserta, nilai, dan kehadiran ekskul.</p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <label className="text-sm text-aam-muted">Semester:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-aam-text-muted">Semester:</label>
           <select className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
             value={semester} onChange={e => setSemester(Number(e.target.value))} id="select-semester-ekskul">
             <option value={1}>Semester 1</option>
@@ -198,14 +200,14 @@ export function EkskulPembinaPage() {
       {loading ? <TableSkeleton rows={5} /> : (
         <div className="space-y-6">
           {/* Tujuan Ekskul */}
-          <Card>
+          <Card icon="flag">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-aam-text">Tujuan Ekskul — Semester {semester}</h3>
+              <h3 className="text-sm font-semibold text-aam-text">Tujuan Ekskul — Semester {semester}</h3>
               <Button onClick={() => { setEditTujuanId(null); setTujuanDeskripsi(''); setTujuanSheet(true); }}
-                id="btn-tambah-tujuan">+ Tujuan</Button>
+                id="btn-tambah-tujuan" icon="add">Tujuan</Button>
             </div>
             {tujuan.length === 0 ? (
-              <p className="text-sm text-aam-muted italic">Belum ada tujuan untuk semester ini.</p>
+              <p className="text-sm text-aam-text-muted italic">Belum ada tujuan untuk semester ini.</p>
             ) : (
               <ul className="space-y-2">
                 {tujuan.map(t => (
@@ -224,11 +226,11 @@ export function EkskulPembinaPage() {
           </Card>
 
           {/* Peserta */}
-          <Card>
+          <Card icon="people">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-aam-text">Peserta ({peserta.length})</h3>
+              <h3 className="text-sm font-semibold text-aam-text">Peserta ({peserta.length})</h3>
               <Button onClick={() => { setCariSiswa(''); setSiswaResults([]); setSiswaSheet(true); }}
-                id="btn-tambah-peserta">+ Peserta</Button>
+                id="btn-tambah-peserta" icon="person_add">Peserta</Button>
             </div>
             {peserta.length === 0 ? (
               <EmptyState icon="people" message="Belum ada peserta." />
@@ -246,22 +248,22 @@ export function EkskulPembinaPage() {
             )}
           </Card>
 
-          {/* Grid Nilai */}
+          {/* Grid Nilai — special multi-column interactive table, kept as-is */}
           {peserta.length > 0 && tujuan.length > 0 && (
-            <Card>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-aam-text">Nilai per Tujuan</h3>
-                <Button onClick={handleSimpanNilai} disabled={saving} id="btn-simpan-nilai-ekskul">
-                  {saving ? 'Menyimpan...' : '💾 Simpan Nilai'}
+            <Card flush icon="grade">
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-aam-border">
+                <h3 className="text-sm font-semibold text-aam-text">Nilai per Tujuan</h3>
+                <Button onClick={handleSimpanNilai} disabled={saving} id="btn-simpan-nilai-ekskul" icon="save">
+                  {saving ? 'Menyimpan...' : 'Simpan Nilai'}
                 </Button>
               </div>
               <div className="overflow-x-auto">
                 <table className="text-sm w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-aam-page">
                     <tr>
-                      <th className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b sticky left-0 bg-gray-50 min-w-[150px]">Peserta</th>
+                      <th className="px-3 py-2.5 text-left text-aam-text-muted font-semibold border-b sticky left-0 bg-aam-page min-w-[150px]">Peserta</th>
                       {tujuan.map(t => (
-                        <th key={t.id} className="px-2 py-2.5 text-center text-aam-muted font-semibold border-b min-w-[130px]">
+                        <th key={t.id} className="px-2 py-2.5 text-center text-aam-text-muted font-semibold border-b min-w-[130px]">
                           {t.deskripsi.slice(0, 30)}{t.deskripsi.length > 30 ? '...' : ''}
                         </th>
                       ))}
@@ -287,7 +289,7 @@ export function EkskulPembinaPage() {
                                         : opt === 'Baik' ? 'bg-blue-500 text-white border-blue-500'
                                         : opt === 'Cukup' ? 'bg-yellow-500 text-white border-yellow-500'
                                         : 'bg-red-500 text-white border-red-500'
-                                        : 'bg-white text-aam-muted border-aam-border hover:bg-gray-50'
+                                        : 'bg-white text-aam-text-muted border-aam-border hover:bg-gray-50'
                                     }`}
                                   >
                                     {opt === 'Sangat Baik' ? 'SB' : opt === 'Baik' ? 'B' : opt === 'Cukup' ? 'C' : 'K'}
@@ -307,19 +309,19 @@ export function EkskulPembinaPage() {
 
           {/* Kehadiran */}
           {peserta.length > 0 && (
-            <Card>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-aam-text">Kehadiran</h3>
-                <Button onClick={handleSimpanKehadiran} disabled={saving} id="btn-simpan-kehadiran-ekskul">
-                  {saving ? 'Menyimpan...' : '💾 Simpan Kehadiran'}
+            <Card flush icon="event_available">
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-aam-border">
+                <h3 className="text-sm font-semibold text-aam-text">Kehadiran</h3>
+                <Button onClick={handleSimpanKehadiran} disabled={saving} id="btn-simpan-kehadiran-ekskul" icon="save">
+                  {saving ? 'Menyimpan...' : 'Simpan Kehadiran'}
                 </Button>
               </div>
               <div className="overflow-x-auto">
                 <table className="text-sm w-full">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-aam-page">
                     <tr>
                       {['Peserta', 'Hadir', 'Total Pertemuan', 'Persentase'].map(h => (
-                        <th key={h} className="px-3 py-2.5 text-left text-aam-muted font-semibold border-b">{h}</th>
+                        <th key={h} className="px-3 py-2.5 text-left text-aam-text-muted font-semibold border-b">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -329,8 +331,8 @@ export function EkskulPembinaPage() {
                       const isMerah = pct !== null && pct < 70;
                       return (
                         <tr key={p.id} className={isMerah ? 'bg-red-50' : 'hover:bg-gray-50'}>
-                          <td className="px-3 py-2 font-medium">{p.nama}</td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5 font-medium">{p.nama}</td>
+                          <td className="px-3 py-2.5">
                             <input type="number" min={0}
                               className="w-16 rounded-md border border-aam-border px-2 py-1 text-sm"
                               value={kehadiran[p.id]?.jumlahHadir ?? ''}
@@ -338,7 +340,7 @@ export function EkskulPembinaPage() {
                               id={`input-hadir-${p.id}`}
                             />
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5">
                             <input type="number" min={0}
                               className="w-20 rounded-md border border-aam-border px-2 py-1 text-sm"
                               value={kehadiran[p.id]?.totalPertemuan ?? ''}
@@ -346,10 +348,10 @@ export function EkskulPembinaPage() {
                               id={`input-total-${p.id}`}
                             />
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5">
                             {pct !== null ? (
                               <Badge variant={isMerah ? 'red' : 'green'}>{pct}%</Badge>
-                            ) : <span className="text-aam-muted">—</span>}
+                            ) : <span className="text-aam-text-muted">—</span>}
                           </td>
                         </tr>
                       );
@@ -357,22 +359,25 @@ export function EkskulPembinaPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-aam-muted mt-2">⚠️ Persentase &lt;70% ditandai merah (§9).</p>
+              <p className="px-4 py-2 text-xs text-aam-text-muted border-t border-aam-border">
+                <span className="material-symbols-outlined" style={{ fontSize: '0.9rem', verticalAlign: 'middle' }}>warning</span>
+                {' '}Persentase &lt;70% ditandai merah.
+              </p>
             </Card>
           )}
         </div>
       )}
 
-      {/* Tujuan Sheet */}
+      {/* Tujuan Sheet — §8 adaptif: bottom-sheet mobile, modal desktop */}
       {tujuanSheet && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setTujuanSheet(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <h3 className="font-bold text-lg mb-4">{editTujuanId ? 'Edit Tujuan' : 'Tambah Tujuan'}</h3>
+        <div className="fixed inset-0 z-40 bg-black/40 flex items-end md:items-center justify-center"
+          onClick={() => setTujuanSheet(false)}>
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-aam-text mb-3">{editTujuanId ? 'Edit Tujuan' : 'Tambah Tujuan'}</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Deskripsi Tujuan *</label>
+                <label className="block text-xs font-medium text-aam-text-muted mb-1">Deskripsi Tujuan *</label>
                 <textarea className="w-full rounded-md border border-aam-border px-3 py-2 text-sm" rows={3}
                   value={tujuanDeskripsi} onChange={e => setTujuanDeskripsi(e.target.value)}
                   placeholder="Contoh: Siswa mampu memimpin regu..." id="input-deskripsi-tujuan" />
@@ -385,16 +390,16 @@ export function EkskulPembinaPage() {
               </div>
             </div>
           </div>
-        </>
+        </div>
       )}
 
-      {/* Peserta Search Sheet */}
+      {/* Peserta Search Sheet — §8 adaptif */}
       {siswaSheet && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setSiswaSheet(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <h3 className="font-bold text-lg mb-4">Tambah Peserta</h3>
+        <div className="fixed inset-0 z-40 bg-black/40 flex items-end md:items-center justify-center"
+          onClick={() => setSiswaSheet(false)}>
+          <div className="w-full max-w-lg bg-white rounded-t-2xl md:rounded-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-aam-text mb-3">Tambah Peserta</h3>
             <div className="flex gap-2 mb-3">
               <input className="flex-1 rounded-md border border-aam-border px-3 py-2 text-sm"
                 value={cariSiswa} onChange={e => setCariSiswa(e.target.value)}
@@ -408,15 +413,15 @@ export function EkskulPembinaPage() {
               {siswaResults.map(s => (
                 <div key={s.id} className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md">
                   <span className="text-sm">{s.nama} {s.nis ? `(${s.nis})` : ''}</span>
-                  <Button onClick={() => handleAddPeserta(s.id)} id={`btn-add-peserta-${s.id}`}>+ Tambah</Button>
+                  <Button onClick={() => handleAddPeserta(s.id)} id={`btn-add-peserta-${s.id}`} icon="add">Tambah</Button>
                 </div>
               ))}
               {siswaResults.length === 0 && cariSiswa && !searchingS && (
-                <p className="text-sm text-aam-muted text-center py-2">Tidak ada hasil pencarian.</p>
+                <p className="text-sm text-aam-text-muted text-center py-2">Tidak ada hasil pencarian.</p>
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </PageContainer>
   );

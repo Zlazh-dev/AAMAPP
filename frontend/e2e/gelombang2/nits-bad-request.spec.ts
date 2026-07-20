@@ -24,49 +24,26 @@ test.describe('F4-NITS — BadRequestException 500→400', () => {
     )) as string;
   });
 
-  test.afterAll(async ({ request }) => {
-    if (createdDeviceId && adminToken) {
-      await request
-        .delete(`/api/admin/device-kiosk/${createdDeviceId}`, {
-          headers: authHeaders(adminToken),
-        })
-        .catch(() => {});
-    }
+  // afterAll: kiosk module dihapus (UX-POLISH §B), tidak ada cleanup needed.
+  test.afterAll(async () => {
+    // kiosk device-kiosk endpoint tidak ada lagi
   });
 
-  // ─── 1. Kiosk nama kosong → 400 ───────────────────────────────────────────
+  // ─── 1. Kiosk create device: SKIPPED (kiosk dihapus UX-POLISH §B) ──────────
   test('1. Kiosk create device: nama="" → 400 BadRequest', async ({ request }) => {
-    const res = await request.post('/api/admin/device-kiosk', {
-      headers: authHeaders(adminToken),
-      data: { nama: '' },
-    });
-    expect(res.status()).toBe(400);
-    const body = await res.json();
-    expect(body.message ?? body.error ?? '').toBeTruthy();
+    test.skip(true, 'Kiosk module removed (UX-POLISH §B)');
   });
 
-  // ─── 2. Kiosk nama spasi → 400 ────────────────────────────────────────────
+  // ─── 2. Kiosk nama spasi: SKIPPED (kiosk dihapus UX-POLISH §B) ────────────
   test('2. Kiosk create device: nama="   " (spasi saja) → 400 BadRequest', async ({
     request,
   }) => {
-    const res = await request.post('/api/admin/device-kiosk', {
-      headers: authHeaders(adminToken),
-      data: { nama: '   ' },
-    });
-    expect(res.status()).toBe(400);
+    test.skip(true, 'Kiosk module removed (UX-POLISH §B)');
   });
 
-  // ─── 3. Kiosk nama valid → 2xx ────────────────────────────────────────────
+  // ─── 3. Kiosk nama valid: SKIPPED (kiosk dihapus UX-POLISH §B) ─────────────
   test('3. Kiosk create device: nama valid → 2xx (positif)', async ({ request }) => {
-    const res = await request.post('/api/admin/device-kiosk', {
-      headers: authHeaders(adminToken),
-      data: { nama: `NIT-Test-${Date.now()}` },
-    });
-    expect(res.ok(), await res.text()).toBeTruthy();
-    const body = await res.json();
-    expect(body.id).toBeTruthy();
-    expect(body.pairingCode).toHaveLength(6);
-    createdDeviceId = body.id;
+    test.skip(true, 'Kiosk module removed (UX-POLISH §B)');
   });
 
   // ─── 4. Rekap TU bulan format salah → 400 ────────────────────────────────

@@ -1,14 +1,42 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe, BadRequestException } from '@nestjs/common';
+import { ValidationPipe, BadRequestException, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AppDataSource } from './data-source';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 
+const migrLogger = new Logger('Migration');
+
+/**
+ * Jalankan TypeORM migration pendingdi awal start.
+ * Di-skip saat development (synchronize masih aktif, migration tidak dipakai).
+ * Di production: schema dikelola migration, bukan synchronize.
+ */
+async function runMigrations() {
+  if (process.env.NODE_ENV !== 'production') return;
+  migrLogger.log('Menjalankan TypeORM migrations…');
+  try {
+    if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+    const pending = await AppDataSource.runMigrations({ transaction: 'each' });
+    if (pending.length === 0) {
+      migrLogger.log('Tidak ada migration baru.');
+    } else {
+      migrLogger.log(`Migration selesai: ${pending.map((m) => m.name).join(', ')}`);
+    }
+  } catch (err) {
+    migrLogger.error(`Migration gagal: ${err}`);
+    process.exit(1); // Jangan start app jika schema belum benar
+  } finally {
+    if (AppDataSource.isInitialized) await AppDataSource.destroy();
+  }
+}
+
 async function bootstrap() {
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(
@@ -84,4 +112,4 @@ async function bootstrap() {
   console.log('[AAMAPP] Backend berjalan di port 3000');
 }
 
-bootstrap();
+runMigrations().then(() => bootstrap());

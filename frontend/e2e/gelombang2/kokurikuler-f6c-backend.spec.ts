@@ -269,3 +269,4 @@ test.describe('F6c Backend — Kokurikuler', () => {
     await request.delete(`/api/admin/users/${guru3UserId}`, { headers: authHeaders(adminToken) }).catch(() => {});
   });
 });
+

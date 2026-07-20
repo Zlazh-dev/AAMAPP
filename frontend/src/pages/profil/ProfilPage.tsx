@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { api, ApiError, SessionInfo } from '../../api/client';
 import { useAuth } from '../../app/AuthContext';
 import { useToast } from '../../components/Toast';
@@ -69,7 +69,7 @@ export function ProfilPage() {
       const p = await api.getProfile();
       setProfile(p);
       setEditName(p.name);
-    } catch {
+    } catch (err) {
       // ignore
     }
   };
@@ -78,7 +78,7 @@ export function ProfilPage() {
     try {
       const s = await api.getOwnSessions();
       setSessions(s);
-    } catch {
+    } catch (err) {
       // ignore
     } finally {
       setLoading(false);

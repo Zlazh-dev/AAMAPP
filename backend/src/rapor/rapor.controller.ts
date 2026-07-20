@@ -61,7 +61,7 @@ export class RaporController {
    * Override nilaiKatrol dan/atau deskripsiOverride. Wali only.
    */
   @Put('siswa/:siswaId/mapel/:mapelId')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   upsertOverride(
     @Param('siswaId', ParseIntPipe) siswaId: number,
     @Param('mapelId', ParseIntPipe) mapelId: number,
@@ -76,7 +76,7 @@ export class RaporController {
    * Update catatan wali. Wali only.
    */
   @Patch('siswa/:siswaId/catatan')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   updateCatatan(
     @Param('siswaId', ParseIntPipe) siswaId: number,
     @Body() dto: CatatanWaliDto,
@@ -90,7 +90,7 @@ export class RaporController {
    * Finalisasi rapor → status FINAL + snapshot. Wali only.
    */
   @Patch('siswa/:siswaId/finalisasi')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   finalisasi(
     @Param('siswaId', ParseIntPipe) siswaId: number,
     @Req() req: Request,

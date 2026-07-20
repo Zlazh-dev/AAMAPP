@@ -1,4 +1,4 @@
-import { SafeUser } from '../api/client';
+﻿import { SafeUser } from '../api/client';
 
 export interface MenuItem {
   label: string;
@@ -28,25 +28,18 @@ export interface MenuLeaf {
   badgeKey?: 'pendingUsers';
 }
 
-// Menu per area per §6.1.B (urutan tetap) — SIDEBAR DATAR v0.12.0
+/**
+ * Menu per area — IA-HIERARCHY-V2.
+ * Hanya halaman UTAMA di sidebar; sub halaman lewat SubPageLinks.
+ */
 const MENU_GROUPS: Record<string, MenuGroup> = {
   admin: {
     area: 'admin',
     label: 'ADMIN',
     items: [
       { label: 'Dashboard', path: '/admin', icon: 'dashboard' },
-      { label: 'Data Orang', path: '/admin/orang', icon: 'groups' },
-      { label: 'Kelas', path: '/admin/kelas', icon: 'meeting_room' },
-      { label: 'Presensi Siswa', path: '/admin/presensi-siswa', icon: 'fact_check' },
-      { label: 'Presensi Guru', path: '/admin/presensi-guru', icon: 'person_check' },
-      { label: 'Pendaftaran Wajah', path: '/admin/wajah', icon: 'face_retouching_natural' },
-      { label: 'Perangkat Kiosk', path: '/admin/perangkat', icon: 'devices' },
-      { label: 'Verifikasi Presensi', path: '/admin/presensi-guru-pending', icon: 'how_to_reg' },
-      { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
-      { label: 'Laporan', path: '/admin/laporan', icon: 'assessment' },
-      { label: 'Pengaturan', path: '/admin/pengaturan', icon: 'settings' },
       { label: 'Akun', path: '/admin/akun', icon: 'manage_accounts', badgeKey: 'pendingUsers' },
-      { label: 'Ekstrakurikuler', path: '/admin/ekskul', icon: 'sports' },
+      { label: 'Profil Sekolah', path: '/admin/sekolah', icon: 'apartment' },
     ],
   },
   kurikulum: {
@@ -54,10 +47,9 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     label: 'KURIKULUM',
     items: [
       { label: 'Dashboard', path: '/kurikulum', icon: 'dashboard' },
+      { label: 'Data Orang', path: '/kurikulum/orang', icon: 'groups' },
+      { label: 'Kelas', path: '/kurikulum/kelas', icon: 'meeting_room' },
       { label: 'Mata Pelajaran', path: '/kurikulum/mapel', icon: 'book' },
-      { label: 'Penugasan', path: '/kurikulum/penugasan', icon: 'assignment_ind' },
-      { label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month' },
-      { label: 'Kokurikuler', path: '/kurikulum/kokurikuler', icon: 'school' },
     ],
   },
   kesiswaan: {
@@ -65,12 +57,9 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     label: 'KESISWAAN',
     items: [
       { label: 'Dashboard', path: '/kesiswaan', icon: 'dashboard' },
-      { label: 'Tata Tertib', path: '/kesiswaan/tata-tertib', icon: 'gavel' },
-      { label: 'Pelanggaran', path: '/kesiswaan/pelanggaran', icon: 'warning' },
-      { label: 'Verifikasi', path: '/kesiswaan/verifikasi', icon: 'task_alt' },
-      { label: 'Tindak Lanjut', path: '/kesiswaan/tindak-lanjut', icon: 'assignment_late' },
-      { label: 'Reward', path: '/kesiswaan/reward', icon: 'emoji_events' },
-      { label: 'Laporan', path: '/kesiswaan/laporan', icon: 'bar_chart' },
+      { label: 'Laporan Demerit', path: '/kesiswaan/laporan', icon: 'bar_chart' },
+      { label: 'Presensi Siswa', path: '/kesiswaan/presensi-siswa', icon: 'fact_check' },
+      { label: 'Presensi Guru', path: '/tu/presensi-guru', icon: 'badge' },
     ],
   },
   guru: {
@@ -88,43 +77,46 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
       { label: 'Ekskul', path: '/guru/ekskul', icon: 'sports' },
     ],
   },
-
   kepsek: {
     area: 'kepsek',
     label: 'KEPSEK',
     items: [
-      { label: 'Dashboard / Laporan', path: '/admin/laporan', icon: 'assessment' },
-      { label: 'Izin Guru', path: '/admin/izin-guru', icon: 'event_available' },
+      { label: 'Presensi Siswa', path: '/kesiswaan/presensi-siswa', icon: 'fact_check' },
+      { label: 'Presensi Guru', path: '/tu/presensi-guru', icon: 'badge' },
+      { label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available' },
+      { label: 'Laporan Harian Guru', path: '/tu/laporan/harian-guru', icon: 'assessment' },
+      { label: 'Keterlaksanaan KBM', path: '/kurikulum/laporan/keterlaksanaan', icon: 'checklist' },
+      { label: 'Kehadiran Siswa', path: '/kesiswaan/laporan-kehadiran', icon: 'bar_chart' },
+      { label: 'Laporan Demerit', path: '/kesiswaan/laporan', icon: 'report' },
     ],
   },
   tu: {
     area: 'tu',
     label: 'TU',
-    items: [{ label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize' }],
+    items: [
+      { label: 'Dashboard', path: '/tu', icon: 'dashboard' },
+      { label: 'Presensi Guru', path: '/tu/presensi-guru', icon: 'badge' },
+      { label: 'Pengaturan', path: '/tu/pengaturan', icon: 'settings' },
+    ],
   },
 };
+
 
 // Order per §6.1.B: Admin → Kurikulum → Kesiswaan → Guru → Kepsek → TU
 const AREA_ORDER = ['admin', 'kurikulum', 'kesiswaan', 'guru', 'kepsek', 'tu'];
 
 /**
- * FIX-MENU-ADMIN (keputusan user — admin = superuser): admin melihat
- * grup ADMIN + grup area fungsional yang HALAMANNYA SUDAH ADA (bukan
- * placeholder dashboard kosong). Saat ini hanya `kurikulum` yang punya
- * halaman nyata (mapel/penugasan/jadwal). Tambahkan area lain ke array
- * ini begitu fasenya jadi (kesiswaan/guru/kepsek/tu masih placeholder).
+ * UX-POLISH-SPEC §A: ADMIN_EXTRA_AREAS = ['kurikulum','kesiswaan','tu'].
+ * 'guru' DIBUANG — area guru dikunci ke peran guru saja.
+ * Admin yang perlu akses area guru harus diberi peran guru eksplisit.
  */
-const ADMIN_EXTRA_AREAS = ['kurikulum', 'guru', 'tu', 'kesiswaan'];
+const ADMIN_EXTRA_AREAS = ['kurikulum', 'kesiswaan', 'tu'];
 
 export function getMenuForUser(user: SafeUser): MenuGroup[] {
   const groups: MenuGroup[] = [];
   const isAdmin = user.roles.includes('admin' as any);
   for (const area of AREA_ORDER) {
     const hasRole = user.roles.includes(area as any);
-    // Admin superuser: selain grup miliknya sendiri, tampilkan juga
-    // area fungsional di ADMIN_EXTRA_AREAS walau admin tidak punya
-    // peran itu secara eksplisit. Dedup otomatis via `hasRole` di atas
-    // (kalau admin juga punya peran area tsb, tidak double-push).
     const isAdminExtra = isAdmin && ADMIN_EXTRA_AREAS.includes(area);
     if (hasRole || isAdminExtra) {
       groups.push(MENU_GROUPS[area]);
@@ -151,10 +143,6 @@ export function getHomePath(user: SafeUser): string {
 
 /**
  * Cari leaf menu yang sedang aktif di lokasi tertentu.
- * - Kalau path sama persis dengan item → return item.
- * - Kalau path dimulai dengan `${item.path}/` → return item (prefix match).
- *
- * Return null bila tidak ditemukan.
  */
 export function findActiveLeaf(
   groups: MenuGroup[],

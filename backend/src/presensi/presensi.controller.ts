@@ -25,13 +25,13 @@ export class GuruPresensiController {
   constructor(private readonly svc: PresensiService) {}
 
   @Get()
-  @Roles('guru', 'admin')
+  @Roles('guru')
   kbmHariIni(@Req() req: Request, @Query('tanggal') tanggal?: string) {
     return this.svc.kbmHariIni(req, tanggal);
   }
 
   @Get(':jadwalId/roster')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   roster(
     @Req() req: Request,
     @Param('jadwalId', ParseIntPipe) jadwalId: number,
@@ -41,7 +41,7 @@ export class GuruPresensiController {
   }
 
   @Post(':jadwalId/roster')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   simpan(
     @Req() req: Request,
     @Param('jadwalId', ParseIntPipe) jadwalId: number,
@@ -51,7 +51,7 @@ export class GuruPresensiController {
   }
 
   @Patch(':jadwalId/roster')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   koreksi(
     @Req() req: Request,
     @Param('jadwalId', ParseIntPipe) jadwalId: number,
@@ -68,7 +68,7 @@ export class GuruKelasRekapController {
   constructor(private readonly svc: PresensiService) {}
 
   @Get('rekap-presensi')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   async rekapPresensi(
     @Req() req: Request,
     @Query('kelasId', ParseIntPipe) kelasId: number,

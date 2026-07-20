@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api, ApiError, Mapel } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
@@ -36,8 +36,8 @@ export function MapelFormPage() {
         if (cancelled) return;
         setData(m);
         setOriginal(m);
-      } catch {
-        if (!cancelled) toast.show('error', 'Gagal memuat data mapel');
+      } catch (err) {
+        if (!cancelled) toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data mapel');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -89,7 +89,7 @@ export function MapelFormPage() {
         </h2>
         <p className="text-xs text-aam-text-muted mb-6">Isi data mata pelajaran di bawah ini</p>
 
-        <Card icon="book" className="p-6">
+        <Card icon="book">
           <div className="space-y-5">
             <div>
               <label className={labelClass} htmlFor="mapel-nama">Nama</label>

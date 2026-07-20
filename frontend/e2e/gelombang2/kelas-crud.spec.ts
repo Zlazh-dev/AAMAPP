@@ -36,7 +36,7 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     }
 
     namaKelas = `KX-${Date.now()}`;
-    await page.goto('/admin/kelas');
+    await page.goto('/kurikulum/kelas');
   });
 
   test.afterEach(async ({ page, request }) => {
@@ -57,13 +57,13 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     createdGuruIds.length = 0;
   });
 
-  test('Tambah kelas + 409 nama duplikat; Edit auto-fase; Hapus 409 siswa aktif', async ({ page, request }) => {
+  test('Tambah kelas + 409 nama duplikat; Edit auto-fase; Hapus dgn siswa -> siswa dikeluarkan', async ({ page, request }) => {
     const token = await page.evaluate(() => localStorage.getItem('aamapp_token'));
     const headers = { Authorization: `Bearer ${token}` };
 
     // 1. Tambah kelas via UI -> sukses
     await page.getByRole('button', { name: 'Tambah Kelas' }).click();
-    await page.waitForURL('**/admin/kelas/baru');
+    await page.waitForURL('**/kurikulum/kelas/baru');
     await page.getByPlaceholder('Mis. 7A').fill(namaKelas);
     await page.getByRole('button', { name: 'Tingkat' }).click();
     await page.getByRole('option', { name: 'Kelas 8 (Fase E)' }).click();
@@ -78,13 +78,13 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     expect(list.data[0].fase).toBe('E'); // auto-fase dari tingkat 8
 
     // 2. 409 nama duplikat
-    await page.goto('/admin/kelas/baru');
+    await page.goto('/kurikulum/kelas/baru');
     await page.getByPlaceholder('Mis. 7A').fill(namaKelas);
     await page.getByRole('button', { name: 'Simpan' }).click();
     await expect(page.getByText(/sudah digunakan/i)).toBeVisible();
 
     // 3. Edit -> ganti tingkat 9 -> fase auto berubah F
-    await page.goto(`/admin/kelas/${kelasId}/edit`);
+    await page.goto(`/kurikulum/kelas/${kelasId}/edit`);
     await page.getByRole('button', { name: 'Tingkat' }).click();
     await page.getByRole('option', { name: 'Kelas 9 (Fase F)' }).click();
     await page.getByRole('button', { name: 'Simpan' }).click();
@@ -92,7 +92,8 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     const afterEditRes = await request.get(`/api/admin/kelas/${kelasId}`, { headers });
     expect((await afterEditRes.json()).fase).toBe('F');
 
-    // 4. Tambah 1 siswa aktif ke kelas ini via API -> hapus kelas harus 409
+    // 4. Tambah 1 siswa aktif ke kelas ini via API -> hapus kelas = siswa dikeluarkan
+    //    (keputusan pemilik produk: hapus kelas = hapus total, siswa SET NULL).
     const suffix = Date.now();
     const siswaRes = await request.post('/api/admin/siswa', {
       headers,
@@ -107,14 +108,23 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     const siswa = await siswaRes.json();
     createdSiswaIds.push(siswa.id);
 
-    await page.goto(`/admin/kelas/${kelasId}`);
+    await page.goto(`/kurikulum/kelas/${kelasId}`);
     // Buka menu 3-titik -> Hapus
     await page.getByRole('button', { name: 'Menu halaman' }).click();
     await page.getByText('Hapus', { exact: true }).click();
-    await page.getByRole('button', { name: 'Hapus', exact: true }).click();
-    // 409 -> toast error, kelas TIDAK terhapus, tetap di halaman detail
-    await expect(page.getByText(/siswa aktif/i)).toBeVisible();
-    await expect(page).toHaveURL(new RegExp(`/admin/kelas/${kelasId}$`));
+    // Dialog dampak-hapus muncul, tampilkan hitungan siswa.
+    await expect(page.getByText(/Siswa dikeluarkan/i)).toBeVisible({ timeout: 5_000 });
+    // Konfirmasi hapus permanen.
+    await page.getByRole('button', { name: /Hapus Permanen/i }).click();
+    // Sukses -> redirect ke daftar kelas.
+    await page.waitForURL('**/kurikulum/kelas', { timeout: 10_000 });
+    // Siswa tetap ada (dikeluarkan, bukan dihapus) — verifikasi via API.
+    const siswaAfterRes = await request.get(`/api/admin/siswa/${siswa.id}`, { headers });
+    expect(siswaAfterRes.ok()).toBe(true);
+    const siswaAfter = await siswaAfterRes.json();
+    expect(siswaAfter.kelasId).toBeNull();
+    // cleanup siswa
+    await request.delete(`/api/admin/siswa/${siswa.id}`, { headers }).catch(() => {});
   });
 
   test('Wali kelas: konflik 409 menyebut kelas lama -> force pindah', async ({ page, request }) => {
@@ -141,7 +151,7 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     await request.patch(`/api/admin/kelas/${kelasLama.id}/wali`, { headers, data: { waliGuruId: guru.id } });
 
     // Buka detail kelasBaru -> pilih guru yg sama sbg wali -> 409 -> force.
-    await page.goto(`/admin/kelas/${kelasBaru.id}`);
+    await page.goto(`/kurikulum/kelas/${kelasBaru.id}`);
     await page.getByRole('button', { name: 'Pilih wali kelas... expand_more' }).click();
     await page.getByPlaceholder('Cari nama guru...').fill(`Guru WaliForce ${suffix}`);
     // Option button mungkin mengandung icon text 'school' — gunakan regex.
@@ -157,3 +167,4 @@ test.describe('CRUD Kelas (Matriks T16)', () => {
     expect((await finalRes.json()).waliGuruId).toBe(guru.id);
   });
 });
+

@@ -3,7 +3,7 @@ import { loginAsAdmin } from '../helpers/auth';
 
 /**
  * T16-SPRINT lanjutan — Sel matriks kecil: banner deteksi otomatis
- * "Impor Libur Nasional" di /admin/pengaturan/libur. Provider pihak
+ * "Impor Libur Nasional" di /tu/pengaturan/libur. Provider pihak
  * ketiga (api-harilibur.vercel.app) diakses SERVER-SIDE oleh backend;
  * bila egress diblokir (Docker tanpa akses internet luar), endpoint
  * `GET /api/admin/libur/cek-nasional` diam-diam mengembalikan
@@ -33,7 +33,7 @@ test.describe('Libur — Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)
       'banner tidak akan tampil. Conditional-skip resmi per arahan planner.',
     );
 
-    await page.goto('/admin/pengaturan/libur');
+    await page.goto('/tu/pengaturan/libur');
     await expect(page.getByRole('heading', { name: 'Kalender Libur' })).toBeVisible();
 
     // Banner deteksi otomatis harus tampil dgn jumlah yg cocok.
@@ -51,3 +51,4 @@ test.describe('Libur — Banner Deteksi Otomatis Nasional (Matriks T16 lanjutan)
     await expect(page.getByRole('heading', { name: 'Impor Libur Nasional' })).not.toBeVisible();
   });
 });
+

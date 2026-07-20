@@ -874,6 +874,15 @@ export const api = {
 
   adminGetKelasById: (id: number) => request<Kelas>(`/admin/kelas/${id}`),
 
+  adminGetKelasDampakHapus: (id: number) =>
+    request<{
+      kelas: { id: number; nama: string; tingkat: number };
+      siswa: number;
+      penugasan: number;
+      jadwal: number;
+      sesiPresensi: number;
+    }>(`/admin/kelas/${id}/dampak-hapus`),
+
   adminCreateKelas: (data: { nama: string; tingkat: number; fase?: string }) =>
     request<Kelas>('/admin/kelas', {
       method: 'POST',

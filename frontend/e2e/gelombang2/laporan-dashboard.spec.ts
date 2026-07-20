@@ -35,10 +35,35 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
     adminToken = await loginViaApi(request, ADMIN_EMAIL, ADMIN_PASSWORD);
   });
 
-  test('Dashboard admin accessible + kartu muncul', async ({ page }) => {
+  test('Dashboard admin accessible — hanya aktivitas akun (IA-HIERARCHY-V2)', async ({ page }) => {
     await setToken(page, adminToken);
 
-    // Mock F4b dashboard (backend mungkin belum live)
+    // Mock aktivitas akun (satu-satunya yang ditampilkan di dashboard admin).
+    await page.route('**/api/admin/activities**', async route => {
+      await route.fulfill({
+        status: 200, contentType: 'application/json',
+        body: JSON.stringify({
+          items: [{ id: 1, userId: 1, userName: 'Admin', action: 'LOGIN', entity: 'auth', entityId: null, entityLabel: null, summary: 'Login berhasil', ipAddress: '127.0.0.1', deviceSummary: null, createdAt: new Date().toISOString() }],
+          total: 1, page: 1, limit: 15,
+        }),
+      });
+    });
+    await page.route('**/api/admin/users/pending/count**', async route => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ count: 0 }) });
+    });
+
+    await page.goto('/admin');
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10_000 });
+    // IA-HIERARCHY-V2: dashboard admin HANYA aktivitas akun.
+    await expect(page.getByText('Aktivitas Akun Terbaru')).toBeVisible({ timeout: 5_000 });
+    // Statistik kehadiran guru/siswa/KBM TIDAK boleh muncul lagi di admin.
+    await expect(page.getByText('Status Guru Hari Ini')).toHaveCount(0);
+    await expect(page.getByText('Kehadiran Siswa Hari Ini')).toHaveCount(0);
+  });
+
+  test('Dashboard TU menampilkan stats kehadiran guru (IA-HIERARCHY-V2)', async ({ page }) => {
+    await setToken(page, adminToken);
+
     await page.route('**/api/admin/dashboard**', async route => {
       await route.fulfill({
         status: 200, contentType: 'application/json',
@@ -47,29 +72,21 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
           kbm: { terlaksana: 8, kosong: 1 },
           siswa: { hadir: 120, alpha: 3, total: 123 },
           perluPerhatian: { izinMenunggu: 2, presensiPending: 0 },
-          feed: [{ waktu: new Date().toISOString(), pesan: 'Budi Santoso check-in', tipe: 'HADIR' }],
         }),
       });
     });
 
-    await page.goto('/admin');
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 10_000 });
-    // Status guru grid
-    await expect(page.getByText('Status Guru Hari Ini')).toBeVisible({ timeout: 5_000 });
-    // Perlu perhatian
-    await expect(page.getByText('Izin Menunggu Persetujuan')).toBeVisible();
-    // Feed
-    await expect(page.getByText('Aktivitas Terbaru')).toBeVisible();
+    await page.goto('/tu');
+    await expect(page.getByRole('heading', { name: 'Dashboard TU' })).toBeVisible({ timeout: 10_000 });
+    // TU dashboard fokus pada kehadiran guru.
+    await expect(page.getByText('Kehadiran Guru Hari Ini').or(page.getByText('Guru Hadir'))).toBeVisible({ timeout: 5_000 });
   });
 
-  test('Laporan HUB /admin/laporan — 3 sub-link muncul', async ({ page }) => {
+  test('Laporan area berpisah — /tu/laporan/harian-guru accessible', async ({ page }) => {
     await setToken(page, adminToken);
-
-    await page.goto('/admin/laporan');
-    await expect(page.getByRole('heading', { name: 'Laporan' })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText('Laporan Harian Guru')).toBeVisible();
-    await expect(page.getByText('Keterlaksanaan KBM')).toBeVisible();
-    await expect(page.getByText('Kehadiran Siswa')).toBeVisible();
+    // /admin/laporan hub dibubarkan (IA migration). Test area baru saja.
+    await page.goto('/tu/laporan/harian-guru');
+    await expect(page.locator('h2, h1').first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('Sub-halaman laporan harian guru — filter + tabel', async ({ page }) => {
@@ -88,7 +105,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       });
     });
 
-    await page.goto('/admin/laporan/harian-guru');
+    await page.goto('/tu/laporan/harian-guru');
     await expect(page.getByRole('heading', { name: 'Laporan Harian Guru' })).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#btn-tampilkan-harian')).toBeVisible();
 
@@ -116,7 +133,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       });
     });
 
-    await page.goto('/admin/laporan/harian-guru');
+    await page.goto('/tu/laporan/harian-guru');
     await page.locator('#btn-tampilkan-harian').click();
     await expect(page.getByText('Test Guru')).toBeVisible({ timeout: 8_000 });
 
@@ -139,7 +156,7 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       });
     });
 
-    await page.goto('/admin/laporan/keterlaksanaan');
+    await page.goto('/kurikulum/laporan/keterlaksanaan');
     await expect(page.getByRole('heading', { name: 'Laporan Keterlaksanaan KBM' })).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#btn-tampilkan-kbm')).toBeVisible();
   });
@@ -154,19 +171,16 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       });
     });
 
-    await page.goto('/admin/laporan/siswa');
-    await expect(page.getByRole('heading', { name: 'Laporan Kehadiran Siswa' })).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#btn-tampilkan-siswa')).toBeVisible();
+    await page.goto('/kesiswaan/laporan-kehadiran');
+    await expect(page.locator('h2, h1').first()).toBeVisible({ timeout: 10_000 });
   });
 
   test('exceljs dan pdfmake TIDAK di main bundle', async ({ page }) => {
     await setToken(page, adminToken);
 
-    // Intercept all JS files and record chunks
     const mainChunks: string[] = [];
     await page.route('**/*.js', async route => {
       const url = route.request().url();
-      // Only check chunk files that look like the main entry
       if (url.includes('index') || url.includes('main') || url.includes('app')) {
         const res = await route.fetch();
         const body = await res.text();
@@ -179,10 +193,11 @@ test.describe('F4b — Dashboard + Laporan + Export', () => {
       }
     });
 
-    await page.goto('/admin/laporan');
+    // Hub /admin/laporan bubar — pakai /admin (dashboard) untuk test lazy bundle
+    await page.goto('/admin');
     await page.waitForLoadState('networkidle');
 
-    // exceljs/pdfmake must NOT be in main bundle
     expect(mainChunks, `exceljs/pdfmake ditemukan di main chunk: ${mainChunks.join(', ')}`).toHaveLength(0);
   });
 });
+

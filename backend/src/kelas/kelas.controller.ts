@@ -45,13 +45,13 @@ export class KelasController {
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   create(@Body() body: CreateKelasDto, @Req() req: Request) {
     return this.svc.create(body, req);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateKelasDto,
@@ -74,8 +74,14 @@ export class KelasController {
     return this.svc.setWali(id, body, req);
   }
 
+  @Get(':id/dampak-hapus')
+  @Roles('admin', 'kurikulum')
+  dampakHapus(@Param('id', ParseIntPipe) id: number) {
+    return this.svc.dampakHapus(id);
+  }
+
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.svc.remove(id, req);
   }

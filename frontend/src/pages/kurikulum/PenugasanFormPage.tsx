@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError, Guru, Kelas, Mapel, TahunAjaran } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
@@ -13,7 +13,7 @@ const labelClass = 'block text-sm font-medium text-aam-text mb-1.5';
 
 /**
  * /kurikulum/penugasan/baru — Form Tambah Penugasan (T15 §14.10.3).
- * SearchSelect guru → mapel → kelas multi-checkbox.
+ * SearchSelect guru ? mapel ? kelas multi-checkbox.
  * Sub-halaman + SaveSuccess pattern.
  */
 export function PenugasanFormPage() {
@@ -46,8 +46,8 @@ export function PenugasanFormPage() {
         setGuruList(guruRes.data);
         setMapelList(mapelRes.data);
         setKelasList(kelasRes.data);
-      } catch {
-        if (!cancelled) toast.show('error', 'Gagal memuat data');
+      } catch (err) {
+        if (!cancelled) toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -95,12 +95,12 @@ export function PenugasanFormPage() {
     );
   }
 
-  // No TA active → panel arahan
+  // No TA active ? panel arahan
   if (!taAktif) {
     return (
       <PageContainer size="md">
         <BackLink to="/kurikulum/penugasan" mobileButton={false} />
-        <Card className="p-8 text-center mt-4">
+        <Card className="text-center mt-4">
           <span className="material-symbols-outlined text-aam-text-muted mb-3" style={{ fontSize: '3rem' }}>
             calendar_off
           </span>
@@ -108,7 +108,7 @@ export function PenugasanFormPage() {
           <p className="text-xs text-aam-text-muted mb-4">
             Penugasan memerlukan tahun ajaran aktif. Buat dan aktifkan tahun ajaran di Pengaturan.
           </p>
-          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/admin/pengaturan/tahun-ajaran')}>
+          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/kurikulum/tahun-ajaran-kkm')}>
             Buka Pengaturan
           </Button>
         </Card>
@@ -127,7 +127,7 @@ export function PenugasanFormPage() {
           TA {taAktif.nama} Sem {taAktif.semester}
         </p>
 
-        <Card icon="assignment_ind" className="p-6">
+        <Card icon="assignment_ind">
           <div className="space-y-5">
             {/* Guru */}
             <div>

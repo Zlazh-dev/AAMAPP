@@ -169,8 +169,10 @@ export class PresensiGuruService {
       enrolled: Array.isArray(guru.faceEmbeddings) && guru.faceEmbeddings.length > 0,
       poses: guru.faceEmbeddings?.length ?? 0,
       faceUpdatedAt: guru.faceUpdatedAt?.toISOString() ?? null,
+      faceStatus: guru.faceStatus ?? 'BELUM',
     };
   }
+
 
   /**
    * PUT /api/guru/wajah — enroll wajah sendiri.
@@ -241,6 +243,7 @@ export class PresensiGuruService {
     if (!guru) throw new NotFoundException('Guru tidak ditemukan');
     guru.faceEmbeddings = null;
     guru.faceUpdatedAt = null;
+    guru.faceStatus = 'BELUM';
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
     await this.audit.log({
@@ -267,6 +270,8 @@ export class PresensiGuruService {
     }
     guru.faceEmbeddings = embeddings;
     guru.faceUpdatedAt = new Date();
+    // UX-POLISH D: enroll mandiri → MENUNGGU_VALIDASI; admin enroll → TERVALIDASI
+    guru.faceStatus = aktor === 'diri' ? 'MENUNGGU_VALIDASI' : 'TERVALIDASI';
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
     await this.audit.log({
@@ -278,7 +283,36 @@ export class PresensiGuruService {
       userAgent: req.headers['user-agent'] as string,
       summary: `Mendaftarkan wajah ${guru.nama} (${aktor}, ${embeddings.length} pose)`,
     });
-    return { ok: true, poses: embeddings.length };
+    return { ok: true, poses: embeddings.length, faceStatus: guru.faceStatus };
+  }
+
+  /**
+   * UX-POLISH D — Admin validasi wajah guru.
+   * PATCH /api/admin/guru/:id/wajah/validasi { aksi: 'terima' | 'tolak' }
+   */
+  async validasiWajah(
+    guruId: number,
+    aksi: 'terima' | 'tolak',
+    req: Request,
+  ) {
+    const guru = await this.guruRepo.findOne({ where: { id: guruId } });
+    if (!guru) throw new NotFoundException('Guru tidak ditemukan');
+    if (!guru.faceEmbeddings || guru.faceEmbeddings.length === 0) {
+      throw new BadRequestException('Guru belum memiliki embedding wajah untuk divalidasi');
+    }
+    guru.faceStatus = aksi === 'terima' ? 'TERVALIDASI' : 'DITOLAK';
+    await this.guruRepo.save(guru);
+    const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
+    await this.audit.log({
+      actorId,
+      action: aksi === 'terima' ? 'VALIDASI_WAJAH_TERIMA' : 'VALIDASI_WAJAH_TOLAK',
+      resource: 'guru',
+      resourceId: String(guruId),
+      ip: req.ip,
+      userAgent: req.headers['user-agent'] as string,
+      summary: `Admin ${aksi === 'terima' ? 'menerima' : 'menolak'} validasi wajah ${guru.nama}`,
+    });
+    return { ok: true, guruId, faceStatus: guru.faceStatus };
   }
 
   // ────── Scan API (alur 6 langkah F3-SPEC) ──────

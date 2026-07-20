@@ -17,7 +17,7 @@ test.describe('UnsavedGuard (Poin 6 Perluasan T16)', () => {
   });
 
   test('Isi form -> navigasi -> dialog -> Lanjut Mengedit tetap di form', async ({ page }) => {
-    await page.goto('/admin/orang/siswa/baru');
+    await page.goto('/kurikulum/orang/siswa/baru');
     await page.getByPlaceholder('Nama lengkap siswa').fill('Siswa UnsavedGuard Test');
 
     // Coba pergi via BackLink (link "Kembali" biasa)
@@ -33,19 +33,19 @@ test.describe('UnsavedGuard (Poin 6 Perluasan T16)', () => {
   });
 
   test('Isi form -> navigasi -> Buang Perubahan -> pindah halaman', async ({ page }) => {
-    await page.goto('/admin/orang/siswa/baru');
+    await page.goto('/kurikulum/orang/siswa/baru');
     await page.getByPlaceholder('Nama lengkap siswa').fill('Siswa UnsavedGuard Buang');
 
     await page.getByRole('link', { name: /kembali/i }).click();
     await expect(page.getByText('Perubahan belum disimpan')).toBeVisible();
 
     await page.getByRole('button', { name: 'Buang Perubahan' }).click();
-    await page.waitForURL('**/admin/orang/siswa');
+    await page.waitForURL('**/kurikulum/orang/siswa');
     await expect(page.getByRole('heading', { name: 'Data Siswa' })).toBeVisible();
   });
 
   test('Isi form -> simpan sukses -> pindah TANPA dialog (regresi T10)', async ({ page, request }) => {
-    await page.goto('/admin/orang/siswa/baru');
+    await page.goto('/kurikulum/orang/siswa/baru');
     const nisUnik = `UG${Date.now()}`.slice(0, 20);
     await page.getByPlaceholder('Nama lengkap siswa').fill('Siswa UnsavedGuard Simpan');
     await page.getByPlaceholder('Nomor Induk Siswa').fill(nisUnik);
@@ -69,3 +69,4 @@ test.describe('UnsavedGuard (Poin 6 Perluasan T16)', () => {
     }
   });
 });
+

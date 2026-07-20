@@ -4,7 +4,7 @@ import { loginAsAdmin } from '../helpers/auth';
 test.describe('Mobile Bottom Sheet (Poin 12/15 T16)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/orang/guru');
+    await page.goto('/kurikulum/orang/guru');
   });
 
   test('Klik menu 3-titik menampilkan BottomSheet pada mobile viewport', async ({ page }) => {
@@ -26,7 +26,8 @@ test.describe('Mobile Bottom Sheet (Poin 12/15 T16)', () => {
     await dialog.getByText('Tambah Guru').click();
 
     // Check navigation to the Guru form page
-    await page.waitForURL('**/admin/orang/guru/baru');
+    await page.waitForURL('**/kurikulum/orang/guru/baru');
     await expect(dialog).not.toBeVisible();
   });
 });
+

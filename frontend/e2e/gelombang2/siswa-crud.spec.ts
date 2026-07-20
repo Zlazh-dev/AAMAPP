@@ -35,7 +35,7 @@ test.describe('CRUD Siswa (P0 Perbaikan DTO fotoUrl+field lengkap)', () => {
     nisUnik = `SW${suffix}`.slice(0, 20);
     nisnUnik = `${suffix}`.slice(-10);
     namaSiswa = `Siswa Playwright Lengkap ${suffix}`;
-    await page.goto('/admin/orang/siswa');
+    await page.goto('/kurikulum/orang/siswa');
   });
 
   test.afterEach(async ({ page, request }) => {
@@ -49,7 +49,7 @@ test.describe('CRUD Siswa (P0 Perbaikan DTO fotoUrl+field lengkap)', () => {
 
   test('Tambah siswa dgn semua field terisi -> sukses (bukan 400 whitelist)', async ({ page, request }) => {
     await page.getByRole('button', { name: 'Tambah Siswa' }).click();
-    await page.waitForURL('**/admin/orang/siswa/baru');
+    await page.waitForURL('**/kurikulum/orang/siswa/baru');
 
     await page.getByPlaceholder('Nama lengkap siswa').fill(namaSiswa);
     await page.getByPlaceholder('Nomor Induk Siswa').fill(nisUnik);
@@ -82,9 +82,10 @@ test.describe('CRUD Siswa (P0 Perbaikan DTO fotoUrl+field lengkap)', () => {
 
     // Bukti T16-SPRINT poin 1: q= sekarang juga mencocokkan NIS, bukan
     // hanya nama. Cari via kotak cari daftar siswa memakai NIS unik.
-    await page.goto('/admin/orang/siswa');
+    await page.goto('/kurikulum/orang/siswa');
     const searchBox = page.getByPlaceholder('Cari nama siswa...').locator('visible=true');
     await searchBox.fill(nisUnik);
     await expect(page.getByText(namaSiswa).first()).toBeVisible();
   });
 });
+

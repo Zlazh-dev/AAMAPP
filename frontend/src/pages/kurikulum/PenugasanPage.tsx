@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { api, ApiError, Guru, Penugasan, TahunAjaran } from '../../api/client';
@@ -12,11 +12,18 @@ import { PageMenu } from '../../components/PageMenu';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { SearchSelect } from '../../components/SearchSelect';
 import { useToast } from '../../components/Toast';
+import { SubPageLinks } from '../../components/SubPageLinks';
+import { BackLink } from '../../components/BackLink';
+
+/** Sub dari Penugasan Mapel (IA-HIERARCHY-V2). */
+const PENUGASAN_SUB_LINKS = [
+  { key: 'jadwal', label: 'Jadwal KBM', path: '/kurikulum/jadwal', icon: 'calendar_month' },
+];
 
 /**
  * /kurikulum/penugasan — Paket Mengajar (T15 §14.10.3).
  * Filter by TA aktif. Show table of penugasan.
- * No TA active → panel arahan ke Pengaturan (planner correction #3).
+ * No TA active ? panel arahan ke Pengaturan (planner correction #3).
  */
 export function PenugasanPage() {
   const navigate = useNavigate();
@@ -45,7 +52,7 @@ export function PenugasanPage() {
           const list = await api.getPenugasan({ taId: ta.id });
           if (!cancelled) setPenugasanList(list);
         }
-      } catch {
+      } catch (err) {
         // silent
       } finally {
         if (!cancelled) setLoading(false);
@@ -61,8 +68,8 @@ export function PenugasanPage() {
       toast.show('success', 'Penugasan dihapus');
       setDeleteTarget(null);
       setPenugasanList((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-    } catch {
-      toast.show('error', 'Gagal menghapus penugasan');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal menghapus penugasan');
     }
   };
 
@@ -94,14 +101,14 @@ export function PenugasanPage() {
     }
   };
 
-  // No TA active → panel arahan
+  // No TA active ? panel arahan
   if (!loading && !taAktif) {
     return (
       <PageContainer size="xl">
         <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-4">
           Penugasan
         </h2>
-        <Card className="p-8 text-center">
+        <Card className="text-center">
           <span className="material-symbols-outlined text-aam-text-muted mb-3" style={{ fontSize: '3rem' }}>
             calendar_off
           </span>
@@ -109,7 +116,7 @@ export function PenugasanPage() {
           <p className="text-xs text-aam-text-muted mb-4 max-w-sm mx-auto">
             Penugasan memerlukan tahun ajaran aktif. Buat dan aktifkan tahun ajaran di Pengaturan terlebih dahulu.
           </p>
-          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/admin/pengaturan/tahun-ajaran')}>
+          <Button variant="secondary" size="sm" icon="settings" onClick={() => navigate('/kurikulum/tahun-ajaran-kkm')}>
             Buka Pengaturan Tahun Ajaran
           </Button>
         </Card>
@@ -140,11 +147,12 @@ export function PenugasanPage() {
               onClick: () => navigate('/kurikulum/penugasan/baru'),
             },
           ]}
-          links={[
-            { key: 'wali-kelas', label: 'Wali Kelas', path: '/kurikulum/wali-kelas', icon: 'supervisor_account' },
-          ]}
+          links={PENUGASAN_SUB_LINKS}
         />
       </div>
+
+      <BackLink to="/kurikulum/mapel" />
+      <SubPageLinks links={PENUGASAN_SUB_LINKS} />
 
       {/* Desktop: Table */}
       <div className="hidden md:block">
@@ -195,7 +203,7 @@ export function PenugasanPage() {
           <EmptyState icon="assignment_ind" message="Belum ada penugasan" />
         ) : (
           penugasanList.map((p) => (
-            <Card key={p.id} icon="assignment_ind" className="p-4">
+            <Card key={p.id} icon="assignment_ind">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="text-sm font-medium text-aam-text">{p.guruNama}</p>

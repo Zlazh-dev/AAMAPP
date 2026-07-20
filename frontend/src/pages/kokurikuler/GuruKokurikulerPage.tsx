@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -34,7 +34,7 @@ export function GuruKokurikulerPage() {
     <PageContainer>
       <div className="mb-6">
         <h2 className="text-xl font-bold text-aam-text">Kokurikuler — Kegiatan Saya</h2>
-        <p className="text-sm text-aam-muted mt-0.5">Kegiatan di mana kamu ditugaskan sebagai penilai.</p>
+        <p className="text-sm text-aam-text-muted mt-0.5">Kegiatan di mana kamu ditugaskan sebagai penilai.</p>
       </div>
 
       {loading ? <TableSkeleton rows={3} /> : rows.length === 0 ? (
@@ -56,7 +56,7 @@ export function GuruKokurikulerPage() {
                     <span key={d} className="text-xs bg-purple-50 text-purple-700 border border-purple-200 rounded px-1.5 py-0.5">{d}</span>
                   ))}
                   {k.targetDimensi.length > 3 && (
-                    <span className="text-xs text-aam-muted">+{k.targetDimensi.length - 3} lainnya</span>
+                    <span className="text-xs text-aam-text-muted">+{k.targetDimensi.length - 3} lainnya</span>
                   )}
                 </div>
                 <div className="mt-auto pt-3">

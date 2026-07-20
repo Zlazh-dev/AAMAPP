@@ -100,12 +100,18 @@ test.describe('F5a — Kesiswaan Frontend', () => {
 
   // ── Menu Kesiswaan ───────────────────────────────────────────────────────
   test.describe('Menu KESISWAAN', () => {
-    test('Sidebar admin menampilkan item Tata Tertib dan Pelanggaran', async ({ page }) => {
-      await page.goto('/kesiswaan/tata-tertib');
-      // Admin sees kesiswaan group via ADMIN_EXTRA_AREAS
-      // Use text match — sidebar may render as <a> or <button> depending on viewport
-      await expect(page.getByText('Tata Tertib').first()).toBeVisible();
-      await expect(page.getByText('Pelanggaran').first()).toBeVisible();
+    test('Sidebar admin menampilkan main Kesiswaan; sub lewat SubPageLinks', async ({ page }) => {
+      // IA-HIERARCHY-V2: sidebar = Dashboard · Laporan Demerit · Presensi Siswa · Presensi Guru
+      // Tata Tertib / Pelanggaran = sub (bukan sidebar).
+      await page.goto('/kesiswaan');
+      const sidebar = page.locator('aside');
+      await expect(sidebar.locator('a[href="/kesiswaan/laporan"]')).toBeVisible();
+      await expect(sidebar.locator('a[href="/kesiswaan/presensi-siswa"]')).toBeVisible();
+      await expect(sidebar.locator('a[href="/kesiswaan/tata-tertib"]')).toHaveCount(0);
+      await expect(sidebar.locator('a[href="/kesiswaan/pelanggaran"]')).toHaveCount(0);
+      // Sub masuk lewat induk Laporan Demerit
+      await page.goto('/kesiswaan/laporan');
+      await expect(page.getByRole('link', { name: /Tata Tertib/ })).toBeVisible();
     });
   });
 
@@ -125,9 +131,12 @@ test.describe('F5a — Kesiswaan Frontend', () => {
       await expect(page.locator('#btn-kirim-laporan')).toBeVisible();
     });
 
-    test('Menu guru menampilkan item Pelanggaran', async ({ page }) => {
+    test('Halaman guru /guru/pelanggaran render untuk admin (hak akses)', async ({ page }) => {
+      // IA-HIERARCHY-V2: admin bisa membuka halaman guru (RequireRole allows
+      // admin), tapi sidebar TIDAK menampilkan grup GURU (ADMIN_EXTRA_AREAS
+      // excludes 'guru'). Verifikasi halaman render, bukan sidebar item.
       await page.goto('/guru/pelanggaran');
-      await expect(page.getByRole('link', { name: 'Pelanggaran' }).first()).toBeVisible();
+      await expect(page.getByRole('heading', { name: /Pelanggaran/ }).first()).toBeVisible();
     });
   });
 });

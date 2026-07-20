@@ -13,7 +13,7 @@ const labelClass = 'block text-sm font-medium text-aam-text mb-1.5';
 const EMPTY: JamPresensi = { jamMasuk: '06:30', jamPulang: '15:00', toleransiMenit: 15, cutoff: '15:00' };
 
 /**
- * /admin/pengaturan/jam — jam presensi global (T14, §15.3).
+ * /tu/rekap-guru/jam — jam presensi global (T14, §15.3).
  * Input waktu = native time input (pengecualian §15.0).
  * Pratinjau kalimat "Guru terlambat bila check-in setelah HH:MM WIB".
  */
@@ -81,7 +81,7 @@ export function PengaturanJamPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/tu/pengaturan" />
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -90,11 +90,11 @@ export function PengaturanJamPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="md" bottomBar>
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/tu/pengaturan" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Jam Presensi</h2>
         <p className="text-xs text-aam-text-muted mb-6">Jam masuk, pulang, toleransi keterlambatan, dan cutoff</p>
 
-        <Card icon="schedule" className="p-6">
+        <Card icon="schedule">
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -116,7 +116,7 @@ export function PengaturanJamPage() {
             </div>
 
             {/* Pratinjau kalimat */}
-            <div className="rounded-md bg-aam-bg border border-aam-border p-4">
+            <div className="rounded-md bg-aam-page border border-aam-border p-4">
               <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-aam-green mt-0.5" style={{ fontSize: '1.125rem' }}>info</span>
                 <p className="text-sm text-aam-text">

@@ -126,3 +126,4 @@ test.describe('Security hardening (SEC-1)', () => {
     expect(body.url).toMatch(/\/uploads\//);
   });
 });
+

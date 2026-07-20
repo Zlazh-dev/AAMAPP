@@ -9,6 +9,9 @@ import { AuditModule } from '../audit/audit.module';
 import { Session } from '../sessions/session.entity';
 import { User } from '../users/user.entity';
 import { Penugasan } from '../kurikulum/penugasan.entity';
+import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
+import { PresensiSesi } from '../presensi/presensi-sesi.entity';
+import { KokurikulerTim } from '../kokurikuler/kokurikuler-tim.entity';
 
 @Module({
   imports: [
@@ -17,6 +20,9 @@ import { Penugasan } from '../kurikulum/penugasan.entity';
       Siswa,
       Guru,
       Penugasan,
+      JadwalKbm,
+      PresensiSesi,
+      KokurikulerTim,
       Session,
       User,
     ]),

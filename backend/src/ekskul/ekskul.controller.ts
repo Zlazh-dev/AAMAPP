@@ -20,23 +20,23 @@ export class EkskulController {
   private user(req: Request) { return (req as any).user as { id: number; roles: string[] }; }
 
   // ─── EKSKUL CRUD (admin) ──────────────────────────────────────────────────
-  @Get()           @Roles('admin','kepsek','guru')     listEkskul()                                               { return this.svc.listEkskul(); }
-  @Get(':id')      @Roles('admin','kepsek','guru')     getEkskul(@Param('id', ParseIntPipe) id: number)           { return this.svc.getEkskul(id); }
-  @Post()          @Roles('admin')                     createEkskul(@Body() dto: CreateEkskulDto, @Req() req: Request)         { return this.svc.createEkskul(dto, this.user(req).id, req); }
-  @Patch(':id')    @Roles('admin')                     updateEkskul(@Param('id',ParseIntPipe) id:number, @Body() dto:UpdateEkskulDto, @Req() req:Request) { return this.svc.updateEkskul(id,dto,this.user(req).id,req); }
-  @Delete(':id')   @Roles('admin')                     deleteEkskul(@Param('id',ParseIntPipe) id:number, @Req() req:Request)  { return this.svc.deleteEkskul(id,this.user(req).id,req); }
+  @Get()           @Roles('admin','kepsek','guru','kurikulum')  listEkskul()                                               { return this.svc.listEkskul(); }
+  @Get(':id')      @Roles('admin','kepsek','guru','kurikulum')  getEkskul(@Param('id', ParseIntPipe) id: number)           { return this.svc.getEkskul(id); }
+  @Post()          @Roles('admin','kurikulum')                  createEkskul(@Body() dto: CreateEkskulDto, @Req() req: Request)         { return this.svc.createEkskul(dto, this.user(req).id, req); }
+  @Patch(':id')    @Roles('admin','kurikulum')                  updateEkskul(@Param('id',ParseIntPipe) id:number, @Body() dto:UpdateEkskulDto, @Req() req:Request) { return this.svc.updateEkskul(id,dto,this.user(req).id,req); }
+  @Delete(':id')   @Roles('admin','kurikulum')                  deleteEkskul(@Param('id',ParseIntPipe) id:number, @Req() req:Request)  { return this.svc.deleteEkskul(id,this.user(req).id,req); }
 
   // ─── PESERTA (pembina auth) ───────────────────────────────────────────────
   @Get(':id/peserta')
-  @Roles('guru','admin')
+  @Roles('guru','admin','kurikulum')
   listPeserta(@Param('id',ParseIntPipe) id:number, @Req() req:Request) { return this.svc.listPeserta(id, this.user(req)); }
 
   @Post(':id/peserta')
-  @Roles('guru','admin')
+  @Roles('guru','admin','kurikulum')
   addPeserta(@Param('id',ParseIntPipe) id:number, @Body() dto:AddPesertaDto, @Req() req:Request) { return this.svc.addPeserta(id,dto,this.user(req),req); }
 
   @Delete(':id/peserta/:pesertaId')
-  @Roles('guru','admin')
+  @Roles('guru','admin','kurikulum')
   removePeserta(@Param('id',ParseIntPipe) id:number, @Param('pesertaId',ParseIntPipe) pesertaId:number, @Req() req:Request) { return this.svc.removePeserta(id,pesertaId,this.user(req),req); }
 
   // ─── TUJUAN (pembina auth) ────────────────────────────────────────────────
@@ -52,21 +52,21 @@ export class EkskulController {
   createTujuan(@Param('id',ParseIntPipe) id:number, @Body() dto:CreateTujuanDto, @Req() req:Request) { return this.svc.createTujuan(id,dto,this.user(req),req); }
 
   @Patch(':id/tujuan/:tujuanId')
-  @Roles('guru','admin')
+  @Roles('guru')
   updateTujuan(@Param('id',ParseIntPipe) id:number, @Param('tujuanId',ParseIntPipe) tujuanId:number, @Body() dto:UpdateTujuanDto, @Req() req:Request) { return this.svc.updateTujuan(id,tujuanId,dto,this.user(req),req); }
 
   @Delete(':id/tujuan/:tujuanId')
-  @Roles('guru','admin')
+  @Roles('guru')
   deleteTujuan(@Param('id',ParseIntPipe) id:number, @Param('tujuanId',ParseIntPipe) tujuanId:number, @Req() req:Request) { return this.svc.deleteTujuan(id,tujuanId,this.user(req),req); }
 
   // ─── NILAI (pembina auth) ─────────────────────────────────────────────────
   @Put(':id/nilai')
-  @Roles('guru','admin')
+  @Roles('guru')
   upsertNilai(@Param('id',ParseIntPipe) id:number, @Body() dto:UpsertNilaiDto, @Req() req:Request) { return this.svc.upsertNilai(id,dto,this.user(req),req); }
 
   // ─── KEHADIRAN (pembina auth) ─────────────────────────────────────────────
   @Put(':id/kehadiran')
-  @Roles('guru','admin')
+  @Roles('guru')
   upsertKehadiran(@Param('id',ParseIntPipe) id:number, @Body() dto:UpsertKehadiranDto, @Req() req:Request) { return this.svc.upsertKehadiran(id,dto,this.user(req),req); }
 
   // ─── RAPOR ────────────────────────────────────────────────────────────────

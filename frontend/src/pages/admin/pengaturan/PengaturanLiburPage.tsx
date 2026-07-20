@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { api, ApiError, type LiburEntry } from '../../../api/client';
 import { BackLink } from '../../../components/BackLink';
@@ -17,7 +17,7 @@ function formatDate(year: number, month: number, day: number): string {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
-/** Rentang tanggal [mulai, selesai] inklusif → daftar string YYYY-MM-DD. */
+/** Rentang tanggal [mulai, selesai] inklusif ? daftar string YYYY-MM-DD. */
 function dateRange(mulai: string, selesai: string): string[] {
   const out: string[] = [];
   const start = new Date(mulai + 'T00:00:00');
@@ -40,14 +40,14 @@ function diffDays(a: string, b: string): number {
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-/** Format satu tanggal YYYY-MM-DD → "16 Jul 2026" (manusiawi, bukan ISO). */
+/** Format satu tanggal YYYY-MM-DD ? "16 Jul 2026" (manusiawi, bukan ISO). */
 function humanDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);
   return `${d} ${MONTH_SHORT[m - 1]} ${y}`;
 }
 
 /**
- * Format rentang [awal, akhir] → tampilan manusiawi ringkas.
+ * Format rentang [awal, akhir] ? tampilan manusiawi ringkas.
  * Satu hari: "16 Jul 2026". Sama bulan/tahun: "16–18 Jul 2026".
  * Lintas bulan (tahun sama): "30 Jul – 2 Agu 2026". Lintas tahun: tampil penuh keduanya.
  */
@@ -112,10 +112,10 @@ function groupLiburRentang(list: LiburEntry[]): LiburRentang[] {
 }
 
 /**
- * /admin/pengaturan/libur — kalender libur sekolah (T14 → T15-FIX rev.2).
+ * /tu/rekap-guru/libur — kalender libur sekolah (T14 ? T15-FIX rev.2).
  * SELEKSI-MULTI lalu AKSI (KEPUTUSAN USER): klik tanggal = toggle seleksi
  * (tanpa membuka dialog langsung); bar aksi muncul di bawah kalender saat
- * seleksi ≥ 1; "+ Rentang" menambah rentang tanggal ke seleksi; impor +
+ * seleksi = 1; "+ Rentang" menambah rentang tanggal ke seleksi; impor +
  * deteksi otomatis libur nasional.
  */
 export function PengaturanLiburPage() {
@@ -333,7 +333,7 @@ export function PengaturanLiburPage() {
       for (const item of toImport) {
         try {
           await api.adminCreateLibur({ tanggal: item.tanggal, keterangan: item.keterangan });
-        } catch {
+        } catch (err) {
           // skip duplicates/conflicts silently within the loop
         }
       }
@@ -351,7 +351,7 @@ export function PengaturanLiburPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/tu/pengaturan" />
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -359,7 +359,7 @@ export function PengaturanLiburPage() {
 
   return (
     <PageContainer size="lg" bottomBar={selected.size > 0}>
-      <BackLink to="/admin/pengaturan" mobileButton={selected.size === 0} />
+      <BackLink to="/tu/pengaturan" mobileButton={selected.size === 0} />
       <div className="flex items-start justify-between gap-3 mt-4 mb-1 flex-wrap">
         <div>
           <h2 className="text-lg font-heading font-semibold text-aam-text mb-1">Kalender Libur</h2>
@@ -383,7 +383,7 @@ export function PengaturanLiburPage() {
         </div>
       )}
 
-      <Card icon="calendar_month" className="p-6">
+      <Card icon="calendar_month">
         {/* Month navigation + Rentang */}
         <div className="flex items-center justify-between mb-4">
           <button onClick={prevMonth} className="p-2 rounded-md hover:bg-gray-100 min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Bulan sebelumnya">
@@ -490,7 +490,7 @@ export function PengaturanLiburPage() {
         )}
       </Card>
 
-      {/* BAR AKSI — muncul saat seleksi ≥ 1 (sticky bawah mobile via PageContainer bottomBar) */}
+      {/* BAR AKSI — muncul saat seleksi = 1 (sticky bawah mobile via PageContainer bottomBar) */}
       {selected.size > 0 && (
         <div className="fixed md:sticky bottom-0 left-0 right-0 md:left-auto md:right-auto z-[500] bg-white border-t md:border md:rounded-md border-aam-border shadow-lg md:shadow-sm p-4 mt-4 flex items-center justify-between gap-3 flex-wrap">
           <span className="text-sm font-medium text-aam-text">{selected.size} tanggal terpilih</span>

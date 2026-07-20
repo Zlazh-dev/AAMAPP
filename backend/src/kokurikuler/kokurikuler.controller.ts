@@ -136,7 +136,7 @@ export class KokurikulerController {
    * Guru tim: daftar siswa × dimensi + nilai sendiri.
    */
   @Get('asesmen')
-  @Roles('guru', 'kurikulum', 'admin')
+  @Roles('guru', 'kurikulum')
   getAsesmen(
     @Query('kegiatanId') kegiatanIdStr: string,
     @Query('kelasId') kelasIdStr: string,
@@ -152,7 +152,7 @@ export class KokurikulerController {
    * Guru tim: upsert batch asesmen.
    */
   @Put('asesmen')
-  @Roles('guru', 'kurikulum', 'admin')
+  @Roles('guru', 'kurikulum')
   upsertAsesmen(
     @Query('kegiatanId') kegiatanIdStr: string,
     @Query('kelasId') kelasIdStr: string,

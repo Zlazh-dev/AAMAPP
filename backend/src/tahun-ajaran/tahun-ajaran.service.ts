@@ -9,6 +9,11 @@ import { TahunAjaran } from './tahun-ajaran.entity';
 import { CreateTahunAjaranDto, UpdateTahunAjaranDto } from './dto/create-tahun-ajaran.dto';
 import { AuditService } from '../audit/audit.service';
 import { Request } from 'express';
+import { Penugasan } from '../kurikulum/penugasan.entity';
+import { Pelanggaran } from '../kesiswaan/pelanggaran.entity';
+import { TindakLanjut } from '../kesiswaan/tindak-lanjut.entity';
+import { KokurikulerKegiatan } from '../kokurikuler/kokurikuler-kegiatan.entity';
+import { Rapor } from '../rapor/rapor.entity';
 
 @Injectable()
 export class TahunAjaranService {
@@ -117,6 +122,52 @@ export class TahunAjaranService {
         `Tidak dapat menghapus tahun ajaran ${row.nama} karena sedang aktif. Aktifkan tahun ajaran lain terlebih dahulu.`,
       );
     }
+
+    // Periksa semua tabel yang merujuk ke tahun ajaran ini dengan onDelete: 'RESTRICT'.
+    // Setiap constraint dijaga sendiri agar pesan kesalahan menyebut entitas spesifik.
+    const mgr = this.taRepo.manager;
+    const taLabel = `${row.nama} Sem ${row.semester}`;
+
+    const jumlahPenugasan = await mgr.count(Penugasan, { where: { tahunAjaranId: id } });
+    if (jumlahPenugasan > 0) {
+      throw new ConflictException(
+        `Tahun ajaran ${taLabel} masih dipakai di ${jumlahPenugasan} penugasan mengajar. ` +
+          `Hapus seluruh penugasan tahun ajaran ini terlebih dahulu.`,
+      );
+    }
+
+    const jumlahPelanggaran = await mgr.count(Pelanggaran, { where: { tahunAjaranId: id } });
+    if (jumlahPelanggaran > 0) {
+      throw new ConflictException(
+        `Tahun ajaran ${taLabel} memiliki ${jumlahPelanggaran} catatan pelanggaran siswa yang tidak boleh dihapus. ` +
+          `Tahun ajaran dengan riwayat kesiswaan tidak dapat dihapus.`,
+      );
+    }
+
+    const jumlahTindakLanjut = await mgr.count(TindakLanjut, { where: { tahunAjaranId: id } });
+    if (jumlahTindakLanjut > 0) {
+      throw new ConflictException(
+        `Tahun ajaran ${taLabel} memiliki ${jumlahTindakLanjut} catatan tindak lanjut pelanggaran. ` +
+          `Tahun ajaran dengan riwayat kesiswaan tidak dapat dihapus.`,
+      );
+    }
+
+    const jumlahKegiatan = await mgr.count(KokurikulerKegiatan, { where: { tahunAjaranId: id } });
+    if (jumlahKegiatan > 0) {
+      throw new ConflictException(
+        `Tahun ajaran ${taLabel} masih memiliki ${jumlahKegiatan} kegiatan kokurikuler. ` +
+          `Hapus kegiatan kokurikuler tahun ajaran ini terlebih dahulu.`,
+      );
+    }
+
+    const jumlahRapor = await mgr.count(Rapor, { where: { tahunAjaranId: id } });
+    if (jumlahRapor > 0) {
+      throw new ConflictException(
+        `Tahun ajaran ${taLabel} memiliki ${jumlahRapor} rapor siswa yang sudah diterbitkan. ` +
+          `Tahun ajaran dengan riwayat rapor tidak dapat dihapus.`,
+      );
+    }
+
     await this.taRepo.remove(row);
     this.cacheInvalidateActive();
     await this.audit.log({

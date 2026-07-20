@@ -5,13 +5,18 @@ import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.entity';
 import { Session } from '../sessions/session.entity';
 import { ActivityLog } from '../audit/activity-log.entity';
+import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { SessionsService } from '../sessions/sessions.service';
 import { PengaturanService } from '../pengaturan/pengaturan.service';
 
 /**
- * T11-FIX Ronde 2 (Butir 13): seed service WUJUD tapi HANYA untuk admin + 4
- * baris pengaturan. Lembaga di-seed profil_sekolah oleh PengaturanService.
- * TIDAK ada seed tahun ajaran, kelas, atau guru (§14.10.1 eksplisit).
+ * SeedService — bootstrap DB kosong:
+ *   1. Admin user pertama (dari env ADMIN_*)
+ *   2. Pengaturan defaults (profil sekolah, jam, dll.)
+ *   3. Tahun Ajaran aktif pertama (dari env SEED_TA_NAMA / SEED_TA_SEMESTER)
+ *   4. Housekeeping (expired sessions, old logs)
+ *
+ * Setiap seed bersifat idempotent — di-skip jika data sudah ada.
  */
 @Injectable()
 export class SeedService implements OnModuleInit {
@@ -24,6 +29,8 @@ export class SeedService implements OnModuleInit {
     private sessionRepo: Repository<Session>,
     @InjectRepository(ActivityLog)
     private logRepo: Repository<ActivityLog>,
+    @InjectRepository(TahunAjaran)
+    private taRepo: Repository<TahunAjaran>,
     private sessionsService: SessionsService,
     private pengaturanService: PengaturanService,
   ) {}
@@ -31,9 +38,11 @@ export class SeedService implements OnModuleInit {
   async onModuleInit() {
     await this.seedAdmin();
     await this.pengaturanService.seedDefaults();
+    await this.seedTahunAjaran();
     await this.housekeeping();
   }
 
+  // ── 1. Admin seed ──────────────────────────────────────────────────────────
   private async seedAdmin() {
     const count = await this.userRepo.count();
     if (count > 0) {
@@ -57,23 +66,64 @@ export class SeedService implements OnModuleInit {
       registrationNote: null,
     });
     await this.userRepo.save(admin);
+    this.logger.warn(
+      `Admin seed dibuat: ${email} — GANTI PASSWORD SETELAH LOGIN!`,
+    );
 
-    this.logger.log(`Admin seed dibuat: ${email} (ganti password setelah login!)`);
-
-    const log = new ActivityLog();
-    log.userId = admin.id;
-    log.userName = admin.name;
-    log.userEmail = admin.email;
-    log.action = 'create';
-    log.entity = 'user';
-    log.entityId = String(admin.id);
-    log.entityLabel = `${admin.name} (${admin.email})`;
-    log.summary = 'Admin seed otomatis';
-    log.ipAddress = 'system';
-    log.deviceSummary = 'System';
+    const log = this.logRepo.create({
+      userId: admin.id,
+      userName: admin.name,
+      userEmail: admin.email,
+      action: 'create',
+      entity: 'user',
+      entityId: String(admin.id),
+      entityLabel: `${admin.name} (${admin.email})`,
+      summary: 'Admin seed otomatis',
+      ipAddress: 'system',
+      deviceSummary: 'System',
+    });
     await this.logRepo.save(log);
   }
 
+  // ── 2. Tahun Ajaran aktif ──────────────────────────────────────────────────
+  private async seedTahunAjaran() {
+    const count = await this.taRepo.count();
+    if (count > 0) {
+      this.logger.log('Tabel tahun_ajaran tidak kosong — seed TA dilewati');
+      return;
+    }
+
+    // Hitung tahun ajaran dari tanggal sekarang:
+    // Jika bulan >= Juli → semester ganjil tahun ini/tahun+1
+    // Jika bulan < Juli  → semester genap tahun lalu/tahun ini
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 1-based
+
+    let nama: string;
+    let semester: 1 | 2;
+    if (month >= 7) {
+      nama = `${year}/${year + 1}`;
+      semester = 1;
+    } else {
+      nama = `${year - 1}/${year}`;
+      semester = 2;
+    }
+
+    // Env override
+    if (process.env.SEED_TA_NAMA) nama = process.env.SEED_TA_NAMA;
+    if (process.env.SEED_TA_SEMESTER) {
+      semester = parseInt(process.env.SEED_TA_SEMESTER, 10) as 1 | 2;
+    }
+
+    const ta = this.taRepo.create({ nama, semester, aktif: true });
+    await this.taRepo.save(ta);
+    this.logger.log(
+      `Tahun Ajaran seed dibuat: ${nama} Semester ${semester} (aktif)`,
+    );
+  }
+
+  // ── 3. Housekeeping ────────────────────────────────────────────────────────
   private async housekeeping() {
     try {
       await this.sessionsService.housekeeping();

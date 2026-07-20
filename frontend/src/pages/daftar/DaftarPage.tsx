@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { Card } from '../../components/Card';
@@ -40,7 +40,7 @@ export function DaftarPage() {
           picture: payload.picture,
         });
         setStep(2);
-      } catch {
+      } catch (err) {
         // invalid token — start from step 1
       }
     }
@@ -95,7 +95,7 @@ export function DaftarPage() {
         picture: payload.picture,
       });
       setStep(2);
-    } catch {
+    } catch (err) {
       setError('Token Google tidak valid');
     }
   };

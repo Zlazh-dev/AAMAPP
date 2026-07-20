@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  *
  * Strategy:
  * 1. Login guru → /izin/guru → form ajukan izin → submit → muncul di daftar.
- * 2. Login admin → /admin/izin-guru → filter → baris item → sheet → setujui.
+ * 2. Login admin → /tu/izin-guru → filter → baris item → sheet → setujui.
  * 3. Tolak tanpa alasan → validasi error.
  * 4. Backend F4a mungkin belum live saat suite dijalankan → pakai route mock
  *    untuk endpoints izin agar test tidak bergantung pada timing backend AG-2.
@@ -130,7 +130,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
     adminToken = await loginViaApi(request, ADMIN_EMAIL, ADMIN_PASSWORD);
   });
 
-  test('Halaman /admin/izin-guru accessible oleh admin', async ({ page }) => {
+  test('Halaman /tu/izin-guru accessible oleh admin', async ({ page }) => {
     await setToken(page, adminToken);
 
     // Mock GET /api/admin/izin/guru
@@ -153,7 +153,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
       });
     });
 
-    await page.goto('/admin/izin-guru');
+    await page.goto('/tu/izin-guru');
     await expect(page.getByRole('heading', { name: /Izin Guru/i })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText('Budi Santoso')).toBeVisible();
     await expect(page.getByText('Menunggu')).toBeVisible();
@@ -178,7 +178,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
       });
     });
 
-    await page.goto('/admin/izin-guru');
+    await page.goto('/tu/izin-guru');
     await expect(page.getByText('Siti Rahayu')).toBeVisible({ timeout: 8_000 });
 
     // Klik baris → sheet tampil
@@ -206,7 +206,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
       });
     });
 
-    await page.goto('/admin/izin-guru');
+    await page.goto('/tu/izin-guru');
     await expect(page.getByText('Andi Wijaya')).toBeVisible({ timeout: 8_000 });
     await page.getByText('Andi Wijaya').click();
 
@@ -241,7 +241,7 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true }) });
     });
 
-    await page.goto('/admin/izin-guru');
+    await page.goto('/tu/izin-guru');
     await expect(page.getByText('Dewi Kusuma')).toBeVisible({ timeout: 8_000 });
     await page.getByText('Dewi Kusuma').click();
 
@@ -251,3 +251,4 @@ test.describe('F4a — Admin izin guru (list + setujui/tolak)', () => {
     await expect(page.getByText(/Izin disetujui/i)).toBeVisible({ timeout: 8_000 });
   });
 });
+

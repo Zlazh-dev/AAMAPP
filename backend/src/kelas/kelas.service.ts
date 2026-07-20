@@ -5,11 +5,14 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, DataSource, In } from 'typeorm';
 import { Kelas } from './kelas.entity';
 import { Siswa } from '../siswa/siswa.entity';
 import { Guru } from '../guru/guru.entity';
 import { Penugasan } from '../kurikulum/penugasan.entity';
+import { JadwalKbm } from '../kurikulum/jadwal-kbm.entity';
+import { PresensiSesi } from '../presensi/presensi-sesi.entity';
+import { KokurikulerTim } from '../kokurikuler/kokurikuler-tim.entity';
 import { AuditService } from '../audit/audit.service';
 import { Request } from 'express';
 
@@ -28,6 +31,13 @@ export class KelasService {
     @InjectRepository(Guru) private readonly guruRepo: Repository<Guru>,
     @InjectRepository(Penugasan)
     private readonly penugasanRepo: Repository<Penugasan>,
+    @InjectRepository(JadwalKbm)
+    private readonly jadwalRepo: Repository<JadwalKbm>,
+    @InjectRepository(PresensiSesi)
+    private readonly sesiRepo: Repository<PresensiSesi>,
+    @InjectRepository(KokurikulerTim)
+    private readonly timRepo: Repository<KokurikulerTim>,
+    private readonly dataSource: DataSource,
     private readonly audit: AuditService,
   ) {}
 
@@ -197,32 +207,99 @@ export class KelasService {
   }
 
   /**
-   * T11-FIX Ronde 2 (Butir 9): hapus kelas.
-   * 409 bila ada siswa aktif ATAU kelas masih menjadi penugasan aktif.
-   * Tidak ada ?force (di luar spec).
+   * GET /api/admin/kelas/:id/dampak-hapus
+   * Hitungan dampak permanen bila kelas dihapus (front-end pakai untuk
+   * dialog konfirmasi "Hapus Total"). siswa SET NULL (data tetap ada);
+   * penugasan + jadwal + sesi presensi DIHAPUS PERMANEN.
+   */
+  async dampakHapus(id: number) {
+    const row = await this.repo.findOne({ where: { id } });
+    if (!row) throw new NotFoundException('Kelas tidak ditemukan');
+
+    // Ambil id penugasan milik kelas ini, lalu jadwal & sesi yg terhubung.
+    const penugasans = await this.penugasanRepo.find({
+      where: { kelasId: id },
+      select: { id: true },
+    });
+    const penugasanIds = penugasans.map((p) => p.id);
+    const jadwalIds = penugasanIds.length
+      ? (
+          await this.jadwalRepo.find({
+            where: { penugasanId: In(penugasanIds) },
+            select: { id: true },
+          })
+        ).map((j) => j.id)
+      : [];
+
+    const [siswa, penugasan, jadwal, sesiPresensi] = await Promise.all([
+      this.siswaRepo.count({ where: { kelasId: id } }),
+      this.penugasanRepo.count({ where: { kelasId: id } }),
+      this.jadwalRepo.count({ where: { penugasanId: In(penugasanIds.length ? penugasanIds : [0]) } }),
+      this.sesiRepo.count({ where: { jadwalKbmId: In(jadwalIds.length ? jadwalIds : [0]) } }),
+    ]);
+
+    return {
+      kelas: { id: row.id, nama: row.nama, tingkat: row.tingkat },
+      siswa,
+      penugasan,
+      jadwal,
+      sesiPresensi,
+    };
+  }
+
+  /**
+   * Hapus kelas = hapus total (opsi B, keputusan pemilik produk).
+   * Menghapus permanen: penugasan, jadwal_kbm, presensi_sesi, presensi_siswa.
+   * Siswa DIKELUARKAN (kelasId SET NULL) — data siswa tetap ada.
+   * KokurikulerTim CASCADE otomatis saat kelas dihapus (DB-level FK).
+   *
+   * Urutan WAJIB dalam SATU transaksi (jika gagal di tengah, rollback total):
+   *   (a) hapus presensi_sesi (jadwalnya milik penugasan kelas ini)
+   *       — presensi_siswa ikut CASCADE (entity onDelete).
+   *   (b) hapus penugasan (where kelasId = :id)
+   *       — jadwal_kbm ikut CASCADE (entity onDelete).
+   *   (c) hapus kelas
+   *       — siswa.kelasId SET NULL, kokurikuler_tim CASCADE.
+   *
+   * onDelete di entity TIDAK diubah — kaskade di (a) & (b) adalah DB-level
+   * ON DELETE CASCADE yang sudah dideklarasikan entity (presensi_siswa &
+   * jadwal_kbm). onDelete di penugasan & presensi_sesi = RESTRICT, maka
+   * langkah (a) & (b) di sini wajib eksplisit.
    */
   async remove(id: number, req: Request) {
     const row = await this.repo.findOne({ where: { id } });
     if (!row) throw new NotFoundException('Kelas tidak ditemukan');
 
-    const siswaAktif = await this.siswaRepo.count({
-      where: { kelasId: id, status: 'aktif' },
+    // Hitung dampak dulu (untuk audit) — di luar transaksi (read-only).
+    const dampak = await this.dampakHapus(id);
+
+    await this.dataSource.transaction(async (em) => {
+      // (a) hapus presensi_sesi yang jadwalnya milik penugasan kelas ini.
+      if (dampak.penugasan > 0) {
+        const penugasanIds = (
+          await em.find(Penugasan, {
+            where: { kelasId: id },
+            select: { id: true },
+          })
+        ).map((p) => p.id);
+        const jadwalIds = (
+          await em.find(JadwalKbm, {
+            where: { penugasanId: In(penugasanIds) },
+            select: { id: true },
+          })
+        ).map((j) => j.id);
+        if (jadwalIds.length > 0) {
+          // presensi_siswa ikut CASCADE (entity presensi-siswa.onDelete CASCADE).
+          await em.delete(PresensiSesi, { jadwalKbmId: In(jadwalIds) });
+        }
+        // (b) hapus penugasan — jadwal_kbm ikut CASCADE (entity jadwal-kbm.onDelete CASCADE).
+        await em.delete(Penugasan, { kelasId: id });
+      }
+
+      // (c) hapus kelas — siswa.kelasId SET NULL, kokurikuler_tim CASCADE.
+      await em.delete(Kelas, { id });
     });
-    if (siswaAktif > 0) {
-      throw new ConflictException(
-        `Kelas ${row.nama} masih memiliki ${siswaAktif} siswa aktif. Pindahkan siswa terlebih dahulu.`,
-      );
-    }
 
-    // T11-FIX Ronde 2 / Fase 7 (Butir 6): cek penugasan.
-    const used = await this.penugasanRepo.count({ where: { kelasId: id } });
-    if (used > 0) {
-      throw new ConflictException(
-        `Kelas ${row.nama} masih memiliki ${used} penugasan mengajar. Hapus penugasan terlebih dahulu.`,
-      );
-    }
-
-    await this.repo.remove(row);
     await this.audit.log({
       actorId: req.session?.userId ?? null,
       action: 'DELETE_KELAS',
@@ -230,8 +307,17 @@ export class KelasService {
       resourceId: String(id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Menghapus kelas ${row.nama}`,
+      summary:
+        `Menghapus kelas ${row.nama} — ${dampak.siswa} siswa dikeluarkan, ` +
+        `${dampak.penugasan} penugasan, ${dampak.jadwal} jadwal, ` +
+        `${dampak.sesiPresensi} sesi presensi DIHAPUS PERMANEN`,
+      details: {
+        siswaDikeluarkan: dampak.siswa,
+        penugasanDihapus: dampak.penugasan,
+        jadwalDihapus: dampak.jadwal,
+        sesiPresensiDihapus: dampak.sesiPresensi,
+      },
     });
-    return { ok: true };
+    return { ok: true, ...dampak };
   }
 }

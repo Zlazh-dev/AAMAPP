@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api, AdminUser, ApiError, SessionInfo } from '../../../api/client';
 import { useAuth } from '../../../app/AuthContext';
@@ -33,8 +33,8 @@ export function AkunDetailPage() {
       const u = await api.adminGetUser(parseInt(id!, 10));
       setUser(u);
       setSessions(u.sessions || []);
-    } catch {
-      show('error', 'Akun tidak ditemukan');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Akun tidak ditemukan');
       navigate('/admin/akun');
     } finally {
       setLoading(false);
@@ -59,8 +59,8 @@ export function AkunDetailPage() {
       show('success', 'Sesi dicabut');
       setRevokeTarget(null);
       loadUser();
-    } catch {
-      show('error', 'Gagal mencabut sesi');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal mencabut sesi');
     }
   };
 
@@ -132,7 +132,7 @@ export function AkunDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Identity card */}
-        <Card icon="person" className="p-5">
+        <Card icon="person">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Identitas</h3>
           <dl className="space-y-2 text-sm">
             <div>
@@ -155,7 +155,7 @@ export function AkunDetailPage() {
         </Card>
 
         {/* Roles card */}
-        <Card icon="badge" className="p-5">
+        <Card icon="badge">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Peran</h3>
           {user.roles.length === 0 ? (
             <p className="text-sm text-aam-text-muted">
@@ -186,7 +186,7 @@ export function AkunDetailPage() {
         </Card>
 
         {/* Google card */}
-        <Card icon="account_circle" className="p-5">
+        <Card icon="account_circle">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Akun Google</h3>
           {user.googleLinked ? (
             <Badge variant="green">
@@ -199,7 +199,7 @@ export function AkunDetailPage() {
         </Card>
 
         {/* Sessions card */}
-        <Card icon="devices" className="p-5">
+        <Card icon="devices">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Sesi Aktif</h3>
           {sessions.length === 0 ? (
             <p className="text-sm text-aam-text-muted">Tidak ada sesi aktif</p>

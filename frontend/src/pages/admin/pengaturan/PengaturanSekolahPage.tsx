@@ -17,7 +17,7 @@ const EMPTY: ProfilSekolah = {
 };
 
 /**
- * /admin/pengaturan/sekolah â€” profil sekolah (T14, Â§15.3).
+ * /admin/sekolah — profil sekolah (T14, §15.3).
  * Simpan sendiri + feedback inline + "Terakhir disimpan oleh X".
  */
 export function PengaturanSekolahPage() {
@@ -76,8 +76,8 @@ export function PengaturanSekolahPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/admin/pengaturan" />
-        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuatâ€¦</div>
+        <BackLink to="/admin" />
+        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
   }
@@ -85,11 +85,11 @@ export function PengaturanSekolahPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="md" bottomBar>
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/admin" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Profil Sekolah</h2>
         <p className="text-xs text-aam-text-muted mb-6">Data sekolah untuk kop dokumen & rapor</p>
 
-        <Card icon="school" className="p-6">
+        <Card icon="school">
           <div className="space-y-5">
             {/* Logo */}
             <div>
@@ -201,7 +201,7 @@ export function PengaturanSekolahPage() {
             <div className="border-t border-aam-border pt-4 flex items-center justify-between gap-4 flex-wrap">
               <div className="text-xs text-aam-text-muted">
                 {updatedByName && (
-                  <span>Terakhir disimpan oleh <strong className="text-aam-text">{updatedByName}</strong>{updatedAt && ` â€” ${new Date(updatedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}`}</span>
+                  <span>Terakhir disimpan oleh <strong className="text-aam-text">{updatedByName}</strong>{updatedAt && ` — ${new Date(updatedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}`}</span>
                 )}
               </div>
               <Button onClick={handleSave} loading={saving} disabled={!dirty} icon="save">

@@ -57,6 +57,16 @@ export class Guru {
   @Column({ type: 'timestamptz', nullable: true })
   faceUpdatedAt: Date | null;
 
+  /**
+   * UX-POLISH D — status validasi wajah oleh admin.
+   * BELUM: belum pernah enroll.
+   * MENUNGGU_VALIDASI: guru sudah enroll, menunggu persetujuan admin.
+   * TERVALIDASI: admin menyetujui — scan aktif.
+   * DITOLAK: admin menolak embedding (perlu enroll ulang).
+   */
+  @Column({ type: 'varchar', length: 25, default: 'BELUM' })
+  faceStatus: 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

@@ -10,6 +10,7 @@ import { Kelas } from '../kelas/kelas.entity';
 import { AuditService } from '../audit/audit.service';
 import { KurikulumService } from '../kurikulum/kurikulum.service';
 import { TahunAjaranService } from '../tahun-ajaran/tahun-ajaran.service';
+import { PresensiSesi } from '../presensi/presensi-sesi.entity';
 import { Request } from 'express';
 
 export interface GuruFilter {
@@ -160,6 +161,18 @@ export class GuruService {
           `Guru masih memiliki ${used} penugasan pada tahun ajaran aktif — nonaktifkan saja`,
         );
       }
+    }
+
+    // presensi_sesi.guruId = onDelete RESTRICT: riwayat absensi yang sudah
+    // dikaitkan ke guru tidak boleh menggantung tanpa guru. Tolak hapus dulu.
+    const sesiTerpakai = await this.repo.manager.count(PresensiSesi, {
+      where: { guruPelaksanaId: id },
+    });
+    if (sesiTerpakai > 0) {
+      throw new ConflictException(
+        `Guru ${row.nama} memiliki ${sesiTerpakai} sesi presensi yang tercatat. ` +
+          `Riwayat presensi tidak boleh dihapus — nonaktifkan guru ini saja.`,
+      );
     }
 
     await this.repo.remove(row);

@@ -47,13 +47,13 @@ export class TahunAjaranController {
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   createTa(@Body() body: CreateTahunAjaranDto, @Req() req: Request) {
     return this.svc.createTa(body, req);
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   updateTa(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateTahunAjaranDto,
@@ -67,13 +67,13 @@ export class TahunAjaranController {
    * Menjamin hanya 1 TA aktif pada satu waktu.
    */
   @Post(':id/aktifkan')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   activateTa(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.svc.aktifkan(id, req);
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'kurikulum')
   removeTa(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.svc.removeTa(id, req);
   }

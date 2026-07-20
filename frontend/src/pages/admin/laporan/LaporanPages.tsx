@@ -1,12 +1,14 @@
-import React, { useState, useCallback } from 'react';
-import { api } from '../../../api/client';
+﻿import React, { useState, useCallback } from 'react';
+import { api , ApiError } from '../../../api/client';
 import { PageContainer } from '../../../components/PageContainer';
 import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
 import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
+import { Table, ColumnDef } from '../../../components/Table';
 import { useToast } from '../../../components/Toast';
 import { BackLink } from '../../../components/BackLink';
+import { PageMenu } from '../../../components/PageMenu';
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -93,76 +95,60 @@ interface LaporanTableProps {
   exporting: boolean;
   onExportExcel: () => void;
   onExportPdf: () => void;
+  /** Prefix ID untuk export buttons, e.g. 'btn-export-harian' */
+  exportId?: string;
 }
 
-function LaporanTable({ title, cols, rows, totalRow, loading, exporting, onExportExcel, onExportPdf }: LaporanTableProps) {
+function LaporanTable({ title, cols, rows, totalRow, loading, exporting, onExportExcel, onExportPdf, exportId }: LaporanTableProps) {
+  const tableCols: ColumnDef<Row>[] = cols.map(c => ({
+    header: c.header,
+    align: c.align,
+    cell: (row) => String(row[c.key] ?? ''),
+  }));
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h3 className="font-semibold text-aam-text">{title}</h3>
+        <h3 className="text-sm font-semibold text-aam-text">{title}</h3>
         <div className="flex gap-2">
           <Button
-            id={`btn-export-excel-${title.replace(/\s+/g, '-').toLowerCase()}`}
+            size="sm"
             variant="secondary"
+            icon="table_view"
             onClick={onExportExcel}
-            disabled={exporting || rows.length === 0}
-            className="text-xs"
+            disabled={exporting}
+            id={exportId ? `btn-export-excel-${exportId}` : undefined}
           >
-            📊 Excel
+            Excel
           </Button>
           <Button
-            id={`btn-export-pdf-${title.replace(/\s+/g, '-').toLowerCase()}`}
+            size="sm"
             variant="secondary"
+            icon="picture_as_pdf"
             onClick={onExportPdf}
-            disabled={exporting || rows.length === 0}
-            className="text-xs"
+            disabled={exporting}
+            id={exportId ? `btn-export-pdf-${exportId}` : undefined}
           >
-            📄 PDF
+            PDF
           </Button>
         </div>
       </div>
-
       {loading ? (
         <TableSkeleton rows={5} />
       ) : rows.length === 0 ? (
         <EmptyState icon="table_view" message="Tidak ada data untuk rentang dan filter yang dipilih." />
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-aam-border">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                {cols.map(c => (
-                  <th key={String(c.key)}
-                    className="px-3 py-2.5 font-semibold text-aam-muted text-left whitespace-nowrap border-b border-aam-border">
-                    {c.header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-aam-border">
-              {rows.map((row, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  {cols.map(c => (
-                    <td key={String(c.key)}
-                      className={`px-3 py-2 ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
-                      {String(row[c.key] ?? '')}
-                    </td>
-                  ))}
-                </tr>
+        <>
+          <Table columns={tableCols} data={rows} rowKey={(_, i) => i} />
+          {totalRow && (
+            <div className="mt-2 rounded-md border border-aam-border bg-yellow-50 px-3 py-2 flex flex-wrap gap-4 text-sm font-semibold text-aam-text">
+              <span>TOTAL:</span>
+              {cols.slice(1).map(c => (
+                <span key={String(c.key)}>{c.header}={String(totalRow[c.key] ?? '')}</span>
               ))}
-              {/* Baris TOTAL */}
-              {totalRow && (
-                <tr className="bg-yellow-50 font-semibold">
-                  {cols.map(c => (
-                    <td key={String(c.key)} className="px-3 py-2 text-left">
-                      {String(totalRow[c.key] ?? '')}
-                    </td>
-                  ))}
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -217,8 +203,8 @@ export function LaporanHarianGuruPage() {
         setTotalRow(null);
       }
       setHasLoaded(true);
-    } catch {
-      toast.show('error', 'Gagal memuat laporan harian guru.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat laporan harian guru.');
     } finally {
       setLoading(false);
     }
@@ -242,21 +228,21 @@ export function LaporanHarianGuruPage() {
 
   return (
     <PageContainer>
-      <BackLink to="/admin/laporan" />
+      <BackLink to="/tu/presensi-guru" />
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-aam-text">Laporan Harian Guru</h2>
-        <p className="text-sm text-aam-muted mt-0.5">Rekapitulasi kehadiran harian per guru dalam rentang tanggal.</p>
+        <h1 className="text-xl font-bold text-aam-text">Laporan Harian Guru</h1>
+        <p className="text-sm text-aam-text-muted mt-0.5">Rekapitulasi kehadiran harian per guru dalam rentang tanggal.</p>
       </div>
 
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Dari</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Dari</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={dari} onChange={e => setDari(e.target.value)} id="harian-dari" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Sampai</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Sampai</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={sampai} onChange={e => setSampai(e.target.value)} id="harian-sampai" />
           </div>
@@ -267,7 +253,7 @@ export function LaporanHarianGuruPage() {
       </Card>
 
       {hasLoaded && (
-        <Card>
+        <div className="mt-6">
           <LaporanTable
             title="Rekap Harian Guru"
             cols={COLS_HARIAN}
@@ -277,8 +263,9 @@ export function LaporanHarianGuruPage() {
             exporting={exporting}
             onExportExcel={handleExcel}
             onExportPdf={handlePdf}
+            exportId="btn-export-harian"
           />
-        </Card>
+        </div>
       )}
     </PageContainer>
   );
@@ -323,8 +310,8 @@ export function LaporanKeterlaksanaanPage() {
         setTotalRow(null);
       }
       setHasLoaded(true);
-    } catch {
-      toast.show('error', 'Gagal memuat laporan keterlaksanaan KBM.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat laporan keterlaksanaan KBM.');
     } finally {
       setLoading(false);
     }
@@ -348,21 +335,21 @@ export function LaporanKeterlaksanaanPage() {
 
   return (
     <PageContainer>
-      <BackLink to="/admin/laporan" />
+      <BackLink to="/kurikulum" label="Kurikulum" />
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-aam-text">Laporan Keterlaksanaan KBM</h2>
-        <p className="text-sm text-aam-muted mt-0.5">Rekapitulasi KBM terlaksana vs total per guru/kelas/mapel.</p>
+        <h1 className="text-xl font-bold text-aam-text">Laporan Keterlaksanaan KBM</h1>
+        <p className="text-sm text-aam-text-muted mt-0.5">Rekapitulasi KBM terlaksana vs total per guru/kelas/mapel.</p>
       </div>
 
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Dari</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Dari</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={dari} onChange={e => setDari(e.target.value)} id="kbm-dari" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Sampai</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Sampai</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={sampai} onChange={e => setSampai(e.target.value)} id="kbm-sampai" />
           </div>
@@ -373,7 +360,7 @@ export function LaporanKeterlaksanaanPage() {
       </Card>
 
       {hasLoaded && (
-        <Card>
+        <div className="mt-6">
           <LaporanTable
             title="Keterlaksanaan KBM"
             cols={COLS_KBM}
@@ -384,7 +371,7 @@ export function LaporanKeterlaksanaanPage() {
             onExportExcel={handleExcel}
             onExportPdf={handlePdf}
           />
-        </Card>
+        </div>
       )}
     </PageContainer>
   );
@@ -434,8 +421,8 @@ export function LaporanSiswaPage() {
         setTotalRow(null);
       }
       setHasLoaded(true);
-    } catch {
-      toast.show('error', 'Gagal memuat laporan siswa.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat laporan siswa.');
     } finally {
       setLoading(false);
     }
@@ -459,21 +446,21 @@ export function LaporanSiswaPage() {
 
   return (
     <PageContainer>
-      <BackLink to="/admin/laporan" />
+      <BackLink to="/kesiswaan/presensi-siswa" />
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-aam-text">Laporan Kehadiran Siswa</h2>
-        <p className="text-sm text-aam-muted mt-0.5">Rekapitulasi H/S/I/A/T per siswa dalam rentang tanggal.</p>
+        <h1 className="text-xl font-bold text-aam-text">Laporan Kehadiran Siswa</h1>
+        <p className="text-sm text-aam-text-muted mt-0.5">Rekapitulasi H/S/I/A/T per siswa dalam rentang tanggal.</p>
       </div>
 
-      <Card className="mb-4">
+      <Card>
         <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Dari</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Dari</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={dari} onChange={e => setDari(e.target.value)} id="siswa-dari" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-aam-muted mb-1">Sampai</label>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Sampai</label>
             <input type="date" className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white min-h-[40px]"
               value={sampai} onChange={e => setSampai(e.target.value)} id="siswa-sampai" />
           </div>
@@ -484,7 +471,7 @@ export function LaporanSiswaPage() {
       </Card>
 
       {hasLoaded && (
-        <Card>
+        <div className="mt-6">
           <LaporanTable
             title="Kehadiran Siswa"
             cols={COLS_SISWA}
@@ -495,7 +482,7 @@ export function LaporanSiswaPage() {
             onExportExcel={handleExcel}
             onExportPdf={handlePdf}
           />
-        </Card>
+        </div>
       )}
     </PageContainer>
   );

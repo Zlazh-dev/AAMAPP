@@ -1772,3 +1772,64 @@ pages/kesiswaan/** + pages/kokurikuler/** + pages/ekskul/** + menu.ts.
 - npm run build → **✓ 23.63s**
 - grep aam-muted/aam-bg di wilayah → **NOL**
 - e2e → menunggu hasil
+
+## KLAIM TUGAS — UX-POLISH + IA MIGRASI (2026-07-19e v2; MEMIMPIN)
+DIKERJAKAN (18:56 WIB, 2026-07-19) — Antigravity-2.
+Scope: CARD-DESIGN-STANDARD §1-8 + IA-MIGRATION-MAP §1-4 (43 rute + backend @Roles + dead links + hapus file).
+Scope: CARD-DESIGN-STANDARD §1-8 + IA-MIGRATION-MAP §1-4 (43 rute + backend @Roles + dead links + hapus file).
+Wilayah: components/**, pages/admin|kurikulum|kokurikuler|kesiswaan|ekskul|tu/**, menu.ts, App.tsx, AppLayout.tsx, backend/src/**.
+
+## LAPORAN SELESAI — IA MIGRASI (2026-07-19e v2; ~19:10 WIB)
+
+### §9 IA-MIGRATION-MAP — Perubahan
+
+**menu.ts LAMPIRAN A:** Semua area group diperbarui.
+- ADMIN menyusut: dashboard + akun + sekolah.
+- KURIKULUM tambah: Data Orang, Kelas, Ekskul, Tahun Ajaran, KKM.
+- KESISWAAN tambah: Presensi Siswa, Laporan Kehadiran, Presensi Guru, Izin Guru.
+- KEPSEK: 7 link langsung (tanpa hub).
+- TU: 7 item (rekap + presensi-guru + izin-guru + laporan harian + 3 pengaturan).
+
+**App.tsx:** Ditulis ulang full 43 rute + redirect legacy block:
+- /admin/orang/* → /kurikulum/orang/*
+- /admin/kelas → /kurikulum/kelas
+- /admin/ekskul → /kurikulum/ekskul
+- /admin/pengaturan/* → /admin/sekolah + /kurikulum/tahun-ajaran + /kurikulum/kkm + /tu/pengaturan/*
+- /admin/laporan/* → /tu/laporan/* + /kurikulum/laporan/* + /kesiswaan/*
+- /kesiswaan/presensi-siswa (pindah dari /admin/presensi-siswa)
+- /tu/presensi-guru, /tu/izin-guru (kanonik path baru)
+
+**File dihapus (orphan):**
+- PengaturanHubPage.tsx, AdminLaporanHubPage.tsx
+- WajahListPage.tsx, EnrollWizardPage.tsx (admin/wajah/**)
+- PerangkatKioskPage.tsx, VerifikasiPendingPage.tsx, kiosk/index.ts
+- KioskApp.tsx, KioskPairingPage.tsx, KioskScannerPage.tsx
+
+**BackLink internal 18 file fixed** (batch replace orang→kurikulum/orang, kelas→kurikulum/kelas, laporan→tu/tu/kesiswaan/kurikulum).
+
+**LaporanPages.tsx BackLink fix:** harian-guru→/tu, keterlaksanaan→/kurikulum, siswa→/kesiswaan.
+
+**EkskulAdminPage.tsx:** Dead SubPageLinks dihapus.
+
+**AdminDashboardPage.tsx:** Link /admin/laporan → /tu/presensi-guru; /admin/izin-guru → /tu/izin-guru.
+
+**Backend @Roles per §3.1-3.14:**
+- guru.controller.ts: GET adds tu/kesiswaan; POST/PATCH/DELETE adds kurikulum.
+- siswa.controller.ts: POST/PATCH/DELETE adds kurikulum.
+- kelas.controller.ts: POST/PATCH/DELETE adds kurikulum.
+- import.controller.ts: class-level adds kurikulum.
+- tahun-ajaran.controller.ts: POST/PATCH/aktivkan/DELETE adds kurikulum.
+- libur.controller.ts: semua mutation adds tu.
+- laporan.controller.ts: per-method Roles, TuController adds kepsek.
+- presensi-guru.controller.ts: harian/manual adds tu/kesiswaan.
+- izin.controller.ts: semua AdminIzinGuru adds tu/kesiswaan.
+- ekskul.controller.ts: CRUD adds kurikulum, peserta adds kurikulum.
+
+### Verifikasi
+- tsc --noEmit → **bersih**
+- grep aam-muted/aam-bg di wilayah → **NOL**
+- npm run build → berjalan (hasilnya di background)
+## KLAIM TUGAS � DEPLOY-READY (2026-07-19f; MEMIMPIN)
+DIKERJAKAN (20:20 WIB, 2026-07-19) � Antigravity-2.
+Scope: Migration TypeORM, seed, compose prod, dead link cleanup, sisa polish.
+Wilayah: backend/**, components/**, pages/admin|kurikulum|kesiswaan|kokurikuler|ekskul|tu/**, App.tsx, menu.ts.

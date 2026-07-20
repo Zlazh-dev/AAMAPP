@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../../api/client';
+﻿import React, { useState, useEffect } from 'react';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
-import { BackLink } from '../../components/BackLink';
 
 /**
  * /kurikulum — Dashboard Kurikulum (T15, §14.10.3 bullet terakhir).
@@ -53,7 +52,7 @@ export function KurikulumDashboardPage() {
       {/* Kartu ringkasan */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {cards.map((c) => (
-          <Card key={c.label} className="p-5">
+          <Card key={c.label}>
             <div className="flex items-center gap-4">
               <span
                 className={`material-symbols-outlined ${c.color}`}

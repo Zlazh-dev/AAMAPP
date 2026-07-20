@@ -9,8 +9,10 @@ import {
   Put,
   Query,
   Req,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
+import { IsIn } from 'class-validator';
 import { Request } from 'express';
 import { PresensiGuruService } from './presensi-guru.service';
 import { EnrollWajahDto } from './dto/enroll-wajah.dto';
@@ -20,6 +22,11 @@ import { SessionAuthGuard } from '../common/session-auth.guard';
 import { RolesGuard } from '../common/roles.guard';
 import { Roles } from '../common/roles.decorator';
 
+class ValidasiWajahDto {
+  @IsIn(['terima', 'tolak'])
+  aksi: 'terima' | 'tolak';
+}
+
 /** F3a — Enrollment wajah mandiri (guru) & monitor diri. */
 @Controller('api/guru/wajah')
 @UseGuards(SessionAuthGuard, RolesGuard)
@@ -28,14 +35,14 @@ export class GuruWajahController {
 
   /** GET /api/guru/wajah/status — status enroll wajah guru sendiri. */
   @Get('status')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   statusWajah(@Req() req: Request) {
     return this.svc.statusWajahDiri(req);
   }
 
   /** PUT /api/guru/wajah — enroll embedding wajah sendiri. */
   @Put()
-  @Roles('guru', 'admin')
+  @Roles('guru')
   enrollDiri(@Req() req: Request, @Body() dto: EnrollWajahDto) {
     return this.svc.enrollDiri(req, dto);
   }
@@ -49,7 +56,7 @@ export class GuruScanController {
 
   /** POST /api/guru/presensi-scan — scan wajah, alur 6 langkah F3-SPEC. */
   @Post('presensi-scan')
-  @Roles('guru', 'admin')
+  @Roles('guru')
   scan(@Req() req: Request, @Body() dto: ScanDto) {
     return this.svc.scan(req, dto);
   }
@@ -112,7 +119,7 @@ export class AdminWajahController {
    * Accessible: admin & kepsek.
    */
   @Get('presensi-guru/harian')
-  @Roles('admin', 'kepsek')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   monitorHarian(@Query('tanggal') tanggal?: string) {
     return this.svc.monitorHarian(tanggal);
   }
@@ -122,8 +129,23 @@ export class AdminWajahController {
    * Input manual presensi guru (alasan wajib).
    */
   @Post('presensi-guru/manual')
-  @Roles('admin')
+  @Roles('admin', 'tu', 'kesiswaan')
   manualAdmin(@Body() dto: ManualDto, @Req() req: Request) {
     return this.svc.manualAdmin(dto, req);
+  }
+
+  /**
+   * PATCH /api/admin/guru/:id/wajah/validasi
+   * Admin setujui (terima) atau tolak embedding wajah guru.
+   * UX-POLISH D.
+   */
+  @Patch('guru/:id/wajah/validasi')
+  @Roles('admin')
+  validasiWajah(
+    @Param('id', ParseIntPipe) guruId: number,
+    @Body() dto: ValidasiWajahDto,
+    @Req() req: Request,
+  ) {
+    return this.svc.validasiWajah(guruId, dto.aksi, req);
   }
 }

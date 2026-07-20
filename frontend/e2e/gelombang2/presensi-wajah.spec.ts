@@ -422,3 +422,4 @@ test.describe('F3a Backend — Presensi Wajah Guru (mock embedding)', () => {
     expect(found.enrolled).toBe(false);
   });
 });
+

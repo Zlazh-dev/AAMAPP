@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouteObject } from 'react-router-dom';
+﻿import React, { Suspense } from 'react';
+import { createBrowserRouter, Navigate, Outlet, RouteObject, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AppLayout } from './AppLayout';
 import { RequireAuth, RequireRole } from './guards';
@@ -23,6 +23,10 @@ const PersetujuanPage = React.lazy(() => import('../pages/admin/akun/Persetujuan
 const PersetujuanDetailPage = React.lazy(() => import('../pages/admin/akun/PersetujuanDetailPage').then(m => ({ default: m.PersetujuanDetailPage })));
 const PlaceholderPage = React.lazy(() => import('../pages/placeholder/PlaceholderPage').then(m => ({ default: m.PlaceholderPage })));
 const AdminDashboardPage = React.lazy(() => import('../pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const KesiswaanDashboardPage = React.lazy(() => import('../pages/kesiswaan/KesiswaanDashboardPage').then(m => ({ default: m.KesiswaanDashboardPage })));
+const TuDashboardPage = React.lazy(() => import('../pages/tu/TuDashboardPage').then(m => ({ default: m.TuDashboardPage })));
+const TuPengaturanPage = React.lazy(() => import('../pages/tu/TuPengaturanPage').then(m => ({ default: m.TuPengaturanPage })));
+const TahunAjaranKkmPage = React.lazy(() => import('../pages/kurikulum/TahunAjaranKkmPage').then(m => ({ default: m.TahunAjaranKkmPage })));
 const GuruListPage = React.lazy(() => import('../pages/admin/orang/GuruListPage').then(m => ({ default: m.GuruListPage })));
 const GuruDetailPage = React.lazy(() => import('../pages/admin/orang/GuruDetailPage').then(m => ({ default: m.GuruDetailPage })));
 const GuruFormPage = React.lazy(() => import('../pages/admin/orang/GuruFormPage').then(m => ({ default: m.GuruFormPage })));
@@ -33,16 +37,14 @@ const ImportPage = React.lazy(() => import('../pages/admin/orang/ImportPage').th
 const KelasListPage = React.lazy(() => import('../pages/admin/kelas/KelasListPage').then(m => ({ default: m.KelasListPage })));
 const KelasDetailPage = React.lazy(() => import('../pages/admin/kelas/KelasDetailPage').then(m => ({ default: m.KelasDetailPage })));
 const KelasFormPage = React.lazy(() => import('../pages/admin/kelas/KelasFormPage').then(m => ({ default: m.KelasFormPage })));
-const PengaturanHubPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanHubPage').then(m => ({ default: m.PengaturanHubPage })));
+// PengaturanHubPage DIHAPUS — hub dibubarkan per IA-MIGRATION-MAP §1.1
 const PengaturanSekolahPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanSekolahPage').then(m => ({ default: m.PengaturanSekolahPage })));
 const PengaturanJamPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanJamPage').then(m => ({ default: m.PengaturanJamPage })));
 const PengaturanLokasiPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanLokasiPage').then(m => ({ default: m.PengaturanLokasiPage })));
 const PengaturanLiburPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanLiburPage').then(m => ({ default: m.PengaturanLiburPage })));
-const PengaturanTahunAjaranPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanTahunAjaranPage').then(m => ({ default: m.PengaturanTahunAjaranPage })));
 const PengaturanTahunAjaranFormPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanTahunAjaranFormPage').then(m => ({ default: m.PengaturanTahunAjaranFormPage })));
-const PengaturanKkmPage = React.lazy(() => import('../pages/admin/pengaturan/PengaturanKkmPage').then(m => ({ default: m.PengaturanKkmPage })));
 
-// Kurikulum pages (T15)
+// Kurikulum pages
 const KurikulumDashboardPage = React.lazy(() => import('../pages/kurikulum/KurikulumDashboardPage').then(m => ({ default: m.KurikulumDashboardPage })));
 const MapelListPage = React.lazy(() => import('../pages/kurikulum/MapelListPage').then(m => ({ default: m.MapelListPage })));
 const MapelFormPage = React.lazy(() => import('../pages/kurikulum/MapelFormPage').then(m => ({ default: m.MapelFormPage })));
@@ -50,28 +52,20 @@ const PenugasanPage = React.lazy(() => import('../pages/kurikulum/PenugasanPage'
 const PenugasanFormPage = React.lazy(() => import('../pages/kurikulum/PenugasanFormPage').then(m => ({ default: m.PenugasanFormPage })));
 const WaliKelasPage = React.lazy(() => import('../pages/kurikulum/WaliKelasPage').then(m => ({ default: m.WaliKelasPage })));
 const JadwalKbmPage = React.lazy(() => import('../pages/kurikulum/JadwalKbmPage').then(m => ({ default: m.JadwalKbmPage })));
-// Presensi F2
-const KbmHariIniPage = React.lazy(() => import('../pages/guru/KbmHariIniPage').then(m => ({ default: m.KbmHariIniPage })));
+
+// Presensi
 const RosterPage = React.lazy(() => import('../pages/guru/RosterPage').then(m => ({ default: m.RosterPage })));
 const MatriksPresensiSiswaPage = React.lazy(() => import('../pages/admin/presensi/MatriksPresensiSiswaPage').then(m => ({ default: m.MatriksPresensiSiswaPage })));
 const RekapPresensiPage = React.lazy(() => import('../pages/guru/RekapPresensiPage').then(m => ({ default: m.RekapPresensiPage })));
-// F3a: Presensi wajah guru
+// F3a: Presensi wajah guru (guru-only)
 const GuruWajahPage = React.lazy(() => import('../pages/guru/GuruWajahPage').then(m => ({ default: m.GuruWajahPage })));
 const GuruEnrollWizardPage = React.lazy(() => import('../pages/guru/GuruEnrollWizardPage').then(m => ({ default: m.GuruEnrollWizardPage })));
 const GuruPresensiDashboard = React.lazy(() => import('../pages/guru/GuruPresensiDashboard').then(m => ({ default: m.GuruPresensiDashboard })));
-const WajahListPage = React.lazy(() => import('../pages/admin/wajah/WajahListPage').then(m => ({ default: m.WajahListPage })));
-const EnrollWizardPage = React.lazy(() => import('../pages/admin/wajah/EnrollWizardPage').then(m => ({ default: m.EnrollWizardPage })));
 const PresensiGuruPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruPage').then(m => ({ default: m.PresensiGuruPage })));
-// F3b: Admin kiosk (AG-2)
-const PerangkatKioskPage = React.lazy(() => import('../pages/admin/kiosk/PerangkatKioskPage').then(m => ({ default: m.PerangkatKioskPage })));
-const VerifikasiPendingPage = React.lazy(() => import('../pages/admin/kiosk/VerifikasiPendingPage').then(m => ({ default: m.VerifikasiPendingPage })));
-// F3b: Kiosk device app (AG-1) — di-mount di luar AuthedLayout
-const KioskApp = React.lazy(() => import('../pages/kiosk/KioskApp').then(m => ({ default: m.KioskApp })));
 // F4a: Izin guru
 const IzinGuruPage = React.lazy(() => import('../pages/guru/IzinGuruPage').then(m => ({ default: m.IzinGuruPage })));
 const AdminIzinGuruPage = React.lazy(() => import('../pages/admin/izin/AdminIzinGuruPage').then(m => ({ default: m.AdminIzinGuruPage })));
-// F4b: Laporan HUB + sub-halaman
-const AdminLaporanHubPage = React.lazy(() => import('../pages/admin/laporan/AdminLaporanHubPage').then(m => ({ default: m.AdminLaporanHubPage })));
+// F4b: Laporan sub-halaman (AdminLaporanHubPage DIHAPUS — hub dibubarkan per IA-MIGRATION-MAP §1.6)
 const LaporanHarianGuruPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanHarianGuruPage })));
 const LaporanKeterlaksanaanPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanKeterlaksanaanPage })));
 const LaporanSiswaPage = React.lazy(() => import('../pages/admin/laporan/LaporanPages').then(m => ({ default: m.LaporanSiswaPage })));
@@ -145,6 +139,13 @@ function AuthedLayout() {
   );
 }
 
+/** Redirect yang membawa URL param :id ke path baru */
+function RedirectWithParams({ base }: { base: string }) {
+  const params = useParams();
+  const id = params.id ?? '';
+  return <Navigate to={`${base}/${id}`} replace />;
+}
+
 const routes: RouteObject[] = [
   {
     element: <RootLayout />,
@@ -152,8 +153,6 @@ const routes: RouteObject[] = [
       // Public
       { path: '/login', element: <LoginPage /> },
       { path: '/daftar', element: <Lazy><DaftarPage /></Lazy> },
-      // F3b: Kiosk device app — public, no auth required
-      { path: '/kiosk', element: <Lazy><KioskApp /></Lazy> },
 
       // Authenticated
       {
@@ -165,42 +164,10 @@ const routes: RouteObject[] = [
           // Profil
           { path: '/profil', element: <Lazy><ProfilPage /></Lazy> },
 
-          // Admin
+          // ── ADMIN (hanya dashboard + akun + profil sekolah) ──────────────
           { path: '/admin', element: <RequireRole roles={['admin']}><Lazy><AdminDashboardPage /></Lazy></RequireRole> },
 
-          // Admin: Data Orang (T13)
-          { path: '/admin/orang', element: <Navigate to="/admin/orang/guru" replace /> },
-          { path: '/admin/orang/guru', element: <RequireRole roles={['admin']}><Lazy><GuruListPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/guru/baru', element: <RequireRole roles={['admin']}><Lazy><GuruFormPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/guru/sukses', element: <RequireRole roles={['admin']}><SaveSuccess entityLabel="Guru" addAgainPath="/admin/orang/guru/baru" listPath="/admin/orang/guru" detailPathPattern="/admin/orang/guru/{id}" /></RequireRole> },
-          { path: '/admin/orang/guru/:id', element: <RequireRole roles={['admin']}><Lazy><GuruDetailPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/guru/:id/edit', element: <RequireRole roles={['admin']}><Lazy><GuruFormPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/siswa', element: <RequireRole roles={['admin']}><Lazy><SiswaListPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/siswa/baru', element: <RequireRole roles={['admin']}><Lazy><SiswaFormPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/siswa/sukses', element: <RequireRole roles={['admin']}><SaveSuccess entityLabel="Siswa" addAgainPath="/admin/orang/siswa/baru" listPath="/admin/orang/siswa" detailPathPattern="/admin/orang/siswa/{id}" /></RequireRole> },
-          { path: '/admin/orang/siswa/:id', element: <RequireRole roles={['admin']}><Lazy><SiswaDetailPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/siswa/:id/edit', element: <RequireRole roles={['admin']}><Lazy><SiswaFormPage /></Lazy></RequireRole> },
-          { path: '/admin/orang/import', element: <RequireRole roles={['admin']}><Lazy><ImportPage /></Lazy></RequireRole> },
-
-          // Admin: Kelas (T13)
-          { path: '/admin/kelas', element: <RequireRole roles={['admin']}><Lazy><KelasListPage /></Lazy></RequireRole> },
-          { path: '/admin/kelas/baru', element: <RequireRole roles={['admin']}><Lazy><KelasFormPage /></Lazy></RequireRole> },
-          { path: '/admin/kelas/sukses', element: <RequireRole roles={['admin']}><SaveSuccess entityLabel="Kelas" addAgainPath="/admin/kelas/baru" listPath="/admin/kelas" detailPathPattern="/admin/kelas/{id}" /></RequireRole> },
-          { path: '/admin/kelas/:id', element: <RequireRole roles={['admin']}><Lazy><KelasDetailPage /></Lazy></RequireRole> },
-          { path: '/admin/kelas/:id/edit', element: <RequireRole roles={['admin']}><Lazy><KelasFormPage /></Lazy></RequireRole> },
-
-          // Admin: Pengaturan (T14)
-          { path: '/admin/pengaturan', element: <RequireRole roles={['admin']}><Lazy><PengaturanHubPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/sekolah', element: <RequireRole roles={['admin']}><Lazy><PengaturanSekolahPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/jam', element: <RequireRole roles={['admin']}><Lazy><PengaturanJamPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/lokasi', element: <RequireRole roles={['admin']}><Lazy><PengaturanLokasiPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/libur', element: <RequireRole roles={['admin']}><Lazy><PengaturanLiburPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/tahun-ajaran', element: <RequireRole roles={['admin']}><Lazy><PengaturanTahunAjaranPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/tahun-ajaran/baru', element: <RequireRole roles={['admin']}><Lazy><PengaturanTahunAjaranFormPage /></Lazy></RequireRole> },
-          { path: '/admin/pengaturan/tahun-ajaran/sukses', element: <RequireRole roles={['admin']}><SaveSuccess entityLabel="Tahun Ajaran" addAgainPath="/admin/pengaturan/tahun-ajaran/baru" listPath="/admin/pengaturan/tahun-ajaran" /></RequireRole> },
-          { path: '/admin/pengaturan/kkm', element: <RequireRole roles={['admin']}><Lazy><PengaturanKkmPage /></Lazy></RequireRole> },
-
-          // Admin: Akun (F0)
+          // Admin: Akun (F0) — tetap di /admin/akun
           { path: '/admin/akun', element: <RequireRole roles={['admin']}><Lazy><AkunDaftarPage /></Lazy></RequireRole> },
           { path: '/admin/akun/sesi', element: <RequireRole roles={['admin']}><Lazy><AkunSesiPage /></Lazy></RequireRole> },
           { path: '/admin/akun/aktivitas', element: <RequireRole roles={['admin']}><Lazy><AkunAktivitasPage /></Lazy></RequireRole> },
@@ -211,8 +178,34 @@ const routes: RouteObject[] = [
           { path: '/admin/akun/:id', element: <RequireRole roles={['admin']}><Lazy><AkunDetailPage /></Lazy></RequireRole> },
           { path: '/admin/akun/:id/edit', element: <RequireRole roles={['admin']}><Lazy><AkunEditPage /></Lazy></RequireRole> },
 
-          // Kurikulum (T15) — RequireRole ['kurikulum','admin'] per planner correction #7
+          // Admin: Profil Sekolah (baru: /admin/sekolah)
+          { path: '/admin/sekolah', element: <RequireRole roles={['admin']}><Lazy><PengaturanSekolahPage /></Lazy></RequireRole> },
+
+          // ── KURIKULUM (menyerap Data Orang, Kelas, Ekskul, TA, KKM) ────
           { path: '/kurikulum', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KurikulumDashboardPage /></Lazy></RequireRole> },
+
+          // Kurikulum: Data Orang (pindahan dari /admin/orang/*)
+          { path: '/kurikulum/orang', element: <Navigate to="/kurikulum/orang/guru" replace /> },
+          { path: '/kurikulum/orang/guru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><GuruListPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/guru/baru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><GuruFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/guru/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Guru" addAgainPath="/kurikulum/orang/guru/baru" listPath="/kurikulum/orang/guru" detailPathPattern="/kurikulum/orang/guru/{id}" /></RequireRole> },
+          { path: '/kurikulum/orang/guru/:id', element: <RequireRole roles={['kurikulum','admin']}><Lazy><GuruDetailPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/guru/:id/edit', element: <RequireRole roles={['kurikulum','admin']}><Lazy><GuruFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/siswa', element: <RequireRole roles={['kurikulum','admin']}><Lazy><SiswaListPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/siswa/baru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><SiswaFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/siswa/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Siswa" addAgainPath="/kurikulum/orang/siswa/baru" listPath="/kurikulum/orang/siswa" detailPathPattern="/kurikulum/orang/siswa/{id}" /></RequireRole> },
+          { path: '/kurikulum/orang/siswa/:id', element: <RequireRole roles={['kurikulum','admin']}><Lazy><SiswaDetailPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/siswa/:id/edit', element: <RequireRole roles={['kurikulum','admin']}><Lazy><SiswaFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/orang/import', element: <RequireRole roles={['kurikulum','admin']}><Lazy><ImportPage /></Lazy></RequireRole> },
+
+          // Kurikulum: Kelas (pindahan dari /admin/kelas/*)
+          { path: '/kurikulum/kelas', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KelasListPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/kelas/baru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KelasFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/kelas/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Kelas" addAgainPath="/kurikulum/kelas/baru" listPath="/kurikulum/kelas" detailPathPattern="/kurikulum/kelas/{id}" /></RequireRole> },
+          { path: '/kurikulum/kelas/:id', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KelasDetailPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/kelas/:id/edit', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KelasFormPage /></Lazy></RequireRole> },
+
+          // Kurikulum: Mapel, Penugasan, Jadwal, Wali
           { path: '/kurikulum/mapel', element: <RequireRole roles={['kurikulum','admin']}><Lazy><MapelListPage /></Lazy></RequireRole> },
           { path: '/kurikulum/mapel/baru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><MapelFormPage /></Lazy></RequireRole> },
           { path: '/kurikulum/mapel/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Mata Pelajaran" addAgainPath="/kurikulum/mapel/baru" listPath="/kurikulum/mapel" /></RequireRole> },
@@ -223,57 +216,49 @@ const routes: RouteObject[] = [
           { path: '/kurikulum/wali-kelas', element: <RequireRole roles={['kurikulum','admin']}><Lazy><WaliKelasPage /></Lazy></RequireRole> },
           { path: '/kurikulum/jadwal', element: <RequireRole roles={['kurikulum','admin']}><Lazy><JadwalKbmPage /></Lazy></RequireRole> },
 
-          // F5a: Kesiswaan
-          { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><PlaceholderPage title="Dashboard Kesiswaan" icon="dashboard" /></Lazy></RequireRole> },
+          // Kurikulum: Tahun Ajaran & KKM digabung (sub Mapel, IA-HIERARCHY-V2)
+          { path: '/kurikulum/tahun-ajaran-kkm', element: <RequireRole roles={['kurikulum','admin']}><Lazy><TahunAjaranKkmPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/tahun-ajaran', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
+          { path: '/kurikulum/tahun-ajaran/baru', element: <RequireRole roles={['kurikulum','admin']}><Lazy><PengaturanTahunAjaranFormPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/tahun-ajaran/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Tahun Ajaran" addAgainPath="/kurikulum/tahun-ajaran/baru" listPath="/kurikulum/tahun-ajaran-kkm" /></RequireRole> },
+          { path: '/kurikulum/kkm', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
+
+          // Kurikulum: Laporan keterlaksanaan (pindahan dari /admin/laporan/keterlaksanaan)
+          { path: '/kurikulum/laporan/keterlaksanaan', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LaporanKeterlaksanaanPage /></Lazy></RequireRole> },
+
+          // Kurikulum: Kokurikuler
+          { path: '/kurikulum/kokurikuler', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerKegiatanPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/kokurikuler/:kegiatanId/tim', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerTimPage /></Lazy></RequireRole> },
+
+          // Kurikulum: Ekskul (pindahan dari /admin/ekskul)
+          { path: '/kurikulum/ekskul', element: <RequireRole roles={['kurikulum','admin']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/ekskul/:ekskulId', element: <RequireRole roles={['kurikulum','admin','guru']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
+
+          // ── KESISWAAN ───────────────────────────────────────────────────
+          { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><KesiswaanDashboardPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/tata-tertib', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TataTertibPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/pelanggaran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><PelanggaranPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/verifikasi', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><VerifikasiPage /></Lazy></RequireRole> },
-          // F5b: Kesiswaan
           { path: '/kesiswaan/tindak-lanjut', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><TindakLanjutPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/reward', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><RewardPage /></Lazy></RequireRole> },
           { path: '/kesiswaan/laporan', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><LaporanDemeritPage /></Lazy></RequireRole> },
+          // Kehadiran siswa (pindahan dari /admin/presensi-siswa)
+          { path: '/kesiswaan/presensi-siswa', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><MatriksPresensiSiswaPage /></Lazy></RequireRole> },
+          // Laporan kehadiran siswa (pindahan dari /admin/laporan/siswa)
+          { path: '/kesiswaan/laporan-kehadiran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><LaporanSiswaPage /></Lazy></RequireRole> },
 
-          // Guru: KBM & Presensi (F2)
+          // ── GURU (tidak berubah) ─────────────────────────────────────────
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
           { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
           { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
-          // F3a: Guru wajah enrollment mandiri (alur TERPISAH dari presensi scan)
-          { path: '/guru/wajah', element: <RequireRole roles={['guru','admin']}><Lazy><GuruWajahPage /></Lazy></RequireRole> },
-          { path: '/guru/wajah/enroll', element: <RequireRole roles={['guru','admin']}><Lazy><GuruEnrollWizardPage /></Lazy></RequireRole> },
-
-          // Admin: Presensi Siswa (F2 monitor)
-          { path: '/admin/presensi-siswa', element: <RequireRole roles={['admin','kepsek','kesiswaan']}><Lazy><MatriksPresensiSiswaPage /></Lazy></RequireRole> },
-          // F3a: Admin wajah enrollment + monitor presensi guru
-          { path: '/admin/wajah', element: <RequireRole roles={['admin']}><Lazy><WajahListPage /></Lazy></RequireRole> },
-          { path: '/admin/wajah/:guruId', element: <RequireRole roles={['admin']}><Lazy><EnrollWizardPage /></Lazy></RequireRole> },
-          { path: '/admin/presensi-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><PresensiGuruPage /></Lazy></RequireRole> },
-          // F3b: Admin kiosk management (AG-2 builds page; AG-1 wires route)
-          { path: '/admin/perangkat', element: <RequireRole roles={['admin']}><Lazy><PerangkatKioskPage /></Lazy></RequireRole> },
-          // F4a: Izin guru admin
-          { path: '/admin/izin-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><AdminIzinGuruPage /></Lazy></RequireRole> },
-
-          // Guru: F4a izin
+          // F3a: Guru wajah enrollment mandiri (guru ONLY per §A)
+          { path: '/guru/wajah', element: <RequireRole roles={['guru']}><Lazy><GuruWajahPage /></Lazy></RequireRole> },
+          { path: '/guru/wajah/enroll', element: <RequireRole roles={['guru']}><Lazy><GuruEnrollWizardPage /></Lazy></RequireRole> },
+          // F4a: Izin guru
           { path: '/izin/guru', element: <RequireRole roles={['guru','admin']}><Lazy><IzinGuruPage /></Lazy></RequireRole> },
-
-          // F4b: Laporan HUB + sub-halaman
-          { path: '/admin/laporan', element: <RequireRole roles={['admin','kepsek']}><Lazy><AdminLaporanHubPage /></Lazy></RequireRole> },
-          { path: '/admin/laporan/harian-guru', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanHarianGuruPage /></Lazy></RequireRole> },
-          { path: '/admin/laporan/keterlaksanaan', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanKeterlaksanaanPage /></Lazy></RequireRole> },
-          { path: '/admin/laporan/siswa', element: <RequireRole roles={['admin','kepsek']}><Lazy><LaporanSiswaPage /></Lazy></RequireRole> },
-
-          { path: '/admin/presensi-guru-pending', element: <RequireRole roles={['admin']}><Lazy><VerifikasiPendingPage /></Lazy></RequireRole> },
-
-          // Kepsek: baca-semua — landing ke dashboard (F4b)
-          { path: '/kepsek', element: <RequireRole roles={['kepsek']}><Lazy><AdminLaporanHubPage /></Lazy></RequireRole> },
-
-          // TU: Rekap Guru bulanan (F4c)
-          { path: '/tu', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
-          { path: '/tu/rekap-guru', element: <RequireRole roles={['tu','admin']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
-
           // F5a: Guru pelanggaran
           { path: '/guru/pelanggaran', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPelanggaranPage /></Lazy></RequireRole> },
-
           // F6a: Penilaian Guru
           { path: '/guru/penilaian', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPenilaianDashboard /></Lazy></RequireRole> },
           { path: '/guru/penilaian/nilai/:penilaianId', element: <RequireRole roles={['guru','admin']}><Lazy><InputNilaiPage /></Lazy></RequireRole> },
@@ -293,23 +278,61 @@ const routes: RouteObject[] = [
           // F6c: Kokurikuler (guru)
           { path: '/guru/kokurikuler', element: <RequireRole roles={['guru','admin']}><Lazy><GuruKokurikulerPage /></Lazy></RequireRole> },
           { path: '/guru/kokurikuler/:kegiatanId/asesmen', element: <RequireRole roles={['guru','admin']}><Lazy><KokurikulerAsesmenPage /></Lazy></RequireRole> },
-          // F6c: Kokurikuler (kurikulum/admin)
-          { path: '/kurikulum/kokurikuler', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerKegiatanPage /></Lazy></RequireRole> },
-          { path: '/kurikulum/kokurikuler/:kegiatanId/tim', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerTimPage /></Lazy></RequireRole> },
           // F6c: Rapor kokurikuler
           { path: '/kokurikuler/rapor/:siswaId', element: <RequireRole roles={['guru','admin','kesiswaan']}><Lazy><RaporKokurikulerPage /></Lazy></RequireRole> },
-          // F6d: Ekstrakurikuler (admin)
-          { path: '/admin/ekskul', element: <RequireRole roles={['admin']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
-          { path: '/admin/ekskul/:ekskulId', element: <RequireRole roles={['admin','guru']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
           // F6d: Ekskul (guru pembina)
           { path: '/guru/ekskul', element: <RequireRole roles={['guru','admin']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
           { path: '/guru/ekskul/:ekskulId', element: <RequireRole roles={['guru','admin']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
           // F6d: Rapor ekskul
           { path: '/ekskul/rapor/:siswaId', element: <RequireRole roles={['guru','admin','kesiswaan']}><Lazy><RaporEkskulPage /></Lazy></RequireRole> },
+
+          // ── TU (dashboard + presensi guru + pengaturan hub) ──────────────
+          { path: '/tu', element: <RequireRole roles={['tu','admin','kepsek']}><Lazy><TuDashboardPage /></Lazy></RequireRole> },
+          { path: '/tu/rekap-guru', element: <RequireRole roles={['tu','admin','kepsek']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
+          // Presensi guru (path kanonik, dipakai juga menu kesiswaan)
+          { path: '/tu/presensi-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><PresensiGuruPage /></Lazy></RequireRole> },
+          // Izin guru admin (path kanonik)
+          { path: '/tu/izin-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><AdminIzinGuruPage /></Lazy></RequireRole> },
+          // Laporan harian guru (pindahan dari /admin/laporan/harian-guru)
+          { path: '/tu/laporan/harian-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><LaporanHarianGuruPage /></Lazy></RequireRole> },
+          // Pengaturan operasional TU — hub + 3 sub (IA-HIERARCHY-V2)
+          { path: '/tu/pengaturan', element: <RequireRole roles={['tu','admin']}><Lazy><TuPengaturanPage /></Lazy></RequireRole> },
+          { path: '/tu/pengaturan/jam', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanJamPage /></Lazy></RequireRole> },
+          { path: '/tu/pengaturan/lokasi', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLokasiPage /></Lazy></RequireRole> },
+          { path: '/tu/pengaturan/libur', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLiburPage /></Lazy></RequireRole> },
+
+          // ── Kepsek: sekarang redirect saja ──────────────────────────────
+          { path: '/kepsek', element: <Navigate to="/kesiswaan/presensi-siswa" replace /> },
+
+          // ── REDIRECT LEGACY IA-lama → IA-baru (hapus setelah 1 rilis) ───
+          { path: '/admin/orang', element: <Navigate to="/kurikulum/orang/guru" replace /> },
+          { path: '/admin/orang/guru', element: <Navigate to="/kurikulum/orang/guru" replace /> },
+          { path: '/admin/orang/siswa', element: <Navigate to="/kurikulum/orang/siswa" replace /> },
+          { path: '/admin/orang/siswa/baru', element: <Navigate to="/kurikulum/orang/siswa/baru" replace /> },
+          { path: '/admin/orang/siswa/:id', element: <RedirectWithParams base="/kurikulum/orang/siswa" /> },
+          { path: '/admin/orang/guru/baru', element: <Navigate to="/kurikulum/orang/guru/baru" replace /> },
+          { path: '/admin/orang/guru/:id', element: <RedirectWithParams base="/kurikulum/orang/guru" /> },
+          { path: '/admin/orang/import', element: <Navigate to="/kurikulum/orang/import" replace /> },
+          { path: '/admin/kelas', element: <Navigate to="/kurikulum/kelas" replace /> },
+          { path: '/admin/ekskul', element: <Navigate to="/kurikulum/ekskul" replace /> },
+          { path: '/admin/pengaturan', element: <Navigate to="/admin/sekolah" replace /> },
+          { path: '/admin/pengaturan/sekolah', element: <Navigate to="/admin/sekolah" replace /> },
+          { path: '/admin/pengaturan/tahun-ajaran', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
+          { path: '/admin/pengaturan/kkm', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
+          { path: '/admin/pengaturan/jam', element: <Navigate to="/tu/pengaturan/jam" replace /> },
+          { path: '/admin/pengaturan/lokasi', element: <Navigate to="/tu/pengaturan/lokasi" replace /> },
+          { path: '/admin/pengaturan/libur', element: <Navigate to="/tu/pengaturan/libur" replace /> },
+          { path: '/admin/presensi-siswa', element: <Navigate to="/kesiswaan/presensi-siswa" replace /> },
+          { path: '/admin/presensi-guru', element: <Navigate to="/tu/presensi-guru" replace /> },
+          { path: '/admin/izin-guru', element: <Navigate to="/tu/izin-guru" replace /> },
+          { path: '/admin/laporan', element: <Navigate to="/tu/presensi-guru" replace /> },
+          { path: '/admin/laporan/harian-guru', element: <Navigate to="/tu/laporan/harian-guru" replace /> },
+          { path: '/admin/laporan/keterlaksanaan', element: <Navigate to="/kurikulum/laporan/keterlaksanaan" replace /> },
+          { path: '/admin/laporan/siswa', element: <Navigate to="/kesiswaan/laporan-kehadiran" replace /> },
         ],
       },
 
-      // Fallback
+      // Fallback — sementara (kembalikan ke <Navigate to="/" replace /> setelah suite hijau)
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

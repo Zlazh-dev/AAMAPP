@@ -18,7 +18,7 @@ const SEMESTER_OPTIONS = [
 ];
 
 /**
- * /admin/pengaturan/tahun-ajaran/baru — form tambah TA (T14).
+ * /kurikulum/tahun-ajaran/baru — form tambah TA (T14).
  * Uses SaveSuccess route per arahan planner #3.
  */
 export function PengaturanTahunAjaranFormPage() {
@@ -44,7 +44,7 @@ export function PengaturanTahunAjaranFormPage() {
         semester: parseInt(semester) as 1 | 2,
       });
       // Navigate to SaveSuccess route with state
-      navigate('/admin/pengaturan/tahun-ajaran/sukses', {
+      navigate('/kurikulum/tahun-ajaran/sukses', {
         replace: true,
         state: { entityName: `${created.nama} Semester ${created.semester === 1 ? 'Ganjil' : 'Genap'}`, mode: 'create' },
       });
@@ -59,11 +59,11 @@ export function PengaturanTahunAjaranFormPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="sm">
-        <BackLink to="/admin/pengaturan/tahun-ajaran" mobileButton={false} />
+        <BackLink to="/kurikulum/tahun-ajaran-kkm" mobileButton={false} />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Tambah Tahun Ajaran</h2>
         <p className="text-xs text-aam-text-muted mb-6">Buat tahun ajaran dan semester baru</p>
 
-        <Card icon="date_range" className="p-6">
+        <Card icon="date_range">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className={labelClass} htmlFor="ta-nama">Tahun Ajaran</label>
@@ -91,7 +91,7 @@ export function PengaturanTahunAjaranFormPage() {
             </div>
 
             <div className="border-t border-aam-border pt-4 flex items-center justify-end gap-2">
-              <Button variant="secondary" size="md" onClick={() => navigate('/admin/pengaturan/tahun-ajaran')} type="button">
+              <Button variant="secondary" size="md" onClick={() => navigate('/kurikulum/tahun-ajaran-kkm')} type="button">
                 Batal
               </Button>
               <Button type="submit" size="md" icon="save" loading={saving} disabled={!nama}>

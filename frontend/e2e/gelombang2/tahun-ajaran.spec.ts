@@ -33,10 +33,10 @@ test.describe('Tahun Ajaran (Matriks T16 lanjutan)', () => {
     const nama = `${yearBase}/${yearBase + 1}`;
 
     // 1. Tambah via form -> SaveSuccess route.
-    await page.goto('/admin/pengaturan/tahun-ajaran');
-    await expect(page.getByRole('heading', { name: 'Tahun Ajaran', level: 2 })).toBeVisible();
+    await page.goto('/kurikulum/tahun-ajaran-kkm');
+    await expect(page.getByRole('heading', { name: 'Tahun Ajaran & KKM', level: 2 })).toBeVisible();
     await page.getByRole('button', { name: 'add Tambah Tahun Ajaran' }).click();
-    await page.waitForURL('**/admin/pengaturan/tahun-ajaran/baru');
+    await page.waitForURL('**/kurikulum/tahun-ajaran/baru');
     await page.locator('#ta-nama').fill(nama);
     await page.getByRole('button', { name: 'save Simpan' }).click();
 
@@ -51,7 +51,7 @@ test.describe('Tahun Ajaran (Matriks T16 lanjutan)', () => {
     createdTaIds.push(created.id);
 
     // 2. Kembali ke daftar -> Aktifkan via ConfirmDialog tegas.
-    await page.goto('/admin/pengaturan/tahun-ajaran');
+    await page.goto('/kurikulum/tahun-ajaran-kkm');
     const row = page.locator('tr', { hasText: nama });
     await expect(row).toBeVisible();
     await row.getByRole('button', { name: /Aktifkan/ }).click();
@@ -83,3 +83,4 @@ test.describe('Tahun Ajaran (Matriks T16 lanjutan)', () => {
     }
   });
 });
+

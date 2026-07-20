@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { api } from '../../api/client';
+﻿import React, { useState, useCallback, useEffect } from 'react';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -7,6 +7,9 @@ import { Badge } from '../../components/Badge';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
+import { FormDrawer } from '../../components/FormDrawer';
+import { BackLink } from '../../components/BackLink';
+import { PageMenu } from '../../components/PageMenu';
 
 type TahapTindakLanjut = 'PERINGATAN_1' | 'PERINGATAN_2' | 'PERINGATAN_3' | 'TINDAKAN_KHUSUS';
 type StatusTindakLanjut = 'BARU' | 'SELESAI';
@@ -38,6 +41,8 @@ const TAHAP_VARIANT: Record<TahapTindakLanjut, 'yellow' | 'blue' | 'purple' | 'r
   TINDAKAN_KHUSUS: 'red',
 };
 
+/** Sub dari Pelanggaran (IA-HIERARCHY-V2). */
+
 export function TindakLanjutPage() {
   const toast = useToast();
   const [rows, setRows] = useState<TindakLanjutEntry[]>([]);
@@ -45,7 +50,6 @@ export function TindakLanjutPage() {
   const [loading, setLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusTindakLanjut | ''>('BARU');
 
-  // Sheet selesai
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedSiswa, setSelectedSiswa] = useState('');
@@ -56,16 +60,13 @@ export function TindakLanjutPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const q = new URLSearchParams();
-      if (statusFilter) q.set('status', statusFilter);
-      q.set('limit', '50');
       const res = await (api as any).getTindakLanjut?.(statusFilter || undefined);
       if (res) {
         setRows(res.data ?? res);
         setTotal(res.total ?? (res.data ?? res).length);
       }
-    } catch {
-      toast.show('error', 'Gagal memuat tindak lanjut.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat tindak lanjut.');
     } finally {
       setLoading(false);
     }
@@ -99,23 +100,28 @@ export function TindakLanjutPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-aam-text">
+          <h2 className="text-xl font-bold text-aam-text flex items-center gap-2">
             Tindak Lanjut
             {statusFilter === 'BARU' && total > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold w-5 h-5">
+              <span className="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold w-5 h-5">
                 {total > 99 ? '99+' : total}
               </span>
             )}
           </h2>
-          <p className="text-sm text-aam-muted mt-0.5">Antrean tindak lanjut otomatis berdasarkan ambang poin.</p>
+          <p className="text-sm text-aam-text-muted mt-0.5">Antrean tindak lanjut otomatis berdasarkan ambang poin.</p>
         </div>
-        <Button variant="secondary" onClick={load} id="btn-refresh-tindak-lanjut">↻ Refresh</Button>
+        <PageMenu
+          menuTitle="Menu Tindak Lanjut"
+          actions={[{ key: 'refresh', label: 'Refresh', icon: 'refresh', variant: 'default', id: 'btn-refresh-tindak-lanjut', onClick: load }]}
+        />
       </div>
 
+      <BackLink to="/kesiswaan/pelanggaran" />
       {/* Filter */}
-      <Card className="mb-4">
+      <Card>
         <select
           className="rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
           value={statusFilter}
@@ -128,7 +134,7 @@ export function TindakLanjutPage() {
         </select>
       </Card>
 
-      <Card>
+      <Card icon="assignment_late">
         {loading ? <TableSkeleton rows={4} /> : rows.length === 0 ? (
           <EmptyState icon="task_alt" message="Tidak ada tindak lanjut yang menunggu." />
         ) : (
@@ -140,14 +146,15 @@ export function TindakLanjutPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-aam-text">{row.siswaNama}</span>
-                      {row.siswaKelas && <span className="text-xs text-aam-muted">({row.siswaKelas})</span>}
+                      {row.siswaKelas && <span className="text-xs text-aam-text-muted">({row.siswaKelas})</span>}
                       <Badge variant={TAHAP_VARIANT[row.tahap]}>{row.tahap.replace('_', ' ')}</Badge>
                       <Badge variant={row.status === 'BARU' ? 'yellow' : 'green'}>{row.status}</Badge>
                     </div>
-                    <p className="text-sm text-aam-muted mt-1">{TAHAP_LABEL[row.tahap]}</p>
+                    <p className="text-sm text-aam-text-muted mt-1">{TAHAP_LABEL[row.tahap]}</p>
                     {row.status === 'SELESAI' && row.catatanPelaksanaan && (
-                      <p className="text-xs text-aam-muted mt-1 italic">
-                        ✓ {row.catatanPelaksanaan}
+                      <p className="text-xs text-aam-text-muted mt-1 italic flex items-start gap-1">
+                        <span className="material-symbols-outlined text-green-600 mt-0.5" style={{ fontSize: '0.875rem' }}>check_circle</span>
+                        {row.catatanPelaksanaan}
                         {row.dilaksanakanOlehNama ? ` — ${row.dilaksanakanOlehNama}` : ''}
                         {row.dilaksanakanPada ? ` (${row.dilaksanakanPada.slice(0, 10)})` : ''}
                       </p>
@@ -155,7 +162,7 @@ export function TindakLanjutPage() {
                   </div>
                   {row.status === 'BARU' && (
                     <Button onClick={() => openSelesai(row)} id={`btn-selesai-${row.id}`}>
-                      ✓ Catat Selesai
+                      <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>check</span> Selesai
                     </Button>
                   )}
                 </div>
@@ -165,37 +172,33 @@ export function TindakLanjutPage() {
         )}
       </Card>
 
-      {/* Inline sheet catat selesai */}
-      {sheetOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setSheetOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <h3 className="font-bold text-aam-text text-lg mb-1">Catat Pelaksanaan</h3>
-            <p className="text-sm text-aam-muted mb-1">{selectedSiswa}</p>
-            <p className="text-sm font-medium text-aam-text mb-4">{selectedTahap}</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Catatan Pelaksanaan *</label>
-                <textarea
-                  className="w-full rounded-md border border-aam-border px-3 py-2 text-sm"
-                  rows={4}
-                  value={catatan}
-                  onChange={e => setCatatan(e.target.value)}
-                  placeholder="Deskripsikan tindakan yang telah dilaksanakan..."
-                  id="input-catatan-pelaksanaan"
-                />
-              </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <Button variant="secondary" onClick={() => setSheetOpen(false)}>Batal</Button>
-                <Button onClick={handleSelesai} disabled={saving} id="btn-konfirmasi-selesai">
-                  {saving ? 'Menyimpan...' : 'Tandai Selesai'}
-                </Button>
-              </div>
-            </div>
+      {/* Catat Selesai FormDrawer */}
+      <FormDrawer
+        open={sheetOpen}
+        title="Catat Pelaksanaan Tindak Lanjut"
+        onClose={() => setSheetOpen(false)}
+        onSubmit={handleSelesai}
+        submitting={saving}
+        submitLabel="Tandai Selesai"
+      >
+        <div className="space-y-3">
+          <div className="rounded-md bg-blue-50 border border-blue-200 px-3 py-2 text-sm">
+            <p className="font-medium text-aam-text">{selectedSiswa}</p>
+            <p className="text-aam-text-muted">{selectedTahap}</p>
           </div>
-        </>
-      )}
+          <div>
+            <label className="block text-xs font-medium text-aam-text-muted mb-1">Catatan Pelaksanaan *</label>
+            <textarea
+              className="w-full rounded-md border border-aam-border px-3 py-2 text-sm"
+              rows={4}
+              value={catatan}
+              onChange={e => setCatatan(e.target.value)}
+              placeholder="Deskripsikan tindakan yang telah dilaksanakan..."
+              id="input-catatan-pelaksanaan"
+            />
+          </div>
+        </div>
+      </FormDrawer>
     </PageContainer>
   );
 }

@@ -18,7 +18,7 @@ const EMPTY: LokasiPengaturan = { aktif: false, lat: 0, lng: 0, radiusMeter: 100
 type GeoStatus = 'idle' | 'loading' | 'success' | 'denied' | 'error';
 
 /**
- * /admin/pengaturan/lokasi — verifikasi lokasi presensi HP (T14, §15.3).
+ * /tu/rekap-guru/lokasi — verifikasi lokasi presensi HP (T14, §15.3).
  * Saklar aktif + koordinat + "Gunakan lokasi saya" + radius.
  */
 export function PengaturanLokasiPage() {
@@ -104,7 +104,7 @@ export function PengaturanLokasiPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/tu/pengaturan" />
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -113,11 +113,11 @@ export function PengaturanLokasiPage() {
   return (
     <UnsavedGuard dirty={dirty}>
       <PageContainer size="md" bottomBar>
-        <BackLink to="/admin/pengaturan" />
+        <BackLink to="/tu/pengaturan" />
         <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Lokasi Sekolah</h2>
         <p className="text-xs text-aam-text-muted mb-6">Verifikasi lokasi untuk presensi via HP (geofence)</p>
 
-        <Card icon="location_on" className="p-6">
+        <Card icon="location_on">
           <div className="space-y-5">
             {/* Saklar aktif */}
             <div className="flex items-center justify-between gap-4 py-2">
@@ -180,7 +180,7 @@ export function PengaturanLokasiPage() {
             {/* Peta (T15 0d — Leaflet dynamic import, §14.10.3) */}
             <div className="border-t border-aam-border pt-4">
               <h3 className="text-sm font-semibold text-aam-text mb-3">Peta Lokasi</h3>
-              <React.Suspense fallback={<div className="w-full h-64 rounded-md border border-aam-border bg-aam-bg flex items-center justify-center text-sm text-aam-text-muted">Memuat peta…</div>}>
+              <React.Suspense fallback={<div className="w-full h-64 rounded-md border border-aam-border bg-aam-page flex items-center justify-center text-sm text-aam-text-muted">Memuat peta…</div>}>
                 <LeafletMap
                   lat={data.lat}
                   lng={data.lng}
@@ -202,7 +202,7 @@ export function PengaturanLokasiPage() {
             </div>
 
             {/* Penjelasan */}
-            <div className="rounded-md bg-aam-bg border border-aam-border p-4">
+            <div className="rounded-md bg-aam-page border border-aam-border p-4">
               <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-aam-text-muted mt-0.5" style={{ fontSize: '1.125rem' }}>info</span>
                 <p className="text-xs text-aam-text-muted">

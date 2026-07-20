@@ -82,3 +82,4 @@ test.describe('Multi-checkbox Kelas (Poin 3 Perluasan T16)', () => {
     expect(kelasIds).toEqual([kelasAId, kelasBId].sort());
   });
 });
+

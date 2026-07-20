@@ -4,13 +4,14 @@ import { ensureActiveTahunAjaran, authHeaders } from '../helpers/api';
 
 /**
  * F2-SPEC e2e — Presensi Siswa per KBM.
- * §12.17e: spec wajib — simpan roster, cutoff 403, koreksi admin,
+ * §12.17e: spec wajib — simpan roster, cutoff 403, koreksi guru pengampu,
  * matriks batch, rekap.
  *
  * Setup murni via API (guru, mapel, kelas, siswa, penugasan, jadwal)
  * karena F2 backend tidak bergantung pada UI guru untuk diverifikasi.
- * Login admin dipakai untuk semua panggilan (admin lolos RBAC guru juga,
- * lihat roles.guard.ts baris 54 — admin selalu lolos @Roles(...)).
+ * IA-HIERARCHY-V2 §Keputusan otorisasi: koreksi presensi siswa = hak murni
+ * guru pengampu. Admin TIDAK lagi lolos @Roles('guru') — panggilan
+ * /api/guru/* wajib pakai token guru pengampu jadwal itu.
  */
 test.describe('F2 — Presensi Siswa per KBM', () => {
   // Alur KBM "hari ini" tidak berlaku pada MINGGU (produk: hari 7 = tak ada
@@ -58,7 +59,9 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     createdGuruIds.length = 0;
   });
 
-  /** Setup bersama: guru + mapel + kelas + 2 siswa + penugasan + jadwal hari ini. */
+  /** Setup bersama: guru + mapel + kelas + 2 siswa + penugasan + jadwal hari ini.
+   *  IA-HIERARCHY-V2: guru pengampu WAJIB punya user account supaya bisa
+   *  memanggil endpoint /api/guru/* (admin tak lagi lolos @Roles('guru')). */
   async function setupSesiHariIni(request: any, token: string, suffix: number) {
     const headers = authHeaders(token);
     await ensureActiveTahunAjaran(request, token);
@@ -69,6 +72,20 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     });
     const guru = await guruRes.json();
 
+    // Buat user account untuk guru pengampu + tautkan ke record guru.
+    const guruEmail = `guru.presensi.${suffix}@aamapp.sch.id`;
+    const userRes = await request.post('/api/admin/users', {
+      headers,
+      data: { name: `Guru Presensi ${suffix}`, email: guruEmail, password: 'password123', roles: ['guru'] },
+    });
+    const user = await userRes.json();
+    await request.patch(`/api/admin/guru/${guru.id}`, { headers, data: { userId: user.id } });
+
+    // Login sebagai guru pengampu untuk dapatkan token /api/guru/*.
+    const guruLoginRes = await request.post('/api/auth/login', { data: { email: guruEmail, password: 'password123' } });
+    const { accessToken: guruToken } = await guruLoginRes.json();
+    const guruHeaders = authHeaders(guruToken);
+
     const mapelRes = await request.post('/api/kurikulum/mapel', {
       headers,
       data: { nama: `Mapel Presensi ${suffix}`, kode: `MP${suffix}`.slice(0, 20), kelompok: 'A', urutan: 1 },
@@ -77,7 +94,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
 
     const kelasRes = await request.post('/api/admin/kelas', {
       headers,
-      data: { tingkat: 7, nama: `KP-${suffix}` },
+      data: { tingkat: 7, nama: `KP-${suffix}`, waliGuruId: guru.id },
     });
     const kelas = await kelasRes.json();
 
@@ -110,14 +127,14 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     });
     const jadwal = await jadwalRes.json();
 
-    return { guru, mapel, kelas, siswa1, siswa2, penugasan, jadwal };
+    return { guru, guruToken, guruHeaders, mapel, kelas, siswa1, siswa2, penugasan, jadwal };
   }
 
-  test('Simpan roster, baca kembali, matriks admin, dan koreksi admin dgn alasan', async ({ page, request }) => {
+  test('Simpan roster, baca kembali, matriks admin, dan koreksi guru pengampu dgn alasan', async ({ page, request }) => {
     const token = (await page.evaluate(() => localStorage.getItem('aamapp_token'))) as string;
     const headers = authHeaders(token);
     const suffix = Date.now();
-    const { kelas, siswa1, siswa2, jadwal } = await setupSesiHariIni(request, token, suffix);
+    const { kelas, siswa1, siswa2, jadwal, guruHeaders } = await setupSesiHariIni(request, token, suffix);
     createdKelasIds.push(kelas.id);
     createdSiswaIds.push(siswa1.id, siswa2.id);
     createdJadwalIds.push(jadwal.id);
@@ -126,7 +143,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
 
     // 1. Simpan roster: siswa1=H, siswa2=I.
     const simpanRes = await request.post(`/api/guru/kbm/${jadwal.id}/roster`, {
-      headers,
+      headers: guruHeaders,
       data: {
         tanggal,
         entri: [
@@ -142,7 +159,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     expect(simpanBody.ringkasan.I).toBe(1);
 
     // 2. Baca roster kembali -> status tersimpan sesuai & tersimpan=true.
-    const rosterRes = await request.get(`/api/guru/kbm/${jadwal.id}/roster?tanggal=${tanggal}`, { headers });
+    const rosterRes = await request.get(`/api/guru/kbm/${jadwal.id}/roster?tanggal=${tanggal}`, { headers: guruHeaders });
     expect(rosterRes.ok()).toBeTruthy();
     const rosterBody = await rosterRes.json();
     expect(rosterBody.tersimpan).toBe(true);
@@ -160,17 +177,19 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     expect(sesiMatriks.ringkasan.H).toBe(1);
     expect(sesiMatriks.ringkasan.I).toBe(1);
 
-    // 4. Koreksi admin (PATCH) untuk tanggal LAMPAU tanpa alasan -> 400.
+    // 4. Koreksi guru pengampu (PATCH) untuk tanggal LAMPAU -> 403 (cutoff).
+    //    IA-HIERARCHY-V2 §Keputusan otorisasi: guru pengampu tidak bisa
+    //    mengoreksi tanggal lampau (melewati cutoff) -> 403, bukan 400.
     const kemarin = new Date(Date.now() - 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     const koreksiTanpaAlasanRes = await request.patch(`/api/guru/kbm/${jadwal.id}/roster`, {
-      headers,
+      headers: guruHeaders,
       data: { tanggal: kemarin, entri: [{ siswaId: siswa1.id, status: 'A' }] },
     });
-    expect(koreksiTanpaAlasanRes.status()).toBe(400);
+    expect(koreksiTanpaAlasanRes.status()).toBe(403);
 
-    // 5. Koreksi admin dgn alasan -> berhasil & status berubah jadi A.
+    // 5. Koreksi guru pengampu dgn alasan -> berhasil & status berubah jadi A.
     const koreksiRes = await request.patch(`/api/guru/kbm/${jadwal.id}/roster`, {
-      headers,
+      headers: guruHeaders,
       data: {
         tanggal,
         entri: [{ siswaId: siswa1.id, status: 'A' }, { siswaId: siswa2.id, status: 'I' }],
@@ -179,7 +198,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     });
     expect(koreksiRes.ok(), await koreksiRes.text()).toBeTruthy();
 
-    const rosterSetelahKoreksi = await request.get(`/api/guru/kbm/${jadwal.id}/roster?tanggal=${tanggal}`, { headers });
+    const rosterSetelahKoreksi = await request.get(`/api/guru/kbm/${jadwal.id}/roster?tanggal=${tanggal}`, { headers: guruHeaders });
     const bodySetelah = await rosterSetelahKoreksi.json();
     const s1Setelah = bodySetelah.siswa.find((s: any) => s.siswaId === siswa1.id);
     expect(s1Setelah.status).toBe('A');
@@ -189,7 +208,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     const token = (await page.evaluate(() => localStorage.getItem('aamapp_token'))) as string;
     const headers = authHeaders(token);
     const suffix = Date.now() + 1;
-    const { kelas, siswa1, siswa2, jadwal } = await setupSesiHariIni(request, token, suffix);
+    const { kelas, siswa1, siswa2, jadwal, guruHeaders } = await setupSesiHariIni(request, token, suffix);
     createdKelasIds.push(kelas.id);
     createdSiswaIds.push(siswa1.id, siswa2.id);
     createdJadwalIds.push(jadwal.id);
@@ -197,7 +216,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     const tanggal = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
 
     await request.post(`/api/guru/kbm/${jadwal.id}/roster`, {
-      headers,
+      headers: guruHeaders,
       data: {
         tanggal,
         entri: [
@@ -209,7 +228,7 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
 
     const rekapRes = await request.get(
       `/api/guru/kelas/rekap-presensi?kelasId=${kelas.id}&dari=${tanggal}&sampai=${tanggal}&page=1&limit=10`,
-      { headers },
+      { headers: guruHeaders },
     );
     expect(rekapRes.ok(), await rekapRes.text()).toBeTruthy();
     const rekapBody = await rekapRes.json();
@@ -258,3 +277,4 @@ test.describe('F2 — Presensi Siswa per KBM', () => {
     expect(simpanRes.status()).toBe(403);
   });
 });
+

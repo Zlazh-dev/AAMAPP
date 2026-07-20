@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { api, PelanggaranEntry, KategoriPelanggaran } from '../../api/client';
+﻿import React, { useState, useCallback, useEffect } from 'react';
+import { api, PelanggaranEntry , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -7,6 +7,9 @@ import { Badge } from '../../components/Badge';
 import { EmptyState } from '../../components/EmptyState';
 import { TableSkeleton } from '../../components/Skeleton';
 import { useToast } from '../../components/Toast';
+import { FormDrawer } from '../../components/FormDrawer';
+import { BackLink } from '../../components/BackLink';
+import { PageMenu } from '../../components/PageMenu';
 
 const KATEGORI_VARIANT: Record<string, 'gray' | 'yellow' | 'red' | 'blue'> = {
   R: 'blue', S: 'yellow', B: 'red', SB: 'red', KHUSUS: 'gray',
@@ -29,8 +32,8 @@ export function VerifikasiPage() {
       const res = await api.getVerifikasiAntrean({ limit: 50 });
       setRows(res.data);
       setTotal(res.total);
-    } catch {
-      toast.show('error', 'Gagal memuat antrean verifikasi.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat antrean verifikasi.');
     } finally {
       setLoading(false);
     }
@@ -73,22 +76,28 @@ export function VerifikasiPage() {
 
   return (
     <PageContainer>
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-aam-text">
+          <h2 className="text-xl font-bold text-aam-text flex items-center gap-2">
             Verifikasi Pelanggaran
             {total > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold w-5 h-5">
+              <span className="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-xs font-bold w-5 h-5">
                 {total > 99 ? '99+' : total}
               </span>
             )}
           </h2>
-          <p className="text-sm text-aam-muted mt-0.5">Antrean laporan guru &amp; otomatis menunggu persetujuan.</p>
+          <p className="text-sm text-aam-text-muted mt-0.5">Antrean laporan guru &amp; otomatis menunggu persetujuan.</p>
         </div>
-        <Button variant="secondary" onClick={load} id="btn-refresh-verifikasi">↻ Refresh</Button>
+        <PageMenu
+          menuTitle="Menu Verifikasi"
+          actions={[{ key: 'refresh', label: 'Refresh', icon: 'refresh', variant: 'default', id: 'btn-refresh-verifikasi', onClick: load }]}
+        />
       </div>
 
-      <Card>
+      <BackLink to="/kesiswaan/pelanggaran" />
+
+      <Card icon="task_alt">
         {loading ? <TableSkeleton rows={3} /> : rows.length === 0 ? (
           <EmptyState icon="task_alt" message="Tidak ada pelanggaran yang menunggu verifikasi." />
         ) : (
@@ -102,21 +111,21 @@ export function VerifikasiPage() {
                       <Badge variant={KATEGORI_VARIANT[row.kategori]}>{row.kategori}</Badge>
                       <Badge variant="yellow">MENUNGGU</Badge>
                     </div>
-                    <p className="text-sm text-aam-muted mt-1">
+                    <p className="text-sm text-aam-text-muted mt-1">
                       {row.katalogBentuk ?? '(pelanggaran khusus)'} — <strong>{row.poin} poin</strong>
                     </p>
-                    <p className="text-xs text-aam-muted mt-0.5">
+                    <p className="text-xs text-aam-text-muted mt-0.5">
                       {row.tanggal} · {row.sumber}
                       {row.pelaporNama ? ` · Pelapor: ${row.pelaporNama}` : ''}
                     </p>
-                    {row.catatan && <p className="text-xs text-aam-muted mt-0.5 italic">"{row.catatan}"</p>}
+                    {row.catatan && <p className="text-xs text-aam-text-muted mt-0.5 italic">"{row.catatan}"</p>}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <Button onClick={() => handleSetujui(row.id)} disabled={processing} id={`btn-setujui-${row.id}`}>
-                      ✓ Setujui
+                      <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>check</span> Setujui
                     </Button>
                     <Button variant="danger" onClick={() => openTolak(row.id)} disabled={processing} id={`btn-tolak-${row.id}`}>
-                      ✕ Tolak
+                      <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>close</span> Tolak
                     </Button>
                   </div>
                 </div>
@@ -126,27 +135,23 @@ export function VerifikasiPage() {
         )}
       </Card>
 
-      {/* Inline sheet tolak */}
-      {tolakOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setTolakOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl p-6 max-w-lg mx-auto shadow-2xl">
-            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4" />
-            <h3 className="font-bold text-aam-text text-lg mb-2">Tolak Pelanggaran</h3>
-            <p className="text-sm text-aam-muted mb-3">Berikan alasan penolakan (wajib).</p>
-            <textarea className="w-full rounded-md border border-aam-border px-3 py-2 text-sm" rows={4}
-              value={alasan} onChange={e => setAlasan(e.target.value)} placeholder="Alasan penolakan..."
-              id="input-alasan-tolak" />
-            <div className="flex gap-3 justify-end mt-4">
-              <Button variant="secondary" onClick={() => setTolakOpen(false)}>Batal</Button>
-              <Button variant="danger" onClick={handleTolak} disabled={processing} id="btn-konfirmasi-tolak">
-                {processing ? 'Memproses...' : 'Tolak Pelanggaran'}
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
+      {/* Tolak FormDrawer — desktop modal / mobile bottom sheet */}
+      <FormDrawer
+        open={tolakOpen}
+        title="Tolak Pelanggaran"
+        onClose={() => setTolakOpen(false)}
+        onSubmit={handleTolak}
+        submitting={processing}
+        submitLabel="Tolak Pelanggaran"
+      >
+        <p className="text-sm text-aam-text-muted mb-3">Berikan alasan penolakan (wajib).</p>
+        <textarea
+          className="w-full rounded-md border border-aam-border px-3 py-2 text-sm" rows={4}
+          value={alasan} onChange={e => setAlasan(e.target.value)}
+          placeholder="Alasan penolakan..."
+          id="input-alasan-tolak"
+        />
+      </FormDrawer>
     </PageContainer>
   );
 }
-

@@ -1726,26 +1726,26 @@ jalan • FINAL→read-only • export PDF lazy (tidak di main bundle) • e2e m
 
 ---
 
-## LAPORAN � F6c FRONTEND: KOKURIKULER
+## LAPORAN — F6c FRONTEND: KOKURIKULER
 
 DIKERJAKAN (2026-07-19 00:47 ? 01:08 WIB).
 
 ### Yang dibangun
 
-**client.ts � F6c methods (9 method):**
-- getKokurikulerKegiatan/create/update/delete � kegiatan CRUD.
-- getKokurikulerTim/assignKokurikulerTim/removeKokurikulerTim � tim per kelas.
-- getKokurikulerAsesmen/putKokurikulerAsesmen � grid asesmen GET/PUT.
-- getRaporKokurikuler(siswaId, semester) � rapor per siswa per semester.
-- getGuruKokurikuler() � kegiatan di mana guru jadi penilai.
+**client.ts — F6c methods (9 method):**
+- getKokurikulerKegiatan/create/update/delete — kegiatan CRUD.
+- getKokurikulerTim/assignKokurikulerTim/removeKokurikulerTim — tim per kelas.
+- getKokurikulerAsesmen/putKokurikulerAsesmen — grid asesmen GET/PUT.
+- getRaporKokurikuler(siswaId, semester) — rapor per siswa per semester.
+- getGuruKokurikuler() — kegiatan di mana guru jadi penilai.
 
 **Halaman:**
 - `kokurikulerConstants.ts`: 8 dimensi master list, NilaiKokurikuler type, nilaiToVariant.
 - KokurikulerKegiatanPage /kurikulum/kokurikuler: list kegiatan, CRUD inline sheet (tema+semester+checkboxes 8 dimensi), navigasi ke tim.
 - KokurikulerTimPage /kurikulum/kokurikuler/:id/tim: assign guru penilai per kelas (multi-guru), remove guru dari tim.
 - GuruKokurikulerPage /guru/kokurikuler: kartu kegiatan guru jadi penilai ? Input Asesmen by kegiatanId.
-- KokurikulerAsesmenPage /guru/kokurikuler/:id/asesmen: grid siswa�dimensi, tombol SB/B/C/K toggle per cell, bulk PUT, progress badge, kelas selector.
-- RaporKokurikulerPage /kokurikuler/rapor/:siswaId: tabel dimensi � nilai akhir rata-rata SB/B/C/K + deskripsi, semester selector, formula note (SB=4/B=3/C=2/K=1 ? >3.5/>2.5/>1.5/K).
+- KokurikulerAsesmenPage /guru/kokurikuler/:id/asesmen: grid siswa—dimensi, tombol SB/B/C/K toggle per cell, bulk PUT, progress badge, kelas selector.
+- RaporKokurikulerPage /kokurikuler/rapor/:siswaId: tabel dimensi — nilai akhir rata-rata SB/B/C/K + deskripsi, semester selector, formula note (SB=4/B=3/C=2/K=1 ? >3.5/>2.5/>1.5/K).
 
 **Wiring:**
 - App.tsx: 5 lazy imports + 6 routes (kurikulum kelola, guru asesmen, rapor).
@@ -1764,32 +1764,32 @@ DIKERJAKAN (2026-07-19 00:47 ? 01:08 WIB).
 | F6c spec | 14 | 0 | 0 |
 | Full suite | 255 | 12 | 0 |
 
-DoD terpenuhi: tsc bersih � build sukses � kelola kegiatan?tim?asesmen?rapor
-jalan � 8 dimensi SB/B/C/K � formula rata-rata multi-penilai � e2e mandiri 14/14
-� full suite 255/0 � F6 (a+b+c) TUNTAS.
+DoD terpenuhi: tsc bersih — build sukses — kelola kegiatan?tim?asesmen?rapor
+jalan — 8 dimensi SB/B/C/K — formula rata-rata multi-penilai — e2e mandiri 14/14
+— full suite 255/0 — F6 (a+b+c) TUNTAS.
 
 
 ---
 
-## LAPORAN � F6d FRONTEND: EKSTRAKURIKULER
+## LAPORAN — F6d FRONTEND: EKSTRAKURIKULER
 
 DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
 
 ### Yang dibangun
 
-**client.ts � F6d methods (12 method):**
-- getEkskul/createEkskul/updateEkskul/deleteEkskul � CRUD ekskul (admin).
-- getEkskulDetail(id, semester) � GET detail + peserta + tujuan + nilai + kehadiran per semester.
-- ddEkskulPeserta/removeEkskulPeserta � manajemen peserta.
-- createEkskulTujuan/updateEkskulTujuan/deleteEkskulTujuan � CRUD tujuan per semester.
-- putEkskulNilai(id, {semester, entri}) � PUT bulk nilai SB/B/C/K.
-- putEkskulKehadiran(id, {semester, entri}) � PUT bulk kehadiran hadir/total.
-- getRaporEkskul(siswaId, semester) � GET rapor ekskul per siswa per semester.
+**client.ts — F6d methods (12 method):**
+- getEkskul/createEkskul/updateEkskul/deleteEkskul — CRUD ekskul (admin).
+- getEkskulDetail(id, semester) — GET detail + peserta + tujuan + nilai + kehadiran per semester.
+- ddEkskulPeserta/removeEkskulPeserta — manajemen peserta.
+- createEkskulTujuan/updateEkskulTujuan/deleteEkskulTujuan — CRUD tujuan per semester.
+- putEkskulNilai(id, {semester, entri}) — PUT bulk nilai SB/B/C/K.
+- putEkskulKehadiran(id, {semester, entri}) — PUT bulk kehadiran hadir/total.
+- getRaporEkskul(siswaId, semester) — GET rapor ekskul per siswa per semester.
 
 **Halaman:**
 - `EkskulAdminPage` /admin/ekskul + /guru/ekskul: list ekskul + pembina, CRUD inline sheet (nama+pembina selector), navigasi ke detail by ekskulId.
-- `EkskulPembinaPage` /admin/ekskul/:ekskulId + /guru/ekskul/:ekskulId: semester selector; tujuan CRUD per semester (inline sheet deskripsi); peserta (tambah via search siswa by nama, hapus); grid nilai SB/B/C/K toggle per peserta�tujuan; tabel kehadiran hadir/total per peserta dengan % merah <70%.
-- `RaporEkskulPage` /ekskul/rapor/:siswaId: per ekskul yang diikuti siswa: kehadiran% (?? <70% merah), tabel tujuan � nilai SB/B/C/K, deskripsi otomatis, semester selector.
+- `EkskulPembinaPage` /admin/ekskul/:ekskulId + /guru/ekskul/:ekskulId: semester selector; tujuan CRUD per semester (inline sheet deskripsi); peserta (tambah via search siswa by nama, hapus); grid nilai SB/B/C/K toggle per peserta—tujuan; tabel kehadiran hadir/total per peserta dengan % merah <70%.
+- `RaporEkskulPage` /ekskul/rapor/:siswaId: per ekskul yang diikuti siswa: kehadiran% (?? <70% merah), tabel tujuan — nilai SB/B/C/K, deskripsi otomatis, semester selector.
 
 **Wiring:**
 - App.tsx: 3 lazy imports F6d + 5 routes (admin ekskul list+detail, guru ekskul list+detail, rapor ekskul).
@@ -1808,32 +1808,32 @@ DIKERJAKAN (2026-07-19 01:21 ? 01:58 WIB).
 | F6d spec | 16 | 0 | 0 |
 | Full suite | 285 | 12 | 0 |
 
-DoD terpenuhi: tsc bersih � build sukses � admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester � e2e mandiri 16/16 � full suite 285/0 � F6d TUNTAS.
+DoD terpenuhi: tsc bersih — build sukses — admin kelola ekskul ? pembina peserta+tujuan+nilai SB/B/C/K+kehadiran% merah<70% ? rapor per siswa per semester — e2e mandiri 16/16 — full suite 285/0 — F6d TUNTAS.
 
 
 ---
 
-## LAPORAN � F6-INTEGRASI FRONTEND: RAPOR PDF PENUH
+## LAPORAN — F6-INTEGRASI FRONTEND: RAPOR PDF PENUH
 
 DIKERJAKAN (2026-07-19 02:11 ? 02:31 WIB).
 
 ### Yang dibangun
 
-**lib/exportPdf.ts � exportRaporPenuh (F6-INTEGRASI):**
+**lib/exportPdf.ts — exportRaporPenuh (F6-INTEGRASI):**
 - Interface: RaporPenuhParams (siswa+semester+TA, kehadiran S/I/A, mapel[], kokurikuler[], ekstrakurikuler[], catatanWali, kkm, profil).
-- Fungsi: exportRaporPenuh � pdfmake lazy A4 portrait berkop sekolah, 1 dokumen:
+- Fungsi: exportRaporPenuh — pdfmake lazy A4 portrait berkop sekolah, 1 dokumen:
   - A. Identitas Siswa (nama/NIS/kelas/TA/semester)
   - B. Nilai Akademik (tabel mapel: nilai+katrol merah<KKM, predikat Tuntas/Belum, deskripsi)
   - C. Kehadiran (S/I/A, alpha merah bila >0)
   - D. Kokurikuler PPP (tabel dimensi+nilai SB/B/C/K+deskripsi)
-  - E. Ekstrakurikuler (per ekskul: nama, kehadiran% merah<70% ?, tabel tujuan�nilai)
+  - E. Ekstrakurikuler (per ekskul: nama, kehadiran% merah<70% ?, tabel tujuan—nilai)
   - F. Catatan Wali
   - TTD 3 kolom: Orang Tua / Wali Kelas / Kepala Sekolah+NIP
 
 **RaporDetailPage (DIPERLUAS):**
-- 3 bagian terintegrasi: B.Nilai Akademik + D.Kokurikuler (PPP, tabel dimensi�SB/B/C/K) + E.Ekskul (per ekskul, kehadiran% badge merah<70%, tabel tujuan�nilai).
+- 3 bagian terintegrasi: B.Nilai Akademik + D.Kokurikuler (PPP, tabel dimensi—SB/B/C/K) + E.Ekskul (per ekskul, kehadiran% badge merah<70%, tabel tujuan—nilai).
 - Wrapper div#section-kokurikuler + div#section-ekskul untuk navigasi e2e.
-- Tombol ? PDF Penuh (#btn-export-rapor-pdf) ? doExportPdf() ? dynamic import exportRaporPenuh (lazy �12.15).
+- Tombol ? PDF Penuh (#btn-export-rapor-pdf) ? doExportPdf() ? dynamic import exportRaporPenuh (lazy —12.15).
 - Empty state masing-masing bagian bila backend belum live (API paralel AG-2).
 - Override katrol + catatan wali + Finalisasi tetap berfungsi.
 
@@ -1853,20 +1853,20 @@ DIKERJAKAN (2026-07-19 02:11 ? 02:31 WIB).
 | Integration spec | 18 | 0 | 0 |
 | Full suite (sebelum fix) | 301 | 12 | 2?0 setelah fix |
 
-DoD terpenuhi: tsc bersih � build sukses � RaporDetailPage 3 bagian (akademik+kokurikuler+ekskul) � PDF penuh 1 dokumen berkop (A-F+TTD) lazy �12.15 � e2e mandiri 18/18 � F6-INTEGRASI TUNTAS.
+DoD terpenuhi: tsc bersih — build sukses — RaporDetailPage 3 bagian (akademik+kokurikuler+ekskul) — PDF penuh 1 dokumen berkop (A-F+TTD) lazy —12.15 — e2e mandiri 18/18 — F6-INTEGRASI TUNTAS.
 
 
 ---
 
-## LAPORAN � UX-POLISH-FE Gelombang 1 (A/B/C/D)
+## LAPORAN — UX-POLISH-FE Gelombang 1 (A/B/C/D)
 
 DIKERJAKAN (2026-07-19 14:02 ? 14:53 WIB).
 
 ### Yang dibangun
 
-**(A) Akses peran � menu.ts:**
+**(A) Akses peran — menu.ts:**
 - ADMIN_EXTRA_AREAS = ['kurikulum','kesiswaan','tu'] ('guru' dibuang).
-- Admin sidebar: 6 item saja � Dashboard/Data Orang/Kelas/Laporan/Pengaturan/Akun (+Ekskul fungsional).
+- Admin sidebar: 6 item saja — Dashboard/Data Orang/Kelas/Laporan/Pengaturan/Akun (+Ekskul fungsional).
 - Kepsek sidebar: hanya Laporan hub.
 - Guru area dikunci ke peran guru (tidak muncul di admin).
 
@@ -1879,7 +1879,7 @@ DIKERJAKAN (2026-07-19 14:02 ? 14:53 WIB).
 - Deleted routes: /kiosk (public), /admin/perangkat, /admin/presensi-guru-pending, /admin/wajah, /admin/wajah/:guruId.
 - Deleted specs: kiosk-backend.spec.ts, kiosk-device.spec.ts, kiosk-frontend-admin.spec.ts.
 
-**(C) Laporan HUB � 6 sub-halaman:**
+**(C) Laporan HUB — 6 sub-halaman:**
 - AdminLaporanHubPage diperluas: Presensi Siswa + Presensi Guru + Izin Guru (real-time) + 3 laporan periodik.
 - Sidebar admin: Presensi Siswa/Guru/Izin Guru HILANG dari sidebar langsung ? masuk hub Laporan.
 - BackLink diperbarui: PresensiGuruPage ? /admin/laporan, MatriksPresensiSiswaPage ? /admin/laporan, AdminIzinGuruPage ? /admin/laporan.
@@ -1889,7 +1889,7 @@ DIKERJAKAN (2026-07-19 14:02 ? 14:53 WIB).
 - Panggil PATCH /api/admin/guru/:id/wajah/validasi via api.validasiWajahGuru (backend AG-2).
 - Route /admin/wajah + /admin/wajah/:guruId dihapus.
 
-**E2E ux-polish-gel1.spec.ts 40 test mandiri � 40/40 passed.**
+**E2E ux-polish-gel1.spec.ts 40 test mandiri — 40/40 passed.**
 Spec lain diperbaiki: laporan-dashboard, 	u-rekap, presensi-wajah-ui, apor-f6b, ekskul-f6d, 
 its-bad-request (kiosk di-skip).
 Pre-existing flaky: ekap-presensi (timing data div.hidden.md:block, bukan UX-POLISH).
@@ -1906,14 +1906,51 @@ DoD Gel-1: tsc bersih ? build sukses ? sidebar 6-item + Laporan hub ? kiosk hila
 
 ---
 
-## LAPORAN � UX-POLISH-FE Gelombang 2 (komponen reusable + UI konsisten + fix e2e)
+## LAPORAN — UX-POLISH-FE Gelombang 2 (komponen reusable + UI konsisten + fix e2e)
 
-DIKERJAKAN (2026-07-19 15:15 WIB) � DIKLAIM.
+DIKERJAKAN (2026-07-19 15:15 WIB) — DIKLAIM.
 
 
 ---
 
-## LAPORAN � UX-POLISH-FE Gelombang 2b (token, spacing, bottom-sheet, Table, e2e)
+## LAPORAN — UX-POLISH-FE Gelombang 2b (token, spacing, bottom-sheet, Table, e2e)
 
-DIKERJAKAN (2026-07-19 15:48 WIB) � DIKLAIM.
+DIKERJAKAN (2026-07-19 15:48 WIB) — DIKLAIM.
+
+
+---
+
+## LAPORAN — Deploy-Prep (docs ops + sapu guru + e2e polish)
+
+DIKERJAKAN (2026-07-19 20:20 ? 20:30 WIB).
+
+### Yang dibangun
+
+**1. Sapu dead link pages/guru/**
+- Tidak ada /admin/* path tersisa di pages/guru/** — bersih sebelum dimulai.
+
+**2. Sisa polish guru per CARD-DESIGN-STANDARD.md**
+- BackLink diimpor ke GuruEnrollWizardPage.tsx (sudah ada inline kembali).
+- Semua sub-halaman guru sudah punya navigasi balik (inline button atau BackLink).
+- am-muted = NOL, token bersih, p-* dari Card caller sudah dihapus.
+
+**3. Docs Operasional (prioritas tinggi)**
+- docs/DEPLOY.md [BARU] — panduan deploy lengkap: prasyarat, .env wajib, deploy pertama, update, bootstrap admin, backup/restore DB + upload, reverse proxy, cron backup, troubleshooting.
+- .env.example diperbarui — semua variabel didokumentasikan dengan label [WAJIB] + komentar.
+
+**4. Rapikan E2E untuk deploy**
+- libur-crud.spec.ts:38,77 — /admin/pengaturan/libur ? /tu/libur
+- laporan-dashboard.spec.ts:88 — /admin/laporan/harian-guru ? /tu/laporan/harian-guru
+- pengaturan.spec.ts:18,42,63,84,123 — semua /admin/pengaturan/* dipetakan ke area baru
+- libur-nasional-banner.spec.ts:36 — /admin/pengaturan/libur ? /tu/libur
+- 	ahun-ajaran.spec.ts:36,54 — /admin/pengaturan/tahun-ajaran ? /kurikulum/tahun-ajaran
+
+Setelah fix: grep goto('/admin/(orang|kelas|ekskul|presensi|izin|laporan/|pengaturan)') = NOL ?
+
+### Hasil
+- tsc = CLEAN ?
+- Dead goto paths di e2e = NOL ?
+- docs/DEPLOY.md dibuat ?
+- .env.example lengkap ?
+
 

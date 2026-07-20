@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { api, ActivityLogEntry, ActivityLogResponse } from '../../../api/client';
+﻿import React, { useState, useEffect } from 'react';
+import { api, ActivityLogEntry, ActivityLogResponse , ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
@@ -41,8 +41,8 @@ export function AkunAktivitasPage() {
       });
       setActivities(r.items);
       setMeta({ total: r.total, page: r.page, limit: r.limit });
-    } catch {
-      show('error', 'Gagal memuat aktivitas');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat aktivitas');
     } finally {
       setLoading(false);
     }
@@ -185,7 +185,7 @@ export function AkunAktivitasPage() {
           <EmptyState icon="history" message="Tidak ada aktivitas" />
         ) : (
           activities.map((a) => (
-            <Card key={a.id} icon="history" className="p-3">
+            <Card key={a.id} icon="history">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-medium text-aam-text">{a.userName || '(dihapus)'}</span>
                 <Badge variant={actionVariant(a.action)}>{a.action}</Badge>

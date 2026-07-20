@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useEffect } from 'react';
+﻿import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../../api/client';
+import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
 import { Button } from '../../components/Button';
@@ -43,8 +43,8 @@ export function KokurikulerTimPage() {
       setTim(timRes?.data ?? timRes ?? []);
       setKelasList(kelasRes?.data ?? []);
       setGuruList(guruRes?.data ?? []);
-    } catch {
-      toast.show('error', 'Gagal memuat data tim.');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data tim.');
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ export function KokurikulerTimPage() {
         </Button>
         <div>
           <h2 className="text-xl font-bold text-aam-text">Tim Penilai Kokurikuler</h2>
-          <p className="text-sm text-aam-muted">Assign guru penilai per kelas untuk kegiatan ini.</p>
+          <p className="text-sm text-aam-text-muted">Assign guru penilai per kelas untuk kegiatan ini.</p>
         </div>
         <Button onClick={() => { setSelectedKelasId(''); setSelectedGuruIds([]); setSheetOpen(true); }}
           className="ml-auto" id="btn-assign-tim">+ Assign Tim</Button>
@@ -129,7 +129,7 @@ export function KokurikulerTimPage() {
             <h3 className="font-bold text-lg mb-4">Assign Tim Penilai</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Kelas *</label>
+                <label className="block text-xs font-medium text-aam-text-muted mb-1">Kelas *</label>
                 <select className="w-full rounded-md border border-aam-border px-3 py-2 text-sm bg-white"
                   value={selectedKelasId} onChange={e => setSelectedKelasId(Number(e.target.value))}
                   id="select-kelas-tim">
@@ -138,10 +138,10 @@ export function KokurikulerTimPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-aam-muted mb-1">Guru Penilai * (boleh lebih dari 1)</label>
+                <label className="block text-xs font-medium text-aam-text-muted mb-1">Guru Penilai * (boleh lebih dari 1)</label>
                 <div className="space-y-1 max-h-48 overflow-y-auto border border-aam-border rounded-md p-2">
                   {guruList.length === 0
-                    ? <p className="text-sm text-aam-muted">Memuat daftar guru...</p>
+                    ? <p className="text-sm text-aam-text-muted">Memuat daftar guru...</p>
                     : guruList.map((g: GuruOption) => (
                       <label key={g.id} className="flex items-center gap-2 text-sm cursor-pointer">
                         <input type="checkbox" checked={selectedGuruIds.includes(g.id)}

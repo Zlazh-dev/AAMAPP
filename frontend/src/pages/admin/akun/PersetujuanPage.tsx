@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, AdminUser } from '../../../api/client';
+import { api, AdminUser , ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
 import { Card } from '../../../components/Card';
 import { Button } from '../../../components/Button';
@@ -26,8 +26,8 @@ export function PersetujuanPage() {
     try {
       const p = await api.adminGetPending();
       setPending(p);
-    } catch {
-      show('error', 'Gagal memuat pendaftar');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat pendaftar');
     } finally {
       setLoading(false);
     }
@@ -55,13 +55,13 @@ export function PersetujuanPage() {
           <Skeleton className="h-20 w-full" />
         </div>
       ) : pending.length === 0 ? (
-        <Card icon="how_to_reg" className="p-8">
+        <Card icon="how_to_reg">
           <EmptyState icon="check_circle" message="Tidak ada pendaftar menunggu persetujuan" />
         </Card>
       ) : (
         <div className="space-y-3">
           {pending.map((u) => (
-            <Card key={u.id} icon="person" className="p-4">
+            <Card key={u.id} icon="person">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="w-10 h-10 rounded-full bg-aam-yellow flex items-center justify-center text-yellow-900 text-sm font-medium flex-shrink-0">

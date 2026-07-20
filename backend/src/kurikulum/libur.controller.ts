@@ -38,32 +38,32 @@ export class LiburAdminController {
   // T15-FIX: rute statis WAJIB didaftarkan SEBELUM ':id' agar tidak
   // tertangkap sebagai parameter dinamis.
   @Get('cek-nasional')
-  @Roles('admin')
+  @Roles('admin', 'tu')
   cekNasional() {
     return this.kurikulum.cekNasional();
   }
 
   @Get('impor-nasional')
-  @Roles('admin')
+  @Roles('admin', 'tu')
   imporNasional(@Query('tahun') tahun: string) {
     const t = parseInt(tahun, 10) || new Date().getFullYear();
     return this.kurikulum.importNasionalPratinjau(t);
   }
 
   @Post()
-  @Roles('admin')
+  @Roles('admin', 'tu')
   create(@Body() body: CreateLiburDto, @Req() req: Request) {
     return this.kurikulum.createLibur(body, req);
   }
 
   @Post('bulk')
-  @Roles('admin')
+  @Roles('admin', 'tu')
   bulk(@Body() body: BulkLiburDto, @Req() req: Request) {
     return this.kurikulum.bulkLibur(body, req);
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('admin', 'tu')
   remove(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
     return this.kurikulum.removeLibur(id, req);
   }

@@ -9,7 +9,7 @@ test.describe('Import Wizard (Poin 2 T16)', () => {
   
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto('/admin/orang/import');
+    await page.goto('/kurikulum/orang/import');
   });
 
   test('Upload file rusak, baris error merah, commit ringkasan', async ({ page }) => {
@@ -72,3 +72,4 @@ test.describe('Import Wizard (Poin 2 T16)', () => {
     await expect(page.getByRole('heading', { name: 'Import Selesai' })).toBeVisible();
   });
 });
+

@@ -13,7 +13,7 @@ import { useUnsavedChanges } from '../../../app/useUnsavedChanges';
 import { PageContainer } from '../../../components/PageContainer';
 
 /**
- * /admin/orang/guru/baru & /admin/orang/guru/:id/edit
+ * /kurikulum/orang/guru/baru & /kurikulum/orang/guru/:id/edit
  * POLA A form: 2 columns (main fields + side panel with foto + meta + Simpan).
  * UnsavedGuard + inline 409 errors.
  */
@@ -48,9 +48,9 @@ export function GuruFormPage() {
       setTelepon(g.telepon || '');
       setFotoUrl(g.fotoUrl || '');
       setStatus(g.status);
-    } catch {
-      show('error', 'Guru tidak ditemukan');
-      navigate('/admin/orang/guru');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Guru tidak ditemukan');
+      navigate('/kurikulum/orang/guru');
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export function GuruFormPage() {
         show('success', 'Guru berhasil ditambahkan');
       }
       setDirty(false);
-      navigate('/admin/orang/guru/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
+      navigate('/kurikulum/orang/guru/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
     } catch (err: any) {
       if (err instanceof ApiError && err.status === 409) {
         const msg = err.body?.message || '';
@@ -122,7 +122,7 @@ export function GuruFormPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to={isEdit ? `/admin/orang/guru/${id}` : '/admin/orang/guru'} mobileButton={false} />
+      <BackLink to={isEdit ? `/kurikulum/orang/guru/${id}` : '/kurikulum/orang/guru'} mobileButton={false} />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">
@@ -131,8 +131,8 @@ export function GuruFormPage() {
         <PageMenu
           menuTitle="Menu Guru"
           links={[
-            { key: 'daftar', label: 'Daftar Guru', path: '/admin/orang/guru', icon: 'school' },
-            { key: 'siswa', label: 'Data Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
+            { key: 'daftar', label: 'Daftar Guru', path: '/kurikulum/orang/guru', icon: 'school' },
+            { key: 'siswa', label: 'Data Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
           ]}
         />
       </div>
@@ -141,7 +141,7 @@ export function GuruFormPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Main fields */}
           <div className="md:col-span-2 space-y-4">
-            <Card icon="person" className="p-5">
+            <Card icon="person">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Data Guru</h3>
               <div className="space-y-3">
                 <div>
@@ -204,7 +204,7 @@ export function GuruFormPage() {
 
           {/* Side panel: foto + Simpan */}
           <div className="md:sticky md:top-4 self-start space-y-4">
-            <Card icon="photo_camera" className="p-5">
+            <Card icon="photo_camera">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Foto</h3>
               <ImageUploader
                 value={fotoUrl}
@@ -213,7 +213,7 @@ export function GuruFormPage() {
               />
             </Card>
 
-            <Card icon="save" className="p-5 hidden md:block">
+            <Card icon="save" className="hidden md:block">
               <div className="space-y-3">
                 <Button type="submit" loading={saving} className="w-full" size="lg">
                   Simpan
@@ -222,7 +222,7 @@ export function GuruFormPage() {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => navigate(isEdit ? `/admin/orang/guru/${id}` : '/admin/orang/guru')}
+                  onClick={() => navigate(isEdit ? `/kurikulum/orang/guru/${id}` : '/kurikulum/orang/guru')}
                 >
                   Batal
                 </Button>

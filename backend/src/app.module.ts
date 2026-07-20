@@ -17,7 +17,6 @@ import { KalenderLibur } from './kurikulum/kalender-libur.entity';
 import { PresensiSesi } from './presensi/presensi-sesi.entity';
 import { PresensiSiswa } from './presensi/presensi-siswa.entity';
 import { PresensiHarianGuru } from './presensi-guru/presensi-harian-guru.entity';
-import { DeviceKiosk } from './kiosk/device-kiosk.entity';
 import { IzinGuru } from './izin/izin-guru.entity';
 import { IzinModule } from './izin/izin.module';
 import { LaporanModule } from './laporan/laporan.module';
@@ -60,7 +59,6 @@ import { ImportModule } from './import/import.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { PresensiModule } from './presensi/presensi.module';
 import { PresensiGuruModule } from './presensi-guru/presensi-guru.module';
-import { KioskModule } from './kiosk/kiosk.module';
 import { SessionAuthGuard } from './common/session-auth.guard';
 
 @Module({
@@ -90,7 +88,6 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           PresensiSesi,
           PresensiSiswa,
           PresensiHarianGuru,
-          DeviceKiosk,
           IzinGuru,
           KatalogPelanggaran,
           Pelanggaran,
@@ -141,7 +138,6 @@ import { SessionAuthGuard } from './common/session-auth.guard';
     UploadsModule,
     PresensiModule,
     PresensiGuruModule,
-    KioskModule,
     IzinModule,
     LaporanModule,
     KesiswaanModule,

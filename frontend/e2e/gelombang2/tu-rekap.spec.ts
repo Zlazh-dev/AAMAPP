@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
  * 1. Admin (superuser) buka /tu/rekap-guru → pemilih bulan + tampilkan → tabel.
  * 2. Export Excel + PDF buttons ada.
  * 3. Kepsek akses /admin/laporan → tidak 403 (role kepsek diizinkan).
- * 4. Kepsek akses /admin/izin-guru → tidak 403.
+ * 4. Kepsek akses /tu/izin-guru → tidak 403.
  */
 
 const BASE_URL = 'http://localhost';
@@ -103,19 +103,15 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
     await expect(page.locator('#btn-export-pdf-rekap')).not.toBeDisabled();
   });
 
-  test('Kepsek akses /admin/laporan — tidak redirect ke 403', async ({ page }) => {
+  test('Kepsek akses laporan TU — tidak redirect ke 403', async ({ page }) => {
     await setToken(page, adminToken);
 
-    // Mock laporan HUB accessible (admin token as stand-in for kepsek)
-    await page.goto('/admin/laporan');
-    await expect(page.getByRole('heading', { name: 'Laporan' })).toBeVisible({ timeout: 10_000 });
-    // Sub-link cards visible
-    await expect(page.getByText('Laporan Harian Guru')).toBeVisible();
-    await expect(page.getByText('Keterlaksanaan KBM')).toBeVisible();
-    await expect(page.getByText('Kehadiran Siswa')).toBeVisible();
+    // /admin/laporan hub dibubarkan (IA migration). Laporan TU kini di /tu/*
+    await page.goto('/tu/laporan/harian-guru');
+    await expect(page.locator('h2, h1').first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test('Kepsek akses /admin/izin-guru — tidak 403', async ({ page }) => {
+  test('Kepsek akses /tu/izin-guru — tidak 403', async ({ page }) => {
     await setToken(page, adminToken);
 
     await page.route('**/api/admin/izin/guru**', async route => {
@@ -125,7 +121,7 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
       });
     });
 
-    await page.goto('/admin/izin-guru');
+    await page.goto('/tu/izin-guru');
     await expect(page.getByRole('heading', { name: 'Izin Guru' })).toBeVisible({ timeout: 10_000 });
   });
 
@@ -146,3 +142,4 @@ test.describe('F4c — TU Rekap Guru + Kepsek Akses', () => {
     expect(page.url()).toContain('/tu/rekap-guru');
   });
 });
+

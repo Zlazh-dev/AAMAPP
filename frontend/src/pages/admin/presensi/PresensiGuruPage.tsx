@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { api, ApiError } from '../../../api/client';
 import { PageContainer } from '../../../components/PageContainer';
 import { Card } from '../../../components/Card';
@@ -6,8 +6,17 @@ import { Badge } from '../../../components/Badge';
 import { EmptyState } from '../../../components/EmptyState';
 import { TableSkeleton } from '../../../components/Skeleton';
 import { useToast } from '../../../components/Toast';
+import { BackLink } from '../../../components/BackLink';
+import { SubPageLinks } from '../../../components/SubPageLinks';
+import { PageMenu } from '../../../components/PageMenu';
 
-/** Baris harian dari GET /api/admin/presensi-guru/harian */
+const PRESENSI_GURU_SUB_LINKS = [
+  { key: 'rekap', label: 'Rekap Guru', path: '/tu/rekap-guru', icon: 'summarize' },
+  { key: 'harian', label: 'Laporan Harian Guru', path: '/tu/laporan/harian-guru', icon: 'assessment' },
+  { key: 'izin', label: 'Izin Guru', path: '/tu/izin-guru', icon: 'event_available' },
+];
+
+/** Baris harian dari GET /api/tu/presensi-guru/harian */
 interface PresensiGuruRow {
   guruId: number;
   nama: string;
@@ -52,10 +61,10 @@ interface ManualFormState {
 }
 
 /**
- * PresensiGuruPage — /admin/presensi-guru
+ * PresensiGuruPage — /tu/presensi-guru
  *
  * Monitor presensi guru harian (tanggal terpilih). Form input manual
- * di sheet adaptif — alasan wajib. POST /api/admin/presensi-guru/manual.
+ * di sheet adaptif — alasan wajib. POST /api/tu/presensi-guru/manual.
  */
 export function PresensiGuruPage() {
   const { show } = useToast();
@@ -70,8 +79,8 @@ export function PresensiGuruPage() {
     try {
       const res = await api.adminGetPresensiGuruHarian({ tanggal }) as { data: PresensiGuruRow[] };
       setRows(res.data ?? []);
-    } catch {
-      show('error', 'Gagal memuat data presensi guru');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat data presensi guru');
     } finally {
       setLoading(false);
     }
@@ -128,6 +137,11 @@ export function PresensiGuruPage() {
 
   return (
     <PageContainer size="xl">
+      <div className="flex items-center justify-between gap-3 mb-2">
+        <BackLink to="/tu" mobileButton={false} />
+        <PageMenu menuTitle="Menu Presensi Guru" links={PRESENSI_GURU_SUB_LINKS} />
+      </div>
+      <SubPageLinks links={PRESENSI_GURU_SUB_LINKS} />
       {/* Manual sheet */}
       {manual && (
         <div className="fixed inset-0 z-40 flex items-end md:items-center justify-center bg-black/40">
@@ -206,7 +220,7 @@ export function PresensiGuruPage() {
       </div>
 
       {/* Date picker */}
-      <Card icon="calendar_today" className="p-3 mb-4">
+      <Card icon="calendar_today">
         <label className="block text-xs font-medium text-aam-text-muted mb-1.5">Tanggal</label>
         <input
           type="date"
@@ -218,7 +232,7 @@ export function PresensiGuruPage() {
 
       {/* Desktop table */}
       <div className="hidden md:block">
-        <Card icon="person_check" className="overflow-hidden p-0">
+        <Card flush icon="person_check" className="overflow-hidden ">
           {loading ? (
             <TableSkeleton rows={8} cols={5} />
           ) : rows.length === 0 ? (
@@ -273,7 +287,7 @@ export function PresensiGuruPage() {
         ) : rows.length === 0 ? (
           <EmptyState icon="person_check" message="Tidak ada data guru" />
         ) : rows.map((row) => (
-          <Card key={row.guruId} icon="person" className="p-4">
+          <Card key={row.guruId} icon="person">
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="min-w-0">
                 <p className="font-medium text-aam-text truncate">{row.nama}</p>

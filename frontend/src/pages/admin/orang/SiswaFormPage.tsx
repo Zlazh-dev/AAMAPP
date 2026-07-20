@@ -18,15 +18,15 @@ const errorInputClass = 'border-red-400';
 
 /**
  * T15-FIX-2 (BUG 2): SectionCard & Field DIANGKAT ke module scope (bukan
- * didefinisikan di dalam SiswaFormPage) — sebelumnya, setiap keystroke
+ * didefinisikan di dalam SiswaFormPage) � sebelumnya, setiap keystroke
  * memicu re-render parent yang membuat React melihat identitas komponen
  * BARU tiap render, sehingga subtree (termasuk <input>) di-unmount lalu
- * di-mount ulang → fokus hilang tiap 1 huruf. Komponen di module scope
+ * di-mount ulang ? fokus hilang tiap 1 huruf. Komponen di module scope
  * punya identitas STABIL antar-render.
  */
 function SectionCard({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
-    <Card icon={icon} className="p-5">
+    <Card icon={icon}>
       <h3 className="text-sm font-semibold text-aam-text mb-4">{title}</h3>
       <div className="space-y-3">{children}</div>
     </Card>
@@ -44,7 +44,7 @@ function Field({ label, required, error, children }: { label: string; required?:
 }
 
 /**
- * /admin/orang/siswa/baru & /admin/orang/siswa/:id/edit
+ * /kurikulum/orang/siswa/baru & /kurikulum/orang/siswa/:id/edit
  * POLA A form: 2 columns. Main = 4 sections (Pribadi/Ortu/Wali/Sekolah).
  * Side = foto uploader + kelas (SearchSelect) + status + Simpan.
  */
@@ -133,9 +133,9 @@ export function SiswaFormPage() {
       setFotoUrl(s.fotoUrl || '');
       setKelasId(s.kelasId);
       setStatus(s.status);
-    } catch {
-      show('error', 'Siswa tidak ditemukan');
-      navigate('/admin/orang/siswa');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Siswa tidak ditemukan');
+      navigate('/kurikulum/orang/siswa');
     } finally {
       setLoading(false);
     }
@@ -199,7 +199,7 @@ export function SiswaFormPage() {
         show('success', 'Siswa berhasil ditambahkan');
       }
       setDirty(false);
-      navigate('/admin/orang/siswa/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
+      navigate('/kurikulum/orang/siswa/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
     } catch (err: any) {
       if (err instanceof ApiError && err.status === 409) {
         const msg = err.body?.message || '';
@@ -230,7 +230,7 @@ export function SiswaFormPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to={isEdit ? `/admin/orang/siswa/${id}` : '/admin/orang/siswa'} mobileButton={false} />
+      <BackLink to={isEdit ? `/kurikulum/orang/siswa/${id}` : '/kurikulum/orang/siswa'} mobileButton={false} />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">
@@ -239,8 +239,8 @@ export function SiswaFormPage() {
         <PageMenu
           menuTitle="Menu Siswa"
           links={[
-            { key: 'daftar', label: 'Daftar Siswa', path: '/admin/orang/siswa', icon: 'diversity_3' },
-            { key: 'guru', label: 'Data Guru', path: '/admin/orang/guru', icon: 'school' },
+            { key: 'daftar', label: 'Daftar Siswa', path: '/kurikulum/orang/siswa', icon: 'diversity_3' },
+            { key: 'guru', label: 'Data Guru', path: '/kurikulum/orang/guru', icon: 'school' },
           ]}
         />
       </div>
@@ -363,7 +363,7 @@ export function SiswaFormPage() {
 
           {/* Side panel: foto + kelas + Simpan */}
           <div className="md:sticky md:top-4 self-start space-y-4">
-            <Card icon="photo_camera" className="p-5">
+            <Card icon="photo_camera">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Foto</h3>
               <ImageUploader
                 value={fotoUrl}
@@ -372,7 +372,7 @@ export function SiswaFormPage() {
               />
             </Card>
 
-            <Card icon="meeting_room" className="p-5">
+            <Card icon="meeting_room">
               <h3 className="text-sm font-semibold text-aam-text mb-4">Kelas</h3>
               <Field label="Pilih Kelas">
                 <SearchSelect
@@ -386,7 +386,7 @@ export function SiswaFormPage() {
               </Field>
             </Card>
 
-            <Card icon="save" className="p-5 hidden md:block">
+            <Card icon="save" className="hidden md:block">
               <div className="space-y-3">
                 <Button type="submit" loading={saving} className="w-full" size="lg">
                   Simpan
@@ -395,7 +395,7 @@ export function SiswaFormPage() {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => navigate(isEdit ? `/admin/orang/siswa/${id}` : '/admin/orang/siswa')}
+                  onClick={() => navigate(isEdit ? `/kurikulum/orang/siswa/${id}` : '/kurikulum/orang/siswa')}
                 >
                   Batal
                 </Button>

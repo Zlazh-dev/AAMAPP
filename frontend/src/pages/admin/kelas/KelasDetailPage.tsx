@@ -14,7 +14,7 @@ import { createPortal } from 'react-dom';
 import { PageContainer } from '../../../components/PageContainer';
 
 /**
- * /admin/kelas/:id — POLA A detail.
+ * /kurikulum/kelas/:id — POLA A detail.
  * - Kartu wali (SearchSelect guru; 409 → ConfirmDialog "Pindahkan dari kelas X?" → force)
  * - Daftar anggota siswa + pilih-multi → BottomSheet pilih kelas tujuan
  * - Tombol tambah siswa ke kelas (link ke form siswa)
@@ -30,6 +30,12 @@ export function KelasDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  // Dampak hapus (counts) — dimuat saat dialog dibuka untuk konfirmasi.
+  const [dampak, setDampak] = useState<{
+    siswa: number; penugasan: number; jadwal: number; sesiPresensi: number;
+  } | null>(null);
+  const [dampakLoading, setDampakLoading] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
 
   // Wali state
   const [selectedGuruId, setSelectedGuruId] = useState<string | number | null>(null);
@@ -42,6 +48,9 @@ export function KelasDetailPage() {
   const [targetKelasId, setTargetKelasId] = useState<string | number | null>(null);
   const [pindahProgress, setPindahProgress] = useState<{ done: number; total: number; failed: string[] } | null>(null);
   const [pindahProcessing, setPindahProcessing] = useState(false);
+
+  // Keluarkan siswa dari kelas (set kelasId = null) — siswa tetap ada.
+  const [keluarkanProcessing, setKeluarkanProcessing] = useState(false);
 
   // FIX-ASSIGN-SISWA-KELAS: total siswa di SELURUH sistem (utk logika empty-state)
   const [totalSiswaSistem, setTotalSiswaSistem] = useState(0);
@@ -111,9 +120,9 @@ export function KelasDetailPage() {
           subtitle: `Tingkat ${k2.tingkat}`,
           icon: 'meeting_room',
         })));
-    } catch {
-      show('error', 'Kelas tidak ditemukan');
-      navigate('/admin/kelas');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Kelas tidak ditemukan');
+      navigate('/kurikulum/kelas');
     } finally {
       setLoading(false);
     }
@@ -196,6 +205,36 @@ export function KelasDetailPage() {
     }
   };
 
+  /**
+   * Keluarkan siswa TERPILIH dari kelas ini (set kelasId = null).
+   * Siswa TIDAK dihapus — datanya tetap ada di sistem. pola penting
+   * (lihat siswa.service.ts update): backend save() mengutamakan objek
+   * relasi `kelas`, jadi service sudah menangani kelasId: null dengan
+   * menyetel row.kelas = null. Cukup kirim { kelasId: null } di sini.
+   */
+  const handleKeluarkan = async () => {
+    if (!kelas || selectedSiswa.size === 0) return;
+    const ids = Array.from(selectedSiswa);
+    setKeluarkanProcessing(true);
+    const failed: string[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        await api.adminUpdateSiswa(ids[i], { kelasId: null });
+      } catch (err: any) {
+        const s = siswaList.find((x) => x.id === ids[i]);
+        failed.push(s?.nama || `ID ${ids[i]}`);
+      }
+    }
+    setKeluarkanProcessing(false);
+    if (failed.length === 0) {
+      show('success', `${ids.length} siswa berhasil dikeluarkan dari ${kelas.nama}`);
+      setSelectedSiswa(new Set());
+      loadAll();
+    } else {
+      show('error', `${failed.length} siswa gagal dikeluarkan: ${failed.join(', ')}`);
+    }
+  };
+
   const toggleAssign = (siswaId: number) => {
     setAssignSelected((prev) => {
       const next = new Set(prev);
@@ -239,12 +278,44 @@ export function KelasDetailPage() {
     }
   };
 
+  const openDeleteDialog = async () => {
+    setDampak(null);
+    setConfirmText('');
+    setDeleteOpen(true);
+    setDampakLoading(true);
+    try {
+      const res = await api.adminGetKelasDampakHapus(parseInt(id!, 10));
+      setDampak({ siswa: res.siswa, penugasan: res.penugasan, jadwal: res.jadwal, sesiPresensi: res.sesiPresensi });
+    } catch {
+      // Biarkan null — dialog tetap tampil tanpa hitungan.
+    } finally {
+      setDampakLoading(false);
+    }
+  };
+
+  const closeDeleteDialog = () => {
+    setDeleteOpen(false);
+    setConfirmText('');
+    setDampak(null);
+  };
+
   const handleDelete = async () => {
+    if (!kelas) return;
+    // Penghalang terakhir: bila sesiPresensi > 0, wajib ketik nama kelas.
+    if ((dampak?.sesiPresensi ?? 0) > 0 && confirmText !== kelas.nama) {
+      show('error', `Ketik persis nama kelas "${kelas.nama}" untuk melanjutkan.`);
+      return;
+    }
     setDeleting(true);
     try {
-      await api.adminDeleteKelas(parseInt(id!, 10));
-      show('success', 'Kelas berhasil dihapus');
-      navigate('/admin/kelas');
+      await api.adminDeleteKelas(kelas.id);
+      show(
+        'success',
+        `Kelas ${kelas.nama} dihapus. ${dampak?.siswa ?? 0} siswa dikeluarkan, ` +
+        `${dampak?.penugasan ?? 0} penugasan, ${dampak?.jadwal ?? 0} jadwal, ` +
+        `${dampak?.sesiPresensi ?? 0} sesi presensi DIHAPUS PERMANEN.`,
+      );
+      navigate('/kurikulum/kelas');
     } catch (err: any) {
       show('error', err instanceof ApiError ? err.body?.message : 'Gagal menghapus');
       setDeleteOpen(false);
@@ -267,7 +338,7 @@ export function KelasDetailPage() {
 
   return (
     <PageContainer size="lg" bottomBar>
-      <BackLink to="/admin/kelas" />
+      <BackLink to="/kurikulum/kelas" />
 
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
@@ -286,24 +357,24 @@ export function KelasDetailPage() {
               label: 'Edit',
               icon: 'edit',
               variant: 'primary',
-              onClick: () => navigate(`/admin/kelas/${kelas.id}/edit`),
+              onClick: () => navigate(`/kurikulum/kelas/${kelas.id}/edit`),
             },
             {
               key: 'hapus',
               label: 'Hapus',
               icon: 'delete',
               variant: 'danger',
-              onClick: () => setDeleteOpen(true),
+              onClick: openDeleteDialog,
             },
           ]}
           links={[
-            { key: 'daftar', label: 'Daftar Kelas', path: '/admin/kelas', icon: 'meeting_room' },
+            { key: 'daftar', label: 'Daftar Kelas', path: '/kurikulum/kelas', icon: 'meeting_room' },
           ]}
         />
       </div>
 
       {/* Wali kelas card */}
-      <Card icon="supervisor_account" className="p-5 mb-4">
+      <Card icon="supervisor_account">
         <h3 className="text-sm font-semibold text-aam-text mb-3">Wali Kelas</h3>
         <div className="flex items-end gap-3">
           <div className="flex-1">
@@ -329,7 +400,7 @@ export function KelasDetailPage() {
       </Card>
 
       {/* Daftar siswa anggota */}
-      <Card icon="diversity_3" className="p-5">
+      <Card icon="diversity_3">
         <div className="flex items-center justify-between mb-3 gap-2">
           <h3 className="text-sm font-semibold text-aam-text">
             Anggota Kelas ({siswaList.length})
@@ -338,6 +409,18 @@ export function KelasDetailPage() {
             {selectedSiswa.size > 0 && (
               <Button size="sm" variant="secondary" onClick={() => setPindahOpen(true)} icon="swap_horiz">
                 Pindahkan ({selectedSiswa.size})
+              </Button>
+            )}
+            {selectedSiswa.size > 0 && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={handleKeluarkan}
+                loading={keluarkanProcessing}
+                icon="logout"
+                id="btn-keluarkan-dari-kelas"
+              >
+                Keluarkan ({selectedSiswa.size})
               </Button>
             )}
             {/* FIX-ASSIGN-SISWA-KELAS: selalu tersedia, baik kelas kosong maupun terisi */}
@@ -358,7 +441,7 @@ export function KelasDetailPage() {
                 Assign Siswa
               </Button>
             ) : (
-              <Button size="sm" className="mt-3" onClick={() => navigate('/admin/orang/siswa/baru')} icon="person_add">
+              <Button size="sm" className="mt-3" onClick={() => navigate('/kurikulum/orang/siswa/baru')} icon="person_add">
                 Tambah Siswa
               </Button>
             )}
@@ -389,7 +472,7 @@ export function KelasDetailPage() {
                     </td>
                     <td className="py-2">
                       <button
-                        onClick={() => navigate(`/admin/orang/siswa/${s.id}`)}
+                        onClick={() => navigate(`/kurikulum/orang/siswa/${s.id}`)}
                         className="font-medium text-aam-text hover:text-aam-green"
                       >
                         {s.nama}
@@ -403,7 +486,7 @@ export function KelasDetailPage() {
                     </td>
                     <td className="py-2">
                       <button
-                        onClick={() => navigate(`/admin/orang/siswa/${s.id}`)}
+                        onClick={() => navigate(`/kurikulum/orang/siswa/${s.id}`)}
                         className="text-aam-text-muted hover:text-aam-text"
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '1.125rem' }}>chevron_right</span>
@@ -425,7 +508,7 @@ export function KelasDetailPage() {
                     className="w-5 h-5 cursor-pointer flex-shrink-0"
                   />
                   <button
-                    onClick={() => navigate(`/admin/orang/siswa/${s.id}`)}
+                    onClick={() => navigate(`/kurikulum/orang/siswa/${s.id}`)}
                     className="flex-1 text-left min-w-0"
                   >
                     <p className="text-sm font-medium text-aam-text truncate">{s.nama}</p>
@@ -452,33 +535,137 @@ export function KelasDetailPage() {
         onCancel={() => setWaliConflict(null)}
       />
 
-      {/* Delete dialog */}
-      <ConfirmDialog
-        open={deleteOpen}
-        title="Hapus Kelas"
-        description={`Yakin menghapus ${kelas.nama}? Tindakan ini tidak dapat dibatalkan.`}
-        confirmLabel="Hapus"
-        variant="danger"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteOpen(false)}
-      />
-
-      {/* Pindah kelas bottom sheet */}
-      {pindahOpen && createPortal(
-        <>
+      {/* Delete dialog — Hapus Total (opsi B). Tampilkan hitungan dampak
+          dari /dampak-hapus; bila sesiPresensi > 0, wajib ketik nama kelas. */}
+      {deleteOpen && kelas && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/50 flex items-end md:items-center justify-center"
+          onClick={() => !deleting && closeDeleteDialog()}
+        >
           <div
-            className="fixed inset-0 z-[9999] bg-black/50 animate-fade-in"
-            onClick={() => !pindahProcessing && setPindahOpen(false)}
-          />
-          <div
-            className="fixed z-[10000] left-0 right-0 bottom-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up"
+            className="w-full max-w-lg bg-white rounded-t-xl md:rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
+            <div className="p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <span className="material-symbols-outlined text-red-600 mt-0.5" style={{ fontSize: 28 }}>
+                  warning
+                </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-aam-text">Hapus Kelas {kelas.nama}</h3>
+                  <p className="text-sm text-red-600 font-medium mt-1">
+                    Tindakan ini TIDAK DAPAT DIBATALKAN.
+                  </p>
+                </div>
+              </div>
+
+              {dampakLoading ? (
+                <p className="text-sm text-aam-text-muted py-4 text-center">Memuat dampak...</p>
+              ) : dampak ? (
+                <div className="space-y-2 mb-4">
+                  <p className="text-sm text-aam-text">
+                    Yang akan terjadi saat kelas dihapus:
+                  </p>
+                  <ul className="text-sm space-y-1 bg-gray-50 rounded-lg p-3">
+                    <li className="flex items-center justify-between">
+                      <span className="text-aam-text">
+                        <span className="material-symbols-outlined align-middle text-yellow-600" style={{ fontSize: 16 }}>output</span>
+                        Siswa dikeluarkan (data tetap ada)
+                      </span>
+                      <strong className="text-aam-text">{dampak.siswa}</strong>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span className="text-red-600">
+                        <span className="material-symbols-outlined align-middle" style={{ fontSize: 16 }}>delete</span>
+                        Penugasan DIHAPUS PERMANEN
+                      </span>
+                      <strong className="text-red-600">{dampak.penugasan}</strong>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span className="text-red-600">
+                        <span className="material-symbols-outlined align-middle" style={{ fontSize: 16 }}>delete</span>
+                        Jadwal KBM DIHAPUS PERMANEN
+                      </span>
+                      <strong className="text-red-600">{dampak.jadwal}</strong>
+                    </li>
+                    <li className="flex items-center justify-between">
+                      <span className="text-red-600">
+                        <span className="material-symbols-outlined align-middle" style={{ fontSize: 16 }}>delete</span>
+                        Sesi presensi DIHAPUS PERMANEN
+                      </span>
+                      <strong className="text-red-600">{dampak.sesiPresensi}</strong>
+                    </li>
+                  </ul>
+
+                  {dampak.sesiPresensi > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 space-y-2">
+                      <p className="text-sm text-red-700 font-medium">
+                        Peringatan: {dampak.sesiPresensi} sesi presensi akan hilang permanen.
+                        Riwayat kehadiran satu semester tidak dapat dipulihkan.
+                      </p>
+                      <p className="text-sm text-aam-text">
+                        Untuk melanjutkan, ketik persis nama kelas:{' '}
+                        <strong className="text-aam-text">{kelas.nama}</strong>
+                      </p>
+                      <input
+                        type="text"
+                        value={confirmText}
+                        onChange={(e) => setConfirmText(e.target.value)}
+                        className="w-full rounded-md border border-red-300 px-3 py-2.5 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30 min-h-[44px]"
+                        placeholder={kelas.nama}
+                        id="input-confirm-kelas-nama"
+                        autoFocus
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-aam-text-muted py-4">
+                  Gagal memuat hitungan dampak. Lanjutkan dengan hati-hati.
+                </p>
+              )}
+
+              <div className="flex items-center gap-2 pt-3 border-t border-aam-border">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={closeDeleteDialog}
+                  disabled={deleting}
+                >
+                  Batal
+                </Button>
+                <Button
+                  variant="danger"
+                  className="flex-1"
+                  onClick={handleDelete}
+                  loading={deleting}
+                  disabled={(dampak?.sesiPresensi ?? 0) > 0 && confirmText !== kelas.nama}
+                  icon="delete"
+                  id="btn-confirm-hapus-kelas"
+                >
+                  Hapus Permanen
+                </Button>
+              </div>
             </div>
-            <div className="px-5 pb-4">
-              <h3 className="text-base font-semibold text-aam-text mb-2">Pindahkan Siswa</h3>
+          </div>
+        </div>,
+        document.body,
+      )}
+
+      {/* Pindah kelas sheet — §8 adaptif */}
+      {pindahOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] bg-black/50 flex items-end md:items-center justify-center"
+          onClick={() => !pindahProcessing && setPindahOpen(false)}
+        >
+          <div
+            className="w-full max-w-lg bg-white rounded-t-xl md:rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-5 py-4">
+              <h3 className="text-sm font-semibold text-aam-text mb-2">Pindahkan Siswa</h3>
               <p className="text-sm text-aam-text-muted mb-4">
                 Pilih kelas tujuan untuk {selectedSiswa.size} siswa terpilih.
               </p>
@@ -513,20 +700,10 @@ export function KelasDetailPage() {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => setPindahOpen(false)}
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={() => setPindahOpen(false)}>
                       Batal
                     </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={handlePindah}
-                      disabled={!targetKelasId}
-                      loading={pindahProcessing}
-                      icon="swap_horiz"
-                    >
+                    <Button className="flex-1" onClick={handlePindah} disabled={!targetKelasId} loading={pindahProcessing} icon="swap_horiz">
                       Pindahkan
                     </Button>
                   </div>
@@ -534,26 +711,23 @@ export function KelasDetailPage() {
               )}
             </div>
           </div>
-        </>,
+        </div>,
         document.body,
       )}
 
-      {/* Assign siswa-eksisting bottom sheet */}
+      {/* Assign siswa sheet — §8 adaptif */}
       {assignOpen && createPortal(
-        <>
+        <div
+          className="fixed inset-0 z-[9999] bg-black/50 flex items-end md:items-center justify-center"
+          onClick={() => !assignProcessing && setAssignOpen(false)}
+        >
           <div
-            className="fixed inset-0 z-[9999] bg-black/50 animate-fade-in"
-            onClick={() => !assignProcessing && setAssignOpen(false)}
-          />
-          <div
-            className="fixed z-[10000] left-0 right-0 bottom-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto animate-slide-up"
+            className="w-full max-w-lg bg-white rounded-t-xl md:rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto"
             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-gray-300 rounded-full" />
-            </div>
-            <div className="px-5 pb-4">
-              <h3 className="text-base font-semibold text-aam-text mb-2">Assign Siswa ke {kelas.nama}</h3>
+            <div className="px-5 py-4">
+              <h3 className="text-sm font-semibold text-aam-text mb-2">Assign Siswa ke {kelas.nama}</h3>
 
               {assignProgress ? (
                 <div className="py-4">
@@ -579,12 +753,7 @@ export function KelasDetailPage() {
                     Siswa yang sedang berada di kelas lain akan DIPINDAH.
                   </p>
                   <div className="relative mb-3">
-                    <span
-                      className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-aam-text-muted pointer-events-none"
-                      style={{ fontSize: '1.125rem' }}
-                    >
-                      search
-                    </span>
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-aam-text-muted pointer-events-none" style={{ fontSize: '1.125rem' }}>search</span>
                     <input
                       type="text"
                       value={assignSearch}
@@ -600,16 +769,8 @@ export function KelasDetailPage() {
                       <p className="px-3 py-6 text-sm text-aam-text-muted text-center">Tidak ada hasil</p>
                     ) : (
                       assignOptions.map((s) => (
-                        <label
-                          key={s.id}
-                          className="flex items-center gap-3 px-3 py-2.5 min-h-[48px] cursor-pointer hover:bg-gray-50"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={assignSelected.has(s.id)}
-                            onChange={() => toggleAssign(s.id)}
-                            className="w-5 h-5 cursor-pointer flex-shrink-0"
-                          />
+                        <label key={s.id} className="flex items-center gap-3 px-3 py-2.5 min-h-[48px] cursor-pointer hover:bg-gray-50">
+                          <input type="checkbox" checked={assignSelected.has(s.id)} onChange={() => toggleAssign(s.id)} className="w-5 h-5 cursor-pointer flex-shrink-0" />
                           <span className="flex-1 min-w-0">
                             <span className="block text-sm font-medium text-aam-text truncate">{s.nama}</span>
                             <span className="block text-xs text-aam-text-muted">NIS: {s.nis}</span>
@@ -622,20 +783,8 @@ export function KelasDetailPage() {
                     )}
                   </div>
                   <div className="flex gap-2 mt-4">
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => setAssignOpen(false)}
-                    >
-                      Batal
-                    </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={handleAssign}
-                      disabled={assignSelected.size === 0}
-                      loading={assignProcessing}
-                      icon="person_add"
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={() => setAssignOpen(false)}>Batal</Button>
+                    <Button className="flex-1" onClick={handleAssign} disabled={assignSelected.size === 0} loading={assignProcessing} icon="person_add">
                       Assign ({assignSelected.size})
                     </Button>
                   </div>
@@ -643,7 +792,7 @@ export function KelasDetailPage() {
               )}
             </div>
           </div>
-        </>,
+        </div>,
         document.body,
       )}
     </PageContainer>

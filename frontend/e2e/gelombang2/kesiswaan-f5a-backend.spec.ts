@@ -279,3 +279,4 @@ test.describe('F5a Backend — Kesiswaan / Demerit', () => {
     expect(typeof entry.perKategori.R).toBe('number');
   });
 });
+

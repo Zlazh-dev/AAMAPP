@@ -12,7 +12,7 @@ import { useUnsavedChanges } from '../../../app/useUnsavedChanges';
 import { PageContainer } from '../../../components/PageContainer';
 
 /**
- * /admin/kelas/baru & /admin/kelas/:id/edit
+ * /kurikulum/kelas/baru & /kurikulum/kelas/:id/edit
  * POLA A form: nama, tingkat (auto-fase), status.
  */
 export function KelasFormPage() {
@@ -48,9 +48,9 @@ export function KelasFormPage() {
       setNama(k.nama);
       setTingkat(String(k.tingkat));
       setFase(k.fase);
-    } catch {
-      show('error', 'Kelas tidak ditemukan');
-      navigate('/admin/kelas');
+    } catch (err) {
+      show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Kelas tidak ditemukan');
+      navigate('/kurikulum/kelas');
     } finally {
       setLoading(false);
     }
@@ -80,7 +80,7 @@ export function KelasFormPage() {
         show('success', 'Kelas berhasil ditambahkan');
       }
       setDirty(false);
-      navigate('/admin/kelas/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
+      navigate('/kurikulum/kelas/sukses', { replace: true, state: { entityName: nama.trim(), mode: isEdit ? 'edit' : 'create', entityId: id } });
     } catch (err: any) {
       if (err instanceof ApiError && err.status === 409) {
         setErrors({ nama: err.body?.message || 'Nama kelas sudah digunakan' });
@@ -107,7 +107,7 @@ export function KelasFormPage() {
 
   return (
     <PageContainer size="md" bottomBar>
-      <BackLink to={isEdit ? `/admin/kelas/${id}` : '/admin/kelas'} mobileButton={false} />
+      <BackLink to={isEdit ? `/kurikulum/kelas/${id}` : '/kurikulum/kelas'} mobileButton={false} />
 
       <div className="flex items-center justify-between gap-3 mt-3 mb-4">
         <h2 className="text-lg font-heading font-semibold text-aam-text">
@@ -116,13 +116,13 @@ export function KelasFormPage() {
         <PageMenu
           menuTitle="Menu Kelas"
           links={[
-            { key: 'daftar', label: 'Daftar Kelas', path: '/admin/kelas', icon: 'meeting_room' },
+            { key: 'daftar', label: 'Daftar Kelas', path: '/kurikulum/kelas', icon: 'meeting_room' },
           ]}
         />
       </div>
 
       <form id="form-kelas" onSubmit={handleSubmit}>
-        <Card icon="meeting_room" className="p-5">
+        <Card icon="meeting_room">
           <h3 className="text-sm font-semibold text-aam-text mb-4">Data Kelas</h3>
           <div className="space-y-3">
             <div>
@@ -169,7 +169,7 @@ export function KelasFormPage() {
             type="button"
             variant="secondary"
             size="lg"
-            onClick={() => navigate(isEdit ? `/admin/kelas/${id}` : '/admin/kelas')}
+            onClick={() => navigate(isEdit ? `/kurikulum/kelas/${id}` : '/kurikulum/kelas')}
           >
             Batal
           </Button>

@@ -9,6 +9,8 @@ export interface PageMenuAction {
   variant?: 'default' | 'primary' | 'danger';
   disabled?: boolean;
   onClick: () => void;
+  /** ID HTML untuk button — dipakai e2e locator. */
+  id?: string;
 }
 
 export interface PageMenuLink {
@@ -177,6 +179,7 @@ export function PageMenu({ actions = [], links = [], menuTitle = 'Menu' }: PageM
         {primaryAction && (
           <button
             key={primaryAction.key}
+            id={primaryAction.id}
             type="button"
             onClick={primaryAction.onClick}
             disabled={primaryAction.disabled}
@@ -359,6 +362,7 @@ export function PageMenu({ actions = [], links = [], menuTitle = 'Menu' }: PageM
                     return (
                       <button
                         key={action.key}
+                        id={action.id}
                         type="button"
                         onClick={() => {
                           if (action.disabled) return;

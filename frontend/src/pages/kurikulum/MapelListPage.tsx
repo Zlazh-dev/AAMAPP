@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api, Mapel } from '../../api/client';
+import { api, Mapel , ApiError } from '../../api/client';
 import { useCachedList } from '../../hooks/useCachedList';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
@@ -12,6 +12,16 @@ import { PageMenu } from '../../components/PageMenu';
 import { FilterBar } from '../../components/FilterBar';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
+import { SubPageLinks } from '../../components/SubPageLinks';
+import { Table } from '../../components/Table';
+
+/** Sub halaman Mata Pelajaran (IA-HIERARCHY-V2). */
+const MAPEL_SUB_LINKS = [
+  { key: 'penugasan', label: 'Penugasan Mapel', path: '/kurikulum/penugasan', icon: 'assignment_ind' },
+  { key: 'kokurikuler', label: 'Kokurikuler', path: '/kurikulum/kokurikuler', icon: 'school' },
+  { key: 'ekskul', label: 'Ekstrakurikuler', path: '/kurikulum/ekskul', icon: 'sports' },
+  { key: 'ta-kkm', label: 'Tahun Ajaran & KKM', path: '/kurikulum/tahun-ajaran-kkm', icon: 'event_note' },
+];
 
 /**
  * /kurikulum/mapel — Daftar Mata Pelajaran (POLA A, §14.10.3).
@@ -42,8 +52,8 @@ export function MapelListPage() {
       toast.show('success', 'Mata pelajaran dihapus');
       setDeleteTarget(null);
       refresh();
-    } catch {
-      toast.show('error', 'Gagal menghapus mata pelajaran');
+    } catch (err) {
+      toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal menghapus mata pelajaran');
     }
   };
 
@@ -74,7 +84,8 @@ export function MapelListPage() {
         />
       </div>
 
-      {/* FilterBar */}
+      <SubPageLinks links={MAPEL_SUB_LINKS} />
+
       <div className="mb-4">
         <FilterBar
           search={{
@@ -88,90 +99,38 @@ export function MapelListPage() {
         />
       </div>
 
-      {/* Desktop: Table */}
-      <div className="hidden md:block">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-aam-border text-left text-xs text-aam-text-muted">
-              <th className="pb-2 font-medium">Nama</th>
-              <th className="pb-2 font-medium">Kode</th>
-              <th className="pb-2 font-medium">Kelompok</th>
-              <th className="pb-2 font-medium">Urutan</th>
-              <th className="pb-2 font-medium"></th>
-              <th className="pb-2 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody className="text-sm">
-            {loading ? (
-              <tr><td colSpan={6}><TableSkeleton rows={4} cols={4} /></td></tr>
-            ) : mapelList.length === 0 ? (
-              <tr><td colSpan={6}><EmptyState icon="book" message="Belum ada mata pelajaran" /></td></tr>
-            ) : (
-              mapelList
-                .sort((a, b) => a.urutan - b.urutan)
-                .map((m) => (
-                <tr
-                  key={m.id}
-                  onClick={() => navigate(`/kurikulum/mapel/${m.id}/edit`)}
-                  className="border-b border-aam-border/50 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
-                  <td className="py-3 font-medium text-aam-text">{m.nama}</td>
-                  <td className="py-3 text-aam-text-muted font-mono text-xs">{m.kode}</td>
-                  <td className="py-3 text-aam-text-muted">{m.kelompok}</td>
-                  <td className="py-3 text-aam-text-muted">{m.urutan}</td>
-                  <td className="py-3">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      icon="delete"
-                      onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}
-                    >
-                      Hapus
-                    </Button>
-                  </td>
-                  <td className="py-3">
-                    <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      {loading ? (
+        <TableSkeleton rows={4} cols={4} />
+      ) : (
+        <Table
+          columns={[
+            {
+              header: 'Nama',
+              cell: (m) => <span className="font-medium text-aam-text">{m.nama}</span>,
+            },
+            { header: 'Kode', cell: (m) => <span className="font-mono text-xs text-aam-text-muted">{m.kode}</span> },
+            { header: 'Kelompok', cell: (m) => <span className="text-aam-text-muted">{m.kelompok}</span> },
+            { header: 'Urutan', align: 'center' as const, cell: (m) => <span className="text-aam-text-muted">{m.urutan}</span> },
+            {
+              header: '',
+              align: 'right' as const,
+              cell: (m) => (
+                <Button variant="secondary" size="sm" icon="delete" onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}>Hapus</Button>
+              ),
+            },
+            {
+              header: '',
+              width: 'w-8',
+              cell: () => <span className="material-symbols-outlined text-aam-text-muted" style={{ fontSize: '1.125rem' }}>chevron_right</span>,
+            },
+          ]}
+          data={[...mapelList].sort((a, b) => a.urutan - b.urutan)}
+          rowKey={(m) => m.id}
+          emptyMessage="Belum ada mata pelajaran"
+          onRowClick={(m) => navigate(`/kurikulum/mapel/${m.id}/edit`)}
+        />
+      )}
 
-      {/* Mobile: Card list */}
-      <div className="md:hidden space-y-2">
-        {loading ? (
-          <TableSkeleton rows={3} cols={3} />
-        ) : mapelList.length === 0 ? (
-          <EmptyState icon="book" message="Belum ada mata pelajaran" />
-        ) : (
-          mapelList
-            .sort((a, b) => a.urutan - b.urutan)
-            .map((m) => (
-            <Card
-              key={m.id}
-              icon="book"
-              onClick={() => navigate(`/kurikulum/mapel/${m.id}/edit`)}
-              className="p-4"
-            >
-              <div className="flex items-start justify-between mb-1">
-                <p className="text-sm font-medium text-aam-text">{m.nama}</p>
-                <Badge variant="gray">{m.kode}</Badge>
-              </div>
-              <p className="text-xs text-aam-text-muted mb-3">{m.kelompok}</p>
-              <Button
-                variant="secondary"
-                size="sm"
-                icon="delete"
-                onClick={(e) => { e.stopPropagation(); setDeleteTarget(m); }}
-              >
-                Hapus
-              </Button>
-            </Card>
-          ))
-        )}
-      </div>
 
       {/* Delete confirm */}
       <ConfirmDialog

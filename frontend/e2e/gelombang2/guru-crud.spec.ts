@@ -18,7 +18,7 @@ test.describe('CRUD Guru (Poin 1 T16)', () => {
     nip = `NIP${suffix}`.slice(0, 20);
     namaGuru = `Guru Playwright ${suffix}`;
     namaDuplikat = `Guru Duplikat ${suffix}`;
-    await page.goto('/admin/orang/guru');
+    await page.goto('/kurikulum/orang/guru');
   });
 
   test.afterEach(async ({ page, request }) => {
@@ -33,7 +33,7 @@ test.describe('CRUD Guru (Poin 1 T16)', () => {
   test('Tambah guru sukses, back tidak kembali ke form, error 409 NIP', async ({ page, request }) => {
     // 1. Tambah guru sukses (SaveSuccess)
     await page.getByRole('button', { name: 'Tambah Guru' }).click();
-    await page.waitForURL('**/admin/orang/guru/baru');
+    await page.waitForURL('**/kurikulum/orang/guru/baru');
 
     await page.getByPlaceholder('Masukkan nama lengkap').fill(namaGuru);
     await page.getByPlaceholder('Nomor Induk Pegawai').fill(nip);
@@ -61,18 +61,18 @@ test.describe('CRUD Guru (Poin 1 T16)', () => {
     // -> klik "Lihat Daftar Guru" -> /guru (push). Jadi stack: [guru, sukses, guru].
     // goBack() akan mendarat di halaman SUKSES (bukan form) — ini tetap memenuhi
     // syarat "back tidak kembali ke form".
-    await page.waitForURL('**/admin/orang/guru');
+    await page.waitForURL('**/kurikulum/orang/guru');
     await page.goBack();
     await expect(page.getByText(/berhasil ditambahkan/i).first()).toBeVisible();
     // Pastikan form TIDAK muncul setelah back
     await expect(page.getByPlaceholder('Masukkan nama lengkap')).toHaveCount(0);
 
-    await page.goto('/admin/orang/guru');
+    await page.goto('/kurikulum/orang/guru');
     await expect(page.getByRole('heading', { name: 'Data Guru' })).toBeVisible();
 
     // 2. Test 409 NIP inline
     await page.getByRole('button', { name: 'Tambah Guru' }).click();
-    await page.waitForURL('**/admin/orang/guru/baru');
+    await page.waitForURL('**/kurikulum/orang/guru/baru');
     await page.getByPlaceholder('Masukkan nama lengkap').fill(namaDuplikat);
     await page.getByPlaceholder('Nomor Induk Pegawai').fill(nip); // NIP sama
     await page.getByRole('button', { name: 'Jenis Kelamin' }).click();
@@ -83,3 +83,4 @@ test.describe('CRUD Guru (Poin 1 T16)', () => {
     await expect(page.getByText(/sudah terdaftar/i)).toBeVisible();
   });
 });
+
