@@ -493,3 +493,18 @@ Migration tulisan-tangan `1721394000000-InitialSchema.ts` basi terhadap entity. 
 - Migration baru dimulai dari nol (tidak ada riwayat migration lama). Aman karena belum ada database produksi yang hidup.
 - `synchronize: false` di `data-source.ts` — production tidak menambal diam-diam.
 - Planner akan mengulang gladi bersih penuh (compose produksi, volume baru) sebagai verifikasi akhir.
+
+---
+
+### [AGENT-1] FIX-E2E-ADMIN-BACKDOOR — 2026-07-22
+
+**Status: SELESAI**
+
+**Akar masalah:** `SeedService.seedE2EAdmin()` membuat `e2e-admin@aamapp.sch.id` dgn password hardcode di setiap deploy — termasuk produksi. Akun backdoor publik di GitHub.
+
+**Perbaikan:** `seed.service.ts:40` — `seedE2EAdmin()` hanya dipanggil bila `NODE_ENV !== 'production'` ATAU `SEED_E2E_ADMIN=true` eksplisit (untuk CI). Admin utama dari env tetap seperti sekarang.
+
+**Bukti:**
+- Boot `NODE_ENV=production` di DB kosong → tabel `users` berisi hanya `admin@aamapp.sch.id` (1 baris). ✓
+- Boot dev → e2e-admin tetap ada (326 spec butuh dia). ✓
+- tsc bersih, build lulus.

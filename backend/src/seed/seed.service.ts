@@ -37,7 +37,10 @@ export class SeedService implements OnModuleInit {
 
   async onModuleInit() {
     await this.seedAdmin();
-    await this.seedE2EAdmin();
+    // e2e-admin HANYA di non-production (atau SEED_E2E_ADMIN=true eksplisit utk CI).
+    if (process.env.NODE_ENV !== 'production' || process.env.SEED_E2E_ADMIN === 'true') {
+      await this.seedE2EAdmin();
+    }
     await this.pengaturanService.seedDefaults();
     await this.seedTahunAjaran();
     await this.housekeeping();
