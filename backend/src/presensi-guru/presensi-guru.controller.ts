@@ -6,19 +6,19 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
   Put,
   Query,
   Req,
-  Patch,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { IsIn } from 'class-validator';
 import { Request } from 'express';
 import { PresensiGuruService } from './presensi-guru.service';
-import { EnrollWajahDto } from './dto/enroll-wajah.dto';
 import { ScanDto } from './dto/scan.dto';
 import { ManualDto } from './dto/manual.dto';
+import { EnrollWajahDto } from './dto/enroll-wajah.dto';
 import { SessionAuthGuard } from '../common/session-auth.guard';
 import { RolesGuard } from '../common/roles.guard';
 import { Roles } from '../common/roles.decorator';
@@ -63,47 +63,18 @@ export class GuruScanController {
   }
 }
 
-/** F3a — Admin: enroll wajah guru, delete, monitor, input manual. */
+/** F3a — Admin: hapus wajah, monitor, validasi, input manual.
+ * enrollAdmin (PUT wajah/:guruId) dicabut per keputusan produk:
+ * admin hanya memvalidasi, guru mendaftarkan sendiri.
+ */
 @Controller('api/admin')
 @UseGuards(SessionAuthGuard, RolesGuard)
 export class AdminWajahController {
   constructor(private readonly svc: PresensiGuruService) {}
 
   /**
-   * GET /api/admin/wajah?q=&page=&limit=
-   * Daftar guru + status enroll (berpaginasi, filter nama/nip).
-   */
-  @Get('wajah')
-  @Roles('admin')
-  daftarWajah(
-    @Query('q') q?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.svc.daftarWajahAdmin(
-      q,
-      page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 50,
-    );
-  }
-
-  /**
-   * PUT /api/admin/wajah/:guruId
-   * Enroll embedding wajah untuk guru tertentu.
-   */
-  @Put('wajah/:guruId')
-  @Roles('admin')
-  enrollAdmin(
-    @Param('guruId', ParseIntPipe) guruId: number,
-    @Body() dto: EnrollWajahDto,
-    @Req() req: Request,
-  ) {
-    return this.svc.enrollAdmin(guruId, dto, req);
-  }
-
-  /**
    * DELETE /api/admin/wajah/:guruId
-   * Clear faceEmbeddings (privasi biometrik).
+   * Clear faceEmbeddings (privasi biometrik — dipakai kartu wajah GuruDetailPage).
    */
   @Delete('wajah/:guruId')
   @Roles('admin')

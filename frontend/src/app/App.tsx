@@ -1,4 +1,4 @@
-﻿import React, { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet, RouteObject, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { AppLayout } from './AppLayout';
@@ -252,7 +252,7 @@ const routes: RouteObject[] = [
 
           // ── GURU (tidak berubah) ─────────────────────────────────────────
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
-          { path: '/guru/kbm', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
+          { path: '/guru/kbm', element: <RequireRole roles={['guru']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
           { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
           // F3a: Guru wajah enrollment mandiri (guru ONLY per §A)

@@ -1166,24 +1166,7 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
-  // --- F3a: Admin wajah ---
-  adminGetWajah: (params?: { q?: string; page?: number; limit?: number }) => {
-    const search = new URLSearchParams();
-    if (params?.q) search.set('q', params.q);
-    if (params?.page) search.set('page', String(params.page));
-    if (params?.limit) search.set('limit', String(params.limit));
-    return request<{
-      data: Array<{ id: number; nama: string; email: string; enrolled: boolean; poses: number; faceUpdatedAt: string | null }>;
-      total: number; page: number; limit: number;
-    }>(`/admin/wajah?${search.toString()}`);
-  },
-
-  adminPutWajah: (guruId: number, data: { embeddings: number[][] }) =>
-    request<{ ok: boolean; poses: number }>(`/admin/wajah/${guruId}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-
+  // --- F3a: Admin wajah — hanya hapus (privasi biometrik) ---
   adminDeleteWajah: (guruId: number) =>
     request<{ message: string }>(`/admin/wajah/${guruId}`, { method: 'DELETE' })
     .then((result) => { invalidateCache('/admin/wajah'); return result; }),

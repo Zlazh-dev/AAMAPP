@@ -179,60 +179,7 @@ export class PresensiGuruService {
    */
   async enrollDiri(req: Request, dto: EnrollWajahDto) {
     const guru = await this.guruDariReq(req);
-    return this._simpanEmbeddings(guru, dto.embeddings, req, 'diri');
-  }
-
-  /**
-   * GET /api/admin/wajah?q=&page=&limit= — daftar guru + status enroll (admin).
-   */
-  async daftarWajahAdmin(q?: string, page = 1, limit = 50) {
-    const pageN = Math.max(1, page);
-    const limitN = Math.min(200, Math.max(1, limit));
-
-    const qb = this.guruRepo
-      .createQueryBuilder('g')
-      .select([
-        'g.id',
-        'g.nama',
-        'g.nip',
-        'g.fotoUrl',
-        'g.status',
-        'g.faceEmbeddings',
-        'g.faceUpdatedAt',
-      ])
-      .orderBy('g.nama', 'ASC')
-      .skip((pageN - 1) * limitN)
-      .take(limitN);
-
-    if (q && q.trim()) {
-      qb.where('g.nama ILIKE :q OR g.nip ILIKE :q', { q: `%${q.trim()}%` });
-    }
-
-    const [rows, total] = await qb.getManyAndCount();
-    return {
-      data: rows.map((g) => ({
-        id: g.id,
-        nama: g.nama,
-        nip: g.nip,
-        fotoUrl: g.fotoUrl,
-        status: g.status,
-        enrolled: Array.isArray(g.faceEmbeddings) && g.faceEmbeddings.length > 0,
-        poses: g.faceEmbeddings?.length ?? 0,
-        faceUpdatedAt: g.faceUpdatedAt?.toISOString() ?? null,
-      })),
-      total,
-      page: pageN,
-      limit: limitN,
-    };
-  }
-
-  /**
-   * PUT /api/admin/wajah/:guruId — enroll wajah utk guru tertentu.
-   */
-  async enrollAdmin(guruId: number, dto: EnrollWajahDto, req: Request) {
-    const guru = await this.guruRepo.findOne({ where: { id: guruId } });
-    if (!guru) throw new NotFoundException('Guru tidak ditemukan');
-    return this._simpanEmbeddings(guru, dto.embeddings, req, 'admin');
+    return this._simpanEmbeddings(guru, dto.embeddings, req);
   }
 
   /**
@@ -262,7 +209,6 @@ export class PresensiGuruService {
     guru: Guru,
     embeddings: number[][],
     req: Request,
-    aktor: 'diri' | 'admin',
   ) {
     const { minPoses } = await this.wajahConfig();
     if (embeddings.length < minPoses) {
@@ -270,8 +216,8 @@ export class PresensiGuruService {
     }
     guru.faceEmbeddings = embeddings;
     guru.faceUpdatedAt = new Date();
-    // UX-POLISH D: enroll mandiri → MENUNGGU_VALIDASI; admin enroll → TERVALIDASI
-    guru.faceStatus = aktor === 'diri' ? 'MENUNGGU_VALIDASI' : 'TERVALIDASI';
+    // Enrollment mandiri selalu MENUNGGU_VALIDASI; admin validasi via PATCH.
+    guru.faceStatus = 'MENUNGGU_VALIDASI';
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
     await this.audit.log({
@@ -281,7 +227,7 @@ export class PresensiGuruService {
       resourceId: String(guru.id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Mendaftarkan wajah ${guru.nama} (${aktor}, ${embeddings.length} pose)`,
+      summary: `Mendaftarkan wajah ${guru.nama} (mandiri, ${embeddings.length} pose)`,
     });
     return { ok: true, poses: embeddings.length, faceStatus: guru.faceStatus };
   }
@@ -301,6 +247,11 @@ export class PresensiGuruService {
       throw new BadRequestException('Guru belum memiliki embedding wajah untuk divalidasi');
     }
     guru.faceStatus = aksi === 'terima' ? 'TERVALIDASI' : 'DITOLAK';
+    // Saat DITOLAK: kosongkan embeddings agar guru wajib enroll ulang.
+    if (aksi === 'tolak') {
+      guru.faceEmbeddings = null;
+      guru.faceUpdatedAt = null;
+    }
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
     await this.audit.log({
@@ -325,6 +276,15 @@ export class PresensiGuruService {
     const guru = await this.guruDariReq(req);
     if (!Array.isArray(guru.faceEmbeddings) || guru.faceEmbeddings.length === 0) {
       throw new BadRequestException('Wajah Anda belum didaftarkan');
+    }
+
+    // Guard faceStatus — hanya TERVALIDASI yang boleh scan.
+    if (guru.faceStatus !== 'TERVALIDASI') {
+      const pesan =
+        guru.faceStatus === 'DITOLAK'
+          ? 'Pendaftaran wajah Anda ditolak — daftar ulang'
+          : 'Wajah Anda belum divalidasi admin';
+      throw new ForbiddenException(pesan);
     }
 
     // 2. Geofence (jika lokasi.aktif).
