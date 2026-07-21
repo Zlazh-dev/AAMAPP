@@ -189,11 +189,11 @@ export function RaporDetailPage() {
  }
  };
 
- if (loading) return <PageContainer><TableSkeleton rows={8} /></PageContainer>;
- if (!rapor) return <PageContainer><p className="text-aam-text-muted">Rapor tidak ditemukan.</p></PageContainer>;
+ if (loading) return <PageContainer backLinkMobile={false}><TableSkeleton rows={8} /></PageContainer>;
+ if (!rapor) return <PageContainer backLinkMobile={false}><p className="text-aam-text-muted">Rapor tidak ditemukan.</p></PageContainer>;
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  {/* Header */}
  <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
  <div className="flex items-center gap-3">

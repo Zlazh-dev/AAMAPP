@@ -100,7 +100,7 @@ export function KokurikulerAsesmenPage() {
   const totalCells = siswaList.length * targets.length;
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <div className="flex items-center gap-3">
           <Button variant="secondary" onClick={() => navigate('/guru/kokurikuler')} id="btn-back-asesmen">

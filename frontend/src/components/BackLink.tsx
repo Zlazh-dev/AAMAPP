@@ -9,6 +9,15 @@ interface BackLinkProps {
   mobileZ?: number;
   /** ID untuk link — dipakai e2e locator. */
   id?: string;
+  /**
+   * UX-POLISH-SPEC §I: bila true (default), BackLink adaptif mobile merender
+   * tombol fixed bawah. PageContainer WAJIB memakai `backLinkMobile` (default
+   * true) agar konten tidak tertutup.
+   *
+   * Bila halaman TIDAK ingin tombol fixed bawah (mis. dashboard tanpa
+   * BackLink), set mobileButton=false di sini DAN backLinkMobile=false di
+   * PageContainer.
+   */
 }
 
 export function BackLink({

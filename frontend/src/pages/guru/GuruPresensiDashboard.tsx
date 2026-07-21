@@ -5,10 +5,10 @@ import { ScanOverlay } from './ScanOverlay';
 import { KbmHariIniPage } from './KbmHariIniPage';
 
 /**
- * GuruPresensiDashboard — /guru/kbm dengan tombol"Presensi Sekarang" (F3a).
+ * GuruPresensiDashboard â€” /guru/kbm dengan tombol"Presensi Sekarang" (F3a).
  *
  * Tombol besar mengaktifkan ScanOverlay (overlay fullscreen kamera).
- *"Daftar Wajah" → /guru/wajah (alur TERPISAH dari presensi scan).
+ *"Daftar Wajah" â†’ /guru/wajah (alur TERPISAH dari presensi scan).
  * Konten KBM hari ini disisipkan via prop `embedded`.
  */
 export function GuruPresensiDashboard() {
@@ -18,7 +18,7 @@ export function GuruPresensiDashboard() {
  return (
  <>
  {showScan && <ScanOverlay onClose={() => setShowScan(false)} />}
- <PageContainer size="xl">
+ <PageContainer size="xl" backLinkMobile={false}>
  {/* Presensi action bar */}
  <div className="mb-5 flex flex-col sm:flex-row gap-3">
  <button
@@ -39,7 +39,7 @@ export function GuruPresensiDashboard() {
  </button>
  </div>
 
- {/* KBM hari ini — embedded tanpa header duplikat */}
+ {/* KBM hari ini â€” embedded tanpa header duplikat */}
  <KbmHariIniPage embedded />
  </PageContainer>
  </>

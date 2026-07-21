@@ -38,7 +38,7 @@ const COLS: ColDef[] = [
   { header: 'S (Sedang)', key: 'poinS', align: 'right' },
   { header: 'B (Berat)', key: 'poinB', align: 'right' },
   { header: 'SB (Sangat Berat)', key: 'poinSB', align: 'right' },
-  { header: 'Σ Terpotong', key: 'terpotong', align: 'right' },
+  { header: '\u03A3 Terpotong', key: 'terpotong', align: 'right' },
   { header: 'Saldo', key: 'saldo', align: 'right' },
 ];
 
@@ -159,11 +159,11 @@ export function LaporanDemeritPage() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center justify-between mb-1 flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Laporan Demerit</h2>
-          <p className="text-sm text-aam-text-muted mt-0.5">Rekap Σ pelanggaran per siswa: per kategori, terpotong, saldo.</p>
+          <p className="text-sm text-aam-text-muted mt-0.5">Rekap \u03A3 pelanggaran per siswa: per kategori, terpotong, saldo.</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" icon="table_view" onClick={() => handleExport('excel')} disabled={!!exporting} id="btn-export-excel-demerit">
@@ -215,7 +215,7 @@ export function LaporanDemeritPage() {
             <Table
               columns={[
                 { header: 'Nama Siswa', cell: (r) => <span className="font-medium">{r.siswaNama}</span> },
-                { header: 'Kelas', cell: (r) => <span className="text-aam-text-muted">{r.siswaKelas ?? '—'}</span> },
+                { header: 'Kelas', cell: (r) => <span className="text-aam-text-muted">{r.siswaKelas ?? '\u2014'}</span> },
                 { header: 'R', align: 'right', cell: (r) => String(r.poinR) },
                 { header: 'S', align: 'right', cell: (r) => String(r.poinS) },
                 { header: 'B', align: 'right', cell: (r) => String(r.poinB) },

@@ -37,7 +37,7 @@ export function GuruPenilaianDashboard() {
  useEffect(() => { load(); }, [load]);
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  <div className="mb-6">
  <h2 className="text-xl font-bold text-aam-text">Penilaian</h2>
  <p className="text-sm text-aam-text-muted mt-0.5">Daftar paket mapel–kelas yang kamu ampu semester ini.</p>

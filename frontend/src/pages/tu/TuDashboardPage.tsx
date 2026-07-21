@@ -61,7 +61,7 @@ export function TuDashboardPage() {
 
   if (loading) {
     return (
-      <PageContainer>
+      <PageContainer backLinkMobile={false}>
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,7 +89,7 @@ export function TuDashboardPage() {
   ] as const;
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Dashboard TU</h2>

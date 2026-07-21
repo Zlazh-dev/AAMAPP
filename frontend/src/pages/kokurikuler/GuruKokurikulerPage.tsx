@@ -31,7 +31,7 @@ export function GuruKokurikulerPage() {
   }, []);
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="mb-6">
         <h2 className="text-xl font-bold text-aam-text">Kokurikuler — Kegiatan Saya</h2>
         <p className="text-sm text-aam-text-muted mt-0.5">Kegiatan di mana kamu ditugaskan sebagai penilai.</p>

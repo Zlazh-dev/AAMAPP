@@ -62,6 +62,7 @@ const GuruWajahPage = React.lazy(() => import('../pages/guru/GuruWajahPage').the
 const GuruEnrollWizardPage = React.lazy(() => import('../pages/guru/GuruEnrollWizardPage').then(m => ({ default: m.GuruEnrollWizardPage })));
 const GuruPresensiDashboard = React.lazy(() => import('../pages/guru/GuruPresensiDashboard').then(m => ({ default: m.GuruPresensiDashboard })));
 const PresensiGuruPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruPage').then(m => ({ default: m.PresensiGuruPage })));
+const PresensiGuruDetailPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruDetailPage').then(m => ({ default: m.PresensiGuruDetailPage })));
 // F4a: Izin guru
 const IzinGuruPage = React.lazy(() => import('../pages/guru/IzinGuruPage').then(m => ({ default: m.IzinGuruPage })));
 const AdminIzinGuruPage = React.lazy(() => import('../pages/admin/izin/AdminIzinGuruPage').then(m => ({ default: m.AdminIzinGuruPage })));
@@ -293,6 +294,7 @@ const routes: RouteObject[] = [
           { path: '/tu/rekap-guru', element: <RequireRole roles={['tu','admin','kepsek']}><Lazy><TuRekapGuruPage /></Lazy></RequireRole> },
           // Presensi guru (path kanonik, dipakai juga menu kesiswaan)
           { path: '/tu/presensi-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><PresensiGuruPage /></Lazy></RequireRole> },
+          { path: '/tu/presensi-guru/detail', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><PresensiGuruDetailPage /></Lazy></RequireRole> },
           // Izin guru admin (path kanonik)
           { path: '/tu/izin-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><AdminIzinGuruPage /></Lazy></RequireRole> },
           // Laporan harian guru (pindahan dari /admin/laporan/harian-guru)

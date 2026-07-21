@@ -55,13 +55,22 @@
 
 ## PAPAN TUGAS
 
-| Agent | Peran | Dokumen tugas | Tugas aktif | Status |
-|---|---|---|---|---|
-| Antigravity-IDE | executor A | `briefs/UX-POLISH-SPEC.md` + `briefs/AGENT-1.md` | **UX-POLISH-FE Gel-1** (akses peran + hapus kiosk frontend + hierarki Laporan-hub + validasi wajah di detail guru) | mulai |
-| Antigravity-v2.0 | executor B | `briefs/UX-POLISH-SPEC.md` + `briefs/AGENT-2.md` | **UX-POLISH-BE** (@Roles ketat + hapus modul kiosk + status validasi wajah) | mulai |
+> **ARMADA MENYUSUT JADI 1 AGENT (2026-07-21).** AG-2 tidak dipakai lagi;
+> semua pekerjaan (FE + BE) ke **AGENT-1**. Saluran kerja tunggal =
+> **`briefs/AGENT-1-AKTIF.md`** (baru, bersih). `AGENT-1.md`/`AGENT-2.md` lama = arsip.
 
-**UX-POLISH (pasca-QA user 2026-07-19):** feature-complete tapi konsistensi
-UX perlu dirapikan. Keputusan user dikunci di `briefs/UX-POLISH-SPEC.md`:
+| Agent | Peran | Dokumen kerja | Tugas aktif | Status |
+|---|---|---|---|---|
+| **AGENT-1** | executor tunggal (FE+BE) | **`briefs/AGENT-1-AKTIF.md`** + `briefs/UX-POLISH-SPEC.md` | **UX-POLISH A–J** (gabungan FE+BE; PRIORITAS I & J = bug mobile konten-tertutup + card-list/ambang sub-detail, keluhan user 2026-07-21) | siap |
+
+**UX-POLISH (pasca-QA user 2026-07-19; +bug user 2026-07-21):** feature-complete
+tapi konsistensi UX perlu dirapikan. **BARU (I & J di UX-POLISH-SPEC, prioritas
+tinggi, Gel-2 AG-1):** (I) bug sistemik konten paling bawah TERTUTUP tombol
+Kembali/bar di mobile → reservasi ruang di PageContainer+BackLink, audit semua
+halaman; (J) card-list mobile menyeluruh + AMBANG SUB-DETAIL (tabel >3–4 kolom
+atau kartu >3 baris → klik menuju halaman sub-detail relevan; buat sub-detail
+baru bila perlu, mis. Kehadiran Guru). Keputusan user dikunci di
+`briefs/UX-POLISH-SPEC.md`:
 akses KETAT per peran (admin=admin+kurikulum+kesiswaan+tu, BUKAN guru; area
 guru dikunci ke peran guru; backend @Roles ikut ketat) • HAPUS kiosk (guru
 100% self-service) • sidebar 6-item + Laporan jadi hub sub-halaman • wajah:
@@ -94,19 +103,57 @@ frontend 2 vuln (1 HIGH). Perbaikan dependensi = kandidat item SEC-1
 ke-7 (butuh `npm audit fix` = sentuh lockfile = wilayah AGENT-1) —
 planner putuskan setelah SEC-1 config 1–6 lolos.
 
-**⛔ BLOCKER DEPLOY PRODUKSI (efek SEC-1 item 3 — WAJIB sebelum F8):**
-`synchronize` kini OFF di production (NODE_ENV=production di Dockerfile
-& prod compose), TAPI belum ada migration/bootstrap → deploy prod ke DB
-KOSONG tidak membuat tabel → crash. Konsekuensi: **soft-launch F1 ke
-prod TIDAK bisa sampai ada BOOTSTRAP SKEMA.** Keputusan planner:
-(a) kode kondisional dipertahankan (benar utk jangka panjang);
-(b) sebelum deploy prod nyata (fase F8, atau lebih awal bila user mau
-soft-launch), tambah SATU dari: TypeORM migration; ATAU prosedur
-first-run terdokumentasi (deploy sekali dgn synchronize sementara ON →
-seed → flip production); (c) `deploy/README-DEPLOY.md` WAJIB memuat
-peringatan ini (tugas AGENT-2). Sampai itu ada, prod deploy DIBLOKIR.
-KOREKSI klaim planner sebelumnya: "F1 bisa deploy hari ini" kini TIDAK
-akurat — perlu bootstrap skema dulu.
+**⛔ BLOCKER DEPLOY PRODUKSI — HASIL GLADI BERSIH (2026-07-21): 3 LAPIS CACAT.**
+Gladi bersih (stack terpisah `aamapp-gladi`, port 8081, volume kosong, dev
+TAK tersentuh) membongkar tiga cacat bertumpuk di jalur deploy produksi.
+Migration bootstrap SUDAH ada (2 migration; `runMigrations()` di `main.ts`
+jalan sebelum bootstrap — urutan benar), tapi:
+
+**LAPIS 1 — data-source path [PLANNER SUDAH FIX 2026-07-21].**
+`data-source.ts:18-19` prod `srcDir = path.join(__dirname,'..')` → dari
+`/app/dist` naik ke `/app` → glob migration `/app/migrations/*.js` (folder
+tak ada; migration sebenarnya di `/app/dist/migrations`). Akibat: 0 migration
+dijalankan, hanya `typeorm_migrations` terbentuk, seed crash. FIX terpasang:
+`srcDir = __dirname`. Terbukti: setelah fix, migration MULAI dijalankan.
+
+**LAPIS 2 — SQL InitialSchema invalid [PLANNER SUDAH FIX 2026-07-21].**
+`1721394000000-InitialSchema.ts:143` `ALTER TABLE "kelas" ADD CONSTRAINT
+IF NOT EXISTS ...` — Postgres TIDAK mendukung `ADD CONSTRAINT IF NOT EXISTS`
+(beda dgn CREATE TABLE IF NOT EXISTS); `.catch()` JS tak menolong karena
+error sintaks menggugurkan transaksi (transaction:'each'). FIX terpasang:
+bungkus DO $$ cek `pg_constraint`. Terbukti: InitialSchema lolos penuh.
+
+**LAPIS 3 — SCHEMA DRIFT migration vs entity [⚠️ BELUM DIPERBAIKI — TUGAS
+AGENT, JANGAN DITAMBAL TANGAN].** Setelah lapis 1&2, migrasi ke-2
+`AddDeviceIdToSessions` gagal: `column "revokedAt" does not exist`. Sebab:
+InitialSchema TIDAK setia mereproduksi entity. Bukti pada tabel `sessions`
+saja (bandingkan `session.entity.ts`):
+| kolom/tipe | entity (benar) | InitialSchema (salah) |
+|---|---|---|
+| id | INTEGER (serial) | UUID gen_random_uuid() |
+| tokenHash | char(64) | TIDAK ADA |
+| loginMethod | varchar(50) | TIDAK ADA |
+| revokedAt | timestamptz null | TIDAK ADA |
+Artinya InitialSchema ditulis terhadap entity versi LAMA. Bila tabel
+`sessions` sedrift ini (bahkan tipe PK salah → auth pasti rusak di prod),
+~33 tabel lain TIDAK bisa dipercaya. **Remediasi wajib: REGENERASI migration
+InitialSchema dari entity aktual** (bukan tambal per kolom — risiko luput).
+Pendekatan disarankan: jalankan sekali DB scratch dgn `synchronize:true` →
+`typeorm migration:generate` terhadap entity → jadikan InitialSchema; ATAU
+dump skema referensi synchronize lalu susun ulang. LALU verifikasi kolom
+per tabel = entity. Hapus/rapikan `AddDeviceIdToSessions` bila deviceId sudah
+masuk skema regen.
+
+**RE-TEST (gladi, setelah lapis 3 beres):**
+`docker compose -p aamapp-gladi -f docker-compose.prod.yml --env-file <env>
+down -v && ... up -d --build` → log backend "Migration selesai:
+InitialSchema, AddDeviceIdToSessions" (TANPA error) → `psql \dt` = ±34 tabel
+→ `SELECT count(*) FROM users` ≥ 1 (admin seed) → login admin di :8081.
+Lolos → BLOCKER DICABUT. Stack dev (`aamapp`) JANGAN disentuh.
+
+Status: lapis 1&2 fix planner (perlu di-COMMIT). Lapis 3 = tugas AGENT
+backend (regen migration + verifikasi). `deploy/README-DEPLOY.md` wajib
+prosedur+peringatan (AGENT-2). Sampai re-test lolos, prod deploy DIBLOKIR.
 
 Planner memperbarui papan ini setiap ada perubahan; agent TIDAK mengubah
 papan — status "SELESAI" ditulis planner setelah review laporan.

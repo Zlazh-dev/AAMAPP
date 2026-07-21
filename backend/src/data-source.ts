@@ -15,9 +15,11 @@ import 'reflect-metadata';
 // saat production (dist/) pakai compiled *.entity.js.
 const isProd = process.env.NODE_ENV === 'production';
 const ext = isProd ? 'js' : 'ts';
-const srcDir = isProd
-  ? path.join(__dirname, '..') // dist/
-  : path.join(__dirname);      // src/
+// data-source berada LANGSUNG di dalam src/ (dev, ts-node) atau dist/ (prod),
+// jadi __dirname sudah menunjuk folder yang benar untuk kedua kasus.
+// (Bug lama: prod pakai path.join(__dirname,'..') → naik ke /app → glob
+//  migration jadi /app/migrations/*.js yang tidak ada → 0 migration dijalankan.)
+const srcDir = __dirname;
 
 export const AppDataSource = new DataSource({
   type: 'postgres',

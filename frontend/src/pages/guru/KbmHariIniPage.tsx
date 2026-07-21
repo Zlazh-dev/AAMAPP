@@ -118,7 +118,7 @@ export function KbmHariIniPage({ embedded = false }: { embedded?: boolean } = {}
  );
 
  if (embedded) return inner;
- return <PageContainer size="xl">{inner}</PageContainer>;
+ return <PageContainer size="xl" backLinkMobile={false}>{inner}</PageContainer>;
 }
 
 export default KbmHariIniPage;

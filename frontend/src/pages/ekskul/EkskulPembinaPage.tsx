@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';

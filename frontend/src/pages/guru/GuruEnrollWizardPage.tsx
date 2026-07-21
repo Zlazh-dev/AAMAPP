@@ -132,7 +132,7 @@ export function GuruEnrollWizardPage() {
  };
 
  if (phase === 'denied') return (
- <PageContainer size="sm">
+ <PageContainer size="sm" backLinkMobile={false}>
  <Card icon="no_photography" className="text-center">
  <h2 className="font-heading font-semibold text-aam-text mb-2">Izin Kamera Ditolak</h2>
  <p className="text-sm text-aam-text-muted mb-4">Izinkan akses kamera di pengaturan browser, lalu muat ulang.</p>
@@ -142,7 +142,7 @@ export function GuruEnrollWizardPage() {
  );
 
  if (phase === 'error') return (
- <PageContainer size="sm">
+ <PageContainer size="sm" backLinkMobile={false}>
  <Card icon="error" className="text-center">
  <h2 className="font-heading font-semibold text-aam-text mb-2">Terjadi Kesalahan</h2>
  <p className="text-sm text-aam-text-muted">{status}</p>
@@ -151,7 +151,7 @@ export function GuruEnrollWizardPage() {
  );
 
  return (
- <PageContainer size="sm">
+ <PageContainer size="sm" backLinkMobile={false}>
  <div className="mb-4 flex items-center gap-3">
  <button onClick={() => { stopCamera(); navigate('/guru/wajah'); }} className="flex items-center gap-1 text-sm text-aam-text-muted hover:text-aam-green">
  <span className="material-symbols-outlined text-base">arrow_back</span> Kembali

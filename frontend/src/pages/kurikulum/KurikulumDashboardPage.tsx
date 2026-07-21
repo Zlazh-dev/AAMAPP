@@ -39,7 +39,7 @@ export function KurikulumDashboardPage() {
   ];
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="xl" backLinkMobile={false}>
       <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text mb-1">
         Dashboard Kurikulum
       </h2>

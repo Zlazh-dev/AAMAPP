@@ -178,7 +178,7 @@ export function ProfilPage() {
   if (!profile) return null;
 
   return (
-    <PageContainer size="lg">
+    <PageContainer size="lg" backLinkMobile={false}>
       <h2 className="text-lg font-heading font-semibold text-aam-text mb-4">Profil Saya</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

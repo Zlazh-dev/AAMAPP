@@ -95,7 +95,7 @@ export function GuruPelanggaranPage() {
  };
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
  <div>
  <h2 className="text-xl font-bold text-aam-text">Laporan Pelanggaran</h2>

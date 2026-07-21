@@ -77,6 +77,44 @@ Sidebar = hub/area utama; sisanya SUB-HALAMAN via SubPageLinks + BackLink.
   halaman (mulai **detail kelas**) — komponen adaptif (PageMenu/AdaptiveSelect/
   dialog konfirmasi) wajib render dropdown/modal di ≥md, bottom sheet di <md.
 
+## I. BUG SISTEMIK: konten paling bawah TERTUTUP elemen fixed bawah [keputusan user 2026-07-21]
+Di mobile, hampir SEMUA halaman punya tombol **BackLink** (dan/atau bar aksi/
+Simpan) yang fixed/sticky di bawah → komponen paling bawah (kartu / tabel /
+tombol) tertutup olehnya dan tak bisa diakses. Ini KETIGA kalinya kelas bug ini
+muncul (form Simpan-bar 0c, dsb.) → perbaiki SISTEMIK, bukan per-halaman:
+- Kontainer scroll halaman WAJIB menyediakan **padding-bawah = tinggi elemen
+  fixed bawah + `env(safe-area-inset-bottom)` + jarak nyaman (≥16px)** sehingga
+  konten terakhir selalu tampil penuh DI ATAS tombol Kembali/bar.
+- Jadikan KONTRAK di komponen bersama: `PageContainer` (sudah punya `bottomBar`)
+  harus juga memesan ruang untuk **BackLink mobile** — BackLink adaptif ikut
+  menyumbang tinggi yang dipesan. Tidak boleh ada halaman yang memasang
+  BackLink/bottom-bar tanpa reservasi ruang ini.
+- AUDIT SEMUA halaman mobile (375px): scroll sampai mentok → elemen terakhir
+  (kartu/tabel/tombol) tampak utuh dengan jarak, TIDAK tertutup tombol Kembali.
+
+## J. TABEL → CARD-LIST → SUB-DETAIL (ambang keramaian data) [keputusan user 2026-07-21]
+Aturan induk (tegakkan ulang + ambang baru); tujuannya: tak ada tabel/kartu
+yang sesak.
+1. **Mobile: JANGAN tabel data mentah → CARD-LIST** (aturan lama, banyak halaman
+   belum patuh — AUDIT & terapkan menyeluruh).
+2. **AMBANG SUB-DETAIL — tabel > ~4 kolom data:** bila sebuah daftar butuh LEBIH
+   DARI 3–4 kolom data untuk satu baris, baris/kartu itu jadi **RINGKASAN yang
+   BISA DIKLIK → menuju HALAMAN SUB-DETAIL yang relevan** (berlaku desktop &
+   mobile). Tabel/kartu hanya menampilkan 2–3 kolom identitas terpenting; sisa
+   kolom pindah ke halaman sub-detail. Bila halaman sub-detail relevan belum
+   ada → **BUATKAN** (konteks sesuai datanya).
+   - Contoh (dari user): **Kehadiran Guru** kolomnya > 3–4 (nama, status, jam
+     masuk, jam pulang, menit telat, sumber, …) → daftar cukup tampil
+     nama + status (+ jam) → klik → sub-detail kehadiran guru itu (rincian
+     lengkap hari/periode tsb).
+3. **Mobile — kartu > 3 baris data:** bila satu kartu perlu LEBIH DARI TIGA
+   baris/field data, JANGAN jejalkan → tampilkan ringkasan ≤3 field + **klik →
+   halaman sub-detail** relevan.
+4. Sub-detail memakai pola detail yang sudah ada (mis. `/admin/orang/guru/:id`)
+   bila cocok; untuk daftar tipe-laporan yang belum punya detail → buat route
+   sub-detail baru (BackLink + konteks jelas). Butuh data yang belum ada di
+   respons list → minta endpoint detail (koordinasi AG-2).
+
 ## PEMBAGIAN WILAYAH (difase agar rapi)
 - **AG-2 (backend)** — UX-POLISH-BE: (A) `@Roles` ketat (buang admin-superuser
   di endpoint milik-guru) • (B) hapus modul kiosk + registrasi • (D) status
@@ -87,8 +125,13 @@ Sidebar = hub/area utama; sisanya SUB-HALAMAN via SubPageLinks + BackLink.
   kiosk • (C) hierarki: menu 6-item + Laporan hub + pindah presensi/izin jadi
   sub + SubPageLinks • (D) validasi wajah di detail guru.
   Gel-2 (polish): (E) BackLink/SubPageLinks audit semua halaman • (F) card
-  watermark • (G) emoji→ikon • (H) desktop bottom-sheet fix.
-  Tiap gelombang: tsc + e2e hijau; e2e MANDIRI.
+  watermark • (G) emoji→ikon • (H) desktop bottom-sheet fix • **(I) fix
+  sistemik konten-tertutup-elemen-bawah (reservasi ruang di PageContainer +
+  BackLink) — AUDIT semua halaman mobile** • **(J) card-list mobile menyeluruh
+  + ambang sub-detail (tabel >3–4 kolom / kartu >3 baris → halaman sub-detail;
+  buat sub-detail baru bila perlu, mis. Kehadiran Guru).**
+  Tiap gelombang: tsc + e2e hijau; e2e MANDIRI. (I) & (J) prioritas tinggi —
+  keluhan langsung user; (J) yang butuh endpoint detail → koordinasi AG-2.
 
 ## Aturan wajib: patuhi SPEC-KANON Zona 2A (komponen v0.12.x) • §12.15/16/17 •
 e2e = gerbang (spec mandiri) • klaim tugas • APPEND laporan • gerbang e2e

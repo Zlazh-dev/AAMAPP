@@ -1048,13 +1048,18 @@ export const api = {
     if (params?.mapelId) search.set('mapelId', String(params.mapelId));
     if (params?.page) search.set('page', String(params.page));
     if (params?.limit) search.set('limit', String(params.limit));
-    return request<{ data: any[]; total: number; page: number; limit: number; taId: number }>(`/kurikulum/penugasan?${search.toString()}`)
+    return request<{ data: Array<{
+      id: number; guruId: number; mapelId: number; kelasId: number;
+      tahunAjaranId: number; createdAt: string; updatedAt: string;
+      guru?: { nama: string }; mapel?: { nama: string }; kelas?: { nama: string };
+      tahunAjaran?: { nama: string };
+    }>; total: number; page: number; limit: number; taId: number }>(`/kurikulum/penugasan?${search.toString()}`)
       .then((res) => ({
         total: res.total,
         page: res.page,
         limit: res.limit,
         taId: res.taId,
-        data: res.data.map((p: any) => ({
+        data: res.data.map((p) => ({
           id: p.id,
           guruId: p.guruId,
           guruNama: p.guru?.nama ?? '—',
@@ -1078,7 +1083,7 @@ export const api = {
     .then((result) => { invalidateCache('/kurikulum/penugasan'); return result; }),
 
   updatePenugasan: (id: number, data: { guruId: number }) =>
-    request<any>(`/kurikulum/penugasan/${id}`, {
+    request<{ id: number; guruId: number }>(`/kurikulum/penugasan/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     })
@@ -1094,8 +1099,12 @@ export const api = {
     if (params?.taId) search.set('taId', String(params.taId));
     if (params?.kelasId) search.set('kelasId', String(params.kelasId));
     if (params?.guruId) search.set('guruId', String(params.guruId));
-    return request<{ data: any[]; taId: number }>(`/kurikulum/jadwal?${search.toString()}`)
-      .then((res) => res.data.map((j: any) => ({
+    return request<{ data: Array<{
+      id: number; hari: number; sesiKe: number | null; jamMulai: string; jamSelesai: string;
+      penugasanId: number; createdAt: string; updatedAt: string;
+      penugasan: { guru?: { nama: string }; mapel?: { nama: string }; kelas?: { nama: string }; kelasId?: number; tahunAjaranId?: number } | null;
+    }>; taId: number }>(`/kurikulum/jadwal?${search.toString()}`)
+      .then((res) => res.data.map((j) => ({
         id: j.id,
         hari: j.hari,
         jamKe: j.sesiKe ?? 0,
@@ -1190,6 +1199,28 @@ export const api = {
         alasan: string | null;
       }>;
     }>(`/admin/presensi-guru/harian?tanggal=${encodeURIComponent(params.tanggal)}`),
+
+  adminGetPresensiGuruDetail: (params: { guruId: number; tanggal?: string }) => {
+    const q = new URLSearchParams();
+    q.set('guruId', String(params.guruId));
+    if (params.tanggal) q.set('tanggal', params.tanggal);
+    return request<{
+      guru: { id: number; nama: string; nip: string | null; fotoUrl: string | null; status: string };
+      tanggal: string;
+      statusHarian: string;
+      presensi: {
+        id: number; checkInAt: string | null; checkOutAt: string | null;
+        status: string; source: string | null; distanceMeter: number | null;
+        similarity: number | null; alasan: string | null;
+      } | null;
+      izinAktif: { id: number; jenis: string; dari: string; sampai: string; status: string } | null;
+      jadwalKBM: Array<{ id: number; jamMulai: string; jamSelesai: string; mapel: string; kelas: string }>;
+      riwayat: Array<{
+        tanggal: string; status: string | null; checkInAt: string | null;
+        checkOutAt: string | null; source: string | null;
+      }>;
+    }>(`/admin/presensi-guru/detail?${q.toString()}`);
+  },
 
   adminPostPresensiGuruManual: (data: {
     guruId: number;
@@ -1443,8 +1474,9 @@ export const api = {
     if (params.mapelId) q.set('mapelId', String(params.mapelId));
     return request<{
       data: Array<{
-        guruId: number; guruNama: string; kelas: string; mapel: string;
-        totalKbm: number; terlaksana: number; persen: number;
+        penugasanId: number; guruId: number; guruNama: string;
+        kelasId: number; kelasNama: string; mapelId: number; mapelNama: string;
+        totalJadwal: number; terlaksana: number; kosong: number; pctTerlaksana: number | null;
       }>;
     }>(`/admin/laporan/keterlaksanaan-kbm?${q}`);
   },
@@ -1461,9 +1493,9 @@ export const api = {
     if (params.mapelId) q.set('mapelId', String(params.mapelId));
     return request<{
       data: Array<{
-        siswaId: number; siswaNama: string; kelas: string;
+        siswaId: number; siswaNama: string; nis: string | null;
         hadir: number; sakit: number; izin: number; alpha: number; terlambat: number;
-        persen: number;
+        total: number; persen: number;
       }>;
     }>(`/admin/laporan/siswa?${q}`);
   },
@@ -1599,11 +1631,20 @@ export const api = {
     if (status) q.set('status', status);
     if (kelasId) q.set('kelasId', String(kelasId));
     q.set('limit', '50');
-    return request<{ data: any[]; total: number }>(`/kesiswaan/tindak-lanjut?${q}`);
+    return request<{
+      data: Array<{
+        id: number; siswaId: number; tahunAjaranId: number;
+        tahap: string; ambang: number; status: string;
+        catatanPelaksanaan: string | null; dilaksanakanPada: string | null;
+        createdAt: string;
+        siswa: { nama: string; nis: string | null; kelasId: number | null };
+      }>;
+      total: number; page: number; limit: number;
+    }>(`/kesiswaan/tindak-lanjut?${q}`);
   },
 
   selesaiTindakLanjut: (id: number, catatanPelaksanaan: string) =>
-    request<any>(`/kesiswaan/tindak-lanjut/${id}/selesai`, {
+    request<{ ok: boolean }>(`/kesiswaan/tindak-lanjut/${id}/selesai`, {
       method: 'PATCH',
       body: JSON.stringify({ catatanPelaksanaan }),
     }),
@@ -1612,7 +1653,10 @@ export const api = {
   getReward: (tahunAjaranId?: number) => {
     const q = new URLSearchParams();
     if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));
-    return request<{ sangatBaik: any[]; baik: any[] }>(`/kesiswaan/reward?${q}`);
+    return request<{
+      sangatBaik: Array<{ siswaId: number; siswaNama: string; kelasNama: string | null; saldo: number }>;
+      baik: Array<{ siswaId: number; siswaNama: string; kelasNama: string | null; saldo: number }>;
+    }>(`/kesiswaan/reward?${q}`);
   },
 
   // ── F5b: Laporan Demerit ──────────────────────────────────────────────────
@@ -1622,48 +1666,56 @@ export const api = {
     q.set('sampai', params.sampai);
     if (params.kelasId) q.set('kelasId', String(params.kelasId));
     if (params.limit) q.set('limit', String(params.limit));
-    return request<{ data: any[]; total: number }>(`/kesiswaan/laporan/demerit?${q}`);
+    return request<{
+      data: Array<{
+        siswaId: number; siswaNama: string; siswaNis: string | null;
+        kelasId: number | null; siswaKelas: string | null;
+        poinR: number; poinS: number; poinB: number; poinSB: number;
+        terpotong: number; saldo: number;
+      }>;
+      total: number; page: number; limit: number; tahunAjaranId: number;
+    }>(`/kesiswaan/laporan/demerit?${q}`);
   },
 
   // ── F6a: Penilaian Guru ───────────────────────────────────────────────────
   getPenilaianPaket: () =>
-    request<{ data: any[] }>('/guru/penilaian'),
+    request<{ data: Array<{ id: number; guruId: number; mapelNama: string; kelasNama: string; guruNama: string }> }>('/guru/penilaian'),
 
   getTpList: (penugasanId: number) =>
-    request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/tp`),
+    request<{ data: Array<{ id: number; deskripsi: string; urutan: number }> }>(`/guru/penilaian/${penugasanId}/tp`),
 
   createTp: (penugasanId: number, body: { deskripsi: string; urutan?: number }) =>
-    request<any>(`/guru/penilaian/${penugasanId}/tp`, {
+    request<{ id: number; deskripsi: string; urutan: number }>(`/guru/penilaian/${penugasanId}/tp`, {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
   updateTp: (tpId: number, body: { deskripsi?: string; urutan?: number }) =>
-    request<any>(`/guru/penilaian/tp/${tpId}`, {
+    request<{ id: number; deskripsi: string; urutan: number }>(`/guru/penilaian/tp/${tpId}`, {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
 
   deleteTp: (tpId: number) =>
-    request<any>(`/guru/penilaian/tp/${tpId}`, { method: 'DELETE' }),
+    request<{ ok: boolean }>(`/guru/penilaian/tp/${tpId}`, { method: 'DELETE' }),
 
   getPenilaianList: (penugasanId: number) =>
-    request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/penilaian`),
+    request<{ data: Array<{ siswaId: number; siswaNama: string; nilai: number | null; tpId: number }> }>(`/guru/penilaian/${penugasanId}/penilaian`),
 
-  createPenilaian: (penugasanId: number, body: any) =>
-    request<any>(`/guru/penilaian/${penugasanId}/penilaian`, {
+  createPenilaian: (penugasanId: number, body: { siswaId: number; tpId: number; nilai: number }) =>
+    request<{ ok: boolean }>(`/guru/penilaian/${penugasanId}/penilaian`, {
       method: 'POST',
       body: JSON.stringify(body),
     }),
 
-  updatePenilaian: (penilaianId: number, body: any) =>
-    request<any>(`/guru/penilaian/penilaian/${penilaianId}`, {
+  updatePenilaian: (penilaianId: number, body: { nilai: number }) =>
+    request<{ ok: boolean }>(`/guru/penilaian/penilaian/${penilaianId}`, {
       method: 'PATCH',
       body: JSON.stringify(body),
     }),
 
   deletePenilaian: (penilaianId: number) =>
-    request<any>(`/guru/penilaian/penilaian/${penilaianId}`, { method: 'DELETE' }),
+    request<{ ok: boolean }>(`/guru/penilaian/penilaian/${penilaianId}`, { method: 'DELETE' }),
 
   getNilaiList: (penilaianId: number) =>
     request<any>(`/guru/penilaian/penilaian/${penilaianId}/nilai`),

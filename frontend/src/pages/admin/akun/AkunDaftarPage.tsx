@@ -53,7 +53,7 @@ export function AkunDaftarPage() {
   };
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="xl" backLinkMobile={false}>
       {/* Page header (title + PageMenu) */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="min-w-0">

@@ -286,15 +286,20 @@ export class LaporanService {
         }
       }
 
-      const pctHadir = hariWajib > 0 ? Math.round((hariHadir / hariWajib) * 100) : null;
+      const pctHadir = hariWajib > 0 ? Math.round((hariHadir / hariWajib) * 100) : 0;
       return {
         guruId: g.id,
-        nama: g.nama,
+        guruNama: g.nama,
         nip: g.nip,
-        ...counts,
         hariWajib,
-        hariHadir,
-        pctHadir,
+        hadir: counts.HADIR,
+        terlambat: counts.TERLAMBAT,
+        izin: counts.IZIN,
+        sakit: counts.SAKIT,
+        dinas: counts.DINAS,
+        alpha: counts.ALPHA,
+        libur: counts.LIBUR,
+        persen: pctHadir,
       };
     });
 
@@ -456,8 +461,16 @@ export class LaporanService {
     }
 
     const allData = [...siswaMap.values()].map((e) => ({
-      ...e,
-      pctHadir: e.total > 0 ? Math.round(((e.H + e.T + e.I) / e.total) * 100) : null,
+      siswaId: e.siswaId,
+      siswaNama: e.siswaNama,
+      nis: e.nis,
+      hadir: e.H,
+      sakit: e.S,
+      izin: e.I,
+      alpha: e.A,
+      terlambat: e.T,
+      total: e.total,
+      persen: e.total > 0 ? Math.round(((e.H + e.T + e.I) / e.total) * 100) : 0,
     }));
 
     const total = allData.length;

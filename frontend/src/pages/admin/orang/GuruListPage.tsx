@@ -66,7 +66,7 @@ export function GuruListPage() {
   ];
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="xl" backLinkMobile={false}>
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="min-w-0">

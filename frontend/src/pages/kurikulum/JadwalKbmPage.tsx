@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, JadwalKbm, Penugasan, Kelas, TahunAjaran , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';

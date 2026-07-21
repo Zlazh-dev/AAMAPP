@@ -39,7 +39,7 @@ export function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <PageContainer>
+      <PageContainer backLinkMobile={false}>
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-24" />
@@ -50,7 +50,7 @@ export function AdminDashboardPage() {
   }
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Dashboard</h2>

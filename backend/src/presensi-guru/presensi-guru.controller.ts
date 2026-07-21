@@ -11,6 +11,7 @@ import {
   Req,
   Patch,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { IsIn } from 'class-validator';
 import { Request } from 'express';
@@ -122,6 +123,21 @@ export class AdminWajahController {
   @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   monitorHarian(@Query('tanggal') tanggal?: string) {
     return this.svc.monitorHarian(tanggal);
+  }
+
+  /**
+   * GET /api/admin/presensi-guru/detail?guruId=&tanggal=
+   * Sub-detail presensi satu guru untuk satu tanggal (UX-POLISH §J).
+   */
+  @Get('presensi-guru/detail')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
+  detailPresensiGuru(
+    @Query('guruId') guruIdStr?: string,
+    @Query('tanggal') tanggal?: string,
+  ) {
+    const guruId = parseInt(guruIdStr || '0', 10);
+    if (!guruId) throw new BadRequestException('guruId wajib diisi');
+    return this.svc.detailPresensiGuru(guruId, tanggal);
   }
 
   /**

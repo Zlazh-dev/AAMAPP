@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
@@ -87,7 +87,7 @@ export function KokurikulerTimPage() {
   };
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center gap-3 mb-6 flex-wrap">
         <Button variant="secondary" onClick={() => navigate('/kurikulum/kokurikuler')} id="btn-back-kegiatan">
           ← Kegiatan

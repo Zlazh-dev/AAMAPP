@@ -77,7 +77,7 @@ export function RaporListPage() {
  const finalCount = rows.filter(r => r.raporStatus === 'FINAL').length;
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  <div className="mb-6">
  <h2 className="text-xl font-bold text-aam-text">Rapor Siswa</h2>
  <p className="text-sm text-aam-text-muted mt-0.5">Kelola dan finalisasi rapor siswa di kelas Anda.</p>

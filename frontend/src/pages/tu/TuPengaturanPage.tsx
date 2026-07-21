@@ -43,12 +43,12 @@ const CARDS = [
 ];
 
 /**
- * /tu/pengaturan — halaman induk Pengaturan TU (IA-HIERARCHY-V2 revisi 2026-07-20).
- * Sub: Jam KBM · Hari Libur · Lokasi Presensi · Profil Sekolah.
+ * /tu/pengaturan - halaman induk Pengaturan TU (IA-HIERARCHY-V2 revisi 2026-07-20).
+ * Sub: Jam KBM | Hari Libur | Lokasi Presensi | Profil Sekolah.
  */
 export function TuPengaturanPage() {
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center justify-between gap-3 mb-4">
         <div>
           <h2 className="text-xl font-bold text-aam-text">Pengaturan</h2>

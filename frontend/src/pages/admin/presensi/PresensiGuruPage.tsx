@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../../../api/client';
 import { PageContainer } from '../../../components/PageContainer';
 import { Card } from '../../../components/Card';
@@ -67,6 +68,7 @@ interface ManualFormState {
  * di sheet adaptif — alasan wajib. POST /api/tu/presensi-guru/manual.
  */
 export function PresensiGuruPage() {
+  const navigate = useNavigate();
   const { show } = useToast();
   const [tanggal, setTanggal] = useState(todayWIB());
   const [rows, setRows] = useState<PresensiGuruRow[]>([]);
@@ -288,11 +290,14 @@ export function PresensiGuruPage() {
           <EmptyState icon="person_check" message="Tidak ada data guru" />
         ) : rows.map((row) => (
           <Card key={row.guruId} icon="person">
-            <div className="flex items-start justify-between gap-3 mb-2">
+            <div
+              className="flex items-start justify-between gap-3 mb-2 cursor-pointer"
+              onClick={() => navigate(`/tu/presensi-guru/detail?guruId=${row.guruId}`)}
+            >
               <div className="min-w-0">
                 <p className="font-medium text-aam-text truncate">{row.nama}</p>
                 <p className="text-xs text-aam-text-muted">
-                  Masuk: {fmtTime(row.checkInAt)} • Pulang: {fmtTime(row.checkOutAt)}
+                  Masuk: {fmtTime(row.checkInAt)} · Pulang: {fmtTime(row.checkOutAt)}
                 </p>
               </div>
               {row.status ? (
@@ -301,7 +306,7 @@ export function PresensiGuruPage() {
                 <Badge variant="gray">Belum</Badge>
               )}
             </div>
-            <button onClick={() => openManual(row)} className="w-full rounded-md border border-aam-border py-2 text-xs font-medium text-aam-text">
+            <button onClick={(e) => { e.stopPropagation(); openManual(row); }} className="w-full rounded-md border border-aam-border py-2 text-xs font-medium text-aam-text">
               Input Manual
             </button>
           </Card>

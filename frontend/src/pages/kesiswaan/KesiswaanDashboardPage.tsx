@@ -81,7 +81,7 @@ export function KesiswaanDashboardPage() {
 
   if (loading) {
     return (
-      <PageContainer>
+      <PageContainer backLinkMobile={false}>
         <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -103,7 +103,7 @@ export function KesiswaanDashboardPage() {
   const hadirPct = totalGuru > 0 ? Math.round(guruHadir / totalGuru * 100) : 0;
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="mb-6">
         <h2 className="text-xl font-bold text-aam-text">Dashboard Kesiswaan</h2>
         <p className="text-sm text-aam-text-muted">

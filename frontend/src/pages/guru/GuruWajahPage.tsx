@@ -42,7 +42,7 @@ export function GuruWajahPage() {
  }, [show]);
 
  return (
- <PageContainer size="sm">
+ <PageContainer size="sm" backLinkMobile={false}>
  <div className="mb-4">
  <h2 className="text-base md:text-lg font-heading font-semibold text-aam-text">
  Daftar Wajah Saya

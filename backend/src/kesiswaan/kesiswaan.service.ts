@@ -919,10 +919,12 @@ export class KesiswaanService implements OnModuleInit {
     const qb = this.pelanggaranRepo
       .createQueryBuilder('p')
       .innerJoin('p.siswa', 's')
+      .leftJoin('s.kelas', 'kls')
       .select('p.siswaId', 'siswaId')
       .addSelect('s.nama', 'siswaNama')
       .addSelect('s.nis', 'siswaNis')
       .addSelect('s.kelasId', 'kelasId')
+      .addSelect('kls.nama', 'siswaKelas')
       .addSelect("SUM(CASE WHEN p.kategori = 'R' THEN p.poin ELSE 0 END)", 'totalR')
       .addSelect("SUM(CASE WHEN p.kategori = 'S' THEN p.poin ELSE 0 END)", 'totalS')
       .addSelect("SUM(CASE WHEN p.kategori = 'B' THEN p.poin ELSE 0 END)", 'totalB')
@@ -930,7 +932,7 @@ export class KesiswaanService implements OnModuleInit {
       .addSelect('SUM(p.poin)', 'terpotong')
       .where("p.status = 'DISETUJUI'")
       .andWhere('p.tahunAjaranId = :taId', { taId: ta.id })
-      .groupBy('p.siswaId, s.nama, s.nis, s.kelasId')
+      .groupBy('p.siswaId, s.nama, s.nis, s.kelasId, kls.nama')
       .orderBy('terpotong', 'DESC');
 
     if (params.kelasId) qb.andWhere('s.kelasId = :kelasId', { kelasId: params.kelasId });
@@ -946,12 +948,11 @@ export class KesiswaanService implements OnModuleInit {
       siswaNama: r.siswaNama,
       siswaNis: r.siswaNis,
       kelasId: Number(r.kelasId),
-      perKategori: {
-        R: Number(r.totalR),
-        S: Number(r.totalS),
-        B: Number(r.totalB),
-        SB: Number(r.totalSB),
-      },
+      siswaKelas: r.siswaKelas ?? null,
+      poinR: Number(r.totalR),
+      poinS: Number(r.totalS),
+      poinB: Number(r.totalB),
+      poinSB: Number(r.totalSB),
       terpotong: Number(r.terpotong),
       saldo: 500 - Number(r.terpotong),
     }));

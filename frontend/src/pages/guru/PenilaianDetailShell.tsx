@@ -6,7 +6,7 @@ import { Button } from '../../components/Button';
 
 /**
  * Shell layout for /guru/penilaian/:penugasanId
- * SubPageLinks (no tab): TP • Penilaian • Rekap
+ * SubPageLinks (no tab): TP â€¢ Penilaian â€¢ Rekap
  */
 export function PenilaianDetailShell() {
  const { penugasanId } = useParams<{ penugasanId: string }>();
@@ -19,10 +19,10 @@ export function PenilaianDetailShell() {
   ];
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  <div className="flex items-center gap-3 mb-2">
  <Button variant="secondary" onClick={() => navigate('/guru/penilaian')} id="btn-back-paket">
- ← Paket Saya
+ â† Paket Saya
  </Button>
  <h2 className="text-lg font-bold text-aam-text">Detail Paket Penilaian</h2>
  </div>

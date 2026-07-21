@@ -46,7 +46,7 @@ export function RaporEkskulPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <PageContainer>
+    <PageContainer backLinkMobile={false}>
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <Button variant="secondary" onClick={() => navigate(-1)} id="btn-back-rapor-ekskul">← Kembali</Button>
         <div>

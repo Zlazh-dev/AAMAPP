@@ -546,6 +546,96 @@ export class PresensiGuruService {
   }
 
   /**
+   * GET /api/admin/presensi-guru/detail?guruId=&tanggal=
+   * Detail presensi satu guru untuk satu tanggal: data guru, status,
+   * check-in/out, jadwal KBM hari itu, izin aktif (bila ada), riwayat
+   * presensi 7 hari terakhir. Untuk sub-detail mobile (UX-POLISH §J).
+   */
+  async detailPresensiGuru(guruId: number, tanggal?: string) {
+    const tgl = tanggal ?? formatDateWIB(todayWIB());
+
+    const guru = await this.guruRepo.findOne({
+      where: { id: guruId },
+      select: ['id', 'nama', 'nip', 'fotoUrl', 'status'],
+    });
+    if (!guru) throw new NotFoundException('Guru tidak ditemukan');
+
+    // Presensi hari itu
+    const ph = await this.hadrianRepo.findOne({
+      where: { guruId, tanggal: tgl },
+    });
+
+    // Status harian (reuse deriveStatusHarian via monitorHarian untuk konsistensi)
+    const monitor = await this.monitorHarian(tgl);
+    const row = monitor.data.find((r) => r.guruId === guruId);
+    const statusHarian = row?.statusHarian ?? 'TANPA_KBM';
+
+    // Izin aktif
+    const izinAktifMap = await this.izinService.batchIzinAktif([guruId], tgl);
+    const izinAktif = izinAktifMap.get(guruId) ?? null;
+
+    // Jadwal KBM hari itu
+    const dateObj = new Date(tgl + 'T00:00:00+07:00');
+    const hariWIB = dateObj.getDay();
+    const penugasanList = await this.penugasanRepo.find({
+      where: { guruId },
+      relations: ['mapel', 'kelas'],
+    });
+    const jadwalRows = penugasanList.length > 0
+      ? await this.jadwalRepo.find({
+          where: { penugasanId: In(penugasanList.map((p) => p.id)), hari: hariWIB },
+          order: { jamMulai: 'ASC' },
+        })
+      : [];
+    const jadwalKBM = jadwalRows.map((j) => {
+      const pt = penugasanList.find((p) => p.id === j.penugasanId);
+      return {
+        id: j.id,
+        jamMulai: j.jamMulai,
+        jamSelesai: j.jamSelesai,
+        mapel: pt?.mapel?.nama ?? '—',
+        kelas: pt?.kelas?.nama ?? '—',
+      };
+    });
+
+    // Riwayat 7 hari terakhir
+    const riwayat: any[] = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(dateObj.getTime() - i * 86400000);
+      const tglI = formatDateWIB(d);
+      const phI = await this.hadrianRepo.findOne({ where: { guruId, tanggal: tglI } });
+      riwayat.push({
+        tanggal: tglI,
+        status: phI?.status ?? null,
+        checkInAt: phI?.checkInAt ?? null,
+        checkOutAt: phI?.checkOutAt ?? null,
+        source: phI?.source ?? null,
+      });
+    }
+
+    return {
+      guru,
+      tanggal: tgl,
+      statusHarian,
+      presensi: ph
+        ? {
+            id: ph.id,
+            checkInAt: ph.checkInAt,
+            checkOutAt: ph.checkOutAt,
+            status: ph.status,
+            source: ph.source,
+            distanceMeter: ph.distanceMeter,
+            similarity: ph.similarity,
+            alasan: ph.alasan,
+          }
+        : null,
+      izinAktif,
+      jadwalKBM,
+      riwayat,
+    };
+  }
+
+  /**
    * POST /api/admin/presensi-guru/manual — upsert record manual admin.
    */
   async manualAdmin(dto: ManualDto, req: Request) {

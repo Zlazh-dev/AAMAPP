@@ -91,7 +91,7 @@ export function InputNilaiPage() {
  const belumDiisiCount = siswaList.filter(s => nilaiMap[s.siswaId] === '').length;
 
  return (
- <PageContainer>
+ <PageContainer backLinkMobile={false}>
  <div className="flex items-center gap-3 mb-4 flex-wrap">
  <Button variant="secondary" onClick={() => navigate(-1)} id="btn-back-nilai">← Kembali</Button>
  <div>

@@ -27,11 +27,12 @@ function today(): string {
 }
 
 type Row = {
-  guruId?: number; guruNama?: string; kelas?: string; mapel?: string;
+  guruId?: number; guruNama?: string;
+  kelasId?: number; kelasNama?: string; kelas?: string; mapel?: string; mapelNama?: string;
   hadir?: number; terlambat?: number; izin?: number; sakit?: number;
-  dinas?: number; alpha?: number; libur?: number; persen?: string | number;
-  totalKbm?: number; terlaksana?: number;
-  siswaId?: number; siswaNama?: string;
+  dinas?: number; alpha?: number; libur?: number; persen?: string | number; pctHadir?: number | null;
+  totalKbm?: number; totalJadwal?: number; terlaksana?: number; kosong?: number; pctTerlaksana?: number | null | string;
+  siswaId?: number; siswaNama?: string; nis?: string | null; total?: number;
 };
 
 interface ColDef { header: string; key: keyof Row; align?: 'left' | 'right'; }
@@ -275,11 +276,11 @@ export function LaporanHarianGuruPage() {
 
 const COLS_KBM: ColDef[] = [
   { header: 'Guru', key: 'guruNama' },
-  { header: 'Kelas', key: 'kelas' },
-  { header: 'Mapel', key: 'mapel' },
-  { header: 'Total KBM', key: 'totalKbm', align: 'right' },
+  { header: 'Kelas', key: 'kelasNama' },
+  { header: 'Mapel', key: 'mapelNama' },
+  { header: 'Total KBM', key: 'totalJadwal', align: 'right' },
   { header: 'Terlaksana', key: 'terlaksana', align: 'right' },
-  { header: '% Terlaksana', key: 'persen', align: 'right' },
+  { header: '% Terlaksana', key: 'pctTerlaksana', align: 'right' },
 ];
 
 export function LaporanKeterlaksanaanPage() {
@@ -297,14 +298,17 @@ export function LaporanKeterlaksanaanPage() {
     setLoading(true);
     try {
       const res = await api.adminGetLaporanKeterlaksanaan({ dari, sampai });
-      const data = res.data.map(r => ({ ...r, persen: r.persen + '%' })) as Row[];
+      const data = res.data.map(r => ({
+        ...r,
+        pctTerlaksana: r.pctTerlaksana != null ? r.pctTerlaksana + '%' : '—',
+      })) as Row[];
       setRows(data);
       if (data.length > 0) {
-        const totalKbm = data.reduce((a, r) => a + (Number(r.totalKbm) || 0), 0);
+        const totalJadwal = data.reduce((a, r) => a + (Number(r.totalJadwal) || 0), 0);
         const terlaksana = data.reduce((a, r) => a + (Number(r.terlaksana) || 0), 0);
         setTotalRow({
-          guruNama: 'TOTAL', kelas: '', mapel: '', totalKbm, terlaksana,
-          persen: (totalKbm > 0 ? Math.round(terlaksana / totalKbm * 100) : 0) + '%',
+          guruNama: 'TOTAL', kelasNama: '', mapelNama: '', totalJadwal, terlaksana,
+          pctTerlaksana: (totalJadwal > 0 ? Math.round(terlaksana / totalJadwal * 100) : 0) + '%',
         } as Row);
       } else {
         setTotalRow(null);
@@ -381,7 +385,7 @@ export function LaporanKeterlaksanaanPage() {
 
 const COLS_SISWA: ColDef[] = [
   { header: 'Nama Siswa', key: 'siswaNama' },
-  { header: 'Kelas', key: 'kelas' },
+  { header: 'NIS', key: 'nis' },
   { header: 'Hadir', key: 'hadir', align: 'right' },
   { header: 'Sakit', key: 'sakit', align: 'right' },
   { header: 'Izin', key: 'izin', align: 'right' },
@@ -409,7 +413,7 @@ export function LaporanSiswaPage() {
       setRows(data);
       if (data.length > 0) {
         setTotalRow({
-          siswaNama: 'TOTAL', kelas: '',
+          siswaNama: 'TOTAL', nis: '',
           hadir: data.reduce((a, r) => a + (Number(r.hadir) || 0), 0),
           sakit: data.reduce((a, r) => a + (Number(r.sakit) || 0), 0),
           izin: data.reduce((a, r) => a + (Number(r.izin) || 0), 0),
