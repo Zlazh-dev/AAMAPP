@@ -29,6 +29,7 @@ export function GuruFormPage() {
   const [nip, setNip] = useState('');
   const [jenisKelamin, setJenisKelamin] = useState<'L' | 'P'>('L');
   const [telepon, setTelepon] = useState('');
+  const [email, setEmail] = useState('');
   const [fotoUrl, setFotoUrl] = useState('');
   const [status, setStatus] = useState('aktif');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,6 +47,7 @@ export function GuruFormPage() {
       setNip(g.nip || '');
       setJenisKelamin(g.jenisKelamin);
       setTelepon(g.telepon || '');
+      setEmail(g.email || '');
       setFotoUrl(g.fotoUrl || '');
       setStatus(g.status);
     } catch (err) {
@@ -79,6 +81,7 @@ export function GuruFormPage() {
         nip: nip.trim() || null,
         jenisKelamin,
         telepon: telepon.trim() || null,
+        email: email.trim() || null,
         fotoUrl: fotoUrl || '',
         status,
       };
@@ -184,6 +187,19 @@ export function GuruFormPage() {
                     onChange={handleChange(setTelepon)}
                     className={inputClass}
                     placeholder="08xxxxxxxxxx"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-aam-text-muted mb-1">Email
+                    <span className="ml-1 text-aam-text-muted">(untuk tautan akun otomatis)</span>
+                  </label>
+                  <input
+                    id="input-guru-email"
+                    type="email"
+                    value={email}
+                    onChange={handleChange(setEmail)}
+                    className={inputClass}
+                    placeholder="guru@sekolah.sch.id"
                   />
                 </div>
                 <div>

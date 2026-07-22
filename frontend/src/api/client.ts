@@ -86,11 +86,13 @@ export interface Guru {
   nip: string | null;
   jenisKelamin: 'L' | 'P';
   telepon: string | null;
+  email: string | null;
   fotoUrl: string;
   status: 'aktif' | 'nonaktif';
   userId: number | null;
   punyaAkun: boolean;
   jumlahPaket: number;
+  faceStatus: 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
   waliKelas: Kelas[] | null;
   createdAt: string;
   updatedAt: string;

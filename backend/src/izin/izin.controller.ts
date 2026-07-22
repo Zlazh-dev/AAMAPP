@@ -33,7 +33,7 @@ export class IzinGuruController {
    * guruId dari sesi (bukan body).
    */
   @Post()
-  @Roles('guru', 'kepsek')
+  @Roles('guru')
   ajukan(@Body() dto: AjukanIzinDto, @Req() req: Request) {
     return this.svc.ajukan(dto, req);
   }
@@ -42,7 +42,7 @@ export class IzinGuruController {
    * GET /api/izin/guru — daftar izin milik sendiri.
    */
   @Get()
-  @Roles('guru', 'kepsek')
+  @Roles('guru')
   listDiri(@Req() req: Request) {
     return this.svc.listDiri(req);
   }

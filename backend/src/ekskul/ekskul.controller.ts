@@ -71,7 +71,7 @@ export class EkskulController {
 
   // ─── RAPOR ────────────────────────────────────────────────────────────────
   @Get('rapor/:siswaId')
-  @Roles('guru','admin','kepsek')
+  @Roles('guru','admin','kepsek','kesiswaan')
   getRapor(
     @Param('siswaId',ParseIntPipe) siswaId:number,
     @Query('tahunAjaranId') taIdStr?:string,

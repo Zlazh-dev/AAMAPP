@@ -31,6 +31,9 @@ export class Guru {
   @Column({ type: 'varchar', length: 30, nullable: true })
   telepon: string | null;
 
+  @Column({ type: 'varchar', length: 255, nullable: true, unique: true })
+  email: string | null;
+
   @Column({ type: 'varchar', length: 500, default: '' })
   fotoUrl: string;
 

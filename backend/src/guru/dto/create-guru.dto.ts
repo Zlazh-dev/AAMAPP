@@ -8,6 +8,7 @@ import {
   MaxLength,
   Matches,
   ValidateIf,
+  IsEmail,
 } from 'class-validator';
 
 /**
@@ -42,6 +43,11 @@ export class CreateGuruDto {
   @IsString()
   @MaxLength(30)
   telepon?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
 
   @IsOptional()
   @IsString()
@@ -81,6 +87,11 @@ export class UpdateGuruDto {
   @IsString()
   @MaxLength(30)
   telepon?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string | null;
 
   @IsOptional()
   @IsString()

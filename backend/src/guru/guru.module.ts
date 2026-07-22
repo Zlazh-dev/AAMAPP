@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Guru } from './guru.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { GuruService } from './guru.service';
+import { GuruLinkService } from './guru-link.service';
 import { GuruController } from './guru.controller';
 import { AuditModule } from '../audit/audit.module';
 import { Session } from '../sessions/session.entity';
@@ -18,7 +19,7 @@ import { TahunAjaranModule } from '../tahun-ajaran/tahun-ajaran.module';
     TahunAjaranModule,
   ],
   controllers: [GuruController],
-  providers: [GuruService],
-  exports: [GuruService],
+  providers: [GuruService, GuruLinkService],
+  exports: [GuruService, GuruLinkService],
 })
 export class GuruModule {}

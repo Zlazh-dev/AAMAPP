@@ -236,7 +236,7 @@ const routes: RouteObject[] = [
 
           // Kurikulum: Ekskul (pindahan dari /admin/ekskul)
           { path: '/kurikulum/ekskul', element: <RequireRole roles={['kurikulum','admin']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
-          { path: '/kurikulum/ekskul/:ekskulId', element: <RequireRole roles={['kurikulum','admin','guru']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/ekskul/:ekskulId', element: <RequireRole roles={['kurikulum','admin']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
 
           // ── KESISWAAN ───────────────────────────────────────────────────
           { path: '/kesiswaan', element: <RequireRole roles={['kesiswaan','admin']}><Lazy><KesiswaanDashboardPage /></Lazy></RequireRole> },
@@ -259,21 +259,21 @@ const routes: RouteObject[] = [
           { path: '/guru/kbm', element: <RequireRole roles={['guru']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
           // F3a: Presensi harian wajah guru (scan wajah, terpisah dari KBM)
           { path: '/guru/presensi', element: <RequireRole roles={['guru']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
-          { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
-          { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
+          { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru']}><Lazy><RosterPage /></Lazy></RequireRole> },
+          { path: '/guru/rekap', element: <RequireRole roles={['guru']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
           // F3a: Guru wajah enrollment mandiri (guru ONLY per §A)
           { path: '/guru/wajah', element: <RequireRole roles={['guru']}><Lazy><GuruWajahPage /></Lazy></RequireRole> },
           { path: '/guru/wajah/enroll', element: <RequireRole roles={['guru']}><Lazy><GuruEnrollWizardPage /></Lazy></RequireRole> },
           // F4a: Izin guru
-          { path: '/izin/guru', element: <RequireRole roles={['guru','admin']}><Lazy><IzinGuruPage /></Lazy></RequireRole> },
+          { path: '/izin/guru', element: <RequireRole roles={['guru']}><Lazy><IzinGuruPage /></Lazy></RequireRole> },
           // F5a: Guru pelanggaran
-          { path: '/guru/pelanggaran', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPelanggaranPage /></Lazy></RequireRole> },
+          { path: '/guru/pelanggaran', element: <RequireRole roles={['guru']}><Lazy><GuruPelanggaranPage /></Lazy></RequireRole> },
           // F6a: Penilaian Guru
-          { path: '/guru/penilaian', element: <RequireRole roles={['guru','admin']}><Lazy><GuruPenilaianDashboard /></Lazy></RequireRole> },
-          { path: '/guru/penilaian/nilai/:penilaianId', element: <RequireRole roles={['guru','admin']}><Lazy><InputNilaiPage /></Lazy></RequireRole> },
+          { path: '/guru/penilaian', element: <RequireRole roles={['guru']}><Lazy><GuruPenilaianDashboard /></Lazy></RequireRole> },
+          { path: '/guru/penilaian/nilai/:penilaianId', element: <RequireRole roles={['guru']}><Lazy><InputNilaiPage /></Lazy></RequireRole> },
           {
             path: '/guru/penilaian/:penugasanId',
-            element: <RequireRole roles={['guru','admin']}><Lazy><PenilaianDetailShell /></Lazy></RequireRole>,
+            element: <RequireRole roles={['guru']}><Lazy><PenilaianDetailShell /></Lazy></RequireRole>,
             children: [
               { index: true, element: <Navigate to="tp" replace /> },
               { path: 'tp', element: <Lazy><TujuanPembelajaranPage /></Lazy> },
@@ -282,16 +282,16 @@ const routes: RouteObject[] = [
             ],
           },
           // F6b: Rapor
-          { path: '/guru/rapor', element: <RequireRole roles={['guru','admin']}><Lazy><RaporListPage /></Lazy></RequireRole> },
-          { path: '/guru/rapor/:siswaId', element: <RequireRole roles={['guru','admin']}><Lazy><RaporDetailPage /></Lazy></RequireRole> },
+          { path: '/guru/rapor', element: <RequireRole roles={['guru']}><Lazy><RaporListPage /></Lazy></RequireRole> },
+          { path: '/guru/rapor/:siswaId', element: <RequireRole roles={['guru']}><Lazy><RaporDetailPage /></Lazy></RequireRole> },
           // F6c: Kokurikuler (guru)
-          { path: '/guru/kokurikuler', element: <RequireRole roles={['guru','admin']}><Lazy><GuruKokurikulerPage /></Lazy></RequireRole> },
-          { path: '/guru/kokurikuler/:kegiatanId/asesmen', element: <RequireRole roles={['guru','admin']}><Lazy><KokurikulerAsesmenPage /></Lazy></RequireRole> },
+          { path: '/guru/kokurikuler', element: <RequireRole roles={['guru']}><Lazy><GuruKokurikulerPage /></Lazy></RequireRole> },
+          { path: '/guru/kokurikuler/:kegiatanId/asesmen', element: <RequireRole roles={['guru']}><Lazy><KokurikulerAsesmenPage /></Lazy></RequireRole> },
           // F6c: Rapor kokurikuler
           { path: '/kokurikuler/rapor/:siswaId', element: <RequireRole roles={['guru','admin','kesiswaan']}><Lazy><RaporKokurikulerPage /></Lazy></RequireRole> },
           // F6d: Ekskul (guru pembina)
-          { path: '/guru/ekskul', element: <RequireRole roles={['guru','admin']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
-          { path: '/guru/ekskul/:ekskulId', element: <RequireRole roles={['guru','admin']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
+          { path: '/guru/ekskul', element: <RequireRole roles={['guru']}><Lazy><EkskulAdminPage /></Lazy></RequireRole> },
+          { path: '/guru/ekskul/:ekskulId', element: <RequireRole roles={['guru']}><Lazy><EkskulPembinaPage /></Lazy></RequireRole> },
           // F6d: Rapor ekskul
           { path: '/ekskul/rapor/:siswaId', element: <RequireRole roles={['guru','admin','kesiswaan']}><Lazy><RaporEkskulPage /></Lazy></RequireRole> },
 
@@ -326,7 +326,7 @@ const routes: RouteObject[] = [
           { path: '/admin/orang/import', element: <Navigate to="/kurikulum/orang/import" replace /> },
           { path: '/admin/kelas', element: <Navigate to="/kurikulum/kelas" replace /> },
           { path: '/admin/ekskul', element: <Navigate to="/kurikulum/ekskul" replace /> },
-          { path: '/admin/pengaturan', element: <Navigate to="/admin/sekolah" replace /> },
+          { path: '/admin/pengaturan', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
           { path: '/admin/pengaturan/sekolah', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
           { path: '/admin/pengaturan/tahun-ajaran', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
           { path: '/admin/pengaturan/kkm', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },

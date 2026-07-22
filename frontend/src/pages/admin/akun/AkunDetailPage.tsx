@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { api, AdminUser, ApiError, SessionInfo } from '../../../api/client';
 import { useAuth } from '../../../app/AuthContext';
@@ -197,6 +197,23 @@ export function AkunDetailPage() {
             <p className="text-sm text-aam-text-muted">Belum tertaut</p>
           )}
         </Card>
+
+        {/* Guru link card — tampil bila peran guru */}
+        {user.roles.includes('guru') && (
+          <Card icon="school" className="md:col-span-2">
+            <h3 className="text-sm font-semibold text-aam-text mb-3">Data Guru Tertaut</h3>
+            <p className="text-xs text-aam-text-muted mb-2">
+              Akun ini memiliki peran Guru. Tautan ke data guru dikelola otomatis via email.
+            </p>
+            <button
+              id={`link-data-guru-user-${user.id}`}
+              onClick={() => navigate('/kurikulum/orang/guru')}
+              className="text-aam-green underline text-sm"
+            >
+              Buka Daftar Guru →
+            </button>
+          </Card>
+        )}
 
         {/* Sessions card */}
         <Card icon="devices">

@@ -508,3 +508,57 @@ Migration tulisan-tangan `1721394000000-InitialSchema.ts` basi terhadap entity. 
 - Boot `NODE_ENV=production` di DB kosong → tabel `users` berisi hanya `admin@aamapp.sch.id` (1 baris). ✓
 - Boot dev → e2e-admin tetap ada (326 spec butuh dia). ✓
 - tsc bersih, build lulus.
+
+---
+
+### [AGENT-1] TUGAS-A RBAC-FIX — 2026-07-23 — DIKERJAKAN
+
+**Orientasi graphify:** `graphify explain "RolesGuard"` → `backend/src/common/roles.guard.ts:L22`; `graphify query "getHomePath return-to"` → `frontend/src/app/menu.ts:L132`, `AuthContext.tsx:L28`; `graphify path "AuthProvider" "RequireRole"` → 2 hop via `App.tsx`.
+
+**12 cacat diperbaiki berurutan:**
+
+#### Kelompok 1 — guard/login (#1–#4)
+
+| # | File | Perubahan |
+|---|------|-----------|
+| 1 | `frontend/src/app/guards.tsx` | Hapus blok `// admin passes all` dari `RequireRole` |
+| 2 | `frontend/src/app/guards.tsx` | Ganti layar gembok statis menjadi `<Navigate to={getHomePath(user)} replace />` |
+| 3 | `frontend/src/app/AuthContext.tsx` | Tambah `AREA_ACCESS` + `isReturnToAllowed()` — validasi peran + tolak `//evil.com`; ganti isi `login()` |
+| 4 | `frontend/src/app/AuthContext.tsx` | Di `logout()`: tambah `getAndClearReturnTo()` sebelum `clearToken()` |
+
+#### Kelompok 2 — rute App.tsx (#5–#7)
+
+| # | Rute | Perubahan |
+|---|------|-----------|
+| 5 | 13 rute `/guru/**` + `/izin/guru` | `['guru','admin']` → `['guru']` |
+| 6 | `/kurikulum/ekskul/:ekskulId` | `['kurikulum','admin','guru']` → `['kurikulum','admin']` |
+| 7 | redirect `/admin/pengaturan` | `'/admin/sekolah'` (double-hop) → `'/tu/pengaturan/sekolah'` (langsung) |
+
+#### Kelompok 3 — backend (#8–#12)
+
+| # | Endpoint | Perubahan |
+|---|----------|-----------|
+| 8 | `POST + GET /api/izin/guru` | `@Roles('guru','kepsek')` → `@Roles('guru')` |
+| 9 | `GET /api/guru/kelas/rekap-presensi` | Hapus bypass admin dari cek wali-kelas |
+| 10 | `GET /api/admin/dashboard` | Tambah `'tu','kesiswaan'` ke @Roles |
+| 11 | `GET /api/kokurikuler/rapor/:siswaId` | Tambah `'kesiswaan'` ke @Roles |
+| 12 | `GET /api/ekskul/rapor/:siswaId` | Tambah `'kesiswaan'` ke @Roles |
+
+#### Bukti gerbang
+
+- **tsc frontend:** bersih
+- **tsc backend:** bersih
+- **Docker rebuild:** task-626 (sedang jalan)
+- **Spec:** `e2e/gelombang2/rbac-fix.spec.ts` (6 tes)
+
+#### Checklist QA untuk user
+
+1. Login admin → buka `/guru/kbm` → diarahkan ke `/admin` (bukan masuk)
+2. Login guru → mendarat `/guru/kbm`
+3. Login guru setelah set `aamapp_return_to=/admin/akun/sesi` → mendarat `/guru/kbm`
+4. Set `aamapp_return_to=//evil.com` lalu login guru → tidak lompat ke evil.com
+5. Kepsek POST `/api/izin/guru` → 403
+6. Login TU → `/tu` dashboard muncul (bukan 403)
+7. Buka `/admin/pengaturan` sebagai admin → redirect langsung ke `/tu/pengaturan/sekolah`
+8. Login kesiswaan → `/kokurikuler/rapor/:id` dan `/ekskul/rapor/:id` muncul (bukan 403)
+

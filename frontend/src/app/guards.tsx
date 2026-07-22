@@ -1,7 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { SafeUser, UserRole } from '../api/client';
+import { UserRole } from '../api/client';
+import { getHomePath } from './menu';
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -37,21 +38,13 @@ export function RequireRole({
 
   if (!user) return <Navigate to="/login" replace />;
 
-  // admin passes all
-  if (user.roles.includes('admin')) return <>{children}</>;
+  // Cacat #1 DICABUT: "admin passes all" membocorkan rute guru-only ke admin.
+  // Kelonggaran admin kini EKSPLISIT per-rute di App.tsx.
 
   const hasRole = roles.some((r) => user.roles.includes(r));
   if (!hasRole) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full py-20">
-        <span className="material-symbols-outlined text-gray-300" style={{ fontSize: '3rem' }}>
-          lock
-        </span>
-        <p className="mt-3 text-sm text-aam-text-muted">
-          Anda tidak memiliki akses ke halaman ini
-        </p>
-      </div>
-    );
+    // Cacat #2: layar gembok statis diganti Navigate ke home peran.
+    return <Navigate to={getHomePath(user)} replace />;
   }
 
   return <>{children}</>;

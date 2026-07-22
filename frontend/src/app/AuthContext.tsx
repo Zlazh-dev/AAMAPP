@@ -25,6 +25,30 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
+// Cermin kontrak RequireRole di App.tsx — cukup kasar untuk UX;
+// penegakan sesungguhnya tetap di RequireRole.
+const AREA_ACCESS: Array<{ prefix: string; roles: string[] }> = [
+  { prefix: '/admin', roles: ['admin'] },
+  { prefix: '/kurikulum', roles: ['kurikulum', 'admin'] },
+  { prefix: '/kesiswaan', roles: ['kesiswaan', 'admin', 'kepsek'] },
+  { prefix: '/tu', roles: ['tu', 'admin', 'kepsek', 'kesiswaan'] },
+  { prefix: '/guru', roles: ['guru'] },
+  { prefix: '/izin/guru', roles: ['guru'] },
+  { prefix: '/kokurikuler', roles: ['guru', 'admin', 'kesiswaan'] },
+  { prefix: '/ekskul', roles: ['guru', 'admin', 'kesiswaan'] },
+  { prefix: '/kepsek', roles: ['kepsek'] },
+];
+
+function isReturnToAllowed(path: string, u: SafeUser): boolean {
+  // wajib path internal: tepat satu '/' di awal ('//evil.com' = open redirect)
+  if (!path.startsWith('/') || path.startsWith('//')) return false;
+  const area = AREA_ACCESS.find(
+    (a) => path === a.prefix || path.startsWith(a.prefix + '/'),
+  );
+  if (!area) return true; // /profil dll — auth-only
+  return u.roles.some((r) => area.roles.includes(r));
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,9 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback((token: string, u: SafeUser) => {
     setToken(token);
     setUser(u);
-    // redirect to return-to or role-based home
     const returnTo = getAndClearReturnTo();
-    if (returnTo && returnTo !== '/') {
+    if (returnTo && returnTo !== '/' && isReturnToAllowed(returnTo, u)) {
       window.location.href = returnTo;
     } else {
       window.location.href = getHomePath(u);
@@ -77,6 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore — clear local regardless
     }
+    getAndClearReturnTo(); // buang return-to sisa sesi lama (#4)
     clearToken();
     setUser(null);
     window.location.href = '/login';

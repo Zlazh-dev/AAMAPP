@@ -15,7 +15,7 @@ export class LaporanController {
    * Agregat hari ini: guruStatus, kbm, siswa, perluPerhatian, feed.
    */
   @Get('dashboard')
-  @Roles('admin', 'kepsek')
+  @Roles('admin', 'kepsek', 'tu', 'kesiswaan')
   dashboard(@Query('tanggal') tanggal?: string) {
     return this.svc.dashboard(tanggal);
   }

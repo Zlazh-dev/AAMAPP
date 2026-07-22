@@ -9,10 +9,13 @@ import {
   Query,
   UseGuards,
   BadRequestException,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { UsersService } from './users.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { AuditService } from '../audit/audit.service';
+import { GuruLinkService } from '../guru/guru-link.service';
 import { SessionAuthGuard } from '../common/session-auth.guard';
 import { RolesGuard } from '../common/roles.guard';
 import { Roles } from '../common/roles.decorator';
@@ -82,6 +85,7 @@ export class UsersController {
     private usersService: UsersService,
     private sessionsService: SessionsService,
     private auditService: AuditService,
+    private guruLinkService: GuruLinkService,
   ) {}
 
   @Get()
@@ -128,6 +132,10 @@ export class UsersController {
       ipAddress: session.ipAddress,
       deviceSummary: session.deviceSummary,
     });
+    // Link otomatis jika akun baru punya role guru
+    if (user.roles.includes('guru')) {
+      await this.guruLinkService.linkUserToGuru(user.id, currentUser.id).catch(() => void 0);
+    }
     return this.usersService.toAdminUser(user);
   }
 
@@ -192,6 +200,10 @@ export class UsersController {
       ipAddress: session.ipAddress,
       deviceSummary: session.deviceSummary,
     });
+    // Link otomatis bila role guru di-approve
+    if (user.roles.includes('guru')) {
+      await this.guruLinkService.linkUserToGuru(user.id, currentUser.id).catch(() => void 0);
+    }
     return this.usersService.toAdminUser(user);
   }
 

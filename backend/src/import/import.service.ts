@@ -9,6 +9,7 @@ import { Guru, JenisKelamin as GuruJK } from '../guru/guru.entity';
 import { Siswa, JenisKelamin as SiswaJK } from '../siswa/siswa.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { AuditService } from '../audit/audit.service';
+import { GuruLinkService } from '../guru/guru-link.service';
 import { Request } from 'express';
 
 export type ImportJenis = 'guru' | 'siswa';
@@ -110,6 +111,7 @@ export class ImportService {
     @InjectRepository(Siswa) private readonly siswaRepo: Repository<Siswa>,
     @InjectRepository(Kelas) private readonly kelasRepo: Repository<Kelas>,
     private readonly audit: AuditService,
+    private readonly guruLink: GuruLinkService,
   ) {}
 
   /**
@@ -654,6 +656,8 @@ export class ImportService {
           e.fotoUrl = '';
           e.userId = null;
           await this.guruRepo.save(e);
+          // Link otomatis jika ada akun user yang cocok via email
+          await this.guruLink.linkGuruToUser(e.id, req.session?.userId ?? undefined).catch(() => void 0);
           tersimpan++;
         } else {
           const e = new Siswa();

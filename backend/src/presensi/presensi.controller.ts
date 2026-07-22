@@ -93,13 +93,10 @@ export class GuruKelasRekapController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const roles = (req as any).user?.roles ?? [];
-    if (!Array.isArray(roles) || !roles.includes('admin')) {
-      const userId = (req as any).user?.id ?? req.session?.userId;
-      const isWali = await this.svc.isWaliKelasByUserId(userId, kelasId);
-      if (!isWali) {
-        throw new ForbiddenException('Anda bukan wali kelas ini');
-      }
+    const userId = (req as any).user?.id ?? req.session?.userId;
+    const isWali = await this.svc.isWaliKelasByUserId(userId, kelasId);
+    if (!isWali) {
+      throw new ForbiddenException('Anda bukan wali kelas ini');
     }
     return this.svc.rekapPresensi({
       kelasId,

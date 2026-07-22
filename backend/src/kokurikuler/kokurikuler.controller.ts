@@ -175,7 +175,7 @@ export class KokurikulerController {
    * Nilai akhir per dimensi (rata) + deskripsi otomatis.
    */
   @Get('rapor/:siswaId')
-  @Roles('guru', 'kurikulum', 'admin', 'kepsek')
+  @Roles('guru', 'kurikulum', 'admin', 'kepsek', 'kesiswaan')
   getRaporSiswa(
     @Param('siswaId', ParseIntPipe) siswaId: number,
     @Query('tahunAjaranId') taIdStr?: string,

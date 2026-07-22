@@ -28,8 +28,8 @@ const FACE_STATUS_VARIANT: Record<FaceStatus, 'gray' | 'yellow' | 'green' | 'red
 };
 
 /**
- * /kurikulum/orang/guru/:id � POLA A detail.
- * Kartu: biodata, akun/penugasan, status wajah (validasi admin �D).
+ * /kurikulum/orang/guru/:id ï¿½ POLA A detail.
+ * Kartu: biodata, akun/penugasan, status wajah (validasi admin ï¿½D).
  * Admin dapat Terima/Tolak wajah bila status MENUNGGU_VALIDASI.
  */
 export function GuruDetailPage() {
@@ -98,13 +98,13 @@ export function GuruDetailPage() {
 
   if (!guru) return null;
 
-  // faceStatus from API (may not exist yet, backend AG-2 adds it)
-  const faceStatus: FaceStatus = (guru as any).faceStatus ?? 'BELUM';
+  const faceStatus: FaceStatus = guru.faceStatus ?? 'BELUM';
 
   const detailRows = [
-    { label: 'NIP', value: guru.nip || '�' },
+    { label: 'NIP', value: guru.nip || '—' },
     { label: 'Jenis Kelamin', value: guru.jenisKelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
-    { label: 'Telepon', value: guru.telepon || '�' },
+    { label: 'Telepon', value: guru.telepon || '—' },
+    { label: 'Email', value: guru.email || '—' },
     { label: 'Status', value: guru.status === 'aktif' ? 'Aktif' : 'Nonaktif' },
   ];
 
@@ -179,7 +179,15 @@ export function GuruDetailPage() {
             <div className="flex justify-between text-sm">
               <dt className="text-aam-text-muted">Akun Tertaut</dt>
               <dd>
-                {guru.punyaAkun ? (
+                {guru.punyaAkun && guru.userId ? (
+                  <button
+                    id={`link-akun-guru-${guru.id}`}
+                    onClick={() => navigate(`/admin/users/${guru.userId}`)}
+                    className="text-aam-green underline text-xs font-medium"
+                  >
+                    Lihat Akun #{guru.userId}
+                  </button>
+                ) : guru.punyaAkun ? (
                   <Badge variant="green">Ya</Badge>
                 ) : (
                   <Badge variant="gray">Belum</Badge>
@@ -193,7 +201,7 @@ export function GuruDetailPage() {
           </dl>
         </Card>
 
-        {/* Wajah Validation Card � UX-POLISH �D */}
+        {/* Wajah Validation Card ï¿½ UX-POLISH ï¿½D */}
         <div id="card-wajah-guru">
         <Card icon="face_retouching_natural" className="md:col-span-2">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Pendaftaran Wajah</h3>
@@ -255,3 +263,4 @@ export function GuruDetailPage() {
     </PageContainer>
   );
 }
+
