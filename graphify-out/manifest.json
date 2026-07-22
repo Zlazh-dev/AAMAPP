@@ -940,9 +940,9 @@
     "semantic_hash": "115af13ca8a7f9024e84cab754037c13"
   },
   "frontend/e2e/gelombang2/model-lokal-network.spec.ts": {
-    "mtime": 1784674333.8412373,
-    "ast_hash": "ef1c44dee84b25ef4cf5344d7eb7d420",
-    "semantic_hash": "ef1c44dee84b25ef4cf5344d7eb7d420"
+    "mtime": 1784732424.8333938,
+    "ast_hash": "37786c36f0700655b8d895388f70293c",
+    "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/multi-checkbox.spec.ts": {
     "mtime": 1784531597.9586484,
@@ -1355,8 +1355,8 @@
     "semantic_hash": "fc7f9fa49871f91466e36682762d99e1"
   },
   "frontend/src/lib/faceHuman.ts": {
-    "mtime": 1784717120.0330274,
-    "ast_hash": "6a5809e4c2335a878ad463359a292440",
+    "mtime": 1784732248.2420137,
+    "ast_hash": "5002d234d33f632fb0592d49af6534bb",
     "semantic_hash": ""
   },
   "frontend/src/main.tsx": {
@@ -1550,8 +1550,8 @@
     "semantic_hash": "b0d1ece75071eb64ff462a40497cc2af"
   },
   "frontend/src/pages/guru/GuruEnrollWizardPage.tsx": {
-    "mtime": 1784731160.177012,
-    "ast_hash": "8ce2480b47ec1aa8e76e989789f39bb6",
+    "mtime": 1784732366.9912436,
+    "ast_hash": "38339dc69dd3a414ccb20bdc2b899701",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/GuruPelanggaranPage.tsx": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/ScanOverlay.tsx": {
-    "mtime": 1784731078.2977905,
-    "ast_hash": "ea1a68182ac9d6e261aeadecf6ab7f4b",
+    "mtime": 1784732311.5718906,
+    "ast_hash": "e905cd0966193a23dd38cc273cff9db9",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/TujuanPembelajaranPage.tsx": {
@@ -2202,6 +2202,26 @@
   "warm-beaming-cray.md": {
     "mtime": 1783962526.094134,
     "ast_hash": "d6a7ef2eb7a53de8584b2f0e19628474",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/antispoof.json": {
+    "mtime": 1784361225.524589,
+    "ast_hash": "7ee082dd29f8cc0913769c8b5e9323ba",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/facemesh.json": {
+    "mtime": 1784361225.5773704,
+    "ast_hash": "859af0783f8f522a2f66b5d12f9d0cd7",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/iris.json": {
+    "mtime": 1784361225.7288928,
+    "ast_hash": "9c0bc3a1346c80bdf86fb3b35382d263",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/liveness.json": {
+    "mtime": 1784361225.7298918,
+    "ast_hash": "81dbf17ae780b227323eeae5724e6a76",
     "semantic_hash": ""
   }
 }

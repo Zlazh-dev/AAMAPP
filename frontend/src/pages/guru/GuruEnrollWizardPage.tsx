@@ -59,10 +59,11 @@ export function GuruEnrollWizardPage() {
   }, []);
 
   const faceModRef = useRef<typeof import('../../lib/faceHuman') | null>(null);
-  /** true = tantangan blink sudah terpenuhi untuk pose saat ini */
-  const blinkPassedRef = useRef(false);
-  /** setTimeout jendela blink (3 detik setelah blink terdeteksi) */
-  const blinkWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lmModRef = useRef<typeof import('../../lib/faceLandmarker') | null>(null);
+  /** true = tantangan liveness sudah terpenuhi untuk pose saat ini */
+  const challengePassedRef = useRef(false);
+  /** setTimeout jendela liveness (3 detik setelah pose terdeteksi) */
+  const challengeWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animFrameRef.current);
@@ -86,14 +87,26 @@ export function GuruEnrollWizardPage() {
     setStatus('');
     setBackendLabel('');
 
-    // 1. Load model
+    // 1. Load AI models
     let mod: typeof import('../../lib/faceHuman');
+    let lmMod: typeof import('../../lib/faceLandmarker');
     try {
-      mod = await import('../../lib/faceHuman');
-      faceModRef.current = mod;
-      await mod.loadHuman((pct, label) => {
-        if (!cancelled.v) { setLoadPct(pct); setLoadLabel(label); }
+      const [humanMod, landmarkerMod] = await Promise.all([
+        import('../../lib/faceHuman'),
+        import('../../lib/faceLandmarker')
+      ]);
+      mod = humanMod;
+      lmMod = landmarkerMod;
+      faceModRef.current = humanMod;
+      lmModRef.current = landmarkerMod;
+
+      await humanMod.loadHuman((pct, label) => {
+        if (!cancelled.v) { setLoadPct(Math.round(pct / 2)); setLoadLabel(`Human: ${label}`); }
       });
+      await landmarkerMod.loadFaceLandmarker((pct, label) => {
+        if (!cancelled.v) { setLoadPct(50 + Math.round(pct / 2)); setLoadLabel(`MediaPipe: ${label}`); }
+      });
+      
       if (cancelled.v) return;
       setBackendLabel(`mesin: ${mod.activeBackend}`);
     } catch (err: unknown) {
@@ -157,8 +170,8 @@ export function GuruEnrollWizardPage() {
     }
 
     consecutiveGoodRef.current = 0;
-    blinkPassedRef.current = false;
-    if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+    challengePassedRef.current = false;
+    if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     setPhase('camera');
     setStatus(`Pose 1/${MIN_POSES}: ${POSE_LABELS[0]}`);
     startManualTimer();
@@ -175,6 +188,7 @@ export function GuruEnrollWizardPage() {
     if (phase !== 'camera') return;
     const video = videoRef.current;
     const mod = faceModRef.current;
+    const lmMod = lmModRef.current;
     if (!video || !mod) return;
 
     let stopped = false;
@@ -183,40 +197,56 @@ export function GuruEnrollWizardPage() {
       if (stopped) return;
       try {
         const quality = await mod.checkQuality(video);
+        
+        let lmResult = null;
+        if (lmMod) {
+          lmResult = await lmMod.detectLiveness(video, performance.now());
+        }
 
         // ?debug=1 — console.log ringkas per frame (nol setState, nol re-render)
         if (isDebugRef.current && quality.debugInfo) {
           const d = quality.debugInfo;
           const box = d.box ? d.box.map((n: number) => Math.round(n)).join(',') : 'null';
-          const real = d.realScore !== null ? d.realScore.toFixed(2) : 'n/a';
-          const live = d.liveScore !== null ? d.liveScore.toFixed(2) : 'n/a';
-          const blink = d.blinkDetected ? 'ya' : 'belum';
+          const blinkL = lmResult?.blinkL.toFixed(2) ?? 'n/a';
+          const blinkR = lmResult?.blinkR.toFixed(2) ?? 'n/a';
+          const yaw = lmResult?.yaw.toFixed(0) ?? 'n/a';
           // eslint-disable-next-line no-console
-          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} real=${real} live=${live} blink=${blink}`);
+          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} bL=${blinkL} bR=${blinkR} yaw=${yaw}°`);
         }
 
-        if (quality.isSpoof) {
-          // Antispoof gagal — pesan jujur, reset blink
-          consecutiveGoodRef.current = 0;
-          blinkPassedRef.current = false;
-          setStatus(quality.reason ?? 'Terdeteksi foto/layar — gunakan wajah asli');
-        } else if (quality.ok) {
+        if (quality.ok) {
           consecutiveGoodRef.current++;
           if (consecutiveGoodRef.current >= STABLE_FRAMES_NEEDED) {
-            if (!blinkPassedRef.current) {
-              // ── Fase tantangan blink ───────────────────────────────
-              setStatus('Kedipkan mata Anda…');
-              if (quality.blinkDetected) {
-                blinkPassedRef.current = true;
-                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
-                blinkWindowRef.current = setTimeout(() => {
-                  // Jendela blink tertutup — reset untuk pose berikutnya
-                  blinkPassedRef.current = false;
+            if (!challengePassedRef.current) {
+              // ── Fase tantangan pose (tergantung pose index) ─────────────────
+              const idx = embeddings.length;
+              let passed = false;
+              let hint = '';
+
+              if (idx === 0) {
+                hint = 'Lihat lurus ke depan…';
+                if (lmResult && Math.abs(lmResult.yaw) < 12) passed = true;
+              } else if (idx === 1) {
+                hint = 'Toleh sedikit ke kiri…';
+                if (lmResult && lmResult.yaw > 15) passed = true;
+              } else if (idx === 2) {
+                hint = 'Toleh sedikit ke kanan…';
+                if (lmResult && lmResult.yaw < -15) passed = true;
+              }
+
+              setStatus(hint);
+
+              if (passed) {
+                challengePassedRef.current = true;
+                if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
+                challengeWindowRef.current = setTimeout(() => {
+                  // Jendela pose tertutup — reset
+                  challengePassedRef.current = false;
                   consecutiveGoodRef.current = 0;
                 }, 3000);
               }
             } else {
-              // ── Jendela blink terbuka — ambil embedding ─────────────
+              // ── Jendela pose terbuka — ambil embedding ─────────────
               if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
               setShowManualBtn(false);
               setStatus('✓ Memotret…');
@@ -225,27 +255,26 @@ export function GuruEnrollWizardPage() {
               try {
                 det = await mod.detectEmbedding(video);
               } catch (err: unknown) {
-                // Error nyata (incl. antispoof di detectEmbedding) — tampil di layar
                 setStatus(
                   err instanceof Error
                     ? err.message
                     : `Gagal ambil embedding: ${String(err)}`,
                 );
                 consecutiveGoodRef.current = 0;
-                blinkPassedRef.current = false;
+                challengePassedRef.current = false;
                 if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
                 return;
               }
 
               if (det) {
                 consecutiveGoodRef.current = 0;
-                blinkPassedRef.current = false;
-                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                challengePassedRef.current = false;
+                if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
                 setEmbeddings((prev) => {
                   const next = [...prev, det!.embedding];
-                  const idx = next.length;
-                  if (idx < MIN_POSES) {
-                    setStatus(`Pose ${idx + 1}/${MIN_POSES}: ${POSE_LABELS[idx] ?? 'Bergerak sedikit'}`);
+                  const newIdx = next.length;
+                  if (newIdx < MIN_POSES) {
+                    setStatus(`Pose ${newIdx + 1}/${MIN_POSES}: ${POSE_LABELS[newIdx] ?? 'Pose selanjutnya'}`);
                     startManualTimer();
                   } else {
                     stopped = true;
@@ -257,7 +286,7 @@ export function GuruEnrollWizardPage() {
                 });
               } else {
                 consecutiveGoodRef.current = 0;
-                blinkPassedRef.current = false;
+                challengePassedRef.current = false;
                 setStatus('Skor wajah terlalu rendah — tahan lebih dekat dan pastikan cahaya cukup');
               }
             }
@@ -269,7 +298,6 @@ export function GuruEnrollWizardPage() {
           setStatus(quality.reason ?? 'Posisikan wajah di tengah');
         }
       } catch (err: unknown) {
-        // Catch dari checkQuality — tampilkan, JANGAN bisu
         consecutiveGoodRef.current = 0;
         setStatus(`Error deteksi: ${err instanceof Error ? err.message : String(err)}`);
       }
@@ -334,8 +362,8 @@ export function GuruEnrollWizardPage() {
     setEmbeddings([]);
     setShowManualBtn(false);
     consecutiveGoodRef.current = 0;
-    blinkPassedRef.current = false;
-    if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+    challengePassedRef.current = false;
+    if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     stopCamera();
     const cancelled = { v: false };
     initCamera(cancelled);

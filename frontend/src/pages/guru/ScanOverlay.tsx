@@ -52,13 +52,17 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number>(0);
   const faceModRef = useRef<typeof import('../../lib/faceHuman') | null>(null);
+  const lmModRef = useRef<typeof import('../../lib/faceLandmarker') | null>(null);
   const failCountRef = useRef(0);
   const geoRef = useRef<{ lat: number; lng: number } | null>(null);
   const manualTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  /** true = tantangan blink sudah terpenuhi, boleh ambil embedding */
-  const blinkPassedRef = useRef(false);
-  /** setTimeout untuk menutup jendela blink (3 detik setelah blink terdeteksi) */
-  const blinkWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  type ChallengeType = 'blink' | 'left' | 'right';
+  const activeChallengeRef = useRef<ChallengeType>('blink');
+  /** true = tantangan liveness sudah terpenuhi, boleh ambil embedding */
+  const challengePassedRef = useRef(false);
+  /** setTimeout untuk menutup jendela liveness (3 detik setelah terdeteksi) */
+  const challengeWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [phase, setPhase] = useState<ScanPhase>('idle');
   const [statusMsg, setStatusMsg] = useState('Memulai…');
@@ -121,19 +125,31 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
 
       if (cancelled) return;
 
-      // Phase 2: Load face model
+      // Phase 2: Load AI models
       setPhase('loading-model');
       setStatusMsg('Memuat model deteksi wajah…');
       setLoadPct(0);
       setLoadError(false);
 
       let mod: typeof import('../../lib/faceHuman');
+      let lmMod: typeof import('../../lib/faceLandmarker');
       try {
-        mod = await import('../../lib/faceHuman');
-        faceModRef.current = mod;
-        await mod.loadHuman((pct, label) => {
-          if (!cancelled) { setLoadPct(pct); setStatusMsg(label); }
+        const [humanMod, landmarkerMod] = await Promise.all([
+          import('../../lib/faceHuman'),
+          import('../../lib/faceLandmarker')
+        ]);
+        mod = humanMod;
+        lmMod = landmarkerMod;
+        faceModRef.current = humanMod;
+        lmModRef.current = landmarkerMod;
+
+        await humanMod.loadHuman((pct, label) => {
+          if (!cancelled) { setLoadPct(Math.round(pct / 2)); setStatusMsg(`Human: ${label}`); }
         });
+        await landmarkerMod.loadFaceLandmarker((pct, label) => {
+          if (!cancelled) { setLoadPct(50 + Math.round(pct / 2)); setStatusMsg(`MediaPipe: ${label}`); }
+        });
+
         if (cancelled) return;
         setBackendLabel(`mesin: ${mod.activeBackend}`);
       } catch (err: unknown) {
@@ -201,8 +217,10 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
       }
 
       setPhase('scanning');
+      const challenges: ChallengeType[] = ['blink', 'left', 'right'];
+      activeChallengeRef.current = challenges[Math.floor(Math.random() * challenges.length)];
       setStatusMsg('Posisikan wajah Anda di tengah lingkaran');
-      blinkPassedRef.current = false;
+      challengePassedRef.current = false;
       startManualTimer();
     };
 
@@ -216,6 +234,7 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
     if (phase !== 'scanning') return;
     const video = videoRef.current;
     const mod = faceModRef.current;
+    const lmMod = lmModRef.current;
     if (!video || !mod) return;
 
     let stopped = false;
@@ -225,42 +244,55 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
       if (stopped) return;
       try {
         const quality = await mod.checkQuality(video);
+        
+        // Cek liveness via MediaPipe
+        let lmResult = null;
+        if (lmMod) {
+          lmResult = await lmMod.detectLiveness(video, performance.now());
+        }
 
         // ?debug=1 — console.log ringkas per frame (nol setState, nol re-render)
         if (isDebugRef.current && quality.debugInfo) {
           const d = quality.debugInfo;
           const box = d.box ? d.box.map((n: number) => Math.round(n)).join(',') : 'null';
-          const real = d.realScore !== null ? d.realScore.toFixed(2) : 'n/a';
-          const live = d.liveScore !== null ? d.liveScore.toFixed(2) : 'n/a';
-          const blink = d.blinkDetected ? 'ya' : 'belum';
+          const blinkL = lmResult?.blinkL.toFixed(2) ?? 'n/a';
+          const blinkR = lmResult?.blinkR.toFixed(2) ?? 'n/a';
+          const yaw = lmResult?.yaw.toFixed(0) ?? 'n/a';
           // eslint-disable-next-line no-console
-          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} real=${real} live=${live} blink=${blink}`);
+          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} bL=${blinkL} bR=${blinkR} yaw=${yaw}° chl=${activeChallengeRef.current}`);
         }
 
-        if (quality.isSpoof) {
-          // Antispoof gagal — pesan jujur, tidak diam
-          goodFrames = 0;
-          blinkPassedRef.current = false;
-          setStatus(quality.reason ?? 'Terdeteksi foto/layar — gunakan wajah asli');
-        } else if (quality.ok) {
+        if (quality.ok) {
           goodFrames++;
           if (goodFrames >= STABLE_FRAMES_NEEDED) {
-            if (!blinkPassedRef.current) {
-              // ── Fase tantangan blink ───────────────────────────────
-              // Wajah sudah stabil & lolos antispoof — minta kedip
-              setStatus('Kedipkan mata Anda…');
-              if (quality.blinkDetected) {
-                // Blink terdeteksi — buka jendela 3 detik
-                blinkPassedRef.current = true;
-                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
-                blinkWindowRef.current = setTimeout(() => {
-                  // Tutup jendela — reset agar minta blink lagi
-                  blinkPassedRef.current = false;
+            if (!challengePassedRef.current) {
+              // ── Fase tantangan liveness ───────────────────────────────
+              const ch = activeChallengeRef.current;
+              let passed = false;
+              
+              if (ch === 'blink') {
+                setStatus('Kedipkan mata Anda…');
+                if (lmResult && (lmResult.blinkL > 0.4 || lmResult.blinkR > 0.4)) passed = true;
+              } else if (ch === 'left') {
+                setStatus('Toleh sedikit ke kiri…');
+                // Toleh kiri dari sudut pandang user = yaw positif
+                if (lmResult && lmResult.yaw > 15) passed = true;
+              } else if (ch === 'right') {
+                setStatus('Toleh sedikit ke kanan…');
+                // Toleh kanan dari sudut pandang user = yaw negatif
+                if (lmResult && lmResult.yaw < -15) passed = true;
+              }
+
+              if (passed) {
+                challengePassedRef.current = true;
+                if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
+                challengeWindowRef.current = setTimeout(() => {
+                  challengePassedRef.current = false;
                   goodFrames = 0;
                 }, 3000);
               }
             } else {
-              // ── Jendela blink terbuka — ambil embedding ─────────────
+              // ── Jendela liveness terbuka — ambil embedding ─────────────
               if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
               setShowManualBtn(false);
               setStatus('Memindai wajah…');
@@ -269,28 +301,27 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
               try {
                 det = await mod.detectEmbedding(video);
               } catch (err: unknown) {
-                // Error nyata (incl. antispoof gagal di detectEmbedding) — tampil di layar
                 setStatus(
                   err instanceof Error
                     ? err.message
                     : `Gagal ambil embedding: ${String(err)}`,
                 );
                 goodFrames = 0;
-                blinkPassedRef.current = false;
+                challengePassedRef.current = false;
                 if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
                 return;
               }
 
               if (det) {
                 stopped = true;
-                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
                 stopCamera();
                 await doScan(det.embedding);
                 return;
               } else {
                 setStatus('Skor wajah terlalu rendah — pastikan cahaya cukup dan wajah terlihat jelas');
                 goodFrames = 0;
-                blinkPassedRef.current = false;
+                challengePassedRef.current = false;
               }
             }
           } else {
@@ -301,7 +332,6 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
           setStatus(quality.reason ?? 'Posisikan wajah di tengah');
         }
       } catch (err: unknown) {
-        // Error dari checkQuality — tampil di layar (kejadian langka)
         goodFrames = 0;
         setStatus(`Error deteksi: ${err instanceof Error ? err.message : String(err)}`);
       }

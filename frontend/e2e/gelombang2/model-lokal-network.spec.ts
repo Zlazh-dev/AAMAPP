@@ -149,41 +149,22 @@ test.describe('Model wajah lokal â€” nol CDN request', () => {
   });
 });
 
-  // -- Model antispoof + liveness + facemesh + iris ------
-  test('GET /models/antispoof.json -> 200', async ({ request }) => {
-    const res = await request.get('/models/antispoof.json');
-    expect(res.status(), '/models/antispoof.json harus 200').toBe(200);
+  // -- MediaPipe FaceLandmarker ------
+  test('GET /mediapipe/face_landmarker.task -> 200', async ({ request }) => {
+    const res = await request.get('/mediapipe/face_landmarker.task');
+    expect(res.status(), '/mediapipe/face_landmarker.task harus 200').toBe(200);
+    const body = await res.body();
+    expect(body.length).toBeGreaterThan(1_000_000);
   });
-  test('GET /models/antispoof.bin -> 200', async ({ request }) => {
-    const res = await request.get('/models/antispoof.bin');
-    expect(res.status(), '/models/antispoof.bin harus 200').toBe(200);
-    const body = await res.body(); expect(body.length).toBeGreaterThan(500_000);
-  });
-  test('GET /models/liveness.json -> 200', async ({ request }) => {
-    const res = await request.get('/models/liveness.json');
+  test('GET /mediapipe/vision_wasm_internal.js -> 200', async ({ request }) => {
+    const res = await request.get('/mediapipe/vision_wasm_internal.js');
     expect(res.status()).toBe(200);
   });
-  test('GET /models/liveness.bin -> 200', async ({ request }) => {
-    const res = await request.get('/models/liveness.bin');
+  test('GET /mediapipe/vision_wasm_internal.wasm -> 200', async ({ request }) => {
+    const res = await request.get('/mediapipe/vision_wasm_internal.wasm');
     expect(res.status()).toBe(200);
-    const body = await res.body(); expect(body.length).toBeGreaterThan(400_000);
-  });
-  test('GET /models/facemesh.json -> 200', async ({ request }) => {
-    const res = await request.get('/models/facemesh.json');
-    expect(res.status()).toBe(200);
-  });
-  test('GET /models/facemesh.bin -> 200', async ({ request }) => {
-    const res = await request.get('/models/facemesh.bin');
-    expect(res.status()).toBe(200);
-    const body = await res.body(); expect(body.length).toBeGreaterThan(1_000_000);
-  });
-  test('GET /models/iris.json -> 200', async ({ request }) => {
-    const res = await request.get('/models/iris.json');
-    expect(res.status()).toBe(200);
-  });
-  test('GET /models/iris.bin -> 200', async ({ request }) => {
-    const res = await request.get('/models/iris.bin');
-    expect(res.status()).toBe(200);
-    const body = await res.body(); expect(body.length).toBeGreaterThan(2_000_000);
+    const body = await res.body();
+    expect(body.length).toBeGreaterThan(1_000_000);
   });
 });
+
