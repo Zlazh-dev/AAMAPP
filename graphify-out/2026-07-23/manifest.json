@@ -2243,5 +2243,40 @@
     "mtime": 1784736005.4904315,
     "ast_hash": "2586713d35d20da3164e4d3387ea15cb",
     "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1784740931.3729806,
+    "ast_hash": "075118244482995463ecebf0efd8b51d",
+    "semantic_hash": ""
+  },
+  ".opencode/opencode.json": {
+    "mtime": 1784740879.534699,
+    "ast_hash": "f2ae21510d07365eb2bce8159272c7a0",
+    "semantic_hash": ""
+  },
+  ".opencode/plugins/graphify.js": {
+    "mtime": 1784740879.532634,
+    "ast_hash": "b33d000860642c6f4907a877e0387a21",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1784740879.0098965,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1784740879.0098965,
+    "ast_hash": "637776aa6f7496d069afe7520c845c8a",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1784740879.532634,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1784744953.854473,
+    "ast_hash": "af9b9439e49252e28b7c1be085565dd9",
+    "semantic_hash": ""
   }
 }

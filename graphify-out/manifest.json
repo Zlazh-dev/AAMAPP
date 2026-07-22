@@ -940,8 +940,8 @@
     "semantic_hash": "115af13ca8a7f9024e84cab754037c13"
   },
   "frontend/e2e/gelombang2/model-lokal-network.spec.ts": {
-    "mtime": 1784736152.283391,
-    "ast_hash": "fde382e425aa27a8f291a45c23997b99",
+    "mtime": 1784749735.1930907,
+    "ast_hash": "6ec7f828701a9cfa2271f8f5332dc507",
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/multi-checkbox.spec.ts": {
@@ -2250,8 +2250,8 @@
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
-    "mtime": 1784740879.534699,
-    "ast_hash": "f2ae21510d07365eb2bce8159272c7a0",
+    "mtime": 1784748432.7043283,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
     "semantic_hash": ""
   },
   ".opencode/plugins/graphify.js": {
@@ -2275,8 +2275,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1784740955.4992738,
-    "ast_hash": "860be36cc8a7258a072e58de0af64e16",
+    "mtime": 1784744953.854473,
+    "ast_hash": "af9b9439e49252e28b7c1be085565dd9",
     "semantic_hash": ""
   }
 }
