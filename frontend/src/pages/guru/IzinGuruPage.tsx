@@ -257,7 +257,7 @@ export function IzinGuruPage() {
  setLoading(true);
  try {
  const res = await api.guruGetIzinSendiri();
- setList(res.data);
+ setList(res);
  } catch (err) {
  toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar izin.');
  } finally {

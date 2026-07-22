@@ -1362,9 +1362,12 @@ export const api = {
     }),
 
   /** Guru: daftar izin milik sendiri (terbaru dulu). */
+  // Backend mengembalikan ARRAY POLOS (bukan {data:[...]}) — spec izin-guru-backend
+  // menegaskan ini. Tipe pernah salah dideklarasikan {data} dan membuat halaman
+  // crash membaca res.data.length dari undefined.
   guruGetIzinSendiri: () =>
-    request<{
-      data: Array<{
+    request<
+      Array<{
         id: number;
         jenis: 'IZIN' | 'SAKIT' | 'DINAS';
         mulaiTanggal: string;
@@ -1375,8 +1378,8 @@ export const api = {
         alasanKeputusan: string | null;
         disetujuiPada: string | null;
         createdAt: string;
-      }>;
-    }>('/izin/guru'),
+      }>
+    >('/izin/guru'),
 
   /** Admin/kepsek: daftar semua izin berpaginasi + filter. */
   adminGetIzinGuru: (params?: {
