@@ -1,7 +1,7 @@
-﻿import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { loginAs } from '../helpers/auth';
 
-// Akun guru test â€” set via env GURU_EMAIL / GURU_PASSWORD bila tersedia
+// Akun guru test — set via env GURU_EMAIL / GURU_PASSWORD bila tersedia
 const GURU_EMAIL = process.env.GURU_EMAIL || '';
 const GURU_PASSWORD = process.env.GURU_PASSWORD || '';
 
@@ -14,12 +14,12 @@ const GURU_PASSWORD = process.env.GURU_PASSWORD || '';
  *
  * Catatan:
  * - Spec ini TIDAK menguji kamera (tidak bisa di CI headless tanpa fake media).
- * - Yang diuji: network intercept Ã¢â‚¬â€ CDN tidak diminta, model lokal tersedia.
+ * - Yang diuji: network intercept â€” CDN tidak diminta, model lokal tersedia.
  * - Asumsi: ada akun guru test di lingkungan (dibuat oleh beforeAll atau data seeding).
  *   Bila tidak ada, spec menandai dirinya sebagai skip dengan pesan jelas.
  */
 
-test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
+test.describe('Model wajah lokal â€” nol CDN request', () => {
   test('Halaman enroll tidak request ke cdn.jsdelivr.net, model /models/* 200', async ({ page, context }) => {
     // Kumpulkan semua URL yang diminta browser selama pengujian
     const requestedUrls: string[] = [];
@@ -39,7 +39,7 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
     try {
       await loginAs(page, GURU_EMAIL, GURU_PASSWORD);
     } catch {
-      test.skip(true, 'Akun guru test tidak tersedia Ã¢â‚¬â€ skip network test');
+      test.skip(true, 'Akun guru test tidak tersedia â€” skip network test');
       return;
     }
 
@@ -47,10 +47,10 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
     await page.goto('/guru/wajah/enroll', { waitUntil: 'networkidle', timeout: 30000 });
 
     // Tunggu cukup lama agar model mulai diload (script lazy import terpicu)
-    // Kita tidak perlu kamera aktif Ã¢â‚¬â€ hanya perlu dynamic import() terpanggil
+    // Kita tidak perlu kamera aktif â€” hanya perlu dynamic import() terpanggil
     await page.waitForTimeout(8000);
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬ Assertion 1: Nol request ke CDN jsdelivr Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    // â”€â”€ Assertion 1: Nol request ke CDN jsdelivr â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const cdnRequests = requestedUrls.filter((u) =>
       u.includes('cdn.jsdelivr.net') || u.includes('jsdelivr.net'),
     );
@@ -59,14 +59,14 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
       `Ditemukan request ke CDN yang seharusnya nol:\n${cdnRequests.join('\n')}`,
     ).toHaveLength(0);
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬ Assertion 2: Model lokal diambil dengan status 200 Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    // â”€â”€ Assertion 2: Model lokal diambil dengan status 200 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Minimal blazeface dan faceres harus diminta dan berhasil
     const blazefaceReqs = modelResponses.filter((r) => r.url.includes('blazeface'));
-    const faceresÃ¢â‚¬â€¹Reqs = modelResponses.filter((r) => r.url.includes('faceres'));
+    const faceresâ€‹Reqs = modelResponses.filter((r) => r.url.includes('faceres'));
 
     // Bila model belum dimuat (model load belum trigger dalam 8 detik),
     // kita periksa bahwa setidaknya file tersedia via fetch manual
-    if (blazefaceReqs.length === 0 && faceresÃ¢â‚¬â€¹Reqs.length === 0) {
+    if (blazefaceReqs.length === 0 && faceresâ€‹Reqs.length === 0) {
       // Verifikasi dengan fetch langsung ke /models/ dari context halaman
       const blazeStatus = await page.evaluate(async () => {
         try {
@@ -74,16 +74,16 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
           return r.status;
         } catch { return 0; }
       });
-      const faceresÃ¢â‚¬â€¹Status = await page.evaluate(async () => {
+      const faceresâ€‹Status = await page.evaluate(async () => {
         try {
           const r = await fetch('/models/faceres.json');
           return r.status;
         } catch { return 0; }
       });
       expect(blazeStatus, '/models/blazeface.json harus 200 (model tidak tersedia lokal!)').toBe(200);
-      expect(faceresÃ¢â‚¬â€¹Status, '/models/faceres.json harus 200 (model tidak tersedia lokal!)').toBe(200);
+      expect(faceresâ€‹Status, '/models/faceres.json harus 200 (model tidak tersedia lokal!)').toBe(200);
     } else {
-      // Model sudah dimuat Ã¢â‚¬â€ verifikasi semua 200
+      // Model sudah dimuat â€” verifikasi semua 200
       const nonOk = modelResponses.filter((r) => r.status !== 200 && r.status !== 206);
       expect(
         nonOk,
@@ -91,7 +91,7 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
       ).toHaveLength(0);
     }
 
-    // Ã¢â€â‚¬Ã¢â€â‚¬ Assertion 3: Tidak ada 404 untuk file model Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+    // â”€â”€ Assertion 3: Tidak ada 404 untuk file model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const notFound = modelResponses.filter((r) => r.status === 404);
     expect(
       notFound,
@@ -99,33 +99,33 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
     ).toHaveLength(0);
   });
 
-  test('GET /models/blazeface.json Ã¢â€ â€™ 200 dengan Content-Type JSON', async ({ request }) => {
+  test('GET /models/blazeface.json â†’ 200 dengan Content-Type JSON', async ({ request }) => {
     const res = await request.get('/models/blazeface.json');
     expect(res.status(), '/models/blazeface.json harus 200').toBe(200);
     const ct = res.headers()['content-type'] ?? '';
     expect(ct, 'Content-Type harus JSON').toMatch(/json/i);
   });
 
-  test('GET /models/blazeface.bin Ã¢â€ â€™ 200 biner tersedia', async ({ request }) => {
+  test('GET /models/blazeface.bin â†’ 200 biner tersedia', async ({ request }) => {
     const res = await request.get('/models/blazeface.bin');
     expect(res.status(), '/models/blazeface.bin harus 200').toBe(200);
     const body = await res.body();
     expect(body.length, 'blazeface.bin harus > 100 KB').toBeGreaterThan(100_000);
   });
 
-  test('GET /models/faceres.json Ã¢â€ â€™ 200', async ({ request }) => {
+  test('GET /models/faceres.json â†’ 200', async ({ request }) => {
     const res = await request.get('/models/faceres.json');
     expect(res.status(), '/models/faceres.json harus 200').toBe(200);
   });
 
-  test('GET /models/faceres.bin Ã¢â€ â€™ 200 biner tersedia', async ({ request }) => {
+  test('GET /models/faceres.bin â†’ 200 biner tersedia', async ({ request }) => {
     const res = await request.get('/models/faceres.bin');
     expect(res.status(), '/models/faceres.bin harus 200').toBe(200);
     const body = await res.body();
     expect(body.length, 'faceres.bin harus > 1 MB').toBeGreaterThan(1_000_000);
   });
 
-  test('GET /models/tidak-ada.bin Ã¢â€ â€™ 404 (endpoint bersih, tidak fallback ke index.html)', async ({ request }) => {
+  test('GET /models/tidak-ada.bin â†’ 404 (endpoint bersih, tidak fallback ke index.html)', async ({ request }) => {
     const res = await request.get('/models/tidak-ada.bin');
     expect(res.status(), '/models/tidak-ada.bin harus 404, bukan 200/index.html').toBe(404);
   });
@@ -149,3 +149,41 @@ test.describe('Model wajah lokal Ã¢â‚¬â€ nol CDN request', () => {
   });
 });
 
+  // -- Model antispoof + liveness + facemesh + iris ------
+  test('GET /models/antispoof.json -> 200', async ({ request }) => {
+    const res = await request.get('/models/antispoof.json');
+    expect(res.status(), '/models/antispoof.json harus 200').toBe(200);
+  });
+  test('GET /models/antispoof.bin -> 200', async ({ request }) => {
+    const res = await request.get('/models/antispoof.bin');
+    expect(res.status(), '/models/antispoof.bin harus 200').toBe(200);
+    const body = await res.body(); expect(body.length).toBeGreaterThan(500_000);
+  });
+  test('GET /models/liveness.json -> 200', async ({ request }) => {
+    const res = await request.get('/models/liveness.json');
+    expect(res.status()).toBe(200);
+  });
+  test('GET /models/liveness.bin -> 200', async ({ request }) => {
+    const res = await request.get('/models/liveness.bin');
+    expect(res.status()).toBe(200);
+    const body = await res.body(); expect(body.length).toBeGreaterThan(400_000);
+  });
+  test('GET /models/facemesh.json -> 200', async ({ request }) => {
+    const res = await request.get('/models/facemesh.json');
+    expect(res.status()).toBe(200);
+  });
+  test('GET /models/facemesh.bin -> 200', async ({ request }) => {
+    const res = await request.get('/models/facemesh.bin');
+    expect(res.status()).toBe(200);
+    const body = await res.body(); expect(body.length).toBeGreaterThan(1_000_000);
+  });
+  test('GET /models/iris.json -> 200', async ({ request }) => {
+    const res = await request.get('/models/iris.json');
+    expect(res.status()).toBe(200);
+  });
+  test('GET /models/iris.bin -> 200', async ({ request }) => {
+    const res = await request.get('/models/iris.bin');
+    expect(res.status()).toBe(200);
+    const body = await res.body(); expect(body.length).toBeGreaterThan(2_000_000);
+  });
+});

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useToast } from '../../components/Toast';
-import type { DebugInfo } from '../../lib/faceHuman';
 
 type ScanPhase =
   | 'idle'
@@ -56,6 +55,10 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
   const failCountRef = useRef(0);
   const geoRef = useRef<{ lat: number; lng: number } | null>(null);
   const manualTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** true = tantangan blink sudah terpenuhi, boleh ambil embedding */
+  const blinkPassedRef = useRef(false);
+  /** setTimeout untuk menutup jendela blink (3 detik setelah blink terdeteksi) */
+  const blinkWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [phase, setPhase] = useState<ScanPhase>('idle');
   const [statusMsg, setStatusMsg] = useState('Memulai…');
@@ -64,7 +67,20 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [showManualBtn, setShowManualBtn] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
+
+  // Ref untuk deduplicate setStatusMsg — mencegah re-render per frame
+  const prevStatusRef = useRef('');
+  // Ref untuk isDebug — agar tidak perlu masuk deps loop
+  const isDebugRef = useRef(isDebug);
+  useEffect(() => { isDebugRef.current = isDebug; }, [isDebug]);
+
+  /** Set status hanya bila pesan berubah — mencegah re-render per frame. */
+  const setStatus = useCallback((msg: string) => {
+    if (prevStatusRef.current !== msg) {
+      prevStatusRef.current = msg;
+      setStatusMsg(msg);
+    }
+  }, []);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animFrameRef.current);
@@ -186,6 +202,7 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
 
       setPhase('scanning');
       setStatusMsg('Posisikan wajah Anda di tengah lingkaran');
+      blinkPassedRef.current = false;
       startManualTimer();
     };
 
@@ -209,48 +226,84 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
       try {
         const quality = await mod.checkQuality(video);
 
-        if (isDebug && quality.debugInfo) {
-          setDebugInfo(quality.debugInfo);
+        // ?debug=1 — console.log ringkas per frame (nol setState, nol re-render)
+        if (isDebugRef.current && quality.debugInfo) {
+          const d = quality.debugInfo;
+          const box = d.box ? d.box.map((n: number) => Math.round(n)).join(',') : 'null';
+          const real = d.realScore !== null ? d.realScore.toFixed(2) : 'n/a';
+          const live = d.liveScore !== null ? d.liveScore.toFixed(2) : 'n/a';
+          const blink = d.blinkDetected ? 'ya' : 'belum';
+          // eslint-disable-next-line no-console
+          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} real=${real} live=${live} blink=${blink}`);
         }
 
-        if (quality.ok) {
+        if (quality.isSpoof) {
+          // Antispoof gagal — pesan jujur, tidak diam
+          goodFrames = 0;
+          blinkPassedRef.current = false;
+          setStatus(quality.reason ?? 'Terdeteksi foto/layar — gunakan wajah asli');
+        } else if (quality.ok) {
           goodFrames++;
           if (goodFrames >= STABLE_FRAMES_NEEDED) {
-            if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
-            setShowManualBtn(false);
-            setStatusMsg('Memindai wajah…');
-
-            let det: import('../../lib/faceHuman').FaceDetection | null = null;
-            try {
-              det = await mod.detectEmbedding(video);
-            } catch (err: unknown) {
-              // Tampilkan error nyata — JANGAN bisu
-              setStatusMsg(`Gagal ambil embedding: ${err instanceof Error ? err.message : String(err)}`);
-              goodFrames = 0;
-              if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
-              return;
-            }
-
-            if (det) {
-              stopped = true;
-              stopCamera();
-              await doScan(det.embedding);
-              return;
+            if (!blinkPassedRef.current) {
+              // ── Fase tantangan blink ───────────────────────────────
+              // Wajah sudah stabil & lolos antispoof — minta kedip
+              setStatus('Kedipkan mata Anda…');
+              if (quality.blinkDetected) {
+                // Blink terdeteksi — buka jendela 3 detik
+                blinkPassedRef.current = true;
+                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                blinkWindowRef.current = setTimeout(() => {
+                  // Tutup jendela — reset agar minta blink lagi
+                  blinkPassedRef.current = false;
+                  goodFrames = 0;
+                }, 3000);
+              }
             } else {
-              setStatusMsg('Skor wajah terlalu rendah — pastikan cahaya cukup dan wajah terlihat jelas');
-              goodFrames = 0;
+              // ── Jendela blink terbuka — ambil embedding ─────────────
+              if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
+              setShowManualBtn(false);
+              setStatus('Memindai wajah…');
+
+              let det: import('../../lib/faceHuman').FaceDetection | null = null;
+              try {
+                det = await mod.detectEmbedding(video);
+              } catch (err: unknown) {
+                // Error nyata (incl. antispoof gagal di detectEmbedding) — tampil di layar
+                setStatus(
+                  err instanceof Error
+                    ? err.message
+                    : `Gagal ambil embedding: ${String(err)}`,
+                );
+                goodFrames = 0;
+                blinkPassedRef.current = false;
+                if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
+                return;
+              }
+
+              if (det) {
+                stopped = true;
+                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                stopCamera();
+                await doScan(det.embedding);
+                return;
+              } else {
+                setStatus('Skor wajah terlalu rendah — pastikan cahaya cukup dan wajah terlihat jelas');
+                goodFrames = 0;
+                blinkPassedRef.current = false;
+              }
             }
           } else {
-            setStatusMsg(`Tahan… (${goodFrames}/${STABLE_FRAMES_NEEDED})`);
+            setStatus(`Tahan… (${goodFrames}/${STABLE_FRAMES_NEEDED})`);
           }
         } else {
           goodFrames = 0;
-          setStatusMsg(quality.reason ?? 'Posisikan wajah di tengah');
+          setStatus(quality.reason ?? 'Posisikan wajah di tengah');
         }
       } catch (err: unknown) {
-        // Catch dari checkQuality — tampilkan, JANGAN bisu
+        // Error dari checkQuality — tampil di layar (kejadian langka)
         goodFrames = 0;
-        setStatusMsg(`Error deteksi: ${err instanceof Error ? err.message : String(err)}`);
+        setStatus(`Error deteksi: ${err instanceof Error ? err.message : String(err)}`);
       }
       if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
     };
@@ -261,7 +314,7 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
       cancelAnimationFrame(animFrameRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, isDebug]);
+  }, [phase]);
 
   const doScan = async (embedding: number[]) => {
     try {
@@ -416,16 +469,8 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
               </div>
             )}
 
-            {/* Debug overlay — hanya saat ?debug=1 */}
-            {isDebug && debugInfo && (
-              <div className="absolute top-16 left-2 z-20 bg-black/80 text-green-300 text-[11px] font-mono px-2 py-1.5 rounded leading-relaxed">
-                <div>wajah: {debugInfo.faceCount}</div>
-                <div>skor: {debugInfo.score.toFixed(3)}</div>
-                <div>box: {debugInfo.box ? debugInfo.box.map((n) => Math.round(n)).join(',') : 'null'}</div>
-                <div>detect: {debugInfo.detectMs}ms</div>
-                <div>backend: {debugInfo.backend}</div>
-              </div>
-            )}
+
+
           </>
         )}
 

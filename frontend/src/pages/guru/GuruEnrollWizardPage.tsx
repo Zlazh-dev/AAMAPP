@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useToast } from '../../components/Toast';
-import type { DebugInfo } from '../../lib/faceHuman';
 
 const POSE_LABELS = ['Depan', 'Sedikit Kiri', 'Sedikit Kanan'];
 const MIN_POSES = 3;
@@ -21,7 +20,7 @@ type Phase =
  * GuruEnrollWizardPage — /guru/wajah/enroll
  *
  * UI kamera fullscreen, mobile-first.
- * Tambah ?debug=1 di URL untuk overlay debug per-frame.
+ * ?debug=1 di URL: tulis log ringkas per frame ke console ([wajah] n=... skor=...).
  */
 export function GuruEnrollWizardPage() {
   const navigate = useNavigate();
@@ -38,15 +37,32 @@ export function GuruEnrollWizardPage() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [loadPct, setLoadPct] = useState(0);
   const [loadLabel, setLoadLabel] = useState('Memuat model wajah…');
-  const [status, setStatus] = useState('');
+  const [status, setStatusRaw] = useState('');
   const [backendLabel, setBackendLabel] = useState('');
   const [embeddings, setEmbeddings] = useState<number[][]>([]);
   const [saving, setSaving] = useState(false);
   const [showManualBtn, setShowManualBtn] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
+
+  // Ref untuk deduplicate setStatus — mencegah re-render per frame
+  const prevStatusRef = useRef('');
+  // Ref untuk isDebug — agar tidak perlu masuk deps loop
+  const isDebugRef = useRef(isDebug);
+  useEffect(() => { isDebugRef.current = isDebug; }, [isDebug]);
+
+  /** Set status hanya bila pesan berubah — mencegah re-render per frame. */
+  const setStatus = useCallback((msg: string) => {
+    if (prevStatusRef.current !== msg) {
+      prevStatusRef.current = msg;
+      setStatusRaw(msg);
+    }
+  }, []);
 
   const faceModRef = useRef<typeof import('../../lib/faceHuman') | null>(null);
+  /** true = tantangan blink sudah terpenuhi untuk pose saat ini */
+  const blinkPassedRef = useRef(false);
+  /** setTimeout jendela blink (3 detik setelah blink terdeteksi) */
+  const blinkWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animFrameRef.current);
@@ -141,6 +157,8 @@ export function GuruEnrollWizardPage() {
     }
 
     consecutiveGoodRef.current = 0;
+    blinkPassedRef.current = false;
+    if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
     setPhase('camera');
     setStatus(`Pose 1/${MIN_POSES}: ${POSE_LABELS[0]}`);
     startManualTimer();
@@ -166,48 +184,82 @@ export function GuruEnrollWizardPage() {
       try {
         const quality = await mod.checkQuality(video);
 
-        if (isDebug && quality.debugInfo) {
-          setDebugInfo(quality.debugInfo);
+        // ?debug=1 — console.log ringkas per frame (nol setState, nol re-render)
+        if (isDebugRef.current && quality.debugInfo) {
+          const d = quality.debugInfo;
+          const box = d.box ? d.box.map((n: number) => Math.round(n)).join(',') : 'null';
+          const real = d.realScore !== null ? d.realScore.toFixed(2) : 'n/a';
+          const live = d.liveScore !== null ? d.liveScore.toFixed(2) : 'n/a';
+          const blink = d.blinkDetected ? 'ya' : 'belum';
+          // eslint-disable-next-line no-console
+          console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} real=${real} live=${live} blink=${blink}`);
         }
 
-        if (quality.ok) {
+        if (quality.isSpoof) {
+          // Antispoof gagal — pesan jujur, reset blink
+          consecutiveGoodRef.current = 0;
+          blinkPassedRef.current = false;
+          setStatus(quality.reason ?? 'Terdeteksi foto/layar — gunakan wajah asli');
+        } else if (quality.ok) {
           consecutiveGoodRef.current++;
           if (consecutiveGoodRef.current >= STABLE_FRAMES_NEEDED) {
-            if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
-            setShowManualBtn(false);
-            setStatus('✓ Memotret…');
-
-            let det: import('../../lib/faceHuman').FaceDetection | null = null;
-            try {
-              det = await mod.detectEmbedding(video);
-            } catch (err: unknown) {
-              // Tampilkan error nyata — JANGAN bisu
-              setStatus(`Gagal ambil embedding: ${err instanceof Error ? err.message : String(err)}`);
-              consecutiveGoodRef.current = 0;
-              if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
-              return;
-            }
-
-            if (det) {
-              consecutiveGoodRef.current = 0;
-              setEmbeddings((prev) => {
-                const next = [...prev, det!.embedding];
-                const idx = next.length;
-                if (idx < MIN_POSES) {
-                  setStatus(`Pose ${idx + 1}/${MIN_POSES}: ${POSE_LABELS[idx] ?? 'Bergerak sedikit'}`);
-                  startManualTimer();
-                } else {
-                  stopped = true;
-                  stopCamera();
-                  setPhase('done');
-                  setStatus(`${next.length} pose berhasil ditangkap`);
-                }
-                return next;
-              });
+            if (!blinkPassedRef.current) {
+              // ── Fase tantangan blink ───────────────────────────────
+              setStatus('Kedipkan mata Anda…');
+              if (quality.blinkDetected) {
+                blinkPassedRef.current = true;
+                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                blinkWindowRef.current = setTimeout(() => {
+                  // Jendela blink tertutup — reset untuk pose berikutnya
+                  blinkPassedRef.current = false;
+                  consecutiveGoodRef.current = 0;
+                }, 3000);
+              }
             } else {
-              // detectEmbedding return null (skor kurang) — bukan error, coba lagi
-              consecutiveGoodRef.current = 0;
-              setStatus('Skor wajah terlalu rendah — tahan lebih dekat dan pastikan cahaya cukup');
+              // ── Jendela blink terbuka — ambil embedding ─────────────
+              if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
+              setShowManualBtn(false);
+              setStatus('✓ Memotret…');
+
+              let det: import('../../lib/faceHuman').FaceDetection | null = null;
+              try {
+                det = await mod.detectEmbedding(video);
+              } catch (err: unknown) {
+                // Error nyata (incl. antispoof di detectEmbedding) — tampil di layar
+                setStatus(
+                  err instanceof Error
+                    ? err.message
+                    : `Gagal ambil embedding: ${String(err)}`,
+                );
+                consecutiveGoodRef.current = 0;
+                blinkPassedRef.current = false;
+                if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
+                return;
+              }
+
+              if (det) {
+                consecutiveGoodRef.current = 0;
+                blinkPassedRef.current = false;
+                if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
+                setEmbeddings((prev) => {
+                  const next = [...prev, det!.embedding];
+                  const idx = next.length;
+                  if (idx < MIN_POSES) {
+                    setStatus(`Pose ${idx + 1}/${MIN_POSES}: ${POSE_LABELS[idx] ?? 'Bergerak sedikit'}`);
+                    startManualTimer();
+                  } else {
+                    stopped = true;
+                    stopCamera();
+                    setPhase('done');
+                    setStatus(`${next.length} pose berhasil ditangkap`);
+                  }
+                  return next;
+                });
+              } else {
+                consecutiveGoodRef.current = 0;
+                blinkPassedRef.current = false;
+                setStatus('Skor wajah terlalu rendah — tahan lebih dekat dan pastikan cahaya cukup');
+              }
             }
           } else {
             setStatus(`Tahan… (${consecutiveGoodRef.current}/${STABLE_FRAMES_NEEDED})`);
@@ -229,7 +281,7 @@ export function GuruEnrollWizardPage() {
       stopped = true;
       cancelAnimationFrame(animFrameRef.current);
     };
-  }, [phase, stopCamera, startManualTimer, isDebug]);
+  }, [phase, stopCamera, startManualTimer]);
 
   const handleManualCapture = async () => {
     const video = videoRef.current;
@@ -281,8 +333,9 @@ export function GuruEnrollWizardPage() {
   const handleRetry = () => {
     setEmbeddings([]);
     setShowManualBtn(false);
-    setDebugInfo(null);
     consecutiveGoodRef.current = 0;
+    blinkPassedRef.current = false;
+    if (blinkWindowRef.current) clearTimeout(blinkWindowRef.current);
     stopCamera();
     const cancelled = { v: false };
     initCamera(cancelled);
@@ -426,17 +479,6 @@ export function GuruEnrollWizardPage() {
                   <span className="material-symbols-outlined align-middle mr-1 text-lg">camera_alt</span>
                   Ambil Foto
                 </button>
-              </div>
-            )}
-
-            {/* Debug overlay — hanya saat ?debug=1 */}
-            {isDebug && debugInfo && (
-              <div className="absolute top-16 left-2 z-20 bg-black/80 text-green-300 text-[11px] font-mono px-2 py-1.5 rounded leading-relaxed">
-                <div>wajah: {debugInfo.faceCount}</div>
-                <div>skor: {debugInfo.score.toFixed(3)}</div>
-                <div>box: {debugInfo.box ? debugInfo.box.map((n) => Math.round(n)).join(',') : 'null'}</div>
-                <div>detect: {debugInfo.detectMs}ms</div>
-                <div>backend: {debugInfo.backend}</div>
               </div>
             )}
           </>

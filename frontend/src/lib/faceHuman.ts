@@ -4,10 +4,28 @@
  * PENTING: file ini TIDAK BOLEH diimpor langsung dari bundle utama.
  * Hanya boleh di-load via dynamic import di dalam komponen kamera.
  *
- * Model: /models/blazeface.json + /models/faceres.json  (lokal, tanpa CDN)
- * WASM:  /wasm/                                          (lokal, tanpa CDN)
+ * Model lokal (nol CDN):
+ *   /models/blazeface.json     — detektor wajah
+ *   /models/faceres.json       — embedding (untuk identifikasi)
+ *   /models/facemesh.json      — mesh 468 titik (wajib untuk gestur kedip)
+ *   /models/iris.json          — estimasi iris (wajib untuk gestur kedip)
+ *   /models/antispoof.json     — deteksi foto/layar (face.real)
+ *   /models/liveness.json      — deteksi keaktifan (face.live)
+ *   /wasm/                     — TF.js WASM backend (nol CDN)
+ *
+ * ── Arsitektur Liveness (PENTING untuk audit keamanan) ─────────────────────
+ * Pemeriksaan antispoof + blink di sini adalah GERBANG SISI KLIEN.
+ * Tujuannya: mencegah pengguna awam mem-bypass dengan foto/layar.
+ * Ini BUKAN pengganti verifikasi server. Server tetap memverifikasi:
+ *   - Kecocokan embedding (cosine similarity)
+ *   - Geofence GPS
+ *   - Status faceStatus TERVALIDASI
+ * Seseorang dengan kemampuan modifikasi JS lokal bisa melewati gerbang klien.
+ * Jika keamanan tinggi dibutuhkan, verifikasi liveness perlu pindah ke server.
+ * ──────────────────────────────────────────────────────────────────────────
  *
  * Urutan backend: WebGL → WASM → CPU (fallback otomatis + dilaporkan)
+ * ?debug=1 di URL → console.log ringkas per frame, tanpa re-render
  */
 
 export interface FaceDetection {
@@ -26,10 +44,15 @@ let loadPromise: Promise<import('@vladmandic/human').Human> | null = null;
 export let activeBackend = 'unknown';
 
 /**
- * Muat Human + model. Singleton — panggilan berulang return instance sama.
+ * Ambang antispoof default — nilai 0.7 ditetapkan di lapangan.
+ * Dapat di-override via argumen checkQuality() / detectEmbedding().
+ * face.real < ANTISPOOF_THRESHOLD → tolak sebagai foto/layar.
+ */
+export const ANTISPOOF_THRESHOLD = 0.7;
+
+/**
+ * Muat Human + semua model. Singleton — panggilan berulang return instance sama.
  * Bila reject, singleton di-reset agar retry bisa dipanggil.
- *
- * @param onProgress - dipanggil saat progres loading (0–100)
  */
 export async function loadHuman(
   onProgress?: LoadProgressCallback,
@@ -44,30 +67,25 @@ export async function loadHuman(
     onProgress?.(5, 'Memuat pustaka…');
     const { default: Human } = await import('@vladmandic/human');
 
-    onProgress?.(15, 'Konfigurasi backend…');
+    onProgress?.(10, 'Konfigurasi backend…');
 
     // ── Set WASM path SEBELUM instance dibuat ──────────────────────
-    // human.esm.js defaultnya pakai wasmPath CDN. Override ke lokal:
     try {
-      // setWasmPaths harus dipanggil sebelum backend init
       if (typeof (Human as any).setWasmPaths === 'function') {
         (Human as any).setWasmPaths('/wasm/');
       } else {
-        // tfjs ekspos lewat instance.tf — akses via require dinamis
         const tf = (Human as any).tf ?? (Human as any).__tf;
         if (tf?.setWasmPaths) tf.setWasmPaths('/wasm/');
       }
     } catch (e) {
-      // Tidak fatal — lanjut, tapi WASM mungkin ke CDN
       console.warn('[faceHuman] setWasmPaths failed:', e);
     }
 
     const cfg = {
       debug: false,
       modelBasePath: '/models',
-      // Override wasmPath Human agar tidak ke CDN
       wasmPath: '/wasm/',
-      backend: 'webgl' as string, // preferensi; Human fallback ke wasm/cpu
+      backend: 'webgl' as string,
       face: {
         enabled: true,
         detector: {
@@ -75,42 +93,62 @@ export async function loadHuman(
           modelPath: 'blazeface.json',
           rotation: false,
           return: true,
-          minConfidence: 0.3,   // lebih toleran
+          minConfidence: 0.3,
           iouThreshold: 0.3,
           maxDetected: 1,
         },
-        mesh: { enabled: false },
-        iris: { enabled: false },
+        mesh: {
+          // Wajib aktif untuk gestur kedip (mesh 468 titik)
+          enabled: true,
+          modelPath: 'facemesh.json',
+        },
+        iris: {
+          // Wajib aktif untuk estimasi posisi iris → gestur kedip
+          enabled: true,
+          modelPath: 'iris.json',
+        },
         description: {
           enabled: true,
           modelPath: 'faceres.json',
           minConfidence: 0.3,
         },
-        emotion:    { enabled: false },
-        antispoof:  { enabled: false },
-        liveness:   { enabled: false },
+        emotion:   { enabled: false },
+        antispoof: {
+          // Deteksi foto/layar — face.real (0=palsu, 1=nyata)
+          enabled: true,
+          modelPath: 'antispoof.json',
+        },
+        liveness: {
+          // Deteksi keaktifan — face.live (0=pasif, 1=aktif)
+          enabled: true,
+          modelPath: 'liveness.json',
+        },
       },
+      // Gesture WAJIB aktif agar blink terdeteksi
+      gesture:      { enabled: true },
       body:         { enabled: false },
       hand:         { enabled: false },
       object:       { enabled: false },
-      gesture:      { enabled: false },
       segmentation: { enabled: false },
     } as unknown as import('@vladmandic/human').Config;
 
     const instance = new Human(cfg);
 
-    // Pasang progress event bila tersedia
+    // Progress event bila tersedia
     try {
       const ev = (instance as any).events;
       if (ev?.on) {
+        let loadedCount = 0;
         ev.on('load', (model: string) => {
-          onProgress?.(model.includes('faceres') ? 75 : 50, `Memuat ${model}…`);
+          loadedCount++;
+          // 6 model: blazeface, facemesh, iris, faceres, antispoof, liveness
+          const pct = Math.min(20 + loadedCount * 10, 75);
+          onProgress?.(pct, `Memuat ${model}…`);
         });
       }
     } catch { /* opsional */ }
 
-    onProgress?.(20, 'Memuat model detector…');
-
+    onProgress?.(15, 'Memuat model…');
     try {
       await instance.load();
     } catch (err) {
@@ -119,22 +157,18 @@ export async function loadHuman(
       throw new Error(`Gagal memuat model: ${(err as Error).message ?? err}`);
     }
 
-    onProgress?.(85, 'Inisialisasi backend…');
+    onProgress?.(80, 'Inisialisasi backend…');
 
     // ── Pin backend ke WebGL secara eksplisit ─────────────────────────
-    // Sebelumnya hanya diset di config (preferensi) — sekarang di-pin via tf.setBackend().
-    // Ini memastikan WebGL benar-benar aktif, bukan hanya "diinginkan".
     try {
       const tf = (instance as any).tf;
       if (tf?.setBackend && tf?.ready) {
-        // Coba WebGL dulu
         const webglOk = await tf.setBackend('webgl').then(() => true).catch(() => false);
         if (webglOk) {
           await tf.ready();
           activeBackend = tf.getBackend() ?? 'webgl';
           console.info('[faceHuman] backend di-pin: webgl');
         } else {
-          // Fallback ke wasm — ini bukan error fatal
           const wasmOk = await tf.setBackend('wasm').then(() => true).catch(() => false);
           if (wasmOk) {
             await tf.ready();
@@ -153,14 +187,12 @@ export async function loadHuman(
       }
     } catch (err) {
       console.warn('[faceHuman] backend pin warn:', err);
-      // Non-fatal; lanjut
     }
 
-    onProgress?.(90, 'Pemanasan model (warm-up)…');
+    onProgress?.(90, 'Pemanasan model…');
 
-    // ── Warm-up: satu detect dummy agar WebGL compile shader selesai ─
+    // ── Warm-up ─────────────────────────────────────────────────────
     try {
-      // Buat canvas 64×64 sebagai input dummy
       const canvas = document.createElement('canvas');
       canvas.width = 64;
       canvas.height = 64;
@@ -169,7 +201,6 @@ export async function loadHuman(
       const warmupMs = Math.round(performance.now() - t0);
       console.info(`[faceHuman] warm-up selesai: ${warmupMs}ms (backend: ${activeBackend})`);
     } catch (err) {
-      // Warm-up gagal — bukan fatal, tapi catat
       console.warn('[faceHuman] warm-up gagal:', err);
     }
 
@@ -186,52 +217,75 @@ export async function loadHuman(
   return loadPromise;
 }
 
-/**
- * Deteksi wajah di frame video dan kembalikan embedding.
- * Melempar Error (bukan return null) bila ada kegagalan internal —
- * caller wajib catch dan tampilkan pesan.
- *
- * @param video    - HTMLVideoElement yang sedang streaming
- * @param minScore - ambang confidence wajah (default 0.35)
- */
-export async function detectEmbedding(
-  video: HTMLVideoElement,
-  minScore = 0.35,
-): Promise<FaceDetection | null> {
-  const human = await loadHuman();
-  // Lempar bila video belum siap
-  if (video.readyState < 2 || video.videoWidth === 0) {
-    throw new Error('Video belum siap (readyState < 2)');
-  }
-  const result = await human.detect(video);
+// ── Tipe hasil kualitas ─────────────────────────────────────────────────────
 
-  const faces = result.face ?? [];
-  if (faces.length === 0) return null;
+export interface DebugInfo {
+  faceCount: number;
+  score: number;
+  box: number[] | null;
+  detectMs: number;
+  backend: string;
+  /** Antispoof score: 0=foto/layar, 1=wajah nyata. null bila model belum selesai. */
+  realScore: number | null;
+  /** Liveness score: 0=tidak aktif, 1=aktif. null bila model belum selesai. */
+  liveScore: number | null;
+  /** Apakah gesture blink terdeteksi di frame ini. */
+  blinkDetected: boolean;
+}
 
-  const best = faces.reduce((a, b) => ((a.score ?? 0) >= (b.score ?? 0) ? a : b));
-  const score = best.score ?? 0;
-  if (score < minScore) return null;
-
-  const rawEmbed = best.embedding as number[] | Float32Array | undefined;
-  if (!rawEmbed || rawEmbed.length === 0) {
-    throw new Error('Embedding kosong — model mungkin tidak termuat dengan benar');
-  }
-
-  const embedding = Array.isArray(rawEmbed) ? rawEmbed : Array.from(rawEmbed);
-  return { embedding, score, ok: true };
+export interface QualityResult {
+  ok: boolean;
+  reason?: string;
+  /** Diisi hanya bila wajah terdeteksi — untuk log debug. */
+  debugInfo?: DebugInfo;
+  /**
+   * Gagal antispoof: wajah terdeteksi tapi real < threshold.
+   * Dipakai untuk membedakan "tidak ada wajah" vs "wajah tapi foto/layar".
+   */
+  isSpoof?: boolean;
+  /** Gesture blink terdeteksi di frame ini. */
+  blinkDetected?: boolean;
 }
 
 /**
- * Cek kualitas pose — lebih toleran.
- * Melempar Error bila ada masalah internal.
+ * Deteksi apakah ada gesture blink di result.gesture[].
+ * Human melaporkan `"blink left eye"` atau `"blink right eye"` bila salah satu mata tertutup.
+ */
+function hasBlinkGesture(result: import('@vladmandic/human').Result): boolean {
+  const gestures = result.gesture ?? [];
+  return gestures.some(
+    (g) =>
+      typeof (g as any).gesture === 'string' &&
+      (g as any).gesture.startsWith('blink'),
+  );
+}
+
+/**
+ * Cek kualitas frame — dua gerbang TERPISAH:
  *
- * @returns { ok, reason, debugInfo }
+ * Gerbang 1 — Kualitas deteksi:
+ *   Skor wajah ≥ minScore (default 0.3), ukuran & posisi wajar.
+ *   Ini menentukan apakah frame layak diproses.
+ *
+ * Gerbang 2 — Anti-spoof (jika wajah terdeteksi):
+ *   face.real ≥ antispoofThreshold (default ANTISPOOF_THRESHOLD = 0.7).
+ *   Jika gagal → ok=false, isSpoof=true, reason="Terdeteksi foto/layar…".
+ *
+ * Kedua gerbang sengaja dipisah agar tidak saling mempengaruhi ambang.
+ *
+ * PERINGATAN: Ini gerbang sisi klien. Lihat komentar arsitektur di atas.
+ *
+ * @param video               - HTMLVideoElement yang sedang streaming
+ * @param minScore            - ambang skor detektor (default 0.3)
+ * @param minBoxRatio         - rasio ukuran wajah minimum (default 0.05)
+ * @param antispoofThreshold  - ambang antispoof (default ANTISPOOF_THRESHOLD)
  */
 export async function checkQuality(
   video: HTMLVideoElement,
   minScore = 0.3,
   minBoxRatio = 0.05,
-): Promise<{ ok: boolean; reason?: string; debugInfo?: DebugInfo }> {
+  antispoofThreshold = ANTISPOOF_THRESHOLD,
+): Promise<QualityResult> {
   if (video.readyState < 2 || video.videoWidth === 0) {
     return { ok: false, reason: 'Kamera belum siap — tunggu sebentar' };
   }
@@ -242,8 +296,9 @@ export async function checkQuality(
   const detectMs = Math.round(performance.now() - t0);
 
   const faces = result.face ?? [];
+  const blinkDetected = hasBlinkGesture(result);
 
-  const debugInfo: DebugInfo = {
+  const baseDebug: Omit<DebugInfo, 'realScore' | 'liveScore' | 'blinkDetected'> = {
     faceCount: faces.length,
     score: faces[0]?.score ?? 0,
     box: faces[0]?.box ?? null,
@@ -252,14 +307,36 @@ export async function checkQuality(
   };
 
   if (faces.length === 0) {
-    return { ok: false, reason: 'Tidak ada wajah — hadap ke kamera', debugInfo };
+    return {
+      ok: false,
+      reason: 'Tidak ada wajah — hadap ke kamera',
+      debugInfo: { ...baseDebug, realScore: null, liveScore: null, blinkDetected },
+    };
   }
   if (faces.length > 1) {
-    return { ok: false, reason: 'Hanya satu wajah di depan kamera', debugInfo };
+    return {
+      ok: false,
+      reason: 'Hanya satu wajah di depan kamera',
+      debugInfo: { ...baseDebug, realScore: null, liveScore: null, blinkDetected },
+    };
   }
 
   const f = faces[0];
   const score = f.score ?? 0;
+  const realScore = f.real ?? null;
+  const liveScore = f.live ?? null;
+
+  const debugInfo: DebugInfo = {
+    ...baseDebug,
+    faceCount: faces.length,
+    score,
+    box: f.box ?? null,
+    realScore,
+    liveScore,
+    blinkDetected,
+  };
+
+  // Gerbang 1: kualitas deteksi
   if (score < minScore) {
     return {
       ok: false,
@@ -280,15 +357,65 @@ export async function checkQuality(
     }
   }
 
-  return { ok: true, debugInfo };
+  // Gerbang 2: antispoof (terpisah dari gerbang kualitas)
+  if (realScore !== null && realScore < antispoofThreshold) {
+    return {
+      ok: false,
+      isSpoof: true,
+      reason: `Terdeteksi foto/layar — gunakan wajah asli (skor: ${realScore.toFixed(2)})`,
+      debugInfo,
+      blinkDetected,
+    };
+  }
+
+  return { ok: true, debugInfo, blinkDetected };
 }
 
-export interface DebugInfo {
-  faceCount: number;
-  score: number;
-  box: number[] | null;
-  detectMs: number;
-  backend: string;
+/**
+ * Deteksi wajah & kembalikan embedding untuk identifikasi.
+ * Melempar Error bila ada kegagalan internal — caller wajib catch dan tampilkan.
+ *
+ * Gerbang antispoof juga diterapkan di sini sebagai pertahanan berlapis.
+ *
+ * PERINGATAN: Ini gerbang sisi klien. Lihat komentar arsitektur di file atas.
+ *
+ * @param video               - HTMLVideoElement yang sedang streaming
+ * @param minScore            - ambang confidence wajah (default 0.55 sesuai lapangan)
+ * @param antispoofThreshold  - ambang antispoof (default ANTISPOOF_THRESHOLD)
+ */
+export async function detectEmbedding(
+  video: HTMLVideoElement,
+  minScore = 0.55,
+  antispoofThreshold = ANTISPOOF_THRESHOLD,
+): Promise<FaceDetection | null> {
+  const human = await loadHuman();
+  if (video.readyState < 2 || video.videoWidth === 0) {
+    throw new Error('Video belum siap (readyState < 2)');
+  }
+  const result = await human.detect(video);
+
+  const faces = result.face ?? [];
+  if (faces.length === 0) return null;
+
+  const best = faces.reduce((a, b) => ((a.score ?? 0) >= (b.score ?? 0) ? a : b));
+  const score = best.score ?? 0;
+  if (score < minScore) return null;
+
+  // Gerbang antispoof di detectEmbedding (pertahanan berlapis — lihat komentar di atas)
+  const realScore = best.real ?? null;
+  if (realScore !== null && realScore < antispoofThreshold) {
+    throw new Error(
+      `Terdeteksi foto/layar — gunakan wajah asli (antispoof: ${realScore.toFixed(2)})`,
+    );
+  }
+
+  const rawEmbed = best.embedding as number[] | Float32Array | undefined;
+  if (!rawEmbed || rawEmbed.length === 0) {
+    throw new Error('Embedding kosong — model mungkin tidak termuat dengan benar');
+  }
+
+  const embedding = Array.isArray(rawEmbed) ? rawEmbed : Array.from(rawEmbed);
+  return { embedding, score, ok: true };
 }
 
 /** Reset singleton — untuk retry setelah gagal. */
