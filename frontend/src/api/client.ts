@@ -294,6 +294,8 @@ export interface GuruKbmSesi {
   jamSelesai: string;
   sesiKe: number;
   status: 'TERLAKSANA' | 'BELUM';
+  /** null = belum hadir sesi; string ISO = sudah hadir & boleh buka roster */
+  hadirPada: string | null;
 }
 
 export interface GuruKbmResponse {
@@ -314,6 +316,8 @@ export interface GuruRosterResponse {
   kelas: string | null;
   mapel: string | null;
   tersimpan: boolean;
+  /** null = sesi belum di-hadir oleh guru (guruHadirPada belum terisi). */
+  hadirPada: string | null;
   siswa: GuruRosterSiswaEntry[];
 }
 
@@ -554,6 +558,7 @@ export const api = {
         jamSelesai: string;
         sesiKe: number;
         status: 'TERLAKSANA' | 'BELUM';
+        hadirPada: string | null;
       }>;
     }>(`/guru/kbm${p.tanggal ? `?tanggal=${encodeURIComponent(p.tanggal)}` : ''}`),
 
@@ -564,6 +569,7 @@ export const api = {
       kelas: string | null;
       mapel: string | null;
       tersimpan: boolean;
+      hadirPada: string | null;
       siswa: Array<{
         siswaId: number;
         nama: string;
@@ -596,6 +602,24 @@ export const api = {
     request<{ ok: boolean; presensiSesiId: number; ringkasan: Record<string, number> }>(
       `/guru/kbm/${p.jadwalId}/roster`,
       { method: 'PATCH', body: JSON.stringify(p.body) },
+    ),
+
+  /**
+   * POST /api/guru/kbm/:jadwalId/hadir
+   * Validasi geofence → catat guruHadirPada. Idempoten dalam satu tanggal.
+   */
+  guruHadirSesi: (p: {
+    jadwalId: number;
+    lat?: number;
+    lng?: number;
+    tanggal?: string;
+  }) =>
+    request<{ ok: boolean; hadirPada: string; distanceMeter: number | null }>(
+      `/guru/kbm/${p.jadwalId}/hadir`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ lat: p.lat, lng: p.lng, tanggal: p.tanggal }),
+      },
     ),
 
   getMatriksPresensiSiswa: (kelasId: number, tanggal: string) =>

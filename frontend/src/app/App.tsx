@@ -61,6 +61,8 @@ const RekapPresensiPage = React.lazy(() => import('../pages/guru/RekapPresensiPa
 const GuruWajahPage = React.lazy(() => import('../pages/guru/GuruWajahPage').then(m => ({ default: m.GuruWajahPage })));
 const GuruEnrollWizardPage = React.lazy(() => import('../pages/guru/GuruEnrollWizardPage').then(m => ({ default: m.GuruEnrollWizardPage })));
 const GuruPresensiDashboard = React.lazy(() => import('../pages/guru/GuruPresensiDashboard').then(m => ({ default: m.GuruPresensiDashboard })));
+// F2: KBM hari ini + roster (standalone, bukan embedded)
+const KbmHariIniPage = React.lazy(() => import('../pages/guru/KbmHariIniPage').then(m => ({ default: m.KbmHariIniPage })));
 const PresensiGuruPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruPage').then(m => ({ default: m.PresensiGuruPage })));
 const PresensiGuruDetailPage = React.lazy(() => import('../pages/admin/presensi/PresensiGuruDetailPage').then(m => ({ default: m.PresensiGuruDetailPage })));
 // F4a: Izin guru
@@ -250,9 +252,13 @@ const routes: RouteObject[] = [
           // Laporan kehadiran siswa (pindahan dari /admin/laporan/siswa)
           { path: '/kesiswaan/laporan-kehadiran', element: <RequireRole roles={['kesiswaan','admin','kepsek']}><Lazy><LaporanSiswaPage /></Lazy></RequireRole> },
 
-          // ── GURU (tidak berubah) ─────────────────────────────────────────
+          // ── GURU ──────────────────────────────────────────────────────────
+          // /guru → /guru/kbm (landing guru = KBM hari ini)
           { path: '/guru', element: <Navigate to="/guru/kbm" replace /> },
-          { path: '/guru/kbm', element: <RequireRole roles={['guru']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
+          // F2: KBM hari ini — daftar sesi + tombol Hadir & Mulai → Roster
+          { path: '/guru/kbm', element: <RequireRole roles={['guru']}><Lazy><KbmHariIniPage /></Lazy></RequireRole> },
+          // F3a: Presensi harian wajah guru (scan wajah, terpisah dari KBM)
+          { path: '/guru/presensi', element: <RequireRole roles={['guru']}><Lazy><GuruPresensiDashboard /></Lazy></RequireRole> },
           { path: '/guru/roster/:jadwalId', element: <RequireRole roles={['guru','admin']}><Lazy><RosterPage /></Lazy></RequireRole> },
           { path: '/guru/rekap', element: <RequireRole roles={['guru','admin']}><Lazy><RekapPresensiPage /></Lazy></RequireRole> },
           // F3a: Guru wajah enrollment mandiri (guru ONLY per §A)

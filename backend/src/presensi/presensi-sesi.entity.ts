@@ -59,6 +59,13 @@ export class PresensiSesi {
   @Column({ type: 'timestamptz' })
   disimpanPada: Date;
 
+  /**
+   * Kapan guru menekan "Hadir & Mulai" dengan validasi geofence (nullable).
+   * NULL = sesi lama (sebelum fitur hadir-sesi) atau belum hadir.
+   */
+  @Column({ type: 'timestamptz', nullable: true })
+  guruHadirPada: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

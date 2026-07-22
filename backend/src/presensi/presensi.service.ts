@@ -22,6 +22,21 @@ import { formatDateWIB, todayWIB } from '../common/wib.util';
 import { SimpanRosterDto } from './dto/simpan-roster.dto';
 import { KesiswaanService } from '../kesiswaan/kesiswaan.service';
 
+/** Haversine distance (meter) antara dua titik GPS (WGS84). */
+function haversineMeter(
+  lat1: number, lng1: number,
+  lat2: number, lng2: number,
+): number {
+  const R = 6_371_000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 /** hari WIB: 1=Senin ... 6=Sabtu, 7=Minggu (jadwal hanya 1..6). */
 function hariWIB(tanggal: string): number {
   // `tanggal` sudah berupa tanggal kalender WIB (YYYY-MM-DD) — bangun
@@ -90,7 +105,87 @@ export class PresensiService {
     return v.cutoff || '15:00';
   }
 
-  /** GET /api/guru/kbm?tanggal= — sesi KBM guru login pada hari itu. */
+  /** Ambil config lokasi (geofence) dari pengaturan — sama dengan presensi-guru. */
+  private async lokasiConfig() {
+    const row = await this.pengaturanRepo.findOne({ where: { key: 'lokasi' } });
+    const v: any = row?.value ?? {};
+    return {
+      aktif: v?.aktif ?? false,
+      lat: v?.lat ?? 0,
+      lng: v?.lng ?? 0,
+      radiusMeter: v?.radiusMeter ?? 100,
+    };
+  }
+
+  /**
+   * POST /api/guru/kbm/:jadwalId/hadir?tanggal=
+   * Validasi geofence → catat guruHadirPada di presensi_sesi (upsert).
+   * Idempoten: bila sudah hadir hari ini, return ok tanpa error.
+   */
+  async hadirSesi(
+    req: Request,
+    jadwalId: number,
+    tanggalQ: string | undefined,
+    body: { lat?: number; lng?: number },
+  ) {
+    const guru = await this.guruDariReq(req);
+    const tanggal = tanggalQ || formatDateWIB(todayWIB());
+
+    const jadwal = await this.jadwalRepo.findOne({
+      where: { id: jadwalId },
+      relations: ['penugasan'],
+    });
+    if (!jadwal) throw new NotFoundException('Jadwal tidak ditemukan');
+    if (jadwal.penugasan.guruId !== guru.id) {
+      throw new ForbiddenException('Bukan sesi KBM Anda');
+    }
+
+    // Validasi geofence
+    const lokasi = await this.lokasiConfig();
+    let distanceMeter: number | null = null;
+    if (lokasi.aktif) {
+      if (body.lat == null || body.lng == null) {
+        throw new BadRequestException(
+          'Lokasi GPS diperlukan — aktifkan izin lokasi di browser Anda',
+        );
+      }
+      distanceMeter = haversineMeter(body.lat, body.lng, lokasi.lat, lokasi.lng);
+      if (distanceMeter > lokasi.radiusMeter) {
+        throw new ForbiddenException(
+          `Anda berada ${Math.round(distanceMeter)} m dari sekolah, batas ${lokasi.radiusMeter} m`,
+        );
+      }
+    }
+
+    // Upsert presensi_sesi — hanya set guruHadirPada bila belum terisi
+    let sesi = await this.sesiRepo.findOne({
+      where: { jadwalKbmId: jadwalId, tanggal },
+    });
+    if (!sesi) {
+      sesi = this.sesiRepo.create({
+        jadwalKbmId: jadwalId,
+        tanggal,
+        guruPelaksanaId: guru.id,
+        guruPenggantiId: null,
+        disimpanPada: new Date(),
+        guruHadirPada: new Date(),
+      });
+    } else if (!sesi.guruHadirPada) {
+      // Sudah ada sesi (roster pernah disimpan sebelumnya) tapi belum hadir
+      sesi.guruHadirPada = new Date();
+    }
+    // Bila sudah guruHadirPada terisi → idempoten, tidak diubah
+    sesi = await this.sesiRepo.save(sesi);
+
+    return {
+      ok: true,
+      jadwalKbmId: jadwalId,
+      tanggal,
+      hadirPada: sesi.guruHadirPada,
+      distanceMeter,
+    };
+  }
+
   async kbmHariIni(req: Request, tanggalQ?: string) {
     const guru = await this.guruDariReq(req);
     const tanggal = tanggalQ || formatDateWIB(todayWIB());
@@ -121,7 +216,7 @@ export class PresensiService {
             where: { jadwalKbmId: In(sesiIds), tanggal },
           })
         : [];
-    const tersimpanSet = new Set(sesiTersimpan.map((s) => s.jadwalKbmId));
+    const sesiMap = new Map(sesiTersimpan.map((s) => [s.jadwalKbmId, s]));
 
     return {
       tanggal,
@@ -134,7 +229,8 @@ export class PresensiService {
         jamMulai: j.jamMulai,
         jamSelesai: j.jamSelesai,
         sesiKe: j.sesiKe,
-        status: tersimpanSet.has(j.id) ? 'TERLAKSANA' : 'BELUM',
+        status: sesiMap.has(j.id) ? 'TERLAKSANA' : 'BELUM',
+        hadirPada: sesiMap.get(j.id)?.guruHadirPada ?? null,
       })),
     };
   }
@@ -175,6 +271,7 @@ export class PresensiService {
       kelas: jadwal.penugasan?.kelas?.nama ?? null,
       mapel: jadwal.penugasan?.mapel?.nama ?? null,
       tersimpan: !!sesi,
+      hadirPada: sesi?.guruHadirPada ?? null,
       siswa: siswaKelas.map((s) => ({
         siswaId: s.id,
         nama: s.nama,
@@ -182,6 +279,7 @@ export class PresensiService {
         status: statusMap.get(s.id) ?? 'H',
       })),
     };
+
   }
 
   /** POST/PATCH /api/guru/kbm/:jadwalId/roster — upsert roster. */

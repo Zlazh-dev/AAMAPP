@@ -1,4 +1,4 @@
-﻿import { SafeUser } from '../api/client';
+import { SafeUser } from '../api/client';
 
 export interface MenuItem {
   label: string;
@@ -66,8 +66,9 @@ const MENU_GROUPS: Record<string, MenuGroup> = {
     label: 'GURU',
     items: [
       { label: 'KBM Hari Ini', path: '/guru/kbm', icon: 'fact_check' },
+      { label: 'Presensi Harian', path: '/guru/presensi', icon: 'face_retouching_natural' },
       { label: 'Rekap Presensi', path: '/guru/rekap', icon: 'summarize' },
-      { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'face_retouching_natural' },
+      { label: 'Daftar Wajah', path: '/guru/wajah', icon: 'manage_accounts' },
       { label: 'Izin', path: '/izin/guru', icon: 'event_available' },
       { label: 'Pelanggaran', path: '/guru/pelanggaran', icon: 'report' },
       { label: 'Penilaian', path: '/guru/penilaian', icon: 'grading' },

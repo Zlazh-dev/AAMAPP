@@ -59,6 +59,22 @@ export class GuruPresensiController {
   ) {
     return this.svc.simpanRoster(req, jadwalId, dto);
   }
+
+  /**
+   * POST /api/guru/kbm/:jadwalId/hadir
+   * Body: { lat?: number; lng?: number; tanggal?: string }
+   * Validasi geofence → catat guruHadirPada di presensi_sesi.
+   * Idempoten: panggil ulang di hari yang sama → tetap ok.
+   */
+  @Post(':jadwalId/hadir')
+  @Roles('guru')
+  hadir(
+    @Req() req: Request,
+    @Param('jadwalId', ParseIntPipe) jadwalId: number,
+    @Body() body: { lat?: number; lng?: number; tanggal?: string },
+  ) {
+    return this.svc.hadirSesi(req, jadwalId, body.tanggal, body);
+  }
 }
 
 /** F2 — rekap presensi per kelas (wali kelas | admin). */
