@@ -19,6 +19,7 @@ import { RaporController } from './rapor.controller';
 import { AuditModule } from '../audit/audit.module';
 import { KokurikulerModule } from '../kokurikuler/kokurikuler.module';
 import { EkskulModule } from '../ekskul/ekskul.module';
+import { PengaturanModule } from '../pengaturan/pengaturan.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { EkskulModule } from '../ekskul/ekskul.module';
     AuditModule,
     KokurikulerModule,  // exports KokurikulerService
     EkskulModule,       // exports EkskulService
+    PengaturanModule,   // exports PengaturanService
   ],
   controllers: [RaporController],
   providers: [RaporService],

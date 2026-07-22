@@ -22,6 +22,7 @@ import { PresensiSiswa } from '../presensi/presensi-siswa.entity';
 import { AuditService } from '../audit/audit.service';
 import { KokurikulerService } from '../kokurikuler/kokurikuler.service';
 import { EkskulService } from '../ekskul/ekskul.service';
+import { PengaturanService } from '../pengaturan/pengaturan.service';
 import { OverrideMapelDto, CatatanWaliDto } from './dto/rapor.dto';
 
 /** KKM global default = 75 (dari pengaturan; per user decision 2026-07-18) */
@@ -57,6 +58,7 @@ export class RaporService {
     private audit: AuditService,
     private kokurikulerService: KokurikulerService,
     private ekskulService: EkskulService,
+    private pengaturanService: PengaturanService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -227,6 +229,17 @@ export class RaporService {
     tahunAjaranId: number,
     raporRow: Rapor | null,
   ): Promise<Record<string, any>> {
+    // Ambil KKM dari pengaturan
+    let kkmValue = KKM_DEFAULT;
+    try {
+      const kkmRow = await this.pengaturanService.getOne('kkm');
+      if (kkmRow?.value?.nilai) {
+        kkmValue = Number(kkmRow.value.nilai);
+      }
+    } catch {
+      // Abaikan jika tidak ketemu (fallback ke KKM_DEFAULT)
+    }
+
     // Siswa
     const siswa = await this.siswaRepo.findOne({
       where: { id: siswaId },
@@ -245,7 +258,7 @@ export class RaporService {
         catatanWali: raporRow?.catatanWali ?? null,
         kehadiran: { S: 0, I: 0, A: 0 },
         mapel: [],
-        kkm: KKM_DEFAULT,
+        kkm: kkmValue,
       };
     }
 
@@ -266,7 +279,7 @@ export class RaporService {
         catatanWali: raporRow?.catatanWali ?? null,
         kehadiran: keh,
         mapel: [],
-        kkm: KKM_DEFAULT,
+        kkm: kkmValue,
       };
     }
 
@@ -355,7 +368,7 @@ export class RaporService {
         }
       }
 
-      const deskripsiOtomatis = this.buildDeskripsiOtomatis(tpMapel, tpRataMap, KKM_DEFAULT);
+      const deskripsiOtomatis = this.buildDeskripsiOtomatis(tpMapel, tpRataMap, kkmValue);
       const deskripsi = override?.deskripsiOverride ?? deskripsiOtomatis;
 
       return {
@@ -364,8 +377,8 @@ export class RaporService {
         nilaiAkhir: nilaiAkhirRaw,
         nilaiKatrol,
         nilaiTampil,
-        tuntas: nilaiTampil !== null ? nilaiTampil >= KKM_DEFAULT : null,
-        kkm: KKM_DEFAULT,
+        tuntas: nilaiTampil !== null ? nilaiTampil >= kkmValue : null,
+        kkm: kkmValue,
         deskripsi,
         deskripsiOtomatis,
         hasOverride: !!override,
@@ -388,7 +401,7 @@ export class RaporService {
       finalisasiPada: raporRow?.finalisasiPada ?? null,
       kehadiran,
       mapel: mapelData,
-      kkm: KKM_DEFAULT,
+      kkm: kkmValue,
       kokurikuler: await this._buildKokurikuler(siswaId, tahunAjaranId),
       ekstrakurikuler: await this._buildEkstrakurikuler(siswaId),
     };
