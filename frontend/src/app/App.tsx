@@ -94,6 +94,7 @@ const InputNilaiPage = React.lazy(() => import('../pages/guru/InputNilaiPage').t
 // F6b: Rapor
 const RaporListPage = React.lazy(() => import('../pages/guru/RaporListPage').then(m => ({ default: m.RaporListPage })));
 const RaporDetailPage = React.lazy(() => import('../pages/guru/RaporDetailPage').then(m => ({ default: m.RaporDetailPage })));
+const LegerKelasPage = React.lazy(() => import('../pages/shared/LegerKelasPage').then(m => ({ default: m.default })));
 // F6c: Kokurikuler
 const KokurikulerKegiatanPage = React.lazy(() => import('../pages/kokurikuler/KokurikulerKegiatanPage').then(m => ({ default: m.KokurikulerKegiatanPage })));
 const KokurikulerTimPage = React.lazy(() => import('../pages/kokurikuler/KokurikulerTimPage').then(m => ({ default: m.KokurikulerTimPage })));
@@ -230,6 +231,10 @@ const routes: RouteObject[] = [
           // Kurikulum: Laporan keterlaksanaan (pindahan dari /admin/laporan/keterlaksanaan)
           { path: '/kurikulum/laporan/keterlaksanaan', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LaporanKeterlaksanaanPage /></Lazy></RequireRole> },
 
+          // Kurikulum: Leger Kelas
+          { path: '/kurikulum/leger', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/leger/:kelasId', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
+
           // Kurikulum: Kokurikuler
           { path: '/kurikulum/kokurikuler', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerKegiatanPage /></Lazy></RequireRole> },
           { path: '/kurikulum/kokurikuler/:kegiatanId/tim', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerTimPage /></Lazy></RequireRole> },
@@ -283,6 +288,8 @@ const routes: RouteObject[] = [
           },
           // F6b: Rapor
           { path: '/guru/rapor', element: <RequireRole roles={['guru']}><Lazy><RaporListPage /></Lazy></RequireRole> },
+          { path: '/guru/rapor/leger', element: <RequireRole roles={['guru']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
+          { path: '/guru/rapor/leger/:kelasId', element: <RequireRole roles={['guru']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
           { path: '/guru/rapor/:siswaId', element: <RequireRole roles={['guru']}><Lazy><RaporDetailPage /></Lazy></RequireRole> },
           // F6c: Kokurikuler (guru)
           { path: '/guru/kokurikuler', element: <RequireRole roles={['guru']}><Lazy><GuruKokurikulerPage /></Lazy></RequireRole> },

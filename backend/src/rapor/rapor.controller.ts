@@ -42,6 +42,21 @@ export class RaporController {
   }
 
   /**
+   * GET /api/rapor/kelas/:kelasId/leger?tahunAjaranId=
+   * Matriks Leger Kelas (Nilai per siswa per mapel, total, ranking).
+   * Akses: wali kelas, kurikulum, admin, kepsek.
+   */
+  @Get('kelas/:kelasId/leger')
+  @Roles('guru', 'kurikulum', 'admin', 'kepsek')
+  getLegerKelas(
+    @Param('kelasId', ParseIntPipe) kelasId: number,
+    @Query('tahunAjaranId') taIdStr?: string,
+    @Req() req?: Request,
+  ) {
+    const taId = taIdStr ? parseInt(taIdStr, 10) : undefined;
+    return this.svc.getLegerKelas(kelasId, taId, this.user(req!));
+  }
+  /**
    * GET /api/rapor/siswa/:siswaId?tahunAjaranId=
    * Rapor lengkap DERIVED (atau snapshot jika FINAL).
    */

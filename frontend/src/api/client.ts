@@ -1751,6 +1751,12 @@ export const api = {
     return request<{ data: any[] }>(`/rapor/kelas/${kelasId}?${q}`);
   },
 
+  getLegerKelas: (kelasId: number, tahunAjaranId?: number) => {
+    const q = new URLSearchParams();
+    if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));
+    return request<any>(`/rapor/kelas/${kelasId}/leger?${q}`);
+  },
+
   getRaporSiswa: (siswaId: number, tahunAjaranId?: number) => {
     const q = new URLSearchParams();
     if (tahunAjaranId) q.set('tahunAjaranId', String(tahunAjaranId));

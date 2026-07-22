@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, Kelas, KelasListResponse , ApiError } from '../../../api/client';
 import { useToast } from '../../../components/Toast';
@@ -15,6 +15,7 @@ import { PageContainer } from '../../../components/PageContainer';
 
 const KELAS_SUB_LINKS = [
   { key: 'wali', label: 'Wali Kelas', path: '/kurikulum/wali-kelas', icon: 'manage_accounts', description: 'Penugasan wali kelas' },
+  { key: 'leger', label: 'Leger Kelas', path: '/kurikulum/leger', icon: 'table_view', description: 'Lihat matriks nilai kelas' },
 ];
 
 /**

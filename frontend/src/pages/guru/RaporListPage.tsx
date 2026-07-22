@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
@@ -111,7 +111,10 @@ export function RaporListPage() {
  <Badge variant="green">{finalCount} FINAL</Badge>
  <Badge variant="yellow">{rows.filter(r => r.raporStatus === 'DRAFT').length} DRAFT</Badge>
  <Badge variant="gray">{rows.filter(r => !r.raporStatus).length} Belum dibuat</Badge>
- <span className="text-xs text-aam-text-muted ml-auto">{rows.length} siswa total</span>
+ <span className="text-xs text-aam-text-muted ml-auto mr-2">{rows.length} siswa total</span>
+ <Button onClick={() => navigate(`/guru/rapor/leger/${selectedKelasId}`)} id="btn-leger-kelas" variant="secondary">
+   Lihat Leger Kelas
+ </Button>
  </div>
  <div className="overflow-x-auto">
  <table className="w-full text-sm">

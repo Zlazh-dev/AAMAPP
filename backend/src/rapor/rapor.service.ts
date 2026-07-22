@@ -530,6 +530,109 @@ export class RaporService {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
+  // GET /api/rapor/kelas/:kelasId/leger?tahunAjaranId= — matriks Leger Kelas
+  // ─────────────────────────────────────────────────────────────────────────
+
+  async getLegerKelas(
+    kelasId: number,
+    tahunAjaranId: number | undefined,
+    user: { id: number; roles: string[] },
+  ) {
+    await this.assertWaliKelas(kelasId, user);
+    const ta = tahunAjaranId
+      ? await this.taRepo.findOne({ where: { id: tahunAjaranId } })
+      : await this.taAktif();
+    if (!ta) throw new BadRequestException('Tahun ajaran tidak ditemukan');
+
+    const kelas = await this.kelasRepo.findOne({ where: { id: kelasId } });
+    if (!kelas) throw new NotFoundException('Kelas tidak ditemukan');
+
+    const siswaList = await this.siswaRepo.find({
+      where: { kelasId, status: 'aktif' },
+      select: ['id', 'nama', 'nis', 'jenisKelamin'],
+      order: { nama: 'ASC' },
+    });
+
+    if (siswaList.length === 0) {
+      return { kelasId, tahunAjaranId: ta.id, mapel: [], siswa: [] };
+    }
+
+    // Ambil penugasan (mapel) kelas
+    const penugasanList = await this.penugasanRepo.find({
+      where: { kelasId, tahunAjaranId: ta.id },
+      relations: ['mapel'],
+      order: { id: 'ASC' },
+    });
+    
+    // Header mapel
+    const mapelHeaders = penugasanList.map(p => ({
+      mapelId: p.mapelId,
+      nama: (p as any).mapel?.nama ?? 'Unknown',
+    }));
+
+    // BATCH fetch rapor per siswa using existing Promise.all over assembleRapor (since it's only ~30 students, and inner queries are optimized)
+    // Wait, assembleRapor uses a loop or single queries inside. But we have getRaporSiswa which checks snapshot or uses assembleRapor.
+    // Let's use getRaporSiswa for each student.
+    const siswaRaporPromises = siswaList.map(s => this.getRaporSiswa(s.id, ta.id, user));
+    const raporList = await Promise.all(siswaRaporPromises);
+
+    // Compute total and mapel array per student
+    const siswaData = siswaList.map((s, index) => {
+      const rapor = raporList[index];
+      let totalNilai = 0;
+      
+      const mapelValues = mapelHeaders.map(mh => {
+        const mData = rapor.mapel.find((m: any) => m.mapelId === mh.mapelId);
+        if (mData && mData.nilaiTampil !== null) {
+          totalNilai += mData.nilaiTampil;
+        }
+        return {
+          mapelId: mh.mapelId,
+          nilai: mData?.nilaiTampil ?? null,
+          isOverride: mData?.hasOverride ?? false,
+          kkm: mData?.kkm ?? KKM_DEFAULT,
+          tuntas: mData?.tuntas ?? null,
+        };
+      });
+
+      return {
+        siswaId: s.id,
+        nis: s.nis,
+        nama: s.nama,
+        jenisKelamin: s.jenisKelamin,
+        mapel: mapelValues,
+        totalNilai,
+        ranking: 0, // diisi nanti
+      };
+    });
+
+    // Ranking (urut berdasarkan totalNilai desc)
+    siswaData.sort((a, b) => b.totalNilai - a.totalNilai);
+    
+    let currentRank = 1;
+    for (let i = 0; i < siswaData.length; i++) {
+      if (i > 0 && siswaData[i].totalNilai === siswaData[i - 1].totalNilai) {
+        siswaData[i].ranking = siswaData[i - 1].ranking;
+      } else {
+        siswaData[i].ranking = currentRank;
+      }
+      currentRank++;
+    }
+
+    // Kembalikan urutan abjad untuk UI (atau biarkan sorted by rank, UI bisa sort sendiri. Biasanya leger by nama abjad)
+    siswaData.sort((a, b) => a.nama.localeCompare(b.nama));
+
+    return {
+      kelasId,
+      kelasNama: kelas.nama,
+      tahunAjaranId: ta.id,
+      tahunAjaranNama: ta.nama,
+      mapel: mapelHeaders,
+      siswa: siswaData,
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   // GET /api/rapor/siswa/:siswaId?tahunAjaranId= — rapor lengkap DERIVED
   // ─────────────────────────────────────────────────────────────────────────
 
