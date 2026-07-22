@@ -31,10 +31,15 @@ test.describe('AKUN-GURU-LINK — kontrak Tugas B', () => {
 
   test('POST /api/admin/guru/link-backfill (via browser) → { ok: true }', async ({ page }) => {
     await loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+    // Navigate ke halaman yang memuat app dulu agar React menginisialisasi
+    await page.goto('/kurikulum/orang/guru');
+    await page.waitForTimeout(2000);
     const res = await page.evaluate(async () => {
+      const token = localStorage.getItem('aamapp_token');
       const r = await fetch('/api/admin/guru/link-backfill', {
         method: 'POST',
         credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       return { status: r.status, body: await r.json() };
     });
