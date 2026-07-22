@@ -4,8 +4,9 @@
 - `graphify update .` WAJIB tiap siklus fix→build→commit (perintah pemilik
   produk: "SELALU"); sertakan baris kesehatan (jumlah simpul + import cycles)
   di laporan.
-- Penamaan komunitas (`graphify label . --backend tailscale`) butuh env
-  `MY_TAILSCALE_KEY`; tanpa itu nama jatuh ke placeholder — jangan jalankan.
+- Penamaan komunitas: `graphify label . --backend ollama` (lokal, tanpa key) —
+  jalankan HANYA bila Ollama terpasang & modelnya ada (`ollama list`); tanpa itu
+  nama jatuh ke placeholder. Snapshot berlabel lama: `graphify-out/2026-07-22/`.
 
 ## Konteks proyek
 - Ekosistem sekolah SMP IT Asy-Syadzili: NestJS + React + PostgreSQL, Docker

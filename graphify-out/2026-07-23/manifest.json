@@ -940,8 +940,8 @@
     "semantic_hash": "115af13ca8a7f9024e84cab754037c13"
   },
   "frontend/e2e/gelombang2/model-lokal-network.spec.ts": {
-    "mtime": 1784732424.8333938,
-    "ast_hash": "37786c36f0700655b8d895388f70293c",
+    "mtime": 1784736152.283391,
+    "ast_hash": "fde382e425aa27a8f291a45c23997b99",
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/multi-checkbox.spec.ts": {
@@ -1155,9 +1155,9 @@
     "semantic_hash": "21c0ea9436ab1770cd68ba1cda92447e"
   },
   "frontend/package.json": {
-    "mtime": 1784674060.433808,
-    "ast_hash": "6f1a169325f2767c7f3262b81ce18d84",
-    "semantic_hash": "6f1a169325f2767c7f3262b81ce18d84"
+    "mtime": 1784734057.399787,
+    "ast_hash": "dd9c0d6e33eda114ea7c06aaadc383fd",
+    "semantic_hash": ""
   },
   "frontend/playwright.config.ts": {
     "mtime": 1784161747.167077,
@@ -1355,8 +1355,8 @@
     "semantic_hash": "fc7f9fa49871f91466e36682762d99e1"
   },
   "frontend/src/lib/faceHuman.ts": {
-    "mtime": 1784732248.2420137,
-    "ast_hash": "5002d234d33f632fb0592d49af6534bb",
+    "mtime": 1784735972.455405,
+    "ast_hash": "6528a66901870ff109a2304105ae5507",
     "semantic_hash": ""
   },
   "frontend/src/main.tsx": {
@@ -1550,8 +1550,8 @@
     "semantic_hash": "b0d1ece75071eb64ff462a40497cc2af"
   },
   "frontend/src/pages/guru/GuruEnrollWizardPage.tsx": {
-    "mtime": 1784732366.9912436,
-    "ast_hash": "38339dc69dd3a414ccb20bdc2b899701",
+    "mtime": 1784736119.808185,
+    "ast_hash": "1c0350da3d66d4f8e7f0ed3b19d29325",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/GuruPelanggaranPage.tsx": {
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/ScanOverlay.tsx": {
-    "mtime": 1784732311.5718906,
-    "ast_hash": "e905cd0966193a23dd38cc273cff9db9",
+    "mtime": 1784736186.3041296,
+    "ast_hash": "9d78f2b7b3a5754cafe5bc0167961625",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/TujuanPembelajaranPage.tsx": {
@@ -2222,6 +2222,26 @@
   "frontend/public/models/liveness.json": {
     "mtime": 1784361225.7298918,
     "ast_hash": "81dbf17ae780b227323eeae5724e6a76",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_internal.js": {
+    "mtime": 1784734057.2152834,
+    "ast_hash": "4a77caa20137170bdd50b84ce7d640ae",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_module_internal.js": {
+    "mtime": 1784734057.225237,
+    "ast_hash": "241a27add2cc666730f6c8650080a4cf",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_nosimd_internal.js": {
+    "mtime": 1784734057.2336376,
+    "ast_hash": "60141754615a939dd3e2781f922a436f",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/faceLandmarker.ts": {
+    "mtime": 1784736005.4904315,
+    "ast_hash": "2586713d35d20da3164e4d3387ea15cb",
     "semantic_hash": ""
   }
 }
