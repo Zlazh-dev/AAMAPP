@@ -135,9 +135,9 @@
     "semantic_hash": "32a62d739142801fd00764130b99d213"
   },
   "backend/src/ekskul/ekskul.controller.ts": {
-    "mtime": 1784556942.215176,
-    "ast_hash": "71bf8fe7e27c8b9ccbe8903e659c4f7c",
-    "semantic_hash": "71bf8fe7e27c8b9ccbe8903e659c4f7c"
+    "mtime": 1784752075.487085,
+    "ast_hash": "b4a571fce0b2b1957d8ecc957fae80b9",
+    "semantic_hash": ""
   },
   "backend/src/ekskul/ekskul.entity.ts": {
     "mtime": 1784398938.877554,
@@ -155,24 +155,24 @@
     "semantic_hash": "08fade1bffb0a3f60fb0aa2b1d4884e2"
   },
   "backend/src/guru/dto/create-guru.dto.ts": {
-    "mtime": 1784188686.31063,
-    "ast_hash": "4d17fbfee21d072ad0d4f371b90ad6a8",
-    "semantic_hash": "4d17fbfee21d072ad0d4f371b90ad6a8"
+    "mtime": 1784752632.8379555,
+    "ast_hash": "23c3ee8ac9095e0b5ea60c0732a51eb4",
+    "semantic_hash": ""
   },
   "backend/src/guru/guru.controller.ts": {
-    "mtime": 1784485854.1401367,
-    "ast_hash": "a5e8399f85108fa5d4fe77eb6c3a24af",
-    "semantic_hash": "a5e8399f85108fa5d4fe77eb6c3a24af"
+    "mtime": 1784752651.4009738,
+    "ast_hash": "300c30b4855d2ca4f246c56a1e361242",
+    "semantic_hash": ""
   },
   "backend/src/guru/guru.entity.ts": {
-    "mtime": 1784485854.1421363,
-    "ast_hash": "2a14cdcec6c48fb3c9ac0375d51805fd",
-    "semantic_hash": "2a14cdcec6c48fb3c9ac0375d51805fd"
+    "mtime": 1784752405.7900808,
+    "ast_hash": "701ef832883c1836ea962a6fb7b648df",
+    "semantic_hash": ""
   },
   "backend/src/guru/guru.module.ts": {
-    "mtime": 1784051633.0998802,
-    "ast_hash": "c7ee8a0dd04511340c06a3d3ebc429a1",
-    "semantic_hash": "c7ee8a0dd04511340c06a3d3ebc429a1"
+    "mtime": 1784752543.3107903,
+    "ast_hash": "90867add5617932907d8340220c5d4de",
+    "semantic_hash": ""
   },
   "backend/src/guru/guru.service.ts": {
     "mtime": 1784519680.1059394,
@@ -185,14 +185,14 @@
     "semantic_hash": "9a9954702ca1e547aad17b2415959f8b"
   },
   "backend/src/import/import.module.ts": {
-    "mtime": 1784053518.4992836,
-    "ast_hash": "8761e09a536e532e17939d02a3f950a3",
-    "semantic_hash": "8761e09a536e532e17939d02a3f950a3"
+    "mtime": 1784752666.6631594,
+    "ast_hash": "017f90e35fd5c52248e6889aa6005432",
+    "semantic_hash": ""
   },
   "backend/src/import/import.service.ts": {
-    "mtime": 1784051981.0862315,
-    "ast_hash": "2c1e5b7f65384f0f3fc76d48ed74e788",
-    "semantic_hash": "2c1e5b7f65384f0f3fc76d48ed74e788"
+    "mtime": 1784752679.9008954,
+    "ast_hash": "dbc743d46d97274a0b36ab53035483dd",
+    "semantic_hash": ""
   },
   "backend/src/izin/dto/ajukan-izin.dto.ts": {
     "mtime": 1784369987.0318758,
@@ -210,9 +210,9 @@
     "semantic_hash": "90d2954d3195d1291a7de24375d3e40f"
   },
   "backend/src/izin/izin.controller.ts": {
-    "mtime": 1784485854.1457686,
-    "ast_hash": "064a7b8254c03764d44d91b8ed9a9beb",
-    "semantic_hash": "064a7b8254c03764d44d91b8ed9a9beb"
+    "mtime": 1784752047.3041706,
+    "ast_hash": "632335d79a2fea27ed48800dcb00fb28",
+    "semantic_hash": ""
   },
   "backend/src/izin/izin.module.ts": {
     "mtime": 1784370460.2769303,
@@ -325,9 +325,9 @@
     "semantic_hash": "fe459794775348b826eb889dde888aa6"
   },
   "backend/src/kokurikuler/kokurikuler.controller.ts": {
-    "mtime": 1784557108.5748837,
-    "ast_hash": "ad4ff9aea60b7e370022749250d14eb5",
-    "semantic_hash": "ad4ff9aea60b7e370022749250d14eb5"
+    "mtime": 1784752070.2033546,
+    "ast_hash": "6ccafd5f723e0f49e8e7a9649ac15636",
+    "semantic_hash": ""
   },
   "backend/src/kokurikuler/kokurikuler.module.ts": {
     "mtime": 1784397071.268687,
@@ -425,9 +425,9 @@
     "semantic_hash": "513ee0543d70af39245eee05ab26b334"
   },
   "backend/src/laporan/laporan.controller.ts": {
-    "mtime": 1784485854.1487753,
-    "ast_hash": "10dc3f9e3c927dd84365f23232445948",
-    "semantic_hash": "10dc3f9e3c927dd84365f23232445948"
+    "mtime": 1784752063.2933962,
+    "ast_hash": "a29b23bef6e0087423e7308ea11d858d",
+    "semantic_hash": ""
   },
   "backend/src/laporan/laporan.module.ts": {
     "mtime": 1784374027.092046,
@@ -575,8 +575,8 @@
     "semantic_hash": "52f8bada4b27e8288b9706fe0b021a3f"
   },
   "backend/src/presensi/presensi.controller.ts": {
-    "mtime": 1784716686.875702,
-    "ast_hash": "fb8779c48826d79366b90f069fc335d0",
+    "mtime": 1784752057.3400097,
+    "ast_hash": "11a02ba4f220cf23ed157e95dbd707d8",
     "semantic_hash": ""
   },
   "backend/src/presensi/presensi.module.ts": {
@@ -735,14 +735,14 @@
     "semantic_hash": "db9cc45e88592d6a7d9369690d2282bb"
   },
   "backend/src/users/users.controller.ts": {
-    "mtime": 1784068915.7591398,
-    "ast_hash": "feb4479822e51b6f25a959c076004976",
-    "semantic_hash": "feb4479822e51b6f25a959c076004976"
+    "mtime": 1784752599.6894112,
+    "ast_hash": "e6a61543c619ad6a961d2ab339e8cddd",
+    "semantic_hash": ""
   },
   "backend/src/users/users.module.ts": {
-    "mtime": 1783946263.53887,
-    "ast_hash": "ae0053a9344f0cdb98dffa1c67d65f9e",
-    "semantic_hash": "ae0053a9344f0cdb98dffa1c67d65f9e"
+    "mtime": 1784752575.3758938,
+    "ast_hash": "65f2a2e9c55cd3534511574745d8b27d",
+    "semantic_hash": ""
   },
   "backend/src/users/users.service.ts": {
     "mtime": 1784068891.9987693,
@@ -940,8 +940,8 @@
     "semantic_hash": "115af13ca8a7f9024e84cab754037c13"
   },
   "frontend/e2e/gelombang2/model-lokal-network.spec.ts": {
-    "mtime": 1784736152.283391,
-    "ast_hash": "fde382e425aa27a8f291a45c23997b99",
+    "mtime": 1784749735.1930907,
+    "ast_hash": "6ec7f828701a9cfa2271f8f5332dc507",
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/multi-checkbox.spec.ts": {
@@ -1180,13 +1180,13 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784716911.186538,
-    "ast_hash": "d2768686901d16c2ee4bd59b3edae247",
+    "mtime": 1784752728.904778,
+    "ast_hash": "83e38f2d60c5e9031d0a92f3dddb2e55",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
-    "mtime": 1784716758.7468085,
-    "ast_hash": "9694c4d7c0b353fa763f000d693f689e",
+    "mtime": 1784752035.8389215,
+    "ast_hash": "7f9ba2d98c9914f14e2b29bddaeb861f",
     "semantic_hash": ""
   },
   "frontend/src/app/AppLayout.tsx": {
@@ -1195,14 +1195,14 @@
     "semantic_hash": "2640dbe27db4d784d8b4171e89bf7efd"
   },
   "frontend/src/app/AuthContext.tsx": {
-    "mtime": 1784356564.593557,
-    "ast_hash": "6b0e6914f57c3caf05b9db4a051f81b4",
-    "semantic_hash": "6b0e6914f57c3caf05b9db4a051f81b4"
+    "mtime": 1784752007.7205968,
+    "ast_hash": "0de1af3d46d92d4138d6defe2ab375e7",
+    "semantic_hash": ""
   },
   "frontend/src/app/guards.tsx": {
-    "mtime": 1783945593.4453156,
-    "ast_hash": "73e02e8022c569a534fc90a61775329e",
-    "semantic_hash": "73e02e8022c569a534fc90a61775329e"
+    "mtime": 1784751982.511117,
+    "ast_hash": "bd2a0d513d05b0c604393c57e9648310",
+    "semantic_hash": ""
   },
   "frontend/src/app/menu.ts": {
     "mtime": 1784716784.3414598,
@@ -1385,9 +1385,9 @@
     "semantic_hash": "d18553cbdb1e6e29b534837ae46a57f2"
   },
   "frontend/src/pages/admin/akun/AkunDetailPage.tsx": {
-    "mtime": 1784517877.4586217,
-    "ast_hash": "5598ebe61de11debc22bd8a3ad2186b3",
-    "semantic_hash": "5598ebe61de11debc22bd8a3ad2186b3"
+    "mtime": 1784752845.3750253,
+    "ast_hash": "377cd3227903eac863d047cad4101e60",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/akun/AkunEditPage.tsx": {
     "mtime": 1784518033.645326,
@@ -1440,14 +1440,14 @@
     "semantic_hash": "2eb7d570c6e0c9fcc2110a97806ce247"
   },
   "frontend/src/pages/admin/orang/GuruDetailPage.tsx": {
-    "mtime": 1784517877.480032,
-    "ast_hash": "bd09b3f8b9bf866ce6fced14a637c4b2",
-    "semantic_hash": "bd09b3f8b9bf866ce6fced14a637c4b2"
+    "mtime": 1784752773.5655982,
+    "ast_hash": "5a98cbd4eef58aea7fef3d46d71258e1",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/orang/GuruFormPage.tsx": {
-    "mtime": 1784518070.9078712,
-    "ast_hash": "4bc303b736da10d0064f58a4fb23d479",
-    "semantic_hash": "4bc303b736da10d0064f58a4fb23d479"
+    "mtime": 1784752795.9977572,
+    "ast_hash": "2bd4fcd19dcd3a6b7071ff4ea3a70595",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/orang/GuruListPage.tsx": {
     "mtime": 1784626741.6478217,
@@ -2025,8 +2025,8 @@
     "semantic_hash": ""
   },
   "briefs/AGENT-1-AKTIF.md": {
-    "mtime": 1784654489.877895,
-    "ast_hash": "cc531094228146bdeec0a48cd5943492",
+    "mtime": 1784752261.0559535,
+    "ast_hash": "9bfe4894c33ffb6cea4bddfb46b50223",
     "semantic_hash": ""
   },
   "briefs/AGENT-1.md": {
@@ -2250,8 +2250,8 @@
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
-    "mtime": 1784740879.534699,
-    "ast_hash": "f2ae21510d07365eb2bce8159272c7a0",
+    "mtime": 1784748432.7043283,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
     "semantic_hash": ""
   },
   ".opencode/plugins/graphify.js": {
@@ -2277,6 +2277,26 @@
   "CLAUDE.md": {
     "mtime": 1784744953.854473,
     "ast_hash": "af9b9439e49252e28b7c1be085565dd9",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru-link.service.ts": {
+    "mtime": 1784752509.2417505,
+    "ast_hash": "d3dd9996c52fadc509a59a4fa209bb12",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1784900000000-AddGuruEmail.ts": {
+    "mtime": 1784752533.6517825,
+    "ast_hash": "e84252fde81e5df32ab0128370cefa52",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/akun-guru-link.spec.ts": {
+    "mtime": 1784753079.2953496,
+    "ast_hash": "ef7ab1a6c0b9eceb376b009f45283d65",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/rbac-fix.spec.ts": {
+    "mtime": 1784752323.5292153,
+    "ast_hash": "effd2555771fd4224bbe4ea4b5aabd44",
     "semantic_hash": ""
   }
 }
