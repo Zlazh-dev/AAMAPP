@@ -9,20 +9,18 @@ import { AuditService } from '../audit/audit.service';
  * GuruLinkService — link dua arah Guru <-> User via email (case-insensitive).
  *
  * Dipanggil dari:
- * - UsersService.approve()  → user role-guru disetujui
- * - AuthService.loginGoogle() / registerGoogle() (saat user dibuat role guru)
- * - GuruService.create()    → data guru baru dibuat
- * - ImportService.commit()  → data guru diimpor dari Excel
- * - SeedService.backfill()  → idempoten backfill saat boot dev
+ * - UsersController.approve()  → user role-guru disetujui
+ * - UsersController.create()   → user role-guru dibuat langsung
+ * - GuruController.create/update → data guru baru/diupdate dgn email
+ * - ImportService.commit()     → data guru diimpor dari Excel
+ * - GuruController.linkBackfill → endpoint admin backfill massal
  *
  * Kontrak:
  * 1. Cari Guru.email == user.email (ilike) → set Guru.userId = user.id
- * 2. Bila Guru tidak ada tapi akun punya role guru → buat Guru minimal
- *    dengan profileComplete = false (belum ada di entity, gunakan fotoUrl khusus)
+ * 2. Bila Guru tidak ada sama sekali → buat Guru minimal (nama+email dari akun)
  * 3. Tidak pernah menimpa Guru.userId yang sudah terisi ke akun LAIN
- *    (konflik) — catat konflik ke audit, jangan override diam-diam
- * 4. Role dicabut → tautan & data DIBIARKAN (prinsip: data biometrik &
- *    riwayat presensi tidak boleh hilang karena deaktivasi akun)
+ *    (konflik) — catat ke audit, jangan override diam-diam
+ * 4. Idempoten: jalan 2× hasil sama
  */
 @Injectable()
 export class GuruLinkService {
@@ -36,15 +34,12 @@ export class GuruLinkService {
 
   /**
    * linkUserToGuru — panggil saat user di-approve dengan role guru,
-   * atau saat user Google baru masuk dengan role guru.
-   *
-   * @param userId  ID user yang baru di-approve/dibuat
-   * @param actorId ID admin yang melakukan aksi (untuk audit)
+   * atau saat user dibuat langsung dengan role guru.
    */
   async linkUserToGuru(userId: number, actorId?: number): Promise<void> {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) return;
-    if (!user.roles.includes('guru')) return; // tidak relevan
+    if (!user.roles.includes('guru')) return;
 
     const email = user.email.toLowerCase().trim();
 
@@ -55,7 +50,6 @@ export class GuruLinkService {
       .getOne();
 
     if (guru) {
-      // Cek konflik: sudah tertaut ke akun LAIN
       if (guru.userId != null && guru.userId !== userId) {
         this.logger.warn(
           `Konflik link Guru #${guru.id} (${guru.nama}): sudah tertaut ke user #${guru.userId}, ` +
@@ -72,9 +66,8 @@ export class GuruLinkService {
         return;
       }
 
-      if (guru.userId === userId) return; // sudah tertaut, idempoten
+      if (guru.userId === userId) return; // idempoten
 
-      // Tautkan
       guru.userId = userId;
       await this.guruRepo.save(guru);
       this.logger.log(`Link Guru #${guru.id} (${guru.nama}) → User #${userId}`);
@@ -91,37 +84,43 @@ export class GuruLinkService {
       this.logger.log(
         `Tidak ada Guru untuk email ${email}, buat Guru minimal untuk User #${userId}`,
       );
-      const newGuru = this.guruRepo.create({
-        nama: user.name,
-        email,
-        jenisKelamin: 'L', // placeholder — harus dilengkapi
-        status: 'aktif',
-        fotoUrl: '', // kosong = profil belum lengkap
-        userId,
-        nip: null,
-        telepon: null,
-        faceEmbeddings: null,
-        faceStatus: 'BELUM',
-      });
-      const saved = await this.guruRepo.save(newGuru);
-      this.logger.log(`Guru minimal #${saved.id} dibuat untuk User #${userId}`);
-      await this.audit.log({
-        actorId: actorId ?? null,
-        action: 'GURU_AUTO_CREATE',
-        resource: 'guru',
-        resourceId: String(saved.id),
-        summary: `Guru minimal dibuat otomatis: User #${userId} (${email}) tidak ada rekaman Guru`,
-        details: { guruId: saved.id, userId, email },
-      });
+      try {
+        const newGuru = this.guruRepo.create({
+          nama: user.name,
+          email,
+          jenisKelamin: 'L', // placeholder — harus dilengkapi
+          status: 'aktif',
+          fotoUrl: '',
+          userId,
+          nip: null,
+          telepon: null,
+          faceEmbeddings: null,
+          faceStatus: 'BELUM',
+        });
+        const saved = await this.guruRepo.save(newGuru);
+        this.logger.log(`Guru minimal #${saved.id} dibuat untuk User #${userId}`);
+        await this.audit.log({
+          actorId: actorId ?? null,
+          action: 'GURU_AUTO_CREATE',
+          resource: 'guru',
+          resourceId: String(saved.id),
+          summary: `Guru minimal dibuat otomatis: User #${userId} (${email}) tidak ada rekaman Guru`,
+          details: { guruId: saved.id, userId, email },
+        });
+      } catch (err: any) {
+        // Race condition unique constraint — idempoten, skip
+        if (err?.code === '23505') {
+          this.logger.warn(`linkUserToGuru: constraint race untuk User #${userId}, skip`);
+        } else {
+          throw err;
+        }
+      }
     }
   }
 
   /**
    * linkGuruToUser — panggil saat data Guru baru dibuat/diimpor.
    * Cari user dengan email yang sama, jika ada dan belum tertaut → tautkan.
-   *
-   * @param guruId   ID guru yang baru dibuat
-   * @param actorId  ID admin (untuk audit)
    */
   async linkGuruToUser(guruId: number, actorId?: number): Promise<void> {
     const guru = await this.guruRepo.findOne({ where: { id: guruId } });
@@ -129,17 +128,15 @@ export class GuruLinkService {
 
     const email = guru.email.toLowerCase().trim();
 
-    // Cari user aktif dengan role guru
     const user = await this.userRepo
       .createQueryBuilder('u')
       .where('LOWER(u.email) = :email', { email })
-      .andWhere("u.roles @> :role", { role: JSON.stringify(['guru']) })
+      .andWhere('u.roles @> :role', { role: JSON.stringify(['guru']) })
       .andWhere("u.status = 'active'")
       .getOne();
 
-    if (!user) return; // tidak ada akun cocok
+    if (!user) return;
 
-    // Cek konflik: Guru sudah tertaut ke akun lain
     if (guru.userId != null && guru.userId !== user.id) {
       this.logger.warn(
         `Konflik: Guru #${guruId} sudah tertaut userId=${guru.userId}, tidak timpa ke ${user.id}`,
@@ -155,7 +152,7 @@ export class GuruLinkService {
       return;
     }
 
-    if (guru.userId === user.id) return; // sudah benar, idempoten
+    if (guru.userId === user.id) return; // idempoten
 
     guru.userId = user.id;
     await this.guruRepo.save(guru);
@@ -171,15 +168,21 @@ export class GuruLinkService {
   }
 
   /**
-   * backfillAll — jalankan sekali waktu boot (dev/staging) atau via endpoint admin.
-   * Idempoten: hanya mengisi yang kosong / tidak konflik.
-   * Tidak pernah membuat Guru baru (hanya menautkan).
+   * backfillAll — jalankan via endpoint admin.
+   * Idempoten: jalan 2× → run ke-2 menghasilkan linked:0, created:0.
+   *
+   * Fase 1: Guru yg punya email tapi userId=null → jodohkan by email ke User.
+   * Fase 2: User guru aktif yg sama sekali tidak punya record Guru
+   *         (by userId maupun by email) → buat Guru minimal lalu tautkan.
    */
-  async backfillAll(actorId?: number): Promise<{ linked: number; conflicts: number }> {
+  async backfillAll(
+    actorId?: number,
+  ): Promise<{ linked: number; created: number; conflicts: number }> {
     let linked = 0;
+    let created = 0;
     let conflicts = 0;
 
-    // Semua guru yang punya email tapi belum tertaut
+    // ── Fase 1: Guru dgn email != null & userId = null → jodohkan ─────────
     const unlinkedGuru = await this.guruRepo
       .createQueryBuilder('g')
       .where('g.email IS NOT NULL')
@@ -191,51 +194,115 @@ export class GuruLinkService {
       const user = await this.userRepo
         .createQueryBuilder('u')
         .where('LOWER(u.email) = :email', { email })
-        .andWhere("u.roles @> :role", { role: JSON.stringify(['guru']) })
+        .andWhere('u.roles @> :role', { role: JSON.stringify(['guru']) })
         .andWhere("u.status = 'active'")
         .getOne();
 
       if (!user) continue;
 
+      // Pastikan user ini belum tertaut ke Guru lain
+      const takenByOther = await this.guruRepo.findOne({ where: { userId: user.id } });
+      if (takenByOther && takenByOther.id !== guru.id) {
+        conflicts++;
+        this.logger.warn(
+          `Backfill F1 konflik: User #${user.id} sudah tertaut Guru #${takenByOther.id}, skip Guru #${guru.id}`,
+        );
+        continue;
+      }
+
       guru.userId = user.id;
       await this.guruRepo.save(guru);
       linked++;
-      this.logger.log(`Backfill: Guru #${guru.id} → User #${user.id}`);
+      this.logger.log(`Backfill F1: Guru #${guru.id} (${guru.nama}) → User #${user.id}`);
     }
 
-    // Semua user guru aktif yang belum punya Guru record
-    const guruUsers = await this.userRepo
+    // ── Fase 2: User guru aktif tanpa record Guru apapun → buat minimal ───
+    const allGuruUsers = await this.userRepo
       .createQueryBuilder('u')
-      .where("u.roles @> :role", { role: JSON.stringify(['guru']) })
+      .where('u.roles @> :role', { role: JSON.stringify(['guru']) })
       .andWhere("u.status = 'active'")
       .getMany();
 
-    for (const user of guruUsers) {
+    for (const user of allGuruUsers) {
       const email = user.email.toLowerCase().trim();
+
+      // Cari Guru yg sudah tertaut via userId ATAU cocok email
       const existing = await this.guruRepo
         .createQueryBuilder('g')
-        .where('g.userId = :uid OR LOWER(g.email) = :email', {
-          uid: user.id,
-          email,
-        })
+        .where('g.userId = :uid', { uid: user.id })
+        .orWhere('LOWER(g.email) = :email', { email })
         .getOne();
 
-      if (existing) continue; // sudah tertaut atau ada data
+      if (existing) {
+        // Guru ada tapi userId-nya masih null (mis. Fase 1 tidak menemukan user karena role baru ditambah)
+        if (existing.userId == null) {
+          // Pastikan tidak konflik
+          const takenByOther = await this.guruRepo.findOne({ where: { userId: user.id } });
+          if (takenByOther && takenByOther.id !== existing.id) {
+            conflicts++;
+            continue;
+          }
+          existing.userId = user.id;
+          if (!existing.email) existing.email = email;
+          await this.guruRepo.save(existing);
+          linked++;
+          this.logger.log(
+            `Backfill F2 link existing: Guru #${existing.id} → User #${user.id}`,
+          );
+        }
+        continue; // sudah selesai untuk user ini
+      }
 
-      // Tidak otomatis buat Guru minimal di backfill — itu dilakukan saat approve
+      // Benar-benar tidak ada Guru → buat minimal
+      this.logger.log(`Backfill F2: buat Guru minimal untuk User #${user.id} (${email})`);
+      try {
+        const newGuru = this.guruRepo.create({
+          nama: user.name,
+          email,
+          jenisKelamin: 'L',   // placeholder — harus diisi admin
+          status: 'aktif',
+          fotoUrl: '',
+          userId: user.id,
+          nip: null,
+          telepon: null,
+          faceEmbeddings: null,
+          faceStatus: 'BELUM',
+        });
+        const saved = await this.guruRepo.save(newGuru);
+        created++;
+        this.logger.log(`Backfill F2: Guru minimal #${saved.id} untuk User #${user.id}`);
+        await this.audit.log({
+          actorId: actorId ?? null,
+          action: 'GURU_AUTO_CREATE',
+          resource: 'guru',
+          resourceId: String(saved.id),
+          summary: `Backfill: Guru minimal dibuat untuk User #${user.id} (${email})`,
+          details: { guruId: saved.id, userId: user.id, email },
+        });
+      } catch (err: any) {
+        if (err?.code === '23505') {
+          // Race unique constraint — idempoten, tidak error
+          conflicts++;
+          this.logger.warn(
+            `Backfill F2 constraint race User #${user.id}: ${err.detail ?? err.message}`,
+          );
+        } else {
+          throw err;
+        }
+      }
     }
 
-    if (actorId) {
-      await this.audit.log({
-        actorId,
-        action: 'GURU_BACKFILL',
-        resource: 'guru',
-        resourceId: '-',
-        summary: `Backfill Guru-User selesai: linked=${linked}, conflicts=${conflicts}`,
-        details: { linked, conflicts },
-      });
-    }
+    const summary = `Backfill Guru-User selesai: linked=${linked}, created=${created}, conflicts=${conflicts}`;
+    this.logger.log(summary);
+    await this.audit.log({
+      actorId: actorId ?? null,
+      action: 'GURU_BACKFILL',
+      resource: 'guru',
+      resourceId: '-',
+      summary,
+      details: { linked, created, conflicts },
+    });
 
-    return { linked, conflicts };
+    return { linked, created, conflicts };
   }
 }
