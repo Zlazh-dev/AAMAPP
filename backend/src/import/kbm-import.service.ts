@@ -19,11 +19,34 @@ import { AuditService } from '../audit/audit.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
+export interface GuruPreviewEntry {
+  kode: string;
+  nama: string;
+  mapel: string;
+}
+
 export interface KbmPreviewResult {
-  tahapA: { mapel: number; guru: number; kelas: number; conflicts: string[] };
+  tahapA: {
+    mapel: number;
+    guru: number;
+    kelas: number;
+    guruList: GuruPreviewEntry[];
+    conflicts: string[];
+  };
   tahapB: { wali: number; penugasan: number; conflicts: string[] };
-  tahapC: { jadwal: number; libur: number; conflicts: string[]; jadwalSkipped?: string[] };
-  taNama: string | null;
+  tahapC: {
+    jadwal: number;
+    libur: number;
+    liburBreakdown: Record<string, number>;
+    conflicts: string[];
+    jadwalSkipped?: string[];
+  };
+  /** TA aktif dari DB (sumber kebenaran — impor TIDAK boleh membuat TA baru) */
+  taAktifNama: string | null;
+  /** TA yang disebut di file Excel (1. BEBAN R4) */
+  fileTaNama: string | null;
+  /** true = file menyebut TA yang tak cocok dgn TA aktif → konflik */
+  taKonflik: boolean;
 }
 
 export interface KbmCommitResult {
@@ -58,6 +81,77 @@ export class KbmImportService {
 
   // ─── PREVIEW ──────────────────────────────────────────────────────────────
 
+  /**
+   * Ekstrak teks dari nilai sel ExcelJS.
+   * ExcelJS bisa mengembalikan: string, number, Date, { text, hyperlink }, { richText: [...] }.
+   * String(value) pada object → "[object Object]" — harus diuraikan eksplisit.
+   */
+  private _cellText(val: ExcelJS.CellValue): string {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'string') return val.trim();
+    if (typeof val === 'number') return String(val);
+    if (val instanceof Date) return val.toISOString();
+    // Rich text
+    if (typeof val === 'object' && 'richText' in val) {
+      const rt = (val as any).richText as Array<{ text: string }>;
+      return (rt || []).map((r) => r.text || '').join('').trim();
+    }
+    // Hyperlink
+    if (typeof val === 'object' && 'text' in val) {
+      return String((val as any).text || '').trim();
+    }
+    // Fallback
+    try {
+      return String(val).trim();
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * F3b — Baca TA dari file Excel (sheet "1. BEBAN").
+   * Scan R1-R10, kolom 1-5 untuk pattern "TAHUN AJARAN 2026/2027".
+   * Validasi tahun: harus dalam rentang 2000-2099 — angka di luar rentang
+   * menandai sel terbaca sebagai serial-date Excel bukan tahun ajaran.
+   * Return null jika tidak ditemukan (impor menempel ke TA aktif DB).
+   */
+  private _parseFileTa(wb: ExcelJS.Workbook): string | null {
+    const ws = wb.getWorksheet('1. BEBAN');
+    if (!ws) return null;
+
+    // Scan beberapa baris dan kolom — posisi header bisa bervariasi antar versi file
+    for (let r = 1; r <= 10; r++) {
+      const row = ws.getRow(r);
+      for (let c = 1; c <= 8; c++) {
+        const raw = this._cellText(row.getCell(c).value as ExcelJS.CellValue);
+        if (!raw) continue;
+        const m = raw.match(/(\d{4})\s*[-/]\s*(\d{4})/);
+        if (m) {
+          const y1 = parseInt(m[1], 10);
+          const y2 = parseInt(m[2], 10);
+          // Validasi tahun agar angka serial-date Excel (mis. 2144) tidak lolos
+          if (y1 >= 2000 && y1 <= 2099 && y2 >= 2000 && y2 <= 2099) {
+            return `${m[1]}/${m[2]}`;
+          }
+          // Tahun di luar rentang → kemungkinan serial-date, abaikan
+          this.logger.warn(
+            `_parseFileTa: tahun ${m[1]}/${m[2]} di luar rentang 2000-2099 (kemungkinan serial-date Excel). Sel R${r}C${c} diabaikan.`,
+          );
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Cek apakah TA file cocok dengan TA aktif DB.
+   * "2026/2027" cocok dengan "2026/2027 S1" atau "2026-2027".
+   */
+  private _taMatch(fileTa: string, dbTa: string): boolean {
+    const norm = (s: string) => s.replace(/[-/]/g, '/').replace(/\s*S\d+\s*$/i, '').trim().toUpperCase();
+    return norm(fileTa) === norm(dbTa);
+  }
+
   async preview(buffer: Buffer): Promise<KbmPreviewResult> {
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buffer as any);
@@ -67,12 +161,17 @@ export class KbmImportService {
     const tahapC = this._parseTahapC(wb);
 
     const ta = await this.taRepo.findOne({ where: { aktif: true } });
+    const taAktifNama = ta ? `${ta.nama} S${ta.semester}` : null;
+    const fileTaNama = this._parseFileTa(wb);
+    const taKonflik = !!fileTaNama && !!taAktifNama && !this._taMatch(fileTaNama, taAktifNama);
 
     return {
       tahapA,
       tahapB,
       tahapC,
-      taNama: ta ? `${ta.nama} S${ta.semester}` : null,
+      taAktifNama,
+      fileTaNama,
+      taKonflik,
     };
   }
 
@@ -88,6 +187,17 @@ export class KbmImportService {
 
     const ta = await this.taRepo.findOne({ where: { aktif: true } });
     if (!ta) throw new BadRequestException('Tidak ada Tahun Ajaran aktif');
+
+    // FATAL guard: jika file menyebut TA yang tak cocok dgn TA aktif → tolak commit.
+    // Mencegah penempelan data ke TA hantu (mis. 2144/2145 hasil bug seed/clock).
+    const fileTaNama = this._parseFileTa(wb);
+    if (fileTaNama && !this._taMatch(fileTaNama, `${ta.nama} S${ta.semester}`)) {
+      throw new BadRequestException(
+        `TA file ("${fileTaNama}") tidak cocok dengan TA aktif DB ("${ta.nama} S${ta.semester}"). ` +
+          `Perbaiki TA aktif DB sebelum commit — impor tidak boleh membuat TA baru.`,
+      );
+    }
+
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
 
     const result: Partial<KbmCommitResult> = {};
@@ -121,7 +231,7 @@ export class KbmImportService {
     const kelasRows = this._parseKelas(wb);
 
     const conflicts: string[] = [];
-    // Cek duplikat kode guru dalam file
+    // Cek duplikat kode guru dalam file (sudah didedup di _parseGuru, tapi cek konsistensi nama)
     const seenKode = new Map<string, string>();
     for (const g of guruRows) {
       if (g.kode && seenKode.has(g.kode)) {
@@ -135,6 +245,7 @@ export class KbmImportService {
       mapel: mapelRows.length,
       guru: guruRows.length,
       kelas: kelasRows.length,
+      guruList: guruRows.map((g) => ({ kode: g.kode, nama: g.nama, mapel: g.mapel })),
       conflicts,
     };
   }
@@ -169,7 +280,7 @@ export class KbmImportService {
     const rows: Array<{ kode: string; nama: string; jp: number }> = [];
     for (let r = 4; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const kode = String(row.getCell(2).value ?? '').trim(); // C2
+      const kode = this._cellText(row.getCell(2).value as ExcelJS.CellValue); // C2
       if (!kode || kode === 'Mapel' || kode.toUpperCase() === 'NO') continue;
       if (kode.toUpperCase().includes('JUMLAH') || kode.toUpperCase().includes('TOTAL')) continue;
       const kodeUpper = kode.toUpperCase();
@@ -183,27 +294,53 @@ export class KbmImportService {
     return rows;
   }
 
-  /** 7. KODE: parse guru (kode, nama, mapel). Dua kolom paralel. */
+  /**
+   * 7. KODE: parse guru (kode, nama, mapel). Dua kolom paralel. Dedup by kode.
+   * Hanya terima entri yang punya nomor urut INTEGER valid (C2 kiri / C7 kanan).
+   * Baris "lanjutan" (no urut kosong atau bukan angka) = merge-cell semu → skip.
+   * Baris header ("NO", "NAMA", dll.) punya nomor non-integer → skip.
+   */
   private _parseGuru(wb: ExcelJS.Workbook): Array<{ kode: string; nama: string; mapel: string }> {
     const ws = wb.getWorksheet('7. KODE');
     if (!ws) throw new BadRequestException('Sheet "7. KODE" tidak ditemukan');
 
+    const GURU_CODE_RE = /^[A-Z]\d{1,2}$/;
+
+    const seen = new Set<string>();
     const rows: Array<{ kode: string; nama: string; mapel: string }> = [];
-    // Data mulai R13. Kolom kiri: C3=nama, C4=kode, C5=mapel. Kolom kanan: C8=nama, C9=kode, C10=mapel.
     for (let r = 13; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      // Kolom kiri (C3-C5)
-      const namaKiri = String(row.getCell(3).value ?? '').trim();
-      const kodeKiri = String(row.getCell(4).value ?? '').trim();
-      const mapelKiri = String(row.getCell(5).value ?? '').trim();
-      if (namaKiri && kodeKiri && !kodeKiri.match(/^\d+$/)) {
+
+      // Kolom kiri: C2=nomor urut, C3=nama, C4=kode guru, C5=mapel ampu
+      const noKiriRaw = row.getCell(2).value;
+      // Nomor urut HARUS integer (1,2,3...) — reject string/null/non-numeric
+      const noKiriNum = typeof noKiriRaw === 'number'
+        ? Math.floor(noKiriRaw)
+        : parseInt(this._cellText(noKiriRaw as ExcelJS.CellValue), 10);
+      const namaKiri = this._cellText(row.getCell(3).value as ExcelJS.CellValue);
+      const kodeKiri = this._cellText(row.getCell(4).value as ExcelJS.CellValue);
+      const mapelKiri = this._cellText(row.getCell(5).value as ExcelJS.CellValue);
+      if (
+        !isNaN(noKiriNum) && noKiriNum > 0 &&
+        GURU_CODE_RE.test(kodeKiri) && namaKiri && !seen.has(kodeKiri)
+      ) {
+        seen.add(kodeKiri);
         rows.push({ kode: kodeKiri, nama: namaKiri, mapel: mapelKiri });
       }
-      // Kolom kanan (C8-C10)
-      const namaKanan = String(row.getCell(8).value ?? '').trim();
-      const kodeKanan = String(row.getCell(9).value ?? '').trim();
-      const mapelKanan = String(row.getCell(10).value ?? '').trim();
-      if (namaKanan && kodeKanan && !kodeKanan.match(/^\d+$/)) {
+
+      // Kolom kanan: C7=nomor urut, C8=nama, C9=kode guru, C10=mapel ampu
+      const noKananRaw = row.getCell(7).value;
+      const noKananNum = typeof noKananRaw === 'number'
+        ? Math.floor(noKananRaw)
+        : parseInt(this._cellText(noKananRaw as ExcelJS.CellValue), 10);
+      const namaKanan = this._cellText(row.getCell(8).value as ExcelJS.CellValue);
+      const kodeKanan = this._cellText(row.getCell(9).value as ExcelJS.CellValue);
+      const mapelKanan = this._cellText(row.getCell(10).value as ExcelJS.CellValue);
+      if (
+        !isNaN(noKananNum) && noKananNum > 0 &&
+        GURU_CODE_RE.test(kodeKanan) && namaKanan && !seen.has(kodeKanan)
+      ) {
+        seen.add(kodeKanan);
         rows.push({ kode: kodeKanan, nama: namaKanan, mapel: mapelKanan });
       }
     }
@@ -221,7 +358,7 @@ export class KbmImportService {
         const row = wsWalas.getRow(r);
         // Cek kolom 1, 5, 9 (3 kolom paralel) untuk kode kelas
         for (const col of [1, 5, 9]) {
-          const val = String(row.getCell(col).value ?? '').trim();
+          const val = this._cellText(row.getCell(col).value as ExcelJS.CellValue);
           if (val.match(/^\d[A-Z]$/)) {
             kelasSet.add(val);
           }
@@ -234,7 +371,7 @@ export class KbmImportService {
     if (wsBeban) {
       for (let r = 8; r <= wsBeban.rowCount; r++) {
         const row = wsBeban.getRow(r);
-        const kelasRaw = String(row.getCell(8).value ?? '').trim(); // C8 = MENGAJAR KELAS
+        const kelasRaw = this._cellText(row.getCell(8).value as ExcelJS.CellValue); // C8 = MENGAJAR KELAS
         if (kelasRaw && kelasRaw !== '-') {
           const kelasList = this._uraiRentangKelas(kelasRaw);
           for (const k of kelasList) kelasSet.add(k);
@@ -272,8 +409,8 @@ export class KbmImportService {
       const row = ws.getRow(r);
       const pairs: Array<[number, number]> = [[1, 3], [5, 7], [9, 11]];
       for (const [kelasCol, namaCol] of pairs) {
-        const kelas = String(row.getCell(kelasCol).value ?? '').trim();
-        const nama = String(row.getCell(namaCol).value ?? '').trim();
+        const kelas = this._cellText(row.getCell(kelasCol).value as ExcelJS.CellValue);
+        const nama = this._cellText(row.getCell(namaCol).value as ExcelJS.CellValue);
         if (kelas.match(/^\d[A-Z]$/) && nama && nama !== ':' && !nama.toUpperCase().includes('KELAS')) {
           rows.push({ kelas, nama });
         }
@@ -294,14 +431,14 @@ export class KbmImportService {
     let lastMapel = '';
     for (let r = 8; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const mapelRaw = String(row.getCell(1).value ?? '').trim();
+      const mapelRaw = this._cellText(row.getCell(1).value as ExcelJS.CellValue);
       // Merge cell: mapel kosong = warisan baris di atasnya
       if (mapelRaw && mapelRaw !== 'MAPEL' && !mapelRaw.toUpperCase().includes('JUMLAH')) {
         lastMapel = mapelRaw;
       }
 
-      const kodeGuru = String(row.getCell(7).value ?? '').trim();
-      const kelasRaw = String(row.getCell(8).value ?? '').trim();
+      const kodeGuru = this._cellText(row.getCell(7).value as ExcelJS.CellValue);
+      const kelasRaw = this._cellText(row.getCell(8).value as ExcelJS.CellValue);
 
       if (!kodeGuru || kodeGuru === 'Kode' || !lastMapel) continue;
       if (lastMapel.toUpperCase().includes('JUMLAH')) continue;
@@ -322,9 +459,16 @@ export class KbmImportService {
     const jadwalRows = this._parseJadwal(wb);
     const liburRows = this._parseLibur(wb);
 
+    // Breakdown by kode (mis. { LU: 56, CB: 2 }) supaya bisa diperiksa mata
+    const liburBreakdown: Record<string, number> = {};
+    for (const l of liburRows) {
+      liburBreakdown[l.keterangan] = (liburBreakdown[l.keterangan] ?? 0) + 1;
+    }
+
     return {
       jadwal: jadwalRows.length,
       libur: liburRows.length,
+      liburBreakdown,
       conflicts: [],
       jadwalSkipped: [],
     };
@@ -360,27 +504,21 @@ export class KbmImportService {
     // Map kelas per column
     const colKelas = new Map<number, string>();
     for (let col = 3; col <= 27; col++) {
-      const kelas = String(kelasRow.getCell(col).value ?? '').trim();
+      const kelas = this._cellText(kelasRow.getCell(col).value as ExcelJS.CellValue);
       if (kelas.match(/^\d[A-Z]$/)) {
         colKelas.set(col, kelas);
       }
     }
 
     // Parse rows: scan for day markers in col 3 (merged cells span day blocks)
-    // Day blocks: SENIN rows ~13-14 (jam 3-4), etc. Actually the sheet has blocks per day.
-    // R10-R11 = non-KBM (Tahfidz, Kokulikuler), R12 = ISTIRAHAT, R13+ = KBM
-    // Days repeat in blocks. We detect day by looking at merged cell in C3 area.
-
-    // Simpler approach: scan all data rows, track current day via merged cells.
     let currentDay = '';
     for (let r = 10; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const waktu = String(row.getCell(1).value ?? '').trim();
       const jamKeRaw = row.getCell(2).value;
-      const jamKe = typeof jamKeRaw === 'number' ? jamKeRaw : parseInt(String(jamKeRaw ?? ''), 10);
+      const jamKe = typeof jamKeRaw === 'number' ? jamKeRaw : parseInt(this._cellText(jamKeRaw as ExcelJS.CellValue), 10);
 
       // Detect day change: if C3 has a day name (from merged cell top-left)
-      const c3val = String(row.getCell(3).value ?? '').trim().toUpperCase();
+      const c3val = this._cellText(row.getCell(3).value as ExcelJS.CellValue).toUpperCase();
       if (HARI_KBM.includes(c3val)) {
         currentDay = c3val;
       }
@@ -390,8 +528,8 @@ export class KbmImportService {
 
       // For each kelas column, extract guru kode
       for (const [col, kelas] of colKelas) {
-        const kodeGuru = String(row.getCell(col).value ?? '').trim();
-        if (kodeGuru && kodeGuru.match(/^[A-Z]\d+$/) ) {
+        const kodeGuru = this._cellText(row.getCell(col).value as ExcelJS.CellValue);
+        if (kodeGuru && kodeGuru.match(/^[A-Z]\d{1,2}$/) ) {
           rows.push({ kelas, hari: currentDay, jamKe, kodeGuru });
         }
       }
@@ -400,44 +538,93 @@ export class KbmImportService {
     return rows;
   }
 
-  /** 5. KALDIK: parse kalender libur (bulan × tanggal, kode LU/LHB). */
+  /**
+   * 5. KALDIK: parse kalender libur (bulan × tanggal, kode LU/CB).
+   *
+   * Struktur sheet: R3=header, R5+ = satu baris per bulan.
+   * Kolom B (col 2) = nama bulan + tahun. Kolom C-AG (col 3-33) = tanggal 1-31.
+   *
+   * BUG FIX (libur=0): Sel bulan di KALDIK sering disimpan Excel sebagai tipe DATE
+   * (bukan string), sehingga ExcelJS mengembalikan Date object → _cellText() → ISO string
+   * → regex monthMatch gagal → 0 baris. Fix: deteksi Date instance dan konversi
+   * ke "BULAN YYYY" secara eksplisit sebelum match.
+   *
+   * Juga support: rentang libur dalam satu bulan (sel berisi "LU" berulang).
+   */
   private _parseLibur(wb: ExcelJS.Workbook): Array<{ tanggal: string; keterangan: string }> {
     const ws = wb.getWorksheet('5. KALDIK');
     if (!ws) throw new BadRequestException('Sheet "5. KALDIK" tidak ditemukan');
 
     const rows: Array<{ tanggal: string; keterangan: string }> = [];
-    // R3 = header: C2=BULAN, C3=TANGGAL (1-31). Data mulai R4.
-    // Each row = a month. C2 = month name (e.g. "JULI 2026"). C3-C33 = day 1-31.
-    // Cell value = day number (continuation) OR code (LU, LHB, etc.)
 
-    const monthMap: Record<string, number> = {
-      'JANUARI': 1, 'FEBRUARI': 2, 'MARET': 3, 'APRIL': 4, 'MEI': 5, 'JUNI': 6,
-      'JULI': 7, 'AGUSTUS': 8, 'SEPTEMBER': 9, 'OKTOBER': 10, 'NOVEMBER': 11, 'DESEMBER': 12,
+    const MONTH_NAMES_ID = [
+      'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
+      'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER',
+    ];
+    const monthMap: Record<string, number> = {};
+    MONTH_NAMES_ID.forEach((m, i) => { monthMap[m] = i + 1; });
+
+    // Kode libur yang diterima — kode kegiatan (KO, PSAJ, dll.) dibuang.
+    const LIBUR_CODES = new Set(['LU', 'CB', 'LHB', 'LIBUR UMUM', 'CUTI BERSAMA']);
+
+    /**
+     * Ekstrak teks bulan dari nilai sel kolom B.
+     * Sel bisa berupa: string "JULI 2026", Date (ExcelJS decode dari format date),
+     * richText, atau number (serial). Harus return "NAMA_BULAN YYYY" uppercase.
+     */
+    const extractBulanStr = (cellVal: ExcelJS.CellValue): string => {
+      // CASE: ExcelJS mengembalikan Date object (sel berformat date di Excel)
+      if (cellVal instanceof Date) {
+        const d = cellVal as Date;
+        return `${MONTH_NAMES_ID[d.getMonth()]} ${d.getFullYear()}`;
+      }
+      // CASE: number (Excel date serial)
+      if (typeof cellVal === 'number' && cellVal > 1000) {
+        // Konversi Excel serial ke Date: epoch Excel = 1899-12-30
+        const msPerDay = 86400000;
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const d = new Date(excelEpoch.getTime() + cellVal * msPerDay);
+        return `${MONTH_NAMES_ID[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+      }
+      // CASE: string / richText / dll
+      return this._cellText(cellVal).toUpperCase();
     };
 
-    for (let r = 4; r <= ws.rowCount; r++) {
+    for (let r = 5; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const bulanRaw = String(row.getCell(2).value ?? '').trim().toUpperCase();
+      const bulanRaw = extractBulanStr(row.getCell(2).value as ExcelJS.CellValue);
       if (!bulanRaw) continue;
 
-      // Extract month + year from "JULI 2026" pattern
+      // Extract month + year: "JULI  2026" (spasi ganda OK via \s+)
       const monthMatch = bulanRaw.match(/([A-Z]+)\s+(\d{4})/);
       if (!monthMatch) continue;
       const monthName = monthMatch[1];
       const year = parseInt(monthMatch[2], 10);
       const month = monthMap[monthName];
       if (!month) continue;
+      // Validasi tahun masuk akal
+      if (year < 2000 || year > 2100) continue;
 
-      // Scan days C3 (day 1) through C33 (day 31)
+      // Scan hari C3-C33 (hari ke-1 di col 3, hari ke-31 di col 33)
       for (let day = 1; day <= 31; day++) {
-        const cellVal = row.getCell(day + 2).value; // C3 = day 1
-        if (cellVal === null || cellVal === undefined) continue;
-        const valStr = String(cellVal).trim().toUpperCase();
-        // Cell is a holiday code (LU, LHB, etc.) if it's NOT just a number
-        if (valStr && !valStr.match(/^\d+$/) && valStr.length <= 10) {
-          const tanggal = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-          rows.push({ tanggal, keterangan: valStr });
-        }
+        const dayCell = row.getCell(day + 2);
+        const rawVal = dayCell.value;
+
+        // Jika sel Date (hari normal berformat date) → bukan kode libur
+        if (rawVal instanceof Date) continue;
+
+        const valStr = this._cellText(rawVal as ExcelJS.CellValue).toUpperCase().trim();
+        if (!valStr) continue;
+        // Skip angka murni (isian tanggal angka atau angka serial)
+        if (/^\d+$/.test(valStr)) continue;
+        // Bersihkan prefix ":" → "CUTI BERSAMA"
+        const cleaned = valStr.replace(/^[:\s]+/, '').trim();
+        if (!cleaned) continue;
+        // Terima hanya kode libur yang valid
+        if (!LIBUR_CODES.has(cleaned)) continue;
+
+        const tanggal = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        rows.push({ tanggal, keterangan: cleaned });
       }
     }
 
@@ -820,7 +1007,7 @@ export class KbmImportService {
     const result: string[] = [];
     for (let r = 8; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const mapel = String(row.getCell(1).value ?? '').trim();
+      const mapel = this._cellText(row.getCell(1).value as ExcelJS.CellValue);
       if (!mapel || mapel === 'MAPEL' || mapel.toUpperCase().includes('JUMLAH')) continue;
       if (!seen.has(mapel.toUpperCase())) {
         seen.add(mapel.toUpperCase());
