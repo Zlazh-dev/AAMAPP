@@ -1,63 +1,63 @@
 # Graph Report - AAMAPP  (2026-07-23)
 
 ## Corpus Check
-- 462 files · ~443,277 words
+- 462 files · ~445,391 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 4131 nodes · 9254 edges · 245 communities (185 shown, 60 thin omitted)
+- 4139 nodes · 9282 edges · 255 communities (194 shown, 61 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 33 edges (avg confidence: 0.75)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ddc435c9`
+- Built from commit: `60cecbb3`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- PageContainer.tsx
-- app.module.ts
-- Siswa
-- Guru
-- LaporanDemeritPage.tsx
-- App.tsx
 - api
-- Pelanggaran
+- auth.controller.ts
+- rapor.module.ts
+- Guru
+- PageContainer
+- App.tsx
+- CreateSiswaDto
+- livenessStateMachine.ts
 - KokurikulerService
-- ManualDto
-- guru.entity.ts
+- kokurikuler.service.ts
+- BulkLiburDto
 - SiswaService
 - KurikulumService
-- ApiError
-- EkskulPeserta
-- kokurikuler.service.ts
+- useToast
+- PresensiService
+- Siswa
 - RaporService
 - vision_wasm_internal.js
 - client.ts
 - IzinService
 - kurikulum.controller.ts
 - auth.ts
-- TuRekapGuruPage.tsx
-- SimpanRosterDto
-- BulkLiburDto
+- exportPdf.ts
+- GuruPresensiController
+- PageContainer.tsx
 - Roles
-- KelasController
-- PresensiService
+- KelasService
+- .record
 - api.ts
-- EkskulController
+- EkskulService
 - TahunAjaranService
 - devDependencies
-- CurrentUser
+- LaporanPages.tsx
 - vision_wasm_nosimd_internal.js
 - RISET F6 — Penilaian dan Rapor (Pemulihan)
 - compilerOptions
 - compilerOptions
 - LAPORAN
 - .upsert
-- CatatPelanggaranDto
+- MatriksPresensiSiswaPage.tsx
 - dependencies
 - 3. Perubahan `@Roles` backend (per controller / endpoint)
-- ImportService
+- app.module.ts
 - DOKUMEN AGENT-1 (Antigravity) — AAMAPP
 - LaporanService
 - fs
@@ -66,36 +66,36 @@
 - devDependencies
 - AuditService
 - dependencies
-- faceHuman.ts
-- .record
-- CreateGuruDto
-- Rapor
-- MatriksPresensiSiswaPage.tsx
+- ManualDto
+- PresensiGuruService
+- GuruController
+- class-transformer
+- menu.ts
 - scripts
-- ekskul.service.ts
+- SimpanRosterDto
 - PengaturanLiburPage.tsx
-- KesiswaanController
+- Badge.tsx
 - ensureActiveTahunAjaran
 - 5. Pola yang WAJIB Diikuti (dari Kode Aktual)
-- EkskulService
+- Req
 - .log
 - t11-upload-png.js
 - DOKUMEN AGENT-2 (Antigravity-v2.0) — AAMAPP
 - IzinGuruPage.tsx
 - RaporDetailPage.tsx
-- PelanggaranPage.tsx
-- Ekskul
-- SeedService
-- PresensiGuruService
-- CreateUserDto
+- AddGuruEmail1784900000000
+- ekskul.service.ts
+- KbmImportService
+- SaveSuccess.tsx
+- RegisterGoogleDto
 - main.ts
 - UsersService
 - vision_wasm_module_internal.js
-- .revoke
+- KeputusanPelanggaranDto
 - API REFERENCE AAMAPP
 - ErrorBoundary
-- PengaturanService
-- CreateTahunAjaranDto
+- .revoke
+- CreateUserDto
 - nest-cli.json
 - ExceptionInfo
 - scripts
@@ -113,13 +113,13 @@
 - pengaturan-otorisasi.spec.ts
 - presensi-wajah.spec.ts
 - siswa-pindah-kelas.spec.ts
-- useToast
+- ApiError
 - global.d.ts
 - t16-checklist.mjs
 - t11-static-check.js
 - main.tsx
+- UpsertNilaiDto
 - CreatePenilaianDto
-- faceHuman.ts
 - helmet
 - @nestjs/config
 - @nestjs/core
@@ -129,7 +129,7 @@
 - rxjs
 - ua-parser-js
 - AuthService
-- @tensorflow/tfjs-backend-wasm
+- SeedService
 - @types/react
 - PageSkeleton.tsx
 - css-modules.d.ts
@@ -145,14 +145,14 @@
 - Temuan
 - AAMAPP — Ekosistem Sekolah SMP IT Asy-Syadzili
 - Standar Desain Card & Spacing — AAMAPP
-- wib.util.ts
-- simpan-roster.dto.ts
+- EnrollWajahDto
+- CreateTpDto
 - F3-SPEC — PRESENSI WAJAH GURU (kontrak dikunci planner 2026-07-18)
 - F4-SPEC — IZIN GURU + STATUS TURUNAN (kontrak dikunci planner 2026-07-18)
 - F5-SPEC — KESISWAAN / DEMERIT POIN (kontrak dikunci planner 2026-07-18)
 - Rencana Verifikasi
 - UploadsController
-- AuditController
+- PasswordDto
 - Hierarki Halaman V2 — Sidebar vs Sub Halaman
 - 14. TUGAS FASE F0 — FONDASI & AUTH (KERJAKAN SEKARANG, berurutan)
 - 15. USERFLOW & SPESIFIKASI DESAIN PER HALAMAN
@@ -165,17 +165,17 @@
 - 6. USERFLOW JADWAL KBM + PRESENSI (FINAL per keputusan user)
 - LAPORAN
 - DOKUMEN AGENT-3 (Roo Code) — AAMAPP
-- OverrideMapelDto
+- KelasDetailPage.tsx
 - 6. USERFLOW JADWAL KBM + PRESENSI (FINAL per keputusan user)
-- ScanDto
-- CreateTpDto
+- AddGuruKode1785100000000
+- AuditController
 - F2-SPEC — PRESENSI SISWA PER KBM (kontrak dikunci planner 2026-07-17)
 - README-DEPLOY.md
 - ARSITEKTUR AAMAPP
 - F6 RISET: Penilaian & Rapor
 - [AGENT-2] OPS-1 -- Kesiapan Produksi & Keamanan Data -- 2026-07-16
 - LOG PROGRES EKSEKUSI
-- UpsertNilaiDto
+- laporan.service.ts
 - 7. MODUL KESISWAAN — DEMERIT POIN (FINAL; SOP/KESISWAAN/001/2026)
 - 14.10 SPESIFIKASI TEKNIS F1 — DATA INDUK + KURIKULUM-JADWAL (T11–T16)
 - ZONA REKONSTRUKSI — BAGIAN 2: SEMUA KEPUTUSAN MENGIKAT v0.10–v0.12 + ATURAN BARU §12 (BERLAKU — menang atas badan v0.9 di atas)
@@ -212,7 +212,7 @@
 - KLAIM TUGAS — F4c BACKEND (rekap TU bulanan + RBAC kepsek)
 - LAPORAN SELESAI — UX-POLISH FE (2026-07-19e; 2026-07-19 ~16:17 WIB)
 - HARDENING-CHECKLIST AAMAPP
-- .revoke
+- PenilaianListPage.tsx
 - rekon-bagian3-log.md
 - KLAIM TUGAS — F2-ADMIN-E2E
 - KLAIM TUGAS — F2-ADMIN-FIX2
@@ -232,18 +232,28 @@
 - KLAIM TUGAS — UX-POLISH-BE (2026-07-19d; MEMIMPIN)
 - KLAIM TUGAS — F2-ADMIN-POLISH
 - KLAIM TUGAS — FRONTEND F2 ADMIN (matriks presensi siswa)
-- PasswordDto
+- .monitorHarian
 - SelesaiGteMulaiConstraint
+- ScanDto
 - date-fns
 - @mediapipe/tasks-vision
 - opencode.json
-- class-validator
+- CreateMapelDto
+- AddGuruFaceSnapshot1785000000000
+- @tensorflow/tfjs-backend-wasm
 - AAMAPP — aturan kerja asisten
 - graphify.js
 - AGENTS.md
 - rules/graphify.md
 - workflows/graphify.md
-- .getRapor
+- Param
+- CatatPelanggaranDto
+- CreatePenugasanDto
+- ManualDto
+- PresensiGuruPage.tsx
+- UpdateKkmDto
+- GuruWajahController
+- class-validator
 
 ## God Nodes (most connected - your core abstractions)
 1. `fs` - 180 edges
@@ -272,37 +282,37 @@
 ## Import Cycles
 - None detected.
 
-## Communities (245 total, 60 thin omitted)
+## Communities (255 total, 61 thin omitted)
 
-### Community 0 - "PageContainer.tsx"
-Cohesion: 0.05
-Nodes (82): react, api, ApiError, GuruListResponse, JadwalKbm, JamPresensi, Kelas, KelasListResponse (+74 more)
+### Community 0 - "api"
+Cohesion: 0.06
+Nodes (74): api, ApiError, Guru, GuruListResponse, JamPresensi, Kelas, KkmPengaturan, LokasiPengaturan (+66 more)
 
-### Community 1 - "app.module.ts"
-Cohesion: 0.12
-Nodes (12): CurrentUser, ProfileController, Body, Controller, Delete, Get, Param, Patch (+4 more)
+### Community 1 - "auth.controller.ts"
+Cohesion: 0.08
+Nodes (20): CurrentSession, CurrentUser, ProfileController, Body, Controller, Delete, Get, Param (+12 more)
 
-### Community 2 - "Siswa"
+### Community 2 - "rapor.module.ts"
 Cohesion: 0.04
-Nodes (70): EkskulModule, Module, Nilai, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne (+62 more)
+Nodes (76): AuditLogInput, AuditRecordInput, AuditService, Injectable, InjectRepository, InjectRepository, GuruStatus, JenisKelamin (+68 more)
 
 ### Community 3 - "Guru"
-Cohesion: 0.06
-Nodes (65): GuruModule, Module, ImportModule, Module, KbmCommitResult, KbmPreviewResult, NOTE: Jadwal parsing paling rumit (merge cell besar)., InjectRepository (+57 more)
+Cohesion: 0.04
+Nodes (83): formatDateWIB(), formatRelativeWIB(), formatTimeWIB(), formatWIB(), todayWIB(), Guru, Column, CreateDateColumn (+75 more)
 
-### Community 4 - "LaporanDemeritPage.tsx"
-Cohesion: 0.07
-Nodes (66): Guru, KatalogEntry, PelanggaranEntry, Badge(), EmptyState(), EmptyStateProps, FilterBar(), FilterBarDateField (+58 more)
+### Community 4 - "PageContainer"
+Cohesion: 0.06
+Nodes (73): KatalogEntry, KelasListResponse, PelanggaranEntry, EmptyState(), EmptyStateProps, FilterBar(), FilterBarDateField, FilterBarField (+65 more)
 
 ### Community 5 - "App.tsx"
 Cohesion: 0.02
 Nodes (81): AdminDashboardPage, AdminIzinGuruPage, AkunAktivitasPage, AkunBaruPage, AkunDaftarPage, AkunDetailPage, AkunEditPage, AkunSesiPage (+73 more)
 
-### Community 6 - "api"
-Cohesion: 0.09
-Nodes (20): InjectRepository, InjectRepository, PresensiSesi, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne (+12 more)
+### Community 6 - "CreateSiswaDto"
+Cohesion: 0.08
+Nodes (26): Mapel, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Unique, UpdateDateColumn, Rapor (+18 more)
 
-### Community 7 - "Pelanggaran"
+### Community 7 - "livenessStateMachine.ts"
 Cohesion: 0.09
 Nodes (29): runPoseFrames(), checkQuality(), DebugInfo, detectEmbedding(), FaceDetection, loadHuman(), LoadProgressCallback, QualityResult (+21 more)
 
@@ -310,11 +320,11 @@ Nodes (29): runPoseFrames(), checkQuality(), DebugInfo, detectEmbedding(), FaceD
 Cohesion: 0.07
 Nodes (36): AddTargetDto, AddTimDto, AsesmenEntriDto, CreateKegiatanDto, NILAI_KUALITATIF, ArrayMinSize, IsArray, IsIn (+28 more)
 
-### Community 9 - "ManualDto"
+### Community 9 - "kokurikuler.service.ts"
 Cohesion: 0.07
 Nodes (39): KokurikulerAsesmen, SKOR_MAP, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn (+31 more)
 
-### Community 10 - "guru.entity.ts"
+### Community 10 - "BulkLiburDto"
 Cohesion: 0.07
 Nodes (22): BulkLiburDto, ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsOptional, IsString, Matches (+14 more)
 
@@ -323,20 +333,16 @@ Cohesion: 0.06
 Nodes (38): CreateGuruDto, IsEmail, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Matches (+30 more)
 
 ### Community 12 - "KurikulumService"
-Cohesion: 0.07
-Nodes (18): IsInt, Min, UpdatePenugasanDto, KurikulumController, Body, Controller, Delete, Get (+10 more)
+Cohesion: 0.15
+Nodes (6): KurikulumController, Controller, Get, Query, UseGuards, MapelFilter
 
-### Community 13 - "ApiError"
+### Community 13 - "useToast"
 Cohesion: 0.05
-Nodes (46): colors, icons, Toast, ToastContext, ToastContextValue, ToastType, useToast(), KelasListPage() (+38 more)
+Nodes (41): react, useUnsavedChanges(), useToast(), AkunBaruPage(), AkunEditPage(), PersetujuanDetailPage(), KelasFormPage(), KelasListPage() (+33 more)
 
-### Community 14 - "EkskulPeserta"
-Cohesion: 0.13
-Nodes (21): SessionInfo, AppLayout(), findActiveLeaf(), BadgeProps, BadgeVariant, roleLabel(), roleVariant(), statusLabel() (+13 more)
-
-### Community 15 - "kokurikuler.service.ts"
-Cohesion: 0.07
-Nodes (38): GuruStatus, GuruFilter, KatalogPelanggaran, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn (+30 more)
+### Community 15 - "Siswa"
+Cohesion: 0.06
+Nodes (47): KatalogPelanggaran, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn, KesiswaanModule, Module (+39 more)
 
 ### Community 16 - "RaporService"
 Cohesion: 0.10
@@ -347,48 +353,48 @@ Cohesion: 0.01
 Nodes (89): abort(), assert(), close(), convertReturnValue(), createLazyFile(), createWasm(), destroyNode(), EmscriptenEH (+81 more)
 
 ### Community 18 - "client.ts"
-Cohesion: 0.04
-Nodes (63): ActivityLogEntry, ActivityLogResponse, AdminUser, AuthConfig, CacheEntry, cacheMap, clearDeviceToken(), clearToken() (+55 more)
+Cohesion: 0.05
+Nodes (56): AdminUser, AuthConfig, CacheEntry, cacheMap, clearDeviceToken(), clearToken(), getAndClearReturnTo(), getDeviceToken() (+48 more)
 
 ### Community 19 - "IzinService"
-Cohesion: 0.06
-Nodes (33): AuditController, Controller, Get, InjectRepository, Query, UseGuards, AjukanIzinDto, IsDateString (+25 more)
+Cohesion: 0.08
+Nodes (27): AjukanIzinDto, IsDateString, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength, KeputusanDto (+19 more)
 
 ### Community 20 - "kurikulum.controller.ts"
-Cohesion: 0.05
-Nodes (37): CreateJadwalDto, IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength (+29 more)
+Cohesion: 0.18
+Nodes (10): CreateJadwalDto, IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength (+2 more)
 
-### Community 22 - "TuRekapGuruPage.tsx"
+### Community 22 - "exportPdf.ts"
+Cohesion: 0.08
+Nodes (27): ProfilSekolah, ExcelColumn, ExcelExportParams, Content, PdfColumn, PdfExportParams, RaporEkskulItem, RaporKokurikulerDimensi (+19 more)
+
+### Community 23 - "GuruPresensiController"
+Cohesion: 0.08
+Nodes (24): SimpanRosterDto, IsArray, IsDateString, IsOptional, IsString, Type, ValidateNested, AdminPresensiController (+16 more)
+
+### Community 24 - "PageContainer.tsx"
 Cohesion: 0.07
-Nodes (33): ProfilSekolah, ExcelColumn, ExcelExportParams, Content, PdfColumn, PdfExportParams, RaporEkskulItem, RaporKokurikulerDimensi (+25 more)
-
-### Community 23 - "SimpanRosterDto"
-Cohesion: 0.07
-Nodes (28): EntriPresensiDto, SimpanRosterDto, STATUS_PRESENSI, IsArray, IsDateString, IsIn, IsInt, IsOptional (+20 more)
-
-### Community 24 - "BulkLiburDto"
-Cohesion: 0.35
-Nodes (5): KesiswaanController, Controller, Get, Query, UseGuards
+Nodes (22): ActivityLogEntry, ActivityLogResponse, Siswa, PageContainer(), PageContainerProps, PageContainerSize, sizeClass, SiswaDetailPage() (+14 more)
 
 ### Community 25 - "Roles"
 Cohesion: 0.20
 Nodes (11): Roles(), RolesGuard, Injectable, SessionAuthGuard, Injectable, ALL_WRITE_ROLES, PATCH_ROLES, VALID_KEYS (+3 more)
 
-### Community 26 - "KelasController"
+### Community 26 - "KelasService"
 Cohesion: 0.09
 Nodes (24): CreateKelasDto, SetWaliDto, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength (+16 more)
 
-### Community 27 - "PresensiService"
-Cohesion: 0.17
-Nodes (11): CurrentSession, Body, Controller, Delete, Get, Param, Patch, Post (+3 more)
+### Community 27 - ".record"
+Cohesion: 0.09
+Nodes (16): GuruLinkService, Injectable, Body, Controller, Delete, Get, Param, Patch (+8 more)
 
 ### Community 28 - "api.ts"
 Cohesion: 0.12
 Nodes (7): catatPelanggaran(), siswaIds, siswaIds, authHeaders(), bulkHapusLibur(), deleteSiswa(), seedLibur()
 
-### Community 29 - "EkskulController"
-Cohesion: 0.26
-Nodes (10): EkskulController, Body, Controller, Delete, Param, Patch, Post, Put (+2 more)
+### Community 29 - "EkskulService"
+Cohesion: 0.07
+Nodes (37): AddPesertaDto, CreateEkskulDto, CreateTujuanDto, KehadiranEntriDto, NILAI_EKSKUL, NilaiEntriDto, ArrayMinSize, IsArray (+29 more)
 
 ### Community 30 - "TahunAjaranService"
 Cohesion: 0.10
@@ -398,7 +404,7 @@ Nodes (20): CreateTahunAjaranDto, IsBoolean, IsIn, IsOptional, IsString, Matches
 Cohesion: 0.07
 Nodes (27): devDependencies, @nestjs/cli, @nestjs/schematics, ts-loader, ts-node, tsconfig-paths, @types/bcryptjs, @types/cookie-parser (+19 more)
 
-### Community 32 - "CurrentUser"
+### Community 32 - "LaporanPages.tsx"
 Cohesion: 0.24
 Nodes (14): ColDef, COLS_HARIAN, COLS_KBM, COLS_SISWA, doExportExcel(), doExportPdf(), getProfilForExport(), LaporanHarianGuruPage() (+6 more)
 
@@ -423,32 +429,32 @@ Cohesion: 0.05
 Nodes (42): 1. DTO-drift demerit (kesiswaan.service.ts + LaporanDemeritPage.tsx), 1. DTO-drift laporan siswa (laporan.service.ts:465), 1. SIAPA KAMU, 2. ATURAN KEPEMILIKAN (keras — dari PROMPT_AGENT.md), 2. DTO-drift Rekap TU (laporan.service.ts + TuRekapGuruPage), 2. Tipe eksplisit — any[] → typed (client.ts), 3. CARA KERJA (wajib), 3. DTO-drift Keterlaksanaan KBM (client.ts + LaporanPages.tsx) (+34 more)
 
 ### Community 38 - ".upsert"
-Cohesion: 0.11
-Nodes (12): PengaturanController, PengaturanPublicController, Body, Controller, Get, Param, Patch, Req (+4 more)
+Cohesion: 0.16
+Nodes (10): PengaturanController, PengaturanPublicController, Body, Controller, Get, Param, Patch, Req (+2 more)
 
-### Community 39 - "CatatPelanggaranDto"
-Cohesion: 0.17
-Nodes (9): CreateKatalogDto, IsIn, IsInt, IsString, Max, Min, MinLength, Body (+1 more)
+### Community 39 - "MatriksPresensiSiswaPage.tsx"
+Cohesion: 0.18
+Nodes (12): GuruRosterResponse, GuruRosterSiswaEntry, StatusPresensi, RosterDetailSheet(), RosterDetailSheetProps, STATUS_CYCLE, STATUS_META, todayWIB() (+4 more)
 
 ### Community 40 - "dependencies"
 Cohesion: 0.09
-Nodes (23): dependencies, bcryptjs, class-validator, cookie-parser, date-fns-tz, exceljs, google-auth-library, multer (+15 more)
+Nodes (23): dependencies, bcryptjs, class-transformer, cookie-parser, date-fns-tz, exceljs, google-auth-library, multer (+15 more)
 
 ### Community 41 - "3. Perubahan `@Roles` backend (per controller / endpoint)"
 Cohesion: 0.06
 Nodes (35): 0. Keputusan pondasi (baca dulu, jangan menyimpang), 1.1 ADMIN (menyusut jadi 3 kelompok: Dashboard, Akun, Profil Sekolah), 1.2 KURIKULUM (menyerap Data Orang, Kelas, Ekskul, TA, KKM), 1.3 KESISWAAN (menyerap presensi siswa + laporan kehadiran siswa; berbagi presensi/izin guru dengan TU), 1.4 TU (pemilik kanonik presensi guru, izin guru, dan 3 pengaturan operasional), 1.5 GURU (TIDAK BERUBAH — area tetap terkunci peran guru), 1.6 KEPSEK & rute yang DIBONGKAR, 1. Tabel rute-per-rute (+27 more)
 
-### Community 42 - "ImportService"
+### Community 42 - "app.module.ts"
 Cohesion: 0.07
-Nodes (50): ActivityLog, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, AuditModule (+42 more)
+Nodes (57): ActivityLog, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, AuditModule (+49 more)
 
 ### Community 43 - "DOKUMEN AGENT-1 (Antigravity) — AAMAPP"
 Cohesion: 0.06
 Nodes (34): ARSIP ROUTING (2026-07-17) — SEC-1, FIX-MENU-ADMIN, F2 BACKEND, BACKLINK = SELESAI, ARSIP TUGAS (2026-07-18b) — E2E-ISOLASI-HARDENING (SELESAI, diterima), ARSIP TUGAS (2026-07-18c) — F3a FRONTEND (SELESAI, diterima e2e 82/0), ARSIP TUGAS (2026-07-18e) — F3b KIOSK APP (SELESAI, diterima commit 5f57880), ARSIP TUGAS (2026-07-18f) — F4a FRONTEND (SELESAI, diterima commit 9e57444), ARSIP TUGAS (2026-07-18g) — F4b FRONTEND (SELESAI, diterima commit 88e8351), ARSIP TUGAS (2026-07-18h) — F4c FRONTEND (SELESAI, diterima commit cb877d4), ARSIP TUGAS (2026-07-18i) — E2E-MANDIRI-DATA (SELESAI, diterima commit ed15d0a) (+26 more)
 
 ### Community 44 - "LaporanService"
-Cohesion: 0.24
-Nodes (6): LaporanController, Controller, Get, Query, UseGuards, TuController
+Cohesion: 0.18
+Nodes (10): LaporanController, Controller, Get, Query, UseGuards, TuController, dateRange(), hariOfTgl() (+2 more)
 
 ### Community 45 - "fs"
 Cohesion: 0.02
@@ -460,51 +466,51 @@ Nodes (32): path, frame(), analyzePath(), calculateAt(), createDataFile(), creat
 
 ### Community 48 - "devDependencies"
 Cohesion: 0.12
-Nodes (17): autoprefixer, devDependencies, autoprefixer, @playwright/test, postcss, tailwindcss, @tensorflow/tfjs-backend-wasm, @types/react-dom (+9 more)
+Nodes (17): autoprefixer, devDependencies, autoprefixer, @playwright/test, postcss, tailwindcss, @types/react-dom, typescript (+9 more)
 
 ### Community 49 - "AuditService"
-Cohesion: 0.05
-Nodes (26): AuditService, Injectable, InjectRepository, InjectRepository, InjectRepository, JenisKelamin, GuruLinkService, Injectable (+18 more)
+Cohesion: 0.27
+Nodes (5): deepClone(), deepMerge(), PengaturanService, Injectable, InjectRepository
 
 ### Community 50 - "dependencies"
 Cohesion: 0.12
 Nodes (17): dependencies, exceljs, leaflet, pdfmake, react-dom, react-router-dom, @types/leaflet, @types/pdfmake (+9 more)
 
-### Community 51 - "faceHuman.ts"
-Cohesion: 0.06
-Nodes (31): ManualDto, IsDateString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, ScanDto (+23 more)
+### Community 51 - "ManualDto"
+Cohesion: 0.23
+Nodes (6): Body, Delete, Patch, Post, Put, Req
 
-### Community 52 - ".record"
-Cohesion: 0.17
-Nodes (7): SelesaiTindakLanjutDto, IsString, MinLength, Delete, Param, Patch, Req
+### Community 52 - "PresensiGuruService"
+Cohesion: 0.22
+Nodes (4): cosine(), haversineMeter(), PresensiGuruService, Injectable
 
-### Community 53 - "CreateGuruDto"
+### Community 53 - "GuruController"
 Cohesion: 0.10
 Nodes (14): GuruController, Body, Controller, Delete, Get, Param, Patch, Post (+6 more)
 
-### Community 54 - "Rapor"
-Cohesion: 0.23
-Nodes (22): AddPesertaDto, CreateEkskulDto, CreateTujuanDto, KehadiranEntriDto, NILAI_EKSKUL, NilaiEntriDto, ArrayMinSize, IsArray (+14 more)
+### Community 54 - "class-transformer"
+Cohesion: 0.19
+Nodes (7): IsInt, Min, UpdatePenugasanDto, Body, Patch, Post, Req
 
-### Community 55 - "MatriksPresensiSiswaPage.tsx"
-Cohesion: 0.18
-Nodes (12): UserRole, HomeRedirect(), RequireAuth(), RequireRole(), ADMIN_EXTRA_AREAS, AREA_ORDER, getHomePath(), getMenuForUser() (+4 more)
+### Community 55 - "menu.ts"
+Cohesion: 0.17
+Nodes (9): CreateKatalogDto, IsIn, IsInt, IsString, Max, Min, MinLength, Body (+1 more)
 
 ### Community 56 - "scripts"
 Cohesion: 0.15
 Nodes (12): name, private, scripts, build, migration:generate, migration:revert, migration:run, migration:show (+4 more)
 
-### Community 57 - "ekskul.service.ts"
-Cohesion: 0.22
-Nodes (8): CatatPelanggaranDto, IsDateString, IsIn, IsInt, IsOptional, IsString, Max, Min
+### Community 57 - "SimpanRosterDto"
+Cohesion: 0.40
+Nodes (4): EntriPresensiDto, STATUS_PRESENSI, IsIn, IsInt
 
 ### Community 58 - "PengaturanLiburPage.tsx"
 Cohesion: 0.24
 Nodes (12): LiburEntry, dateRange(), DAY_NAMES, diffDays(), formatDate(), groupLiburRentang(), humanDate(), humanDateRange() (+4 more)
 
-### Community 59 - "KesiswaanController"
-Cohesion: 0.07
-Nodes (23): PageContainer(), PageContainerProps, PageContainerSize, sizeClass, fmtTime(), ManualFormState, PRESENSI_GURU_SUB_LINKS, PresensiGuruPage() (+15 more)
+### Community 59 - "Badge.tsx"
+Cohesion: 0.16
+Nodes (21): SessionInfo, AppLayout(), findActiveLeaf(), Badge(), BadgeProps, BadgeVariant, roleLabel(), roleVariant() (+13 more)
 
 ### Community 60 - "ensureActiveTahunAjaran"
 Cohesion: 0.21
@@ -514,13 +520,13 @@ Nodes (5): escapeRegex(), pilihKelas(), setupKelasDenganSesi(), setupSesiHariIni
 Cohesion: 0.06
 Nodes (30): 1.1 Identifikasi "satu sesi KBM pada tanggal T", 1.2 Roster siswa satu sesi = turunan dari mana?, 1.3 Pencarian jadwal guru, 1. Titik-Tempel Jadwal → Presensi, 2.1 Util WIB, 2.2 Kalender Libur, 2.3 Tahun Ajaran Aktif, 2.4 Aturan Cutoff §6.5 (+22 more)
 
-### Community 62 - "EkskulService"
-Cohesion: 0.11
-Nodes (18): EkskulKehadiran, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique (+10 more)
+### Community 62 - "Req"
+Cohesion: 0.17
+Nodes (7): SelesaiTindakLanjutDto, IsString, MinLength, Delete, Param, Patch, Req
 
 ### Community 63 - ".log"
-Cohesion: 0.13
-Nodes (13): PenilaianController, Body, Controller, Delete, Get, Param, Patch, Post (+5 more)
+Cohesion: 0.24
+Nodes (11): PenilaianController, Body, Controller, Delete, Get, Param, Patch, Post (+3 more)
 
 ### Community 64 - "t11-upload-png.js"
 Cohesion: 0.25
@@ -538,35 +544,35 @@ Nodes (13): formatTanggal(), FormState, hitungHari(), IzinForm(), IzinGuruPage()
 Cohesion: 0.24
 Nodes (9): doExportPdf(), EkskulItem, EkskulTujuan, getProfilForPdf(), Kehadiran, KokurikulerDimensi, MapelRapor, RaporDetailPage() (+1 more)
 
-### Community 69 - "Ekskul"
-Cohesion: 0.08
-Nodes (26): Ekskul, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn (+18 more)
+### Community 69 - "ekskul.service.ts"
+Cohesion: 0.06
+Nodes (47): Ekskul, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn (+39 more)
 
-### Community 70 - "SeedService"
+### Community 70 - "KbmImportService"
 Cohesion: 0.09
 Nodes (15): ImportController, Controller, Get, Post, Query, Req, Res, UploadedFile (+7 more)
 
-### Community 71 - "PresensiGuruService"
+### Community 71 - "SaveSuccess.tsx"
 Cohesion: 0.50
 Nodes (3): SaveSuccess(), SaveSuccessProps, SaveSuccessState
 
-### Community 72 - "CreateUserDto"
-Cohesion: 0.22
-Nodes (9): GoogleLoginDto, LoginDto, RegisterGoogleDto, ArrayMinSize, IsArray, IsBoolean, IsEmail, IsOptional (+1 more)
+### Community 72 - "RegisterGoogleDto"
+Cohesion: 0.35
+Nodes (5): KesiswaanController, Controller, Get, Query, UseGuards
 
 ### Community 73 - "main.ts"
 Cohesion: 0.36
 Nodes (6): AppModule, Module, AppDataSource, bootstrap(), migrLogger, runMigrations()
 
 ### Community 74 - "UsersService"
-Cohesion: 0.19
-Nodes (4): Injectable, InjectRepository, UsersService, VALID_ROLES
+Cohesion: 0.18
+Nodes (10): IsIn, IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min (+2 more)
 
 ### Community 75 - "vision_wasm_module_internal.js"
 Cohesion: 0.12
 Nodes (16): RFC-2279, RFC-3629, NOTE: In our implementation, st_blocks = Math.ceil(st_size/st_blksize),, NOTE: This is also used as the process return code in shell environments, TODO: check for O_SEARCH? (== search for dir only), NOTE: None of the defaults here are true. We're just returning safe and, TODO: Use mozResponseArrayBuffer, responseStream, etc. if available., TODO: in theory we should write to the winsize struct that gets (+8 more)
 
-### Community 76 - ".revoke"
+### Community 76 - "KeputusanPelanggaranDto"
 Cohesion: 0.33
 Nodes (4): KeputusanPelanggaranDto, IsOptional, IsString, MinLength
 
@@ -574,13 +580,13 @@ Nodes (4): KeputusanPelanggaranDto, IsOptional, IsString, MinLength
 Cohesion: 0.09
 Nodes (22): 1. `GET /api/guru/kbm?tanggal=` — sesi KBM guru hari ini, 2. `GET /api/guru/kbm/:jadwalId/roster?tanggal=` — baca roster, 3/4. `POST`/`PATCH /api/guru/kbm/:jadwalId/roster` — simpan/koreksi roster, 5. `GET /api/guru/kelas/rekap-presensi?kelasId=&dari=&sampai=&page=&limit=`, 6. `GET /api/admin/presensi-siswa?kelasId=&tanggal=` — matriks admin, API REFERENCE AAMAPP, Audit (audit.controller.ts), Auth (auth.controller.ts) (+14 more)
 
-### Community 79 - "PengaturanService"
-Cohesion: 0.17
-Nodes (7): AdminSessionsController, Controller, Delete, Get, Param, Query, UseGuards
+### Community 79 - ".revoke"
+Cohesion: 0.33
+Nodes (3): hhmmToMin(), KurikulumService, Injectable
 
-### Community 80 - "CreateTahunAjaranDto"
-Cohesion: 0.36
-Nodes (9): ApproveUserDto, CreateUserDto, ArrayMinSize, IsArray, IsEmail, IsOptional, IsString, MinLength (+1 more)
+### Community 80 - "CreateUserDto"
+Cohesion: 0.13
+Nodes (17): LoginAttempt, loginAttempts, VALID_REQUESTED_ROLES, getDeviceSummary(), getIpAddress(), SessionsService, Injectable, InjectRepository (+9 more)
 
 ### Community 81 - "nest-cli.json"
 Cohesion: 0.33
@@ -618,9 +624,9 @@ Nodes (4): name, private, type, version
 Cohesion: 0.21
 Nodes (12): ActionSheetProps, AdminIzinGuruPage(), formatTanggal(), hitungHari(), IzinActionSheet(), IzinAdminItem, JENIS_LABEL, JenisIzin (+4 more)
 
-### Community 98 - "useToast"
-Cohesion: 0.13
-Nodes (19): EkskulPembinaPage(), KehadiranMap, NilaiMap, Peserta, Tujuan, EkskulRaporItem, RaporEkskulPage(), AsesmenMap (+11 more)
+### Community 98 - "ApiError"
+Cohesion: 0.10
+Nodes (25): colors, icons, Toast, ToastContext, ToastContextValue, ToastType, EkskulPembinaPage(), KehadiranMap (+17 more)
 
 ### Community 99 - "global.d.ts"
 Cohesion: 0.50
@@ -630,17 +636,17 @@ Nodes (3): GoogleAccounts, GoogleAccountsId, Window
 Cohesion: 0.83
 Nodes (3): log(), main(), req()
 
-### Community 106 - "CreatePenilaianDto"
+### Community 106 - "UpsertNilaiDto"
 Cohesion: 0.18
 Nodes (10): NilaiEntriDto, IsArray, IsInt, IsOptional, IsString, Max, Min, Type (+2 more)
 
-### Community 107 - "faceHuman.ts"
+### Community 107 - "CreatePenilaianDto"
 Cohesion: 0.33
 Nodes (10): CreatePenilaianDto, IsArray, IsDateString, IsIn, IsInt, IsOptional, IsString, Min (+2 more)
 
 ### Community 116 - "AuthService"
-Cohesion: 0.15
-Nodes (10): AuthController, Body, Controller, Get, Post, Req, UseGuards, AuthService (+2 more)
+Cohesion: 0.09
+Nodes (19): AuthController, GoogleLoginDto, LoginDto, RegisterGoogleDto, ArrayMinSize, Body, Controller, Get (+11 more)
 
 ### Community 135 - "AAMAPP � Panduan Deploy Operasional"
 Cohesion: 0.11
@@ -682,11 +688,11 @@ Nodes (13): AAMAPP — Ekosistem Sekolah SMP IT Asy-Syadzili, Akun Seed, Arsitek
 Cohesion: 0.15
 Nodes (12): 0. BUG TOKEN — perbaikan sistemik (prasyarat, dikerjakan DULUAN), 10. Pembagian wilayah (tanpa tabrakan), 1. Card primitive (Card.tsx — WAJIB dibaked) — pemilik: AG-2, 2. Skala spacing (nilai konkret), 3. Tipografi kartu (kelas persis), 4. StatCard — pola final, 5. Card judul + ikon — pola final, 6. Table — pola final (pakai components/Table.tsx yang SUDAH ADA) (+4 more)
 
-### Community 145 - "wib.util.ts"
+### Community 145 - "EnrollWajahDto"
 Cohesion: 0.20
 Nodes (10): ArrayNotEmpty, EmbeddingVectorDto, EnrollWajahDto, ArrayMaxSize, ArrayMinSize, IsArray, IsNumber, IsOptional (+2 more)
 
-### Community 146 - "simpan-roster.dto.ts"
+### Community 146 - "CreateTpDto"
 Cohesion: 0.43
 Nodes (7): CreateTpDto, IsInt, IsOptional, IsString, Min, MinLength, UpdateTpDto
 
@@ -710,7 +716,7 @@ Nodes (11): Konteks, Lingkungan Saat Ini, Rencana Verifikasi, Step 1: Login seba
 Cohesion: 0.20
 Nodes (8): hasValidMagicBytes(), Controller, Post, Req, UploadedFile, UseGuards, UseInterceptors, UploadsController
 
-### Community 152 - "AuditController"
+### Community 152 - "PasswordDto"
 Cohesion: 0.47
 Nodes (6): LinkGoogleDto, PasswordDto, IsOptional, IsString, MinLength, UpdateProfileDto
 
@@ -762,13 +768,17 @@ Nodes (8): [AGENT-1] BACKLINK-ADAPTIF-MOBILE — DIKERJAKAN (2026-07-17 14:02), 
 Cohesion: 0.25
 Nodes (7): DoD, DOKUMEN AGENT-3 (Roo Code) — AAMAPP, Identitas & wilayah, Konteks singkat proyek, LAPORAN, TUGAS AKTIF — RISET-F3 (presensi wajah guru), TUGAS BERIKUTNYA — RISET-F4 (izin, alpha/libur otomatis, dashboard, laporan/export, rekap TU, kepsek)
 
-### Community 165 - "OverrideMapelDto"
+### Community 165 - "KelasDetailPage.tsx"
 Cohesion: 0.50
 Nodes (4): StatusPelanggaran, GuruPelanggaranPage(), STATUS_VARIANT, todayWIB()
 
 ### Community 166 - "6. USERFLOW JADWAL KBM + PRESENSI (FINAL per keputusan user)"
 Cohesion: 0.25
 Nodes (8): 6.1 Peta halaman, sub-halaman & penempatan navigasi (LENGKAP — mengikat), 6.2 Manajemen jadwal KBM (Staf Kurikulum — FONDASI presensi), 6.3 Presensi GURU — dua lapis, 6.4 Presensi SISWA — per KBM oleh guru mapel, 6.5 Izin, libur, cutoff (WIB), 6.6 Monitor & laporan, 6.7 Ringkasan jalur gagal, 6. USERFLOW JADWAL KBM + PRESENSI (FINAL per keputusan user)
+
+### Community 168 - "AuditController"
+Cohesion: 0.25
+Nodes (6): AuditController, Controller, Get, InjectRepository, Query, UseGuards
 
 ### Community 169 - "F2-SPEC — PRESENSI SISWA PER KBM (kontrak dikunci planner 2026-07-17)"
 Cohesion: 0.29
@@ -794,9 +804,9 @@ Nodes (6): [AGENT-2] OPS-1 -- Kesiapan Produksi & Keamanan Data -- 2026-07-16, B
 Cohesion: 0.29
 Nodes (7): [AGENT-OPS] OPS-4 — DIKERJAKAN, [AGENT-T16] T16 — 2026-07-16, [AGENT-T16] T16-SPRINT lanjutan — DIKERJAKAN, [AGENT] T9 — 2026-07-13 — ✅ SELESAI (verifikasi runtime oleh agent terbatas), LOG PROGRES EKSEKUSI, [PLANNER] Review F0 — 2026-07-13, [PLANNER] Review T8 — 2026-07-13
 
-### Community 175 - "UpsertNilaiDto"
-Cohesion: 0.05
-Nodes (50): formatDateWIB(), formatRelativeWIB(), formatTimeWIB(), formatWIB(), todayWIB(), Guru, Column, CreateDateColumn (+42 more)
+### Community 175 - "laporan.service.ts"
+Cohesion: 0.15
+Nodes (13): IzinGuru, JenisIzin, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne (+5 more)
 
 ### Community 176 - "7. MODUL KESISWAAN — DEMERIT POIN (FINAL; SOP/KESISWAAN/001/2026)"
 Cohesion: 0.33
@@ -938,37 +948,73 @@ Nodes (3): [AGENT-2] F4-NITS — BadRequestException (500→400) — SELESAI (20
 Cohesion: 0.67
 Nodes (3): LAPORAN SELESAI — UX-POLISH FE (2026-07-19e; 2026-07-19 ~16:17 WIB), Perubahan, Verifikasi
 
+### Community 212 - "PenilaianListPage.tsx"
+Cohesion: 0.29
+Nodes (7): JENIS_VARIANT, JenisPenilaian, PenilaianEntry, PenilaianListPage(), SubJenis, todayWIB(), TpEntry
+
+### Community 232 - ".monitorHarian"
+Cohesion: 0.22
+Nodes (5): AdminWajahController, Get, Param, Query, Res
+
+### Community 234 - "ScanDto"
+Cohesion: 0.33
+Nodes (5): ScanDto, IsArray, IsIn, IsNumber, IsOptional
+
 ### Community 237 - "opencode.json"
 Cohesion: 0.50
 Nodes (3): plugin, $schema, .opencode/plugins/graphify.js
+
+### Community 239 - "CreateMapelDto"
+Cohesion: 0.22
+Nodes (8): CreateMapelDto, IsInt, IsOptional, IsString, Max, MaxLength, Min, UpdateMapelDto
 
 ### Community 242 - "AAMAPP — aturan kerja asisten"
 Cohesion: 0.40
 Nodes (4): AAMAPP — aturan kerja asisten, graphify, Graphify — tambahan di atas aturan resmi (bagian `## graphify` di bawah), Konteks proyek
 
-### Community 274 - ".getRapor"
+### Community 248 - "CatatPelanggaranDto"
+Cohesion: 0.22
+Nodes (8): CatatPelanggaranDto, IsDateString, IsIn, IsInt, IsOptional, IsString, Max, Min
+
+### Community 249 - "CreatePenugasanDto"
+Cohesion: 0.29
+Nodes (5): CreatePenugasanDto, ArrayMinSize, IsArray, IsInt, Min
+
+### Community 250 - "ManualDto"
 Cohesion: 0.25
-Nodes (3): Get, Query, buildDeskripsiEkskul()
+Nodes (7): ManualDto, IsDateString, IsIn, IsInt, IsNotEmpty, IsOptional, IsString
+
+### Community 251 - "PresensiGuruPage.tsx"
+Cohesion: 0.32
+Nodes (7): fmtTime(), ManualFormState, PRESENSI_GURU_SUB_LINKS, PresensiGuruPage(), PresensiGuruRow, STATUS_VARIANT, todayWIB()
+
+### Community 252 - "UpdateKkmDto"
+Cohesion: 0.33
+Nodes (4): IsInt, Max, Min, UpdateKkmDto
+
+### Community 253 - "GuruWajahController"
+Cohesion: 0.33
+Nodes (4): GuruScanController, GuruWajahController, Controller, UseGuards
 
 ## Knowledge Gaps
-- **1131 isolated node(s):** `$schema`, `.opencode/plugins/graphify.js`, `$schema`, `collection`, `sourceRoot` (+1126 more)
+- **1134 isolated node(s):** `$schema`, `.opencode/plugins/graphify.js`, `$schema`, `collection`, `sourceRoot` (+1129 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **60 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **61 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AuthProvider()` connect `client.ts` to `AuthService`, `App.tsx`, `MatriksPresensiSiswaPage.tsx`?**
-  _High betweenness centrality (0.264) - this node is a cross-community bridge._
-- **Why does `User` connect `ImportService` to `app.module.ts`, `Siswa`, `Guru`, `ManualDto`, `UsersService`, `PengaturanService`, `UpsertNilaiDto`, `AuditService`, `kokurikuler.service.ts`, `AuthService`, `Roles`, `PresensiService`?**
-  _High betweenness centrality (0.247) - this node is a cross-community bridge._
+- **Why does `AuthProvider()` connect `client.ts` to `AuthService`, `App.tsx`?**
+  _High betweenness centrality (0.271) - this node is a cross-community bridge._
+- **Why does `User` connect `app.module.ts` to `auth.controller.ts`, `rapor.module.ts`, `Guru`, `ekskul.service.ts`, `CreateSiswaDto`, `kokurikuler.service.ts`, `laporan.service.ts`, `CreateUserDto`, `Siswa`, `AuditService`, `AuthService`, `Roles`, `.record`?**
+  _High betweenness centrality (0.255) - this node is a cross-community bridge._
 - **Why does `ModuleFactory()` connect `path` to `vision_wasm_module_internal.js`, `fs`?**
-  _High betweenness centrality (0.174) - this node is a cross-community bridge._
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
 - **What connects `$schema`, `.opencode/plugins/graphify.js`, `$schema` to the rest of the system?**
-  _1131 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `PageContainer.tsx` be split into smaller, more focused modules?**
-  _Cohesion score 0.05196078431372549 - nodes in this community are weakly interconnected._
-- **Should `app.module.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.11904761904761904 - nodes in this community are weakly interconnected._
-- **Should `Siswa` be split into smaller, more focused modules?**
-  _Cohesion score 0.0438871473354232 - nodes in this community are weakly interconnected._
+  _1134 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `api` be split into smaller, more focused modules?**
+  _Cohesion score 0.05614543114543115 - nodes in this community are weakly interconnected._
+- **Should `auth.controller.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.0753045404208195 - nodes in this community are weakly interconnected._
+- **Should `rapor.module.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.0417940876656473 - nodes in this community are weakly interconnected._
