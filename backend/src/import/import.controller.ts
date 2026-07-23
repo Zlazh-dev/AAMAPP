@@ -16,12 +16,15 @@ import { SessionAuthGuard } from '../common/session-auth.guard';
 import { RolesGuard } from '../common/roles.guard';
 import { Roles } from '../common/roles.decorator';
 import { ImportService } from './import.service';
+import { KbmImportService } from './kbm-import.service';
 
 /**
  * T11-FIX Ronde 2 / Fase 7 (Butir 11): Import Excel wizard 3-langkah.
  * - GET  /api/admin/import/template?jenis=guru|siswa → file .xlsx
  * - POST /api/admin/import/preview (multipart+jenis) → {valid, errors}
  * - POST /api/admin/import/commit (multipart+jenis) → {tersimpan, dilewati}
+ * - POST /api/admin/import/kbm/preview → KbmPreviewResult (multi-tahap)
+ * - POST /api/admin/import/kbm/commit?tahap=A|B|C|ALL → Partial<KbmCommitResult>
  *
  * RBAC: admin (mutasi data induk §8.2 + §14.10.2).
  */
@@ -29,7 +32,10 @@ import { ImportService } from './import.service';
 @UseGuards(SessionAuthGuard, RolesGuard)
 @Roles('admin', 'kurikulum')
 export class ImportController {
-  constructor(private readonly svc: ImportService) {}
+  constructor(
+    private readonly svc: ImportService,
+    private readonly kbmSvc: KbmImportService,
+  ) {}
 
   @Get('template')
   async template(
@@ -128,5 +134,57 @@ export class ImportController {
       );
     }
     return j;
+  }
+
+  // ─── KBM Import (multi-sheet, multi-tahap) ────────────────────────────
+
+  @Post('kbm/preview')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        const okExt = /\.xlsx?$/i.test(file.originalname ?? '');
+        if (!okExt) {
+          return cb(
+            new BadRequestException('File KBM wajib berformat Excel (.xlsx)'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async kbmPreview(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('File wajib diisi');
+    return this.kbmSvc.preview(file.buffer);
+  }
+
+  @Post('kbm/commit')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        const okExt = /\.xlsx?$/i.test(file.originalname ?? '');
+        if (!okExt) {
+          return cb(
+            new BadRequestException('File KBM wajib berformat Excel (.xlsx)'),
+            false,
+          );
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  async kbmCommit(
+    @Query('tahap') tahap: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    if (!file) throw new BadRequestException('File wajib diisi');
+    const t = String(tahap ?? 'ALL').trim().toUpperCase();
+    if (!['A', 'B', 'C', 'ALL'].includes(t)) {
+      throw new BadRequestException('Parameter tahap wajib A, B, C, atau ALL');
+    }
+    return this.kbmSvc.commit(file.buffer, t as 'A' | 'B' | 'C' | 'ALL', req);
   }
 }

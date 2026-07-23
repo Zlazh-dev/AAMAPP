@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "backend/src/guru/guru.entity.ts": {
-    "mtime": 1784752405.7900808,
-    "ast_hash": "701ef832883c1836ea962a6fb7b648df",
+    "mtime": 1784791414.8954768,
+    "ast_hash": "34122ad1c0cedbd131a10b6551e3bb6f",
     "semantic_hash": ""
   },
   "backend/src/guru/guru.module.ts": {
@@ -175,9 +175,9 @@
     "semantic_hash": ""
   },
   "backend/src/guru/guru.service.ts": {
-    "mtime": 1784519680.1059394,
-    "ast_hash": "ca2574ba238de0a70844db7536541f2b",
-    "semantic_hash": "ca2574ba238de0a70844db7536541f2b"
+    "mtime": 1784791775.1634207,
+    "ast_hash": "25b4fec87c31ec104f313f058254853c",
+    "semantic_hash": ""
   },
   "backend/src/import/import.controller.ts": {
     "mtime": 1784485854.1442566,
@@ -525,9 +525,9 @@
     "semantic_hash": "45d96f3a24670802e842ad052488c854"
   },
   "backend/src/presensi-guru/dto/enroll-wajah.dto.ts": {
-    "mtime": 1784359476.872604,
-    "ast_hash": "c2cc669f745101a7b99abca00e496578",
-    "semantic_hash": "c2cc669f745101a7b99abca00e496578"
+    "mtime": 1784791446.867386,
+    "ast_hash": "ccb5131fa9e0b6895495628c97c0ad2f",
+    "semantic_hash": ""
   },
   "backend/src/presensi-guru/dto/manual.dto.ts": {
     "mtime": 1784359495.2990224,
@@ -540,9 +540,9 @@
     "semantic_hash": "045e8fcb70fb1d5cc5cd405d765a01aa"
   },
   "backend/src/presensi-guru/presensi-guru.controller.ts": {
-    "mtime": 1784663505.913255,
-    "ast_hash": "d7b973607106da407f9dd28e445ac703",
-    "semantic_hash": "d7b973607106da407f9dd28e445ac703"
+    "mtime": 1784791852.4004974,
+    "ast_hash": "206dd3ad206c9509e1df7ca0c195adcb",
+    "semantic_hash": ""
   },
   "backend/src/presensi-guru/presensi-guru.module.ts": {
     "mtime": 1784370169.7801645,
@@ -550,9 +550,9 @@
     "semantic_hash": "83ef3dd529f1a76349156114e36a997c"
   },
   "backend/src/presensi-guru/presensi-guru.service.ts": {
-    "mtime": 1784663346.601911,
-    "ast_hash": "dedfe9ff3e064a50739ec07b14db8c14",
-    "semantic_hash": "dedfe9ff3e064a50739ec07b14db8c14"
+    "mtime": 1784791742.3860688,
+    "ast_hash": "c7a165255b5bfd422e006e6da24104c3",
+    "semantic_hash": ""
   },
   "backend/src/presensi-guru/presensi-harian-guru.entity.ts": {
     "mtime": 1784361230.5137763,
@@ -1180,8 +1180,8 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784787166.3259106,
-    "ast_hash": "28bed68720abf77db9688480022f9044",
+    "mtime": 1784794403.4742725,
+    "ast_hash": "35615dfdcd82fccc4340372db0595078",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
@@ -1440,8 +1440,8 @@
     "semantic_hash": "2eb7d570c6e0c9fcc2110a97806ce247"
   },
   "frontend/src/pages/admin/orang/GuruDetailPage.tsx": {
-    "mtime": 1784752773.5655982,
-    "ast_hash": "5a98cbd4eef58aea7fef3d46d71258e1",
+    "mtime": 1784794438.601982,
+    "ast_hash": "c8492f549258238b7913182c6f7acf1d",
     "semantic_hash": ""
   },
   "frontend/src/pages/admin/orang/GuruFormPage.tsx": {
@@ -1550,8 +1550,8 @@
     "semantic_hash": "b0d1ece75071eb64ff462a40497cc2af"
   },
   "frontend/src/pages/guru/GuruEnrollWizardPage.tsx": {
-    "mtime": 1784789445.8995001,
-    "ast_hash": "216cf8230372c3ee7ca7e8b190f0592b",
+    "mtime": 1784792781.908921,
+    "ast_hash": "51ed0d2096526db309f8d6ec36ec234f",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/GuruPelanggaranPage.tsx": {
@@ -2322,6 +2322,16 @@
   "test.sql": {
     "mtime": 1784755737.0304053,
     "ast_hash": "d6eb4b8fb8a269c0b141e2f4ef2bb562",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1785000000000-AddGuruFaceSnapshot.ts": {
+    "mtime": 1784791428.4408414,
+    "ast_hash": "c18769171e7249dca931b997c131940c",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/face-snapshot.spec.ts": {
+    "mtime": 1784793145.5549874,
+    "ast_hash": "8f3bd46a4179ac6ac53a6bfd2ea7e1ff",
     "semantic_hash": ""
   }
 }

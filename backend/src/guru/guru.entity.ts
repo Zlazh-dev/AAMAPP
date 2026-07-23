@@ -25,6 +25,13 @@ export class Guru {
   @Column({ type: 'varchar', length: 30, nullable: true, unique: true })
   nip: string | null;
 
+  /**
+   * Kode guru internal (mis. A1, A2, B1...) dari sheet KBM 7. KODE.
+   * Unique & nullable — dipakai untuk link penugasan saat import KBM.
+   */
+  @Column({ type: 'varchar', length: 20, nullable: true, unique: true })
+  kode: string | null;
+
   @Column({ type: 'varchar', length: 1 })
   jenisKelamin: JenisKelamin;
 
