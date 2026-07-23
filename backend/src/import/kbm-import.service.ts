@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In, Not, IsNull } from 'typeorm';
+import { Repository, DataSource, In, Not, IsNull, QueryFailedError } from 'typeorm';
 import * as ExcelJS from 'exceljs';
 import { Guru } from '../guru/guru.entity';
 import { Kelas } from '../kelas/kelas.entity';
@@ -226,22 +226,39 @@ export class KbmImportService {
 
     const result: Partial<KbmCommitResult> = {};
 
-    // Transaksi per tahap — kegagalan parsial di-rollback
-    if (tahap === 'A' || tahap === 'ALL') {
-      const r = await this._commitTahapA(wb, ta, actorId, req);
-      result.mapel = r.mapel;
-      result.guru = r.guru;
-      result.kelas = r.kelas;
-    }
-    if (tahap === 'B' || tahap === 'ALL') {
-      const r = await this._commitTahapB(wb, ta, actorId, req);
-      result.wali = r.wali;
-      result.penugasan = r.penugasan;
-    }
-    if (tahap === 'C' || tahap === 'ALL') {
-      const r = await this._commitTahapC(wb, ta, actorId, req);
-      result.jadwal = r.jadwal;
-      result.libur = r.libur;
+    try {
+      // Transaksi per tahap — kegagalan parsial di-rollback
+      if (tahap === 'A' || tahap === 'ALL') {
+        const r = await this._commitTahapA(wb, ta, actorId, req);
+        result.mapel = r.mapel;
+        result.guru = r.guru;
+        result.kelas = r.kelas;
+      }
+      if (tahap === 'B' || tahap === 'ALL') {
+        const r = await this._commitTahapB(wb, ta, actorId, req);
+        result.wali = r.wali;
+        result.penugasan = r.penugasan;
+      }
+      if (tahap === 'C' || tahap === 'ALL') {
+        const r = await this._commitTahapC(wb, ta, actorId, req);
+        result.jadwal = r.jadwal;
+        result.libur = r.libur;
+      }
+    } catch (err) {
+      // Tangkap QueryFailedError (mis. varchar overflow) → 400 dengan konteks
+      if (err instanceof QueryFailedError) {
+        const pg = err as any;
+        const detail =
+          pg.detail ||
+          (pg.driverError && pg.driverError.detail) ||
+          pg.message ||
+          String(err);
+        throw new BadRequestException(
+          `Gagal menyimpan ke DB — periksa data Excel dan jalankan preview untuk melihat konflik. ` +
+          `Detail: ${detail}`,
+        );
+      }
+      throw err;
     }
 
     return result;
@@ -256,6 +273,34 @@ export class KbmImportService {
 
     // Dedupe by person: 52 kode → 44 orang
     const { persons, conflicts } = this._dedupeGuruByPerson(rawGuruRows);
+
+    // ── Validasi panjang kolom (varchar limits) → konflik di preview, bukan 500 commit ──
+    const MAPEL_KODE_MAX = 20;
+    const MAPEL_NAMA_MAX = 100;
+    const GURU_KODE_MAX = 20;
+    const GURU_NAMA_MAX = 255;
+
+    for (const m of mapelRows) {
+      if (m.kode.length > MAPEL_KODE_MAX)
+        conflicts.push(`Mapel kode "${m.kode}" (${m.kode.length} char) melebihi batas ${MAPEL_KODE_MAX} karakter`);
+      if (m.nama.length > MAPEL_NAMA_MAX)
+        conflicts.push(`Mapel nama "${m.nama}" (${m.nama.length} char) melebihi batas ${MAPEL_NAMA_MAX} karakter`);
+    }
+    // Validasi mapel dari BEBAN (will use _makeMapelKode)
+    const bebanNamas = this._parseUniqueMapelFromBeban(wb);
+    for (const nama of bebanNamas) {
+      const kode = this._makeMapelKode(nama);
+      if (kode.length > MAPEL_KODE_MAX)
+        conflicts.push(`Mapel BEBAN kode derivasi "${kode}" (${kode.length} char) melebihi batas ${MAPEL_KODE_MAX} karakter — perbaiki di sheet BEBAN`);
+      if (nama.length > MAPEL_NAMA_MAX)
+        conflicts.push(`Mapel BEBAN nama "${nama}" (${nama.length} char) melebihi batas ${MAPEL_NAMA_MAX} karakter`);
+    }
+    for (const p of persons) {
+      if (p.kode.length > GURU_KODE_MAX)
+        conflicts.push(`Guru kode "${p.kode}" (${p.kode.length} char) melebihi batas ${GURU_KODE_MAX} karakter`);
+      if (p.nama.length > GURU_NAMA_MAX)
+        conflicts.push(`Guru nama "${p.nama}" (${p.nama.length} char) melebihi batas ${GURU_NAMA_MAX} karakter`);
+    }
 
     return {
       mapel: mapelRows.length,
@@ -775,6 +820,7 @@ export class KbmImportService {
         }
       }
       // Tambah mapel dari BEBAN yang belum ada di ACUAN (mis. Prakarya)
+      // PENTING: kode diambil dari _makeMapelKode(nama) — bukan dari norm (bisa panjang 20+).
       const bebanMapelNames = this._parseUniqueMapelFromBeban(wb);
       for (const nama of bebanMapelNames) {
         const norm = this._normalizeMapelNama(nama);
@@ -783,8 +829,13 @@ export class KbmImportService {
           .where('UPPER(m.nama) = :nama', { nama: norm })
           .getOne();
         if (!existing) {
-          await queryRunner.manager.save(Mapel, { kode: norm, nama, urutan: 0 });
-          mapelTersimpan++;
+          const kodeBeban = this._makeMapelKode(nama);  // ≤20 char, bukan norm
+          // Cek juga by kode (idempoten jika kode sudah ada dari run sebelumnya)
+          const existingByKode = await queryRunner.manager.findOne(Mapel, { where: { kode: kodeBeban } });
+          if (!existingByKode) {
+            await queryRunner.manager.save(Mapel, { kode: kodeBeban, nama, urutan: 0 });
+            mapelTersimpan++;
+          }
         }
       }
 
@@ -1174,6 +1225,49 @@ export class KbmImportService {
       'SBP': 'SENI BUDAYA',
     };
     return aliases[s] ?? s;
+  }
+
+  /**
+   * Derivasi kode ≤20 karakter dari nama mapel untuk mapel dari BEBAN
+   * yang tidak ada di sheet ACUAN (sehingga tidak punya kode pendek bawaan).
+   *
+   * Strategi:
+   *   1. Cek tabel singkatan mapel yang sudah diketahui.
+   *   2. Buat akronim dari kata-kata (mis. "Bahasa Daerah" → "BADAE").
+   *   3. Fallback: truncate 20 karakter (uppercase, trim).
+   *
+   * Hasil SELALU ≤20 karakter — aman untuk kolom varchar(20).
+   */
+  private _makeMapelKode(nama: string): string {
+    const NAMA_TO_KODE: Record<string, string> = {
+      'matematika': 'MTK',
+      'bahasa indonesia': 'BIN',
+      'bahasa inggris': 'BING',
+      'bahasa arab': 'BAR',
+      'bahasa daerah': 'BADER',
+      'ipa': 'IPA',
+      'ips': 'IPS',
+      'pai': 'PAI',
+      'pendidikan agama islam': 'PAI',
+      'pjok': 'PJOK',
+      'pendidikan jasmani': 'PJOK',
+      'informatika': 'INF',
+      'seni budaya': 'SBP',
+      'prakarya': 'PRAKARYA',
+      'pendidikan pancasila': 'PP',
+      'bimbingan konseling': 'BK',
+      'klasikal': 'KLASIKAL',
+    };
+    const key = nama.toLowerCase().trim();
+    if (NAMA_TO_KODE[key]) return NAMA_TO_KODE[key];
+
+    // Akronim: ambil huruf pertama setiap kata, uppercase
+    const words = key.split(/\s+/).filter((w) => w.length > 0);
+    const akronim = words.map((w) => w[0].toUpperCase()).join('');
+    if (akronim.length <= 20) return akronim;
+
+    // Fallback: truncate uppercase
+    return nama.toUpperCase().trim().replace(/\s+/g, '_').substring(0, 20);
   }
 
   /** Parse unique mapel names from 1. BEBAN (full names: "Matematika", "Prakarya"...). */
