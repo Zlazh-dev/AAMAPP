@@ -4,6 +4,7 @@ import { Repository, ILike, In } from 'typeorm';
 import { Mapel } from './mapel.entity';
 import { Penugasan } from './penugasan.entity';
 import { JadwalKbm } from './jadwal-kbm.entity';
+import { JamPelajaran } from './jam-pelajaran.entity';
 import { KalenderLibur } from './kalender-libur.entity';
 import { AuditService } from '../audit/audit.service';
 import { Request } from 'express';
@@ -45,6 +46,8 @@ export class KurikulumService {
     private readonly penugasanRepo: Repository<Penugasan>,
     @InjectRepository(JadwalKbm)
     private readonly jadwalRepo: Repository<JadwalKbm>,
+    @InjectRepository(JamPelajaran)
+    private readonly jpRepo: Repository<JamPelajaran>,
     @InjectRepository(KalenderLibur)
     private readonly liburRepo: Repository<KalenderLibur>,
     @InjectRepository(Guru) private readonly guruRepo: Repository<Guru>,
@@ -773,6 +776,473 @@ export class KurikulumService {
       }
     }
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // JADWAL MATRIKS (JADWAL-MATRIX spec)
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * GET /api/kurikulum/jadwal/matriks?hari=N[&taId=]
+   * Satu request per hari. Kembalikan:
+   *   { hari, taId, jamSlots[], kelas[], sel: { "<kelasId>:<jamMulai>": {...} } }
+   */
+  async listJadwalMatriks(filter: { hari: number; taId?: number }) {
+    const taId = filter.taId ?? (await this.getActiveTaIdOrThrow());
+
+    // JADWAL-KELAS-BERSIH: hanya kelas ber-pola nyata (7A-9J) yang punya penugasan di TA aktif.
+    // Sampah uji (mis. KR-1784445663719) tak pernah bocor ke kolom matriks.
+    const kelasIds = await this.penugasanRepo
+      .createQueryBuilder('p')
+      .select('DISTINCT p.kelasId', 'kelasId')
+      .innerJoin('p.kelas', 'k')
+      .where('p.tahunAjaranId = :taId', { taId })
+      .andWhere("k.nama ~ '^[789][A-J]$'")
+      .getRawMany<{ kelasId: number }>();
+    const kelasIdSet = new Set(kelasIds.map((r) => r.kelasId));
+    const kelasList = kelasIdSet.size
+      ? await this.kelasRepo.find({
+          where: { id: In(Array.from(kelasIdSet)) },
+          order: { nama: 'ASC' },
+        })
+      : [];
+
+    const rows = await this.jadwalRepo
+      .createQueryBuilder('j')
+      .innerJoinAndSelect('j.penugasan', 'p')
+      .leftJoinAndSelect('p.kelas', 'k')
+      .leftJoinAndSelect('p.mapel', 'm')
+      .leftJoinAndSelect('p.guru', 'g')
+      .where('p.tahunAjaranId = :taId', { taId })
+      .andWhere('j.hari = :hari', { hari: filter.hari })
+      .orderBy('j.jamMulai', 'ASC')
+      .getMany();
+
+    const jamSet = new Set<string>();
+    for (const r of rows) {
+      jamSet.add(`${r.jamMulai}|${r.jamSelesai}`);
+    }
+    const jamSlots = Array.from(jamSet)
+      .sort()
+      .map((s) => {
+        const [jamMulai, jamSelesai] = s.split('|');
+        return { jamMulai, jamSelesai };
+      });
+
+    const sel: Record<
+      string,
+      {
+        kode: string | null;
+        guruNama: string;
+        mapelNama: string;
+        penugasanId: number;
+        jadwalId: number;
+        guruId: number;
+      }
+    > = {};
+
+    for (const r of rows) {
+      const kelasId = r.penugasan?.kelasId;
+      if (!kelasId) continue;
+      const key = `${kelasId}:${r.jamMulai}`;
+      sel[key] = {
+        kode: r.penugasan?.guru?.kode ?? null,
+        guruNama: r.penugasan?.guru?.nama ?? `guru#${r.penugasan?.guruId}`,
+        mapelNama: r.penugasan?.mapel?.nama ?? `mapel#${r.penugasan?.mapelId}`,
+        penugasanId: r.penugasanId,
+        jadwalId: r.id,
+        guruId: r.penugasan?.guruId ?? 0,
+      };
+    }
+
+    // Ambil JP dari jam_pelajaran (urutan tetap dari entitas)
+    const jpList = await this.jpRepo.find({
+      where: { tahunAjaranId: taId, hari: filter.hari },
+      order: { urutan: 'ASC' },
+    });
+
+    return {
+      hari: filter.hari,
+      taId,
+      jamSlots: jpList.map((jp) => ({
+        id: jp.id,
+        urutan: jp.urutan,
+        jamMulai: jp.jamMulai,
+        jamSelesai: jp.jamSelesai,
+      })),
+      kelas: kelasList.map((k) => ({ id: k.id, nama: k.nama })),
+      sel,
+    };
+  }
+
+  // ─── Jam Pelajaran CRUD (JADWAL-MATRIX-FIX Butir 6) ─────────────────
+
+  /** GET /api/kurikulum/jam-pelajaran?hari=N[&taId=] */
+  async listJamPelajaran(filter: { hari: number; taId?: number }) {
+    const taId = filter.taId ?? (await this.getActiveTaIdOrThrow());
+    return this.jpRepo.find({
+      where: { tahunAjaranId: taId, hari: filter.hari },
+      order: { urutan: 'ASC' },
+    });
+  }
+
+  /**
+   * POST /api/kurikulum/jam-pelajaran
+   * Tambah JP baru di akhir hari. Tolak tumpang-tindih.
+   */
+  /**
+   * JADWAL-RAPIKAN B: Validasi rentang jam wajar (06:00–17:00).
+   * Tolak JP hantu (jam < 06:00 atau > 17:00) yang meracuni prefill & overlap detection.
+   */
+  private _validateJamRange(jamMulai: string, jamSelesai: string): void {
+    const m = hhmmToMin(jamMulai);
+    const s = hhmmToMin(jamSelesai);
+    const MIN = 6 * 60; // 06:00
+    const MAX = 17 * 60; // 17:00
+    if (s <= m) throw new BadRequestException('Jam selesai harus setelah jam mulai');
+    if (m < MIN) throw new BadRequestException('Jam mulai tidak boleh sebelum 06:00 (terdeteksi JP hantu)');
+    if (s > MAX) throw new BadRequestException('Jam selesai tidak boleh setelah 17:00 (terdeteksi JP hantu)');
+  }
+
+  async addJamPelajaran(dto: {
+    hari: number;
+    jamMulai: string;
+    jamSelesai: string;
+    taId?: number;
+  }) {
+    const taId = dto.taId ?? (await this.getActiveTaIdOrThrow());
+    this._validateJamRange(dto.jamMulai, dto.jamSelesai);
+    const existing = await this.jpRepo.find({
+      where: { tahunAjaranId: taId, hari: dto.hari },
+      order: { urutan: 'ASC' },
+    });
+    const newMulai = hhmmToMin(dto.jamMulai);
+    const newSelesai = hhmmToMin(dto.jamSelesai);
+    const overlap = existing.find((jp) => {
+      const m = hhmmToMin(jp.jamMulai);
+      const s = hhmmToMin(jp.jamSelesai);
+      return newMulai < s && newSelesai > m;
+    });
+    if (overlap)
+      throw new ConflictException(
+        `Tumpang-tindih dengan JP ${overlap.urutan} (${overlap.jamMulai}–${overlap.jamSelesai})`,
+      );
+    const urutan = existing.length + 1;
+    const jp = this.jpRepo.create({
+      tahunAjaranId: taId,
+      hari: dto.hari,
+      urutan,
+      jamMulai: dto.jamMulai,
+      jamSelesai: dto.jamSelesai,
+    });
+    return this.jpRepo.save(jp);
+  }
+
+  /**
+   * PATCH /api/kurikulum/jam-pelajaran/:id
+   * Edit JP → update transaksional semua jadwal_kbm hari itu (jamMulai lama → baru).
+   * PresensiSesi aman karena ref ke jadwalId, bukan ke jam.
+   */
+  async updateJamPelajaran(id: number, dto: { jamMulai: string; jamSelesai: string }) {
+    const jp = await this.jpRepo.findOne({ where: { id } });
+    if (!jp) throw new NotFoundException('JP tidak ditemukan');
+    this._validateJamRange(dto.jamMulai, dto.jamSelesai);
+    const newMulai = hhmmToMin(dto.jamMulai);
+    const newSelesai = hhmmToMin(dto.jamSelesai);
+    if (newSelesai <= newMulai)
+      throw new BadRequestException('Jam selesai harus setelah jam mulai');
+    const siblings = await this.jpRepo.find({
+      where: { tahunAjaranId: jp.tahunAjaranId, hari: jp.hari },
+    });
+    const overlap = siblings.find((s) => {
+      if (s.id === id) return false;
+      const m = hhmmToMin(s.jamMulai);
+      const se = hhmmToMin(s.jamSelesai);
+      return newMulai < se && newSelesai > m;
+    });
+    if (overlap)
+      throw new ConflictException(
+        `Tumpang-tindih dengan JP ${overlap.urutan} (${overlap.jamMulai}–${overlap.jamSelesai})`,
+      );
+    const oldMulai = jp.jamMulai;
+    const oldSelesai = jp.jamSelesai;
+    return this.jpRepo.manager.transaction(async (em) => {
+      // Geser semua jadwal_kbm di hari itu yang punya jam lama
+      await em
+        .createQueryBuilder()
+        .update(JadwalKbm)
+        .set({ jamMulai: dto.jamMulai, jamSelesai: dto.jamSelesai })
+        .where('hari = :hari AND "jamMulai" = :old AND "jamSelesai" = :oldSel', {
+          hari: jp.hari,
+          old: oldMulai,
+          oldSel: oldSelesai,
+        })
+        .execute();
+      jp.jamMulai = dto.jamMulai;
+      jp.jamSelesai = dto.jamSelesai;
+      return em.save(JamPelajaran, jp);
+    });
+  }
+
+  /**
+   * DELETE /api/kurikulum/jam-pelajaran/:id
+   * Hapus JP hanya bila seluruh selnya kosong.
+   */
+  async removeJamPelajaran(id: number) {
+    const jp = await this.jpRepo.findOne({ where: { id } });
+    if (!jp) throw new NotFoundException('JP tidak ditemukan');
+    const pemakai = await this.jadwalRepo.count({
+      where: { hari: jp.hari, jamMulai: jp.jamMulai },
+    });
+    if (pemakai > 0)
+      throw new ConflictException(
+        `JP ini masih dipakai ${pemakai} kelas. Hapus jadwal terkait dulu.`,
+      );
+    await this.jpRepo.remove(jp);
+    return { ok: true };
+  }
+
+  /**
+   * Generator kode guru 2-alnum unik (A1–Z9, lalu 10–99).
+   * Dipanggil di dalam transaksi batch assign.
+   */
+  private async generateGuruKode(
+    em: import('typeorm').EntityManager,
+  ): Promise<string> {
+    const existing = await em
+      .createQueryBuilder(Guru, 'g')
+      .select('g.kode', 'kode')
+      .where('g.kode IS NOT NULL')
+      .getRawMany<{ kode: string }>();
+    const usedSet = new Set(existing.map((r) => r.kode));
+
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (const l of letters) {
+      for (let n = 1; n <= 9; n++) {
+        const candidate = `${l}${n}`;
+        if (!usedSet.has(candidate)) return candidate;
+      }
+    }
+    for (let n = 10; n <= 99; n++) {
+      const candidate = String(n);
+      if (!usedSet.has(candidate)) return candidate;
+    }
+    throw new ConflictException(
+      'Semua slot kode guru (A1–Z9, 10–99) sudah terpakai.',
+    );
+  }
+
+  /**
+   * POST /api/kurikulum/jadwal/batch-assign
+   * Body: { hari, slots: [{kelasId, penugasanId, jamMulai, jamSelesai}] }
+   * Transaksi semua-atau-batal. 409 + daftar konflik (bukan galat generik).
+   */
+  async batchAssignJadwal(
+    dto: {
+      hari: number;
+      slots: Array<{
+        kelasId: number;
+        penugasanId: number;
+        jamMulai: string;
+        jamSelesai: string;
+      }>;
+    },
+    req: Request,
+  ) {
+    if (!dto.slots || dto.slots.length === 0) {
+      throw new BadRequestException('slots tidak boleh kosong');
+    }
+    const taId = await this.getActiveTaIdOrThrow();
+
+    return this.jadwalRepo.manager.transaction(async (em) => {
+      const penugasanIds = [...new Set(dto.slots.map((s) => s.penugasanId))];
+      const penugasanList = await em.find(Penugasan, {
+        where: { id: In(penugasanIds) },
+        relations: ['kelas', 'mapel', 'guru', 'tahunAjaran'],
+      });
+      const penugasanMap = new Map(penugasanList.map((p) => [p.id, p]));
+
+      for (const slot of dto.slots) {
+        const pn = penugasanMap.get(slot.penugasanId);
+        if (!pn) throw new NotFoundException(`Penugasan #${slot.penugasanId} tidak ditemukan`);
+        if (pn.tahunAjaranId !== taId) {
+          throw new BadRequestException(`Penugasan #${slot.penugasanId} bukan milik TA aktif`);
+        }
+        if (hhmmToMin(slot.jamSelesai) <= hhmmToMin(slot.jamMulai)) {
+          throw new BadRequestException(
+            `Slot kelas ${pn.kelas?.nama} ${slot.jamMulai}: jamSelesai harus setelah jamMulai`,
+          );
+        }
+      }
+
+      // Semua jadwal hari ini di TA ini — dipakai untuk cek konflik batch
+      const existingAll = await em
+        .createQueryBuilder(JadwalKbm, 'j')
+        .innerJoinAndSelect('j.penugasan', 'p')
+        .leftJoinAndSelect('p.kelas', 'k')
+        .leftJoinAndSelect('p.mapel', 'm')
+        .leftJoinAndSelect('p.guru', 'g')
+        .where('p.tahunAjaranId = :taId', { taId })
+        .andWhere('j.hari = :hari', { hari: dto.hari })
+        .getMany();
+
+      const conflicts: string[] = [];
+      const toSave: Array<{ penugasanId: number; jamMulai: string; jamSelesai: string }> = [];
+
+      for (const slot of dto.slots) {
+        const pn = penugasanMap.get(slot.penugasanId)!;
+        const newStart = hhmmToMin(slot.jamMulai);
+        const newEnd = hhmmToMin(slot.jamSelesai);
+
+        let conflict: string | null = null;
+        for (const ex of existingAll) {
+          const s = hhmmToMin(ex.jamMulai);
+          const e = hhmmToMin(ex.jamSelesai);
+          if (e <= newStart || s >= newEnd) continue;
+
+          const exKelasId = ex.penugasan?.kelasId;
+          const exGuruId = ex.penugasan?.guruId;
+          const exKelasNama = ex.penugasan?.kelas?.nama ?? `kelas#${exKelasId}`;
+          const exGuruKode = ex.penugasan?.guru?.kode ?? ex.penugasan?.guru?.nama ?? `guru#${exGuruId}`;
+
+          if (exKelasId === pn.kelasId) {
+            conflict = `Kelas ${pn.kelas?.nama}: sudah ada jadwal ${ex.penugasan?.mapel?.nama ?? ''} pada ${ex.jamMulai}–${ex.jamSelesai}`;
+            break;
+          }
+          if (exGuruId === pn.guruId) {
+            const guruKode = pn.guru?.kode ?? pn.guru?.nama ?? `guru#${pn.guruId}`;
+            conflict = `${guruKode} sudah mengajar di ${exKelasNama} pada ${ex.jamMulai}–${ex.jamSelesai} — konflik kelas ${pn.kelas?.nama}`;
+            break;
+          }
+        }
+
+        if (conflict) {
+          conflicts.push(conflict);
+        } else {
+          // Tambah ke existingAll agar konflik lintas-slot terdeteksi
+          existingAll.push({
+            id: -1,
+            penugasanId: slot.penugasanId,
+            hari: dto.hari,
+            jamMulai: slot.jamMulai,
+            jamSelesai: slot.jamSelesai,
+            penugasan: pn as any,
+            sesiKe: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as JadwalKbm);
+          toSave.push({ penugasanId: slot.penugasanId, jamMulai: slot.jamMulai, jamSelesai: slot.jamSelesai });
+        }
+      }
+
+      if (conflicts.length > 0) {
+        throw new ConflictException({
+          message: 'Konflik jadwal terdeteksi — tidak ada perubahan disimpan',
+          conflicts,
+        });
+      }
+
+      // Generate kode guru belum berkode (dalam transaksi)
+      const guruIdsDone = new Set<number>();
+      for (const slot of dto.slots) {
+        const pn = penugasanMap.get(slot.penugasanId)!;
+        if (!pn.guru?.kode && !guruIdsDone.has(pn.guruId)) {
+          const kode = await this.generateGuruKode(em);
+          await em.update(Guru, { id: pn.guruId }, { kode });
+          if (pn.guru) pn.guru.kode = kode;
+          guruIdsDone.add(pn.guruId);
+        }
+      }
+
+      // Simpan semua slot
+      const saved: JadwalKbm[] = [];
+      for (const slot of toSave) {
+        const created = em.create(JadwalKbm, {
+          penugasanId: slot.penugasanId,
+          hari: dto.hari,
+          jamMulai: slot.jamMulai,
+          jamSelesai: slot.jamSelesai,
+        });
+        saved.push(await em.save(JadwalKbm, created));
+      }
+
+      await this.audit.log({
+        actorId: req.session?.userId ?? null,
+        action: 'BATCH_ASSIGN_JADWAL',
+        resource: 'jadwal_kbm',
+        resourceId: saved.map((s) => s.id).join(','),
+        ip: req.ip,
+        userAgent: req.headers['user-agent'] as string,
+        summary: `Batch assign ${saved.length} slot jadwal hari ${this.hariLabel(dto.hari)}`,
+        details: { hari: dto.hari, count: saved.length },
+      });
+
+      return { ok: true, disimpan: saved.length, ids: saved.map((s) => s.id) };
+    });
+  }
+
+  /**
+   * DELETE /api/kurikulum/jadwal/batch-hapus
+   * Body: { ids: number[] }
+   * Guard presensi_sesi RESTRICT — tolak slot bermasalah + detail.
+   * Semua-atau-batal.
+   */
+  async batchHapusJadwal(dto: { ids: number[] }, req: Request) {
+    if (!dto.ids || dto.ids.length === 0) {
+      throw new BadRequestException('ids tidak boleh kosong');
+    }
+
+    return this.jadwalRepo.manager.transaction(async (em) => {
+      const rows = await em
+        .createQueryBuilder(JadwalKbm, 'j')
+        .innerJoinAndSelect('j.penugasan', 'p')
+        .leftJoinAndSelect('p.kelas', 'k')
+        .leftJoinAndSelect('p.mapel', 'm')
+        .leftJoinAndSelect('p.guru', 'g')
+        .where('j.id IN (:...ids)', { ids: dto.ids })
+        .getMany();
+
+      const notFound = dto.ids.filter((id) => !rows.find((r) => r.id === id));
+      if (notFound.length > 0) {
+        throw new NotFoundException(`Slot jadwal tidak ditemukan: ${notFound.join(', ')}`);
+      }
+
+      const blocked: string[] = [];
+      for (const row of rows) {
+        const sesiCount = await em.count(PresensiSesi, { where: { jadwalKbmId: row.id } });
+        if (sesiCount > 0) {
+          const namaMapel = row.penugasan?.mapel?.nama ?? `mapel#${row.penugasan?.mapelId}`;
+          const namaKelas = row.penugasan?.kelas?.nama ?? `kelas#${row.penugasan?.kelasId}`;
+          const guruKode = row.penugasan?.guru?.kode ?? row.penugasan?.guru?.nama ?? '';
+          blocked.push(
+            `${guruKode} ${namaMapel} ${namaKelas} ${row.jamMulai}–${row.jamSelesai}: ${sesiCount} sesi tercatat`,
+          );
+        }
+      }
+
+      if (blocked.length > 0) {
+        throw new ConflictException({
+          message: 'Beberapa slot sudah dipakai sesi presensi — tidak ada yang dihapus',
+          blocked,
+        });
+      }
+
+      await em.remove(JadwalKbm, rows);
+
+      await this.audit.log({
+        actorId: req.session?.userId ?? null,
+        action: 'BATCH_HAPUS_JADWAL',
+        resource: 'jadwal_kbm',
+        resourceId: dto.ids.join(','),
+        ip: req.ip,
+        userAgent: req.headers['user-agent'] as string,
+        summary: `Batch hapus ${rows.length} slot jadwal`,
+        details: { ids: dto.ids },
+      });
+
+      return { ok: true, dihapus: rows.length };
+    });
+  }
+
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // KALENDER LIBUR (T12 Butir 5)

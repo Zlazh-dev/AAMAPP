@@ -13,6 +13,7 @@ import { Pengaturan } from './pengaturan/pengaturan.entity';
 import { Mapel } from './kurikulum/mapel.entity';
 import { Penugasan } from './kurikulum/penugasan.entity';
 import { JadwalKbm } from './kurikulum/jadwal-kbm.entity';
+import { JamPelajaran } from './kurikulum/jam-pelajaran.entity';
 import { KalenderLibur } from './kurikulum/kalender-libur.entity';
 import { PresensiSesi } from './presensi/presensi-sesi.entity';
 import { PresensiSiswa } from './presensi/presensi-siswa.entity';
@@ -84,6 +85,7 @@ import { SessionAuthGuard } from './common/session-auth.guard';
           Mapel,
           Penugasan,
           JadwalKbm,
+          JamPelajaran,
           KalenderLibur,
           PresensiSesi,
           PresensiSiswa,

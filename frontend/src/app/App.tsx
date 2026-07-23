@@ -52,6 +52,7 @@ const PenugasanPage = React.lazy(() => import('../pages/kurikulum/PenugasanPage'
 const PenugasanFormPage = React.lazy(() => import('../pages/kurikulum/PenugasanFormPage').then(m => ({ default: m.PenugasanFormPage })));
 const WaliKelasPage = React.lazy(() => import('../pages/kurikulum/WaliKelasPage').then(m => ({ default: m.WaliKelasPage })));
 const JadwalKbmPage = React.lazy(() => import('../pages/kurikulum/JadwalKbmPage').then(m => ({ default: m.JadwalKbmPage })));
+const JadwalMatriksPage = React.lazy(() => import('../pages/kurikulum/JadwalMatriksPage').then(m => ({ default: m.JadwalMatriksPage })));
 const MonitoringNilaiPage = React.lazy(() => import('../pages/kurikulum/MonitoringNilaiPage').then(m => ({ default: m.MonitoringNilaiPage })));
 
 // Presensi
@@ -221,6 +222,7 @@ const routes: RouteObject[] = [
           { path: '/kurikulum/penugasan/sukses', element: <RequireRole roles={['kurikulum','admin']}><SaveSuccess entityLabel="Penugasan" addAgainPath="/kurikulum/penugasan/baru" listPath="/kurikulum/penugasan" /></RequireRole> },
           { path: '/kurikulum/wali-kelas', element: <RequireRole roles={['kurikulum','admin']}><Lazy><WaliKelasPage /></Lazy></RequireRole> },
           { path: '/kurikulum/jadwal', element: <RequireRole roles={['kurikulum','admin']}><Lazy><JadwalKbmPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/jadwal/matriks', element: <Navigate to="/kurikulum/jadwal" replace /> },
 
           // Kurikulum: Tahun Ajaran & KKM digabung (sub Mapel, IA-HIERARCHY-V2)
           { path: '/kurikulum/tahun-ajaran-kkm', element: <RequireRole roles={['kurikulum','admin']}><Lazy><TahunAjaranKkmPage /></Lazy></RequireRole> },

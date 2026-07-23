@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Mapel } from './mapel.entity';
 import { Penugasan } from './penugasan.entity';
 import { JadwalKbm } from './jadwal-kbm.entity';
+import { JamPelajaran } from './jam-pelajaran.entity';
 import { KalenderLibur } from './kalender-libur.entity';
 import { KurikulumService } from './kurikulum.service';
 import { KurikulumController } from './kurikulum.controller';
@@ -26,6 +27,7 @@ import { Siswa } from '../siswa/siswa.entity';
       Mapel,
       Penugasan,
       JadwalKbm,
+      JamPelajaran,
       KalenderLibur,
       Session,
       User,

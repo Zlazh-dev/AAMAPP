@@ -11,19 +11,33 @@ import { BackLink } from '../../components/BackLink';
 import { SearchSelect } from '../../components/SearchSelect';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useToast } from '../../components/Toast';
+import { JadwalMatriksPage } from './JadwalMatriksPage';
 
 const HARI_LIST = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const HARI_NUM: Record<string, number> = { Senin: 1, Selasa: 2, Rabu: 3, Kamis: 4, Jumat: 5, Sabtu: 6 };
 
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : false,
+  );
+  useEffect(() => {
+    const handler = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return isDesktop;
+}
+
 /**
  * /kurikulum/jadwal — Jadwal KBM (T15 §14.10.3).
- * Desktop: grid Senin-Sabtu × sesi.
- * Mobile: pemilih hari segmented ? daftar sesi vertikal.
- * No TA active ? panel arahan.
+ * Desktop: matriks (kelas kolom × jamSlot baris, tab hari).
+ * Mobile: pemilih hari segmented → daftar sesi vertikal per kelas.
+ * No TA active → panel arahan.
  * 409 bentrok tampil di dalam panel slot.
  * Badge total jam per guru di panel bantu.
  */
 export function JadwalKbmPage() {
+  const isDesktop = useIsDesktop();
   const navigate = useNavigate();
   const toast = useToast();
   const [taAktif, setTaAktif] = useState<TahunAjaran | null>(null);
@@ -163,6 +177,11 @@ export function JadwalKbmPage() {
       toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal menghapus slot');
     }
   };
+
+  // JADWAL-RAPIKAN A: desktop → matriks langsung, mobile → tampilan per-hari
+  if (isDesktop) {
+    return <JadwalMatriksPage />;
+  }
 
   // No TA active ? panel arahan
   if (!loading && !taAktif) {

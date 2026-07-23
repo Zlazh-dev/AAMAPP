@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In, Not, IsNull, QueryFailedError } from 'typeorm';
+import { Repository, DataSource, In, Not, IsNull } from 'typeorm';
 import * as ExcelJS from 'exceljs';
 import { Guru } from '../guru/guru.entity';
 import { Kelas } from '../kelas/kelas.entity';
@@ -19,58 +19,11 @@ import { AuditService } from '../audit/audit.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
-/**
- * Entry guru per-kode dari sheet "7. KODE" (raw, belum dedupe).
- * Satu orang bisa punya beberapa kode karena mengampu banyak mapel.
- */
-export interface GuruKodeEntry {
-  kode: string;
-  nama: string;
-  mapel: string;
-}
-
-/**
- * Entry guru per-orang setelah dedupe by nama ternormalisasi.
- * kodeList = semua kode yang dimiliki orang ini (mis. ["A7", "I4"]).
- * kode = kode primer (yang disimpan di guru.kode).
- */
-export interface GuruPersonEntry {
-  kode: string;        // kode primer (pertama secara alfanumerik)
-  kodeList: string[];  // semua kode orang ini
-  nama: string;        // nama asli (dari baris pertama ditemukan)
-  mapel: string;       // mapel utama (dari kode primer)
-}
-
-/** @deprecated Diganti GuruPersonEntry. Dipertahankan agar frontend tidak perlu update sekaligus. */
-export interface GuruPreviewEntry {
-  kode: string;
-  kodeList: string[];
-  nama: string;
-  mapel: string;
-}
-
 export interface KbmPreviewResult {
-  tahapA: {
-    mapel: number;
-    guru: number;         // jumlah ORANG unik (bukan kode)
-    kelas: number;
-    guruList: GuruPreviewEntry[];  // 44 orang, tiap orang ada kodeList
-    conflicts: string[];
-  };
+  tahapA: { mapel: number; guru: number; kelas: number; conflicts: string[] };
   tahapB: { wali: number; penugasan: number; conflicts: string[] };
-  tahapC: {
-    jadwal: number;
-    libur: number;
-    liburBreakdown: Record<string, number>;
-    conflicts: string[];
-    jadwalSkipped?: string[];
-  };
-  /** TA aktif dari DB (sumber kebenaran — impor TIDAK boleh membuat TA baru) */
-  taAktifNama: string | null;
-  /** TA yang disebut di file Excel (1. BEBAN R4) */
-  fileTaNama: string | null;
-  /** true = file menyebut TA yang tak cocok dgn TA aktif → konflik */
-  taKonflik: boolean;
+  tahapC: { jadwal: number; libur: number; conflicts: string[]; jadwalSkipped?: string[]; jadwalPerHari?: Record<string, number> };
+  taNama: string | null;
 }
 
 export interface KbmCommitResult {
@@ -105,77 +58,6 @@ export class KbmImportService {
 
   // ─── PREVIEW ──────────────────────────────────────────────────────────────
 
-  /**
-   * Ekstrak teks dari nilai sel ExcelJS.
-   * ExcelJS bisa mengembalikan: string, number, Date, { text, hyperlink }, { richText: [...] }.
-   * String(value) pada object → "[object Object]" — harus diuraikan eksplisit.
-   */
-  private _cellText(val: ExcelJS.CellValue): string {
-    if (val === null || val === undefined) return '';
-    if (typeof val === 'string') return val.trim();
-    if (typeof val === 'number') return String(val);
-    if (val instanceof Date) return val.toISOString();
-    // Rich text
-    if (typeof val === 'object' && 'richText' in val) {
-      const rt = (val as any).richText as Array<{ text: string }>;
-      return (rt || []).map((r) => r.text || '').join('').trim();
-    }
-    // Hyperlink
-    if (typeof val === 'object' && 'text' in val) {
-      return String((val as any).text || '').trim();
-    }
-    // Fallback
-    try {
-      return String(val).trim();
-    } catch {
-      return '';
-    }
-  }
-
-  /**
-   * F3b — Baca TA dari file Excel (sheet "1. BEBAN").
-   * Scan R1-R10, kolom 1-5 untuk pattern "TAHUN AJARAN 2026/2027".
-   * Validasi tahun: harus dalam rentang 2000-2099 — angka di luar rentang
-   * menandai sel terbaca sebagai serial-date Excel bukan tahun ajaran.
-   * Return null jika tidak ditemukan (impor menempel ke TA aktif DB).
-   */
-  private _parseFileTa(wb: ExcelJS.Workbook): string | null {
-    const ws = wb.getWorksheet('1. BEBAN');
-    if (!ws) return null;
-
-    // Scan beberapa baris dan kolom — posisi header bisa bervariasi antar versi file
-    for (let r = 1; r <= 10; r++) {
-      const row = ws.getRow(r);
-      for (let c = 1; c <= 8; c++) {
-        const raw = this._cellText(row.getCell(c).value as ExcelJS.CellValue);
-        if (!raw) continue;
-        const m = raw.match(/(\d{4})\s*[-/]\s*(\d{4})/);
-        if (m) {
-          const y1 = parseInt(m[1], 10);
-          const y2 = parseInt(m[2], 10);
-          // Validasi tahun agar angka serial-date Excel (mis. 2144) tidak lolos
-          if (y1 >= 2000 && y1 <= 2099 && y2 >= 2000 && y2 <= 2099) {
-            return `${m[1]}/${m[2]}`;
-          }
-          // Tahun di luar rentang → kemungkinan serial-date, abaikan
-          this.logger.warn(
-            `_parseFileTa: tahun ${m[1]}/${m[2]} di luar rentang 2000-2099 (kemungkinan serial-date Excel). Sel R${r}C${c} diabaikan.`,
-          );
-        }
-      }
-    }
-    return null;
-  }
-
-  /**
-   * Cek apakah TA file cocok dengan TA aktif DB.
-   * "2026/2027" cocok dengan "2026/2027 S1" atau "2026-2027".
-   */
-  private _taMatch(fileTa: string, dbTa: string): boolean {
-    const norm = (s: string) => s.replace(/[-/]/g, '/').replace(/\s*S\d+\s*$/i, '').trim().toUpperCase();
-    return norm(fileTa) === norm(dbTa);
-  }
-
   async preview(buffer: Buffer): Promise<KbmPreviewResult> {
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buffer as any);
@@ -185,17 +67,12 @@ export class KbmImportService {
     const tahapC = this._parseTahapC(wb);
 
     const ta = await this.taRepo.findOne({ where: { aktif: true } });
-    const taAktifNama = ta ? `${ta.nama} S${ta.semester}` : null;
-    const fileTaNama = this._parseFileTa(wb);
-    const taKonflik = !!fileTaNama && !!taAktifNama && !this._taMatch(fileTaNama, taAktifNama);
 
     return {
       tahapA,
       tahapB,
       tahapC,
-      taAktifNama,
-      fileTaNama,
-      taKonflik,
+      taNama: ta ? `${ta.nama} S${ta.semester}` : null,
     };
   }
 
@@ -211,54 +88,26 @@ export class KbmImportService {
 
     const ta = await this.taRepo.findOne({ where: { aktif: true } });
     if (!ta) throw new BadRequestException('Tidak ada Tahun Ajaran aktif');
-
-    // FATAL guard: jika file menyebut TA yang tak cocok dgn TA aktif → tolak commit.
-    // Mencegah penempelan data ke TA hantu (mis. 2144/2145 hasil bug seed/clock).
-    const fileTaNama = this._parseFileTa(wb);
-    if (fileTaNama && !this._taMatch(fileTaNama, `${ta.nama} S${ta.semester}`)) {
-      throw new BadRequestException(
-        `TA file ("${fileTaNama}") tidak cocok dengan TA aktif DB ("${ta.nama} S${ta.semester}"). ` +
-          `Perbaiki TA aktif DB sebelum commit — impor tidak boleh membuat TA baru.`,
-      );
-    }
-
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
 
     const result: Partial<KbmCommitResult> = {};
 
-    try {
-      // Transaksi per tahap — kegagalan parsial di-rollback
-      if (tahap === 'A' || tahap === 'ALL') {
-        const r = await this._commitTahapA(wb, ta, actorId, req);
-        result.mapel = r.mapel;
-        result.guru = r.guru;
-        result.kelas = r.kelas;
-      }
-      if (tahap === 'B' || tahap === 'ALL') {
-        const r = await this._commitTahapB(wb, ta, actorId, req);
-        result.wali = r.wali;
-        result.penugasan = r.penugasan;
-      }
-      if (tahap === 'C' || tahap === 'ALL') {
-        const r = await this._commitTahapC(wb, ta, actorId, req);
-        result.jadwal = r.jadwal;
-        result.libur = r.libur;
-      }
-    } catch (err) {
-      // Tangkap QueryFailedError (mis. varchar overflow) → 400 dengan konteks
-      if (err instanceof QueryFailedError) {
-        const pg = err as any;
-        const detail =
-          pg.detail ||
-          (pg.driverError && pg.driverError.detail) ||
-          pg.message ||
-          String(err);
-        throw new BadRequestException(
-          `Gagal menyimpan ke DB — periksa data Excel dan jalankan preview untuk melihat konflik. ` +
-          `Detail: ${detail}`,
-        );
-      }
-      throw err;
+    // Transaksi per tahap — kegagalan parsial di-rollback
+    if (tahap === 'A' || tahap === 'ALL') {
+      const r = await this._commitTahapA(wb, ta, actorId, req);
+      result.mapel = r.mapel;
+      result.guru = r.guru;
+      result.kelas = r.kelas;
+    }
+    if (tahap === 'B' || tahap === 'ALL') {
+      const r = await this._commitTahapB(wb, ta, actorId, req);
+      result.wali = r.wali;
+      result.penugasan = r.penugasan;
+    }
+    if (tahap === 'C' || tahap === 'ALL') {
+      const r = await this._commitTahapC(wb, ta, actorId, req);
+      result.jadwal = r.jadwal;
+      result.libur = r.libur;
     }
 
     return result;
@@ -268,50 +117,24 @@ export class KbmImportService {
 
   private _parseTahapA(wb: ExcelJS.Workbook) {
     const mapelRows = this._parseMapel(wb);
-    const rawGuruRows = this._parseGuru(wb);   // 52 kode (per-kode)
+    const guruRows = this._parseGuru(wb);
     const kelasRows = this._parseKelas(wb);
 
-    // Dedupe by person: 52 kode → 44 orang
-    const { persons, conflicts } = this._dedupeGuruByPerson(rawGuruRows);
-
-    // ── Validasi panjang kolom (varchar limits) → konflik di preview, bukan 500 commit ──
-    const MAPEL_KODE_MAX = 20;
-    const MAPEL_NAMA_MAX = 100;
-    const GURU_KODE_MAX = 20;
-    const GURU_NAMA_MAX = 255;
-
-    for (const m of mapelRows) {
-      if (m.kode.length > MAPEL_KODE_MAX)
-        conflicts.push(`Mapel kode "${m.kode}" (${m.kode.length} char) melebihi batas ${MAPEL_KODE_MAX} karakter`);
-      if (m.nama.length > MAPEL_NAMA_MAX)
-        conflicts.push(`Mapel nama "${m.nama}" (${m.nama.length} char) melebihi batas ${MAPEL_NAMA_MAX} karakter`);
-    }
-    // Validasi mapel dari BEBAN (will use _makeMapelKode)
-    const bebanNamas = this._parseUniqueMapelFromBeban(wb);
-    for (const nama of bebanNamas) {
-      const kode = this._makeMapelKode(nama);
-      if (kode.length > MAPEL_KODE_MAX)
-        conflicts.push(`Mapel BEBAN kode derivasi "${kode}" (${kode.length} char) melebihi batas ${MAPEL_KODE_MAX} karakter — perbaiki di sheet BEBAN`);
-      if (nama.length > MAPEL_NAMA_MAX)
-        conflicts.push(`Mapel BEBAN nama "${nama}" (${nama.length} char) melebihi batas ${MAPEL_NAMA_MAX} karakter`);
-    }
-    for (const p of persons) {
-      if (p.kode.length > GURU_KODE_MAX)
-        conflicts.push(`Guru kode "${p.kode}" (${p.kode.length} char) melebihi batas ${GURU_KODE_MAX} karakter`);
-      if (p.nama.length > GURU_NAMA_MAX)
-        conflicts.push(`Guru nama "${p.nama}" (${p.nama.length} char) melebihi batas ${GURU_NAMA_MAX} karakter`);
+    const conflicts: string[] = [];
+    // Cek duplikat kode guru dalam file
+    const seenKode = new Map<string, string>();
+    for (const g of guruRows) {
+      if (g.kode && seenKode.has(g.kode)) {
+        conflicts.push(`Kode guru duplikat: ${g.kode} (${g.nama} vs ${seenKode.get(g.kode)})`);
+      } else if (g.kode) {
+        seenKode.set(g.kode, g.nama);
+      }
     }
 
     return {
       mapel: mapelRows.length,
-      guru: persons.length,   // 44 orang
+      guru: guruRows.length,
       kelas: kelasRows.length,
-      guruList: persons.map((p) => ({
-        kode: p.kode,
-        kodeList: p.kodeList,
-        nama: p.nama,
-        mapel: p.mapel,
-      })),
       conflicts,
     };
   }
@@ -346,7 +169,7 @@ export class KbmImportService {
     const rows: Array<{ kode: string; nama: string; jp: number }> = [];
     for (let r = 4; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const kode = this._cellText(row.getCell(2).value as ExcelJS.CellValue); // C2
+      const kode = String(row.getCell(2).value ?? '').trim(); // C2
       if (!kode || kode === 'Mapel' || kode.toUpperCase() === 'NO') continue;
       if (kode.toUpperCase().includes('JUMLAH') || kode.toUpperCase().includes('TOTAL')) continue;
       const kodeUpper = kode.toUpperCase();
@@ -360,154 +183,32 @@ export class KbmImportService {
     return rows;
   }
 
-  /**
-   * 7. KODE: parse guru PER-KODE (raw, belum dedupe by person).
-   * Mengembalikan 52 entri (satu per kode, semua kode valid).
-   * Dedup by kode saja — dedupe by person dilakukan di _dedupeGuruByPerson.
-   */
-  private _parseGuru(wb: ExcelJS.Workbook): GuruKodeEntry[] {
+  /** 7. KODE: parse guru (kode, nama, mapel). Dua kolom paralel. */
+  private _parseGuru(wb: ExcelJS.Workbook): Array<{ kode: string; nama: string; mapel: string }> {
     const ws = wb.getWorksheet('7. KODE');
     if (!ws) throw new BadRequestException('Sheet "7. KODE" tidak ditemukan');
 
-    const GURU_CODE_RE = /^[A-Z]\d{1,2}$/;
-
-    const seen = new Set<string>();
-    const rows: GuruKodeEntry[] = [];
+    const rows: Array<{ kode: string; nama: string; mapel: string }> = [];
+    // Data mulai R13. Kolom kiri: C3=nama, C4=kode, C5=mapel. Kolom kanan: C8=nama, C9=kode, C10=mapel.
     for (let r = 13; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-
-      // Kolom kiri: C2=nomor urut, C3=nama, C4=kode guru, C5=mapel ampu
-      const noKiriRaw = row.getCell(2).value;
-      const noKiriNum = typeof noKiriRaw === 'number'
-        ? Math.floor(noKiriRaw)
-        : parseInt(this._cellText(noKiriRaw as ExcelJS.CellValue), 10);
-      const namaKiri = this._cellText(row.getCell(3).value as ExcelJS.CellValue);
-      const kodeKiri = this._cellText(row.getCell(4).value as ExcelJS.CellValue);
-      const mapelKiri = this._cellText(row.getCell(5).value as ExcelJS.CellValue);
-      if (
-        !isNaN(noKiriNum) && noKiriNum > 0 &&
-        GURU_CODE_RE.test(kodeKiri) && namaKiri && !seen.has(kodeKiri)
-      ) {
-        seen.add(kodeKiri);
+      // Kolom kiri (C3-C5)
+      const namaKiri = String(row.getCell(3).value ?? '').trim();
+      const kodeKiri = String(row.getCell(4).value ?? '').trim();
+      const mapelKiri = String(row.getCell(5).value ?? '').trim();
+      if (namaKiri && kodeKiri && !kodeKiri.match(/^\d+$/)) {
         rows.push({ kode: kodeKiri, nama: namaKiri, mapel: mapelKiri });
       }
-
-      // Kolom kanan: C7=nomor urut, C8=nama, C9=kode guru, C10=mapel ampu
-      const noKananRaw = row.getCell(7).value;
-      const noKananNum = typeof noKananRaw === 'number'
-        ? Math.floor(noKananRaw)
-        : parseInt(this._cellText(noKananRaw as ExcelJS.CellValue), 10);
-      const namaKanan = this._cellText(row.getCell(8).value as ExcelJS.CellValue);
-      const kodeKanan = this._cellText(row.getCell(9).value as ExcelJS.CellValue);
-      const mapelKanan = this._cellText(row.getCell(10).value as ExcelJS.CellValue);
-      if (
-        !isNaN(noKananNum) && noKananNum > 0 &&
-        GURU_CODE_RE.test(kodeKanan) && namaKanan && !seen.has(kodeKanan)
-      ) {
-        seen.add(kodeKanan);
+      // Kolom kanan (C8-C10)
+      const namaKanan = String(row.getCell(8).value ?? '').trim();
+      const kodeKanan = String(row.getCell(9).value ?? '').trim();
+      const mapelKanan = String(row.getCell(10).value ?? '').trim();
+      if (namaKanan && kodeKanan && !kodeKanan.match(/^\d+$/)) {
         rows.push({ kode: kodeKanan, nama: namaKanan, mapel: mapelKanan });
       }
     }
     return rows;
   }
-
-  /**
-   * Dedupe guru by person: kelompokkan kode-kode ber-nama identik (setelah
-   * normalisasi gelar/spasi) menjadi satu orang.
-   *
-   * Normalisasi nama:
-   *   1. Lowercase
-   *   2. Strip gelar akhir: ", S.Pd, Gr." / "M.Pd" / "S.Si" dll.
-   *   3. Trim + collapse whitespace
-   *
-   * Aturan:
-   *   - Nama identik (setelah normalisasi) → satu orang, kodeList gabungan.
-   *   - Nama hampir sama tapi TIDAK identik (mis. beda gelar minor) → tetap
-   *     dianggap satu orang jika normalisasi cocok.
-   *   - AGENT tidak boleh memutuskan sendiri jika ada ambiguitas — konflik
-   *     dilaporkan.
-   *
-   * Return:
-   *   persons  — 44 GuruPersonEntry (per orang, kode primer = terendah alfa)
-   *   kodeToPersonIdx — map kode → index di persons (untuk resolusi penugasan)
-   *   conflicts — pesan jika ada kesamaan nama yang mencurigakan
-   */
-  private _dedupeGuruByPerson(rawRows: GuruKodeEntry[]): {
-    persons: GuruPersonEntry[];
-    kodeToPersonIdx: Map<string, number>;
-    conflicts: string[];
-  } {
-    const conflicts: string[] = [];
-
-    /**
-     * Normalisasi nama untuk tujuan matching:
-     * Buang gelar (karena bisa tulis beda-beda), lowercase, collapse spaces.
-     * Contoh:
-     *   "Rohmah Handayani, S.Pd, Gr." → "rohmah handayani"
-     *   "Lailiyatur Rosyidah, M.Pd, Gr." → "lailiyatur rosyidah"
-     */
-    const normNama = (nama: string): string => {
-      return nama
-        .toLowerCase()
-        // Strip koma + gelar akademik (S.Pd, M.Pd, S.Si, S.Ikom, S.Hut, S.Ak, S.PdI, dll.)
-        .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
-        // Bersihkan sisa tanda baca & spasi ganda
-        .replace(/[,.]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    };
-
-    // Map normNama → index di persons[]
-    const normToIdx = new Map<string, number>();
-    const persons: GuruPersonEntry[] = [];
-    const kodeToPersonIdx = new Map<string, number>();
-
-    for (const entry of rawRows) {
-      const norm = normNama(entry.nama);
-      let idx = normToIdx.get(norm);
-
-      if (idx === undefined) {
-        // Orang baru
-        idx = persons.length;
-        normToIdx.set(norm, idx);
-        persons.push({
-          kode: entry.kode,       // kode primer = kode pertama ditemukan
-          kodeList: [entry.kode],
-          nama: entry.nama,       // nama asli dari baris pertama
-          mapel: entry.mapel,
-        });
-      } else {
-        // Orang yang sudah ada — tambahkan kode alias
-        persons[idx].kodeList.push(entry.kode);
-        // Kode primer = alfanumerik terendah (konsisten)
-        persons[idx].kode = [...persons[idx].kodeList].sort()[0];
-      }
-      kodeToPersonIdx.set(entry.kode, idx);
-    }
-
-    // Cek konflik: dua nama berbeda yang normNama-nya PERSIS sama
-    // (tidak mungkin dari logika di atas, tapi tampilkan jika beda nama asli)
-    for (const p of persons) {
-      if (p.kodeList.length > 1) {
-        // Verifikasi semua kode punya nama yang sama setelah normalisasi (konsistensi)
-        const allNames = rawRows
-          .filter((r) => p.kodeList.includes(r.kode))
-          .map((r) => r.nama);
-        const uniqueNamaAsli = [...new Set(allNames)];
-        if (uniqueNamaAsli.length > 1) {
-          // Nama asli berbeda tapi normalisasi cocok — laporkan sebagai konflik
-          conflicts.push(
-            `Multi-kode [${p.kodeList.join(', ')}] dikelompokkan jadi satu orang ` +
-            `tapi nama asli berbeda: ${uniqueNamaAsli.join(' | ')}. ` +
-            `Periksa manual — agent tidak memutuskan sendiri.`,
-          );
-        }
-      }
-    }
-
-    return { persons, kodeToPersonIdx, conflicts };
-  }
-
 
   /** 3. WALAS + 1. BEBAN "MENGAJAR KELAS": parse daftar kelas unik. */
   private _parseKelas(wb: ExcelJS.Workbook): string[] {
@@ -520,7 +221,7 @@ export class KbmImportService {
         const row = wsWalas.getRow(r);
         // Cek kolom 1, 5, 9 (3 kolom paralel) untuk kode kelas
         for (const col of [1, 5, 9]) {
-          const val = this._cellText(row.getCell(col).value as ExcelJS.CellValue);
+          const val = String(row.getCell(col).value ?? '').trim();
           if (val.match(/^\d[A-Z]$/)) {
             kelasSet.add(val);
           }
@@ -533,7 +234,7 @@ export class KbmImportService {
     if (wsBeban) {
       for (let r = 8; r <= wsBeban.rowCount; r++) {
         const row = wsBeban.getRow(r);
-        const kelasRaw = this._cellText(row.getCell(8).value as ExcelJS.CellValue); // C8 = MENGAJAR KELAS
+        const kelasRaw = String(row.getCell(8).value ?? '').trim(); // C8 = MENGAJAR KELAS
         if (kelasRaw && kelasRaw !== '-') {
           const kelasList = this._uraiRentangKelas(kelasRaw);
           for (const k of kelasList) kelasSet.add(k);
@@ -571,8 +272,8 @@ export class KbmImportService {
       const row = ws.getRow(r);
       const pairs: Array<[number, number]> = [[1, 3], [5, 7], [9, 11]];
       for (const [kelasCol, namaCol] of pairs) {
-        const kelas = this._cellText(row.getCell(kelasCol).value as ExcelJS.CellValue);
-        const nama = this._cellText(row.getCell(namaCol).value as ExcelJS.CellValue);
+        const kelas = String(row.getCell(kelasCol).value ?? '').trim();
+        const nama = String(row.getCell(namaCol).value ?? '').trim();
         if (kelas.match(/^\d[A-Z]$/) && nama && nama !== ':' && !nama.toUpperCase().includes('KELAS')) {
           rows.push({ kelas, nama });
         }
@@ -593,14 +294,14 @@ export class KbmImportService {
     let lastMapel = '';
     for (let r = 8; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const mapelRaw = this._cellText(row.getCell(1).value as ExcelJS.CellValue);
+      const mapelRaw = String(row.getCell(1).value ?? '').trim();
       // Merge cell: mapel kosong = warisan baris di atasnya
       if (mapelRaw && mapelRaw !== 'MAPEL' && !mapelRaw.toUpperCase().includes('JUMLAH')) {
         lastMapel = mapelRaw;
       }
 
-      const kodeGuru = this._cellText(row.getCell(7).value as ExcelJS.CellValue);
-      const kelasRaw = this._cellText(row.getCell(8).value as ExcelJS.CellValue);
+      const kodeGuru = String(row.getCell(7).value ?? '').trim();
+      const kelasRaw = String(row.getCell(8).value ?? '').trim();
 
       if (!kodeGuru || kodeGuru === 'Kode' || !lastMapel) continue;
       if (lastMapel.toUpperCase().includes('JUMLAH')) continue;
@@ -621,18 +322,18 @@ export class KbmImportService {
     const jadwalRows = this._parseJadwal(wb);
     const liburRows = this._parseLibur(wb);
 
-    // Breakdown by kode (mis. { LU: 56, CB: 2 }) supaya bisa diperiksa mata
-    const liburBreakdown: Record<string, number> = {};
-    for (const l of liburRows) {
-      liburBreakdown[l.keterangan] = (liburBreakdown[l.keterangan] ?? 0) + 1;
+    // JADWAL-RAPIKAN C: distribusi per-hari untuk verifikasi parser
+    const jadwalPerHari: Record<string, number> = {};
+    for (const j of jadwalRows) {
+      jadwalPerHari[j.hari] = (jadwalPerHari[j.hari] ?? 0) + 1;
     }
 
     return {
       jadwal: jadwalRows.length,
       libur: liburRows.length,
-      liburBreakdown,
       conflicts: [],
       jadwalSkipped: [],
+      jadwalPerHari,
     };
   }
 
@@ -666,21 +367,27 @@ export class KbmImportService {
     // Map kelas per column
     const colKelas = new Map<number, string>();
     for (let col = 3; col <= 27; col++) {
-      const kelas = this._cellText(kelasRow.getCell(col).value as ExcelJS.CellValue);
+      const kelas = String(kelasRow.getCell(col).value ?? '').trim();
       if (kelas.match(/^\d[A-Z]$/)) {
         colKelas.set(col, kelas);
       }
     }
 
     // Parse rows: scan for day markers in col 3 (merged cells span day blocks)
+    // Day blocks: SENIN rows ~13-14 (jam 3-4), etc. Actually the sheet has blocks per day.
+    // R10-R11 = non-KBM (Tahfidz, Kokulikuler), R12 = ISTIRAHAT, R13+ = KBM
+    // Days repeat in blocks. We detect day by looking at merged cell in C3 area.
+
+    // JADWAL-RAPIKAN C: scan mulai R8 (bukan R10) supaya header hari pertama (SENIN di R8)
+    // terdeteksi. Bug lama: loop mulai R10 → SENIN tak pernah terdeteksi → 0 slot Senin.
     let currentDay = '';
-    for (let r = 10; r <= ws.rowCount; r++) {
+    for (let r = 8; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
       const jamKeRaw = row.getCell(2).value;
-      const jamKe = typeof jamKeRaw === 'number' ? jamKeRaw : parseInt(this._cellText(jamKeRaw as ExcelJS.CellValue), 10);
+      const jamKe = typeof jamKeRaw === 'number' ? jamKeRaw : parseInt(String(jamKeRaw ?? ''), 10);
 
-      // Detect day change: if C3 has a day name (from merged cell top-left)
-      const c3val = this._cellText(row.getCell(3).value as ExcelJS.CellValue).toUpperCase();
+      // Detect day change: if C3 has a day name (header row or merged cell top-left)
+      const c3val = String(row.getCell(3).value ?? '').trim().toUpperCase();
       if (HARI_KBM.includes(c3val)) {
         currentDay = c3val;
       }
@@ -690,8 +397,8 @@ export class KbmImportService {
 
       // For each kelas column, extract guru kode
       for (const [col, kelas] of colKelas) {
-        const kodeGuru = this._cellText(row.getCell(col).value as ExcelJS.CellValue);
-        if (kodeGuru && kodeGuru.match(/^[A-Z]\d{1,2}$/) ) {
+        const kodeGuru = String(row.getCell(col).value ?? '').trim();
+        if (kodeGuru && kodeGuru.match(/^[A-Z]\d+$/) ) {
           rows.push({ kelas, hari: currentDay, jamKe, kodeGuru });
         }
       }
@@ -700,93 +407,44 @@ export class KbmImportService {
     return rows;
   }
 
-  /**
-   * 5. KALDIK: parse kalender libur (bulan × tanggal, kode LU/CB).
-   *
-   * Struktur sheet: R3=header, R5+ = satu baris per bulan.
-   * Kolom B (col 2) = nama bulan + tahun. Kolom C-AG (col 3-33) = tanggal 1-31.
-   *
-   * BUG FIX (libur=0): Sel bulan di KALDIK sering disimpan Excel sebagai tipe DATE
-   * (bukan string), sehingga ExcelJS mengembalikan Date object → _cellText() → ISO string
-   * → regex monthMatch gagal → 0 baris. Fix: deteksi Date instance dan konversi
-   * ke "BULAN YYYY" secara eksplisit sebelum match.
-   *
-   * Juga support: rentang libur dalam satu bulan (sel berisi "LU" berulang).
-   */
+  /** 5. KALDIK: parse kalender libur (bulan × tanggal, kode LU/LHB). */
   private _parseLibur(wb: ExcelJS.Workbook): Array<{ tanggal: string; keterangan: string }> {
     const ws = wb.getWorksheet('5. KALDIK');
     if (!ws) throw new BadRequestException('Sheet "5. KALDIK" tidak ditemukan');
 
     const rows: Array<{ tanggal: string; keterangan: string }> = [];
+    // R3 = header: C2=BULAN, C3=TANGGAL (1-31). Data mulai R4.
+    // Each row = a month. C2 = month name (e.g. "JULI 2026"). C3-C33 = day 1-31.
+    // Cell value = day number (continuation) OR code (LU, LHB, etc.)
 
-    const MONTH_NAMES_ID = [
-      'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
-      'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER',
-    ];
-    const monthMap: Record<string, number> = {};
-    MONTH_NAMES_ID.forEach((m, i) => { monthMap[m] = i + 1; });
-
-    // Kode libur yang diterima — kode kegiatan (KO, PSAJ, dll.) dibuang.
-    const LIBUR_CODES = new Set(['LU', 'CB', 'LHB', 'LIBUR UMUM', 'CUTI BERSAMA']);
-
-    /**
-     * Ekstrak teks bulan dari nilai sel kolom B.
-     * Sel bisa berupa: string "JULI 2026", Date (ExcelJS decode dari format date),
-     * richText, atau number (serial). Harus return "NAMA_BULAN YYYY" uppercase.
-     */
-    const extractBulanStr = (cellVal: ExcelJS.CellValue): string => {
-      // CASE: ExcelJS mengembalikan Date object (sel berformat date di Excel)
-      if (cellVal instanceof Date) {
-        const d = cellVal as Date;
-        return `${MONTH_NAMES_ID[d.getMonth()]} ${d.getFullYear()}`;
-      }
-      // CASE: number (Excel date serial)
-      if (typeof cellVal === 'number' && cellVal > 1000) {
-        // Konversi Excel serial ke Date: epoch Excel = 1899-12-30
-        const msPerDay = 86400000;
-        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-        const d = new Date(excelEpoch.getTime() + cellVal * msPerDay);
-        return `${MONTH_NAMES_ID[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-      }
-      // CASE: string / richText / dll
-      return this._cellText(cellVal).toUpperCase();
+    const monthMap: Record<string, number> = {
+      'JANUARI': 1, 'FEBRUARI': 2, 'MARET': 3, 'APRIL': 4, 'MEI': 5, 'JUNI': 6,
+      'JULI': 7, 'AGUSTUS': 8, 'SEPTEMBER': 9, 'OKTOBER': 10, 'NOVEMBER': 11, 'DESEMBER': 12,
     };
 
-    for (let r = 5; r <= ws.rowCount; r++) {
+    for (let r = 4; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const bulanRaw = extractBulanStr(row.getCell(2).value as ExcelJS.CellValue);
+      const bulanRaw = String(row.getCell(2).value ?? '').trim().toUpperCase();
       if (!bulanRaw) continue;
 
-      // Extract month + year: "JULI  2026" (spasi ganda OK via \s+)
+      // Extract month + year from "JULI 2026" pattern
       const monthMatch = bulanRaw.match(/([A-Z]+)\s+(\d{4})/);
       if (!monthMatch) continue;
       const monthName = monthMatch[1];
       const year = parseInt(monthMatch[2], 10);
       const month = monthMap[monthName];
       if (!month) continue;
-      // Validasi tahun masuk akal
-      if (year < 2000 || year > 2100) continue;
 
-      // Scan hari C3-C33 (hari ke-1 di col 3, hari ke-31 di col 33)
+      // Scan days C3 (day 1) through C33 (day 31)
       for (let day = 1; day <= 31; day++) {
-        const dayCell = row.getCell(day + 2);
-        const rawVal = dayCell.value;
-
-        // Jika sel Date (hari normal berformat date) → bukan kode libur
-        if (rawVal instanceof Date) continue;
-
-        const valStr = this._cellText(rawVal as ExcelJS.CellValue).toUpperCase().trim();
-        if (!valStr) continue;
-        // Skip angka murni (isian tanggal angka atau angka serial)
-        if (/^\d+$/.test(valStr)) continue;
-        // Bersihkan prefix ":" → "CUTI BERSAMA"
-        const cleaned = valStr.replace(/^[:\s]+/, '').trim();
-        if (!cleaned) continue;
-        // Terima hanya kode libur yang valid
-        if (!LIBUR_CODES.has(cleaned)) continue;
-
-        const tanggal = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        rows.push({ tanggal, keterangan: cleaned });
+        const cellVal = row.getCell(day + 2).value; // C3 = day 1
+        if (cellVal === null || cellVal === undefined) continue;
+        const valStr = String(cellVal).trim().toUpperCase();
+        // Cell is a holiday code (LU, LHB, etc.) if it's NOT just a number
+        if (valStr && !valStr.match(/^\d+$/) && valStr.length <= 10) {
+          const tanggal = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          rows.push({ tanggal, keterangan: valStr });
+        }
       }
     }
 
@@ -820,68 +478,44 @@ export class KbmImportService {
         }
       }
       // Tambah mapel dari BEBAN yang belum ada di ACUAN (mis. Prakarya)
-      // PENTING: kode diambil dari _makeMapelKode(nama) — bukan dari norm (bisa panjang 20+).
       const bebanMapelNames = this._parseUniqueMapelFromBeban(wb);
       for (const nama of bebanMapelNames) {
         const norm = this._normalizeMapelNama(nama);
+        // Cek apakah sudah ada (by normalized nama)
         const existing = await queryRunner.manager
           .createQueryBuilder(Mapel, 'm')
           .where('UPPER(m.nama) = :nama', { nama: norm })
           .getOne();
         if (!existing) {
-          const kodeBeban = this._makeMapelKode(nama);  // ≤20 char, bukan norm
-          // Cek juga by kode (idempoten jika kode sudah ada dari run sebelumnya)
-          const existingByKode = await queryRunner.manager.findOne(Mapel, { where: { kode: kodeBeban } });
-          if (!existingByKode) {
-            await queryRunner.manager.save(Mapel, { kode: kodeBeban, nama, urutan: 0 });
-            mapelTersimpan++;
-          }
+          // Buat mapel baru dengan kode = nama (tidak ada kode ACUAN)
+          await queryRunner.manager.save(Mapel, { kode: norm, nama, urutan: 0 });
+          mapelTersimpan++;
         }
       }
 
-      // ── Guru: dedupe by ORANG (bukan by kode). Simpan 44 orang, bukan 52 kode. ──
-      // guru.kode = kode primer (alfanumerik terendah dari kodeList).
-      // Kode alias disimpan in-memory — Tahap B akan membangun peta kode→guruId
-      // langsung dari DB (by nama matching), bukan dari field kode saja.
-      const rawGuruRows = this._parseGuru(wb);
-      const { persons } = this._dedupeGuruByPerson(rawGuruRows);
+      // ── Guru: upsert by kode (email kosong) ──
+      const guruRows = this._parseGuru(wb);
       let guruTersimpan = 0, guruDilewati = 0;
-      for (const p of persons) {
-        // Cek by kode primer
-        const existingByKode = await queryRunner.manager.findOne(Guru, { where: { kode: p.kode } });
-        if (existingByKode) {
-          existingByKode.nama = p.nama;
-          await queryRunner.manager.save(existingByKode);
+      for (const g of guruRows) {
+        if (!g.kode) continue;
+        const existing = await queryRunner.manager.findOne(Guru, { where: { kode: g.kode } });
+        if (existing) {
+          existing.nama = g.nama;
+          await queryRunner.manager.save(existing);
           guruDilewati++;
-          continue;
+        } else {
+          await queryRunner.manager.save(Guru, {
+            nama: g.nama,
+            kode: g.kode,
+            nip: null,
+            email: null,
+            jenisKelamin: 'L',
+            fotoUrl: '',
+            status: 'aktif',
+            faceStatus: 'BELUM',
+          });
+          guruTersimpan++;
         }
-        // Cek by nama (orang yang sama mungkin sudah ada tapi dengan kode lama/berbeda)
-        const normNamaUp = p.nama.toUpperCase().replace(/\s+/g, ' ').trim();
-        const existingByNama = await queryRunner.manager
-          .createQueryBuilder(Guru, 'g')
-          .where('UPPER(g.nama) = :nama', { nama: normNamaUp })
-          .getOne();
-        if (existingByNama) {
-          // Update kode primer jika belum di-set atau berbeda
-          if (!existingByNama.kode) {
-            existingByNama.kode = p.kode;
-          }
-          await queryRunner.manager.save(existingByNama);
-          guruDilewati++;
-          continue;
-        }
-        // Orang baru
-        await queryRunner.manager.save(Guru, {
-          nama: p.nama,
-          kode: p.kode,   // kode primer
-          nip: null,
-          email: null,
-          jenisKelamin: 'L',
-          fotoUrl: '',
-          status: 'aktif',
-          faceStatus: 'BELUM',
-        });
-        guruTersimpan++;
       }
 
       // ── Kelas: upsert by nama ──
@@ -912,7 +546,7 @@ export class KbmImportService {
         resource: 'import-kbm',
         ip: req.ip,
         userAgent: req.headers['user-agent'] as string,
-        summary: `Tahap A: ${mapelTersimpan} mapel baru, ${guruTersimpan} guru baru (${persons.length} orang unik dari ${rawGuruRows.length} kode), ${kelasTersimpan} kelas baru`,
+        summary: `Tahap A: ${mapelTersimpan} mapel baru, ${guruTersimpan} guru baru, ${kelasTersimpan} kelas baru`,
       });
 
       return {
@@ -975,52 +609,11 @@ export class KbmImportService {
 
       // ── Penugasan: upsert by (mapelId, kelasId, tahunAjaranId) ──
       const penugasanRows = this._parsePenugasan(wb);
-
-      // Bangun peta kode→guruId yang mencakup SEMUA 52 kode (termasuk alias).
-      // Strategi: pertama, lookup by kode (field guru.kode = kode primer).
-      // Kode alias (mis. I4 untuk Rohmah yang kode primer = A7) tidak ada di DB.
-      // Untuk kode alias: lookup by nama orang di rawGuruRows → normNama → guruId.
-      const rawGuruRows = this._parseGuru(wb);
-      const { kodeToPersonIdx, persons: personList } = this._dedupeGuruByPerson(rawGuruRows);
-
-      // Map normNama → guruId dari DB (untuk kode alias)
+      // Build kode→guruId + mapelNama→mapelId maps
       const guruByKode = new Map<string, number>();
-      const guruByNormNama = new Map<string, number>();
       for (const g of allGuru) {
         if (g.kode) guruByKode.set(g.kode, g.id);
-        // Normalisasi nama yang sama seperti di _dedupeGuruByPerson
-        const normNama = g.nama
-          .toLowerCase()
-          .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
-          .replace(/[,.]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-        guruByNormNama.set(normNama, g.id);
       }
-
-      // Bangun peta kode alias → guruId via kodeToPersonIdx → nama orang → normNama → guruId
-      const kodeToGuruId = new Map<string, number>();
-      for (const [kode, personIdx] of kodeToPersonIdx) {
-        const person = personList[personIdx];
-        // Coba kode primer dulu
-        let guruId = guruByKode.get(person.kode);
-        if (!guruId) {
-          // Coba via normNama
-          const normNama = person.nama
-            .toLowerCase()
-            .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
-            .replace(/[,.]/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-          guruId = guruByNormNama.get(normNama);
-        }
-        if (guruId) {
-          kodeToGuruId.set(kode, guruId);
-        } else {
-          this.logger.warn(`Tahap B: tidak menemukan guruId untuk kode=${kode}, orang=${person.nama}`);
-        }
-      }
-
       const allMapel = await queryRunner.manager.find(Mapel);
       const mapelByNama = new Map<string, number>();
       const mapelByKode = new Map<string, number>();
@@ -1036,8 +629,7 @@ export class KbmImportService {
 
       let penugasanTersimpan = 0, penugasanDilewati = 0;
       for (const p of penugasanRows) {
-        // kodeToGuruId mencakup SEMUA 52 kode (primer + alias multi-mapel)
-        const guruId = kodeToGuruId.get(p.kodeGuru);
+        const guruId = guruByKode.get(p.kodeGuru);
         // Match mapel by normalized nama (BEBAN uses "I P S", "P A I", "Pendidikan Pancasila") or kode
         const normNama = this._normalizeMapelNama(p.mapel);
         const mapelId = mapelByNama.get(normNama) ?? mapelByKode.get(p.mapel.toUpperCase());
@@ -1117,12 +709,16 @@ export class KbmImportService {
         }
       }
 
-      // ── Jadwal KBM: upsert ──
-      // NOTE: Jadwal parsing paling rumit (merge cell besar).
-      // Penugasan harus sudah ada (Tahap B). Link jadwal→penugasan via (mapelNama, kelas, guru).
-      // Karena 2.KBM cell berisi kodeGuru saja (mis. "A3"), kita cari penugasan
-      // yang guru.kode = A3 di kelas tsb. Jika ambigu (guru ampu multiple mapel di kelas sama),
-      // skip + log.
+      // ── Jadwal KBM: idempoten — hapus jadwal lama TA aktif, lalu insert ulang ──
+      // JADWAL-RAPIKAN C: commit C ulang harus menggantikan jadwal lama sepenuhnya.
+      // Hanya hapus jadwal yang TIDAK punya presensi_sesi (FK RESTRICT).
+      await queryRunner.query(
+        `DELETE FROM jadwal_kbm
+         WHERE "penugasanId" IN (SELECT id FROM penugasan WHERE "tahunAjaranId" = $1)
+         AND id NOT IN (SELECT "jadwalKbmId" FROM presensi_sesi WHERE "jadwalKbmId" IS NOT NULL)`,
+        [ta.id],
+      );
+
       const jadwalRows = this._parseJadwal(wb);
       const allGuru = await queryRunner.manager.find(Guru);
       const guruByKode = new Map<string, number>();
@@ -1163,22 +759,15 @@ export class KbmImportService {
         const jamSelesai = this._jamKeToTime(j.jamKe + 1);
         const hariNum = HARI_KBM.indexOf(j.hari) + 1;
 
-        // Upsert by (penugasanId, hari, jamMulai)
-        const existing = await queryRunner.manager.findOne(JadwalKbm, {
-          where: { penugasanId, hari: hariNum, jamMulai },
+        // JADWAL-RAPIKAN C: insert langsung (jadwal lama sudah dihapus di atas)
+        await queryRunner.manager.save(JadwalKbm, {
+          penugasanId,
+          hari: hariNum,
+          jamMulai,
+          jamSelesai,
+          sesiKe: j.jamKe,
         });
-        if (existing) {
-          jadwalDilewati++;
-        } else {
-          await queryRunner.manager.save(JadwalKbm, {
-            penugasanId,
-            hari: hariNum,
-            jamMulai,
-            jamSelesai,
-            sesiKe: j.jamKe,
-          });
-          jadwalTersimpan++;
-        }
+        jadwalTersimpan++;
       }
 
       await queryRunner.commitTransaction();
@@ -1227,49 +816,6 @@ export class KbmImportService {
     return aliases[s] ?? s;
   }
 
-  /**
-   * Derivasi kode ≤20 karakter dari nama mapel untuk mapel dari BEBAN
-   * yang tidak ada di sheet ACUAN (sehingga tidak punya kode pendek bawaan).
-   *
-   * Strategi:
-   *   1. Cek tabel singkatan mapel yang sudah diketahui.
-   *   2. Buat akronim dari kata-kata (mis. "Bahasa Daerah" → "BADAE").
-   *   3. Fallback: truncate 20 karakter (uppercase, trim).
-   *
-   * Hasil SELALU ≤20 karakter — aman untuk kolom varchar(20).
-   */
-  private _makeMapelKode(nama: string): string {
-    const NAMA_TO_KODE: Record<string, string> = {
-      'matematika': 'MTK',
-      'bahasa indonesia': 'BIN',
-      'bahasa inggris': 'BING',
-      'bahasa arab': 'BAR',
-      'bahasa daerah': 'BADER',
-      'ipa': 'IPA',
-      'ips': 'IPS',
-      'pai': 'PAI',
-      'pendidikan agama islam': 'PAI',
-      'pjok': 'PJOK',
-      'pendidikan jasmani': 'PJOK',
-      'informatika': 'INF',
-      'seni budaya': 'SBP',
-      'prakarya': 'PRAKARYA',
-      'pendidikan pancasila': 'PP',
-      'bimbingan konseling': 'BK',
-      'klasikal': 'KLASIKAL',
-    };
-    const key = nama.toLowerCase().trim();
-    if (NAMA_TO_KODE[key]) return NAMA_TO_KODE[key];
-
-    // Akronim: ambil huruf pertama setiap kata, uppercase
-    const words = key.split(/\s+/).filter((w) => w.length > 0);
-    const akronim = words.map((w) => w[0].toUpperCase()).join('');
-    if (akronim.length <= 20) return akronim;
-
-    // Fallback: truncate uppercase
-    return nama.toUpperCase().trim().replace(/\s+/g, '_').substring(0, 20);
-  }
-
   /** Parse unique mapel names from 1. BEBAN (full names: "Matematika", "Prakarya"...). */
   private _parseUniqueMapelFromBeban(wb: ExcelJS.Workbook): string[] {
     const ws = wb.getWorksheet('1. BEBAN');
@@ -1278,7 +824,7 @@ export class KbmImportService {
     const result: string[] = [];
     for (let r = 8; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
-      const mapel = this._cellText(row.getCell(1).value as ExcelJS.CellValue);
+      const mapel = String(row.getCell(1).value ?? '').trim();
       if (!mapel || mapel === 'MAPEL' || mapel.toUpperCase().includes('JUMLAH')) continue;
       if (!seen.has(mapel.toUpperCase())) {
         seen.add(mapel.toUpperCase());
@@ -1328,12 +874,15 @@ export class KbmImportService {
     return result;
   }
 
-  /** Convert jamKe (1-8) to time string. JamKe 1=08:30, 2=09:00, 3=09:30, 4=10:00, 5=11:00, 6=11:30, 7=12:00, 8=12:30. */
+  /** Convert jamKe (0-8) to jamMulai time string.
+   *  JADWAL-RAPIKAN C: gunakan rentang waktu aktual dari sheet 2.KBM.
+   *  jamKe 9 (untuk jamSelesai sesi 8) = '13:00' — BUKAN '00:00' (bug hantu lama).
+   */
   private _jamKeToTime(jamKe: number): string {
-    const base = { h: 8, m: 30 };
     const slots: Record<number, string> = {
       0: '06:30', 1: '08:30', 2: '09:00', 3: '09:30', 4: '10:00',
       5: '11:00', 6: '11:30', 7: '12:00', 8: '12:30',
+      9: '13:00', // jamSelesai untuk sesi terakhir (jamKe=8)
     };
     return slots[jamKe] ?? '00:00';
   }

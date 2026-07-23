@@ -290,6 +290,17 @@ export interface JadwalKbm {
   updatedAt: string;
 }
 
+export interface JamPelajaran {
+  id: number;
+  tahunAjaranId: number;
+  hari: number;
+  urutan: number;
+  jamMulai: string; // HH:mm
+  jamSelesai: string; // HH:mm
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ============ F2: GURU KBM & PRESENSI SISWA TYPES ============
 
 export type StatusPresensi = 'H' | 'S' | 'I' | 'A' | 'T';
@@ -1170,6 +1181,58 @@ export const api = {
   deleteJadwal: (id: number) =>
     request<{ message: string }>(`/kurikulum/jadwal/${id}`, { method: 'DELETE' })
     .then((result) => { invalidateCache('/kurikulum/jadwal'); return result; }),
+
+  // --- Jadwal Matriks (JADWAL-MATRIX spec) ---
+  getJadwalMatriks: (hari: number, taId?: number) => {
+    const q = taId ? `?hari=${hari}&taId=${taId}` : `?hari=${hari}`;
+    return request<{
+      hari: number;
+      taId: number;
+      jamSlots: Array<{ id: number; urutan: number; jamMulai: string; jamSelesai: string }>;
+      kelas: Array<{ id: number; nama: string }>;
+      sel: Record<string, {
+        kode: string | null;
+        guruNama: string;
+        mapelNama: string;
+        penugasanId: number;
+        jadwalId: number;
+        guruId: number;
+      }>;
+    }>(`/kurikulum/jadwal/matriks${q}`);
+  },
+
+  batchAssignJadwal: (data: {
+    hari: number;
+    slots: Array<{ kelasId: number; penugasanId: number; jamMulai: string; jamSelesai: string }>;
+  }) =>
+    request<{ ok: boolean; disimpan: number; ids: number[] }>('/kurikulum/jadwal/batch-assign', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }).then((r) => { invalidateCache('/kurikulum/jadwal'); return r; }),
+
+  batchHapusJadwal: (ids: number[]) =>
+    request<{ ok: boolean; dihapus: number }>('/kurikulum/jadwal/batch-hapus', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }).then((r) => { invalidateCache('/kurikulum/jadwal'); return r; }),
+
+  // --- Jam Pelajaran (JADWAL-MATRIX-FIX Butir 6) ---
+  listJamPelajaran: (hari: number, taId?: number) => {
+    const q = taId ? `?hari=${hari}&taId=${taId}` : `?hari=${hari}`;
+    return request<JamPelajaran[]>(`/kurikulum/jam-pelajaran${q}`);
+  },
+  addJamPelajaran: (data: { hari: number; jamMulai: string; jamSelesai: string; taId?: number }) =>
+    request<JamPelajaran>('/kurikulum/jam-pelajaran', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateJamPelajaran: (id: number, data: { jamMulai: string; jamSelesai: string }) =>
+    request<JamPelajaran>(`/kurikulum/jam-pelajaran/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+  removeJamPelajaran: (id: number) =>
+    request<{ ok: boolean }>(`/kurikulum/jam-pelajaran/${id}`, { method: 'DELETE' }),
 
   // --- Kurikulum: Dashboard counts (T15) ---
   getKurikulumDashboard: () =>

@@ -30,9 +30,9 @@
     "semantic_hash": "17abe484f6189da15a1ac1b6881108a4"
   },
   "backend/src/app.module.ts": {
-    "mtime": 1784485854.1369367,
-    "ast_hash": "49c215f2031d330c5fec478a87c5513b",
-    "semantic_hash": "49c215f2031d330c5fec478a87c5513b"
+    "mtime": 1784824052.3091395,
+    "ast_hash": "2d0615daf311aacca8c5be38928ebed2",
+    "semantic_hash": ""
   },
   "backend/src/audit/activity-log.entity.ts": {
     "mtime": 1783944926.2238586,
@@ -395,18 +395,18 @@
     "semantic_hash": "ad97c899f0e13a4e5d8657260e1d0def"
   },
   "backend/src/kurikulum/kurikulum.controller.ts": {
-    "mtime": 1784786266.3611054,
-    "ast_hash": "5bc36d7566b3b77363afdf97bb2f4e72",
+    "mtime": 1784823098.1908028,
+    "ast_hash": "d0406ac9bbcc72e96743d9ea586d0d60",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.module.ts": {
-    "mtime": 1784786017.5916526,
-    "ast_hash": "a53f89a735534f40d4a885860095c822",
+    "mtime": 1784822948.3524578,
+    "ast_hash": "718876cad331f8f9b833df9123ba492e",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.service.ts": {
-    "mtime": 1784786252.6841667,
-    "ast_hash": "ffd559256e2549dfd292ee6fc7397a1a",
+    "mtime": 1784830325.5666444,
+    "ast_hash": "7ceb09fd3ff126294a68d5434d8dee30",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/libur.controller.ts": {
@@ -1180,13 +1180,13 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784794403.4742725,
-    "ast_hash": "35615dfdcd82fccc4340372db0595078",
+    "mtime": 1784823145.3112218,
+    "ast_hash": "b6b558beab3807f54676960671c91899",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
-    "mtime": 1784786404.0864043,
-    "ast_hash": "778e98c3d93094f170d63f13bdab99aa",
+    "mtime": 1784825925.4865348,
+    "ast_hash": "a043d49620a643fff63e7f9f04a4db9b",
     "semantic_hash": ""
   },
   "frontend/src/app/AppLayout.tsx": {
@@ -1705,9 +1705,9 @@
     "semantic_hash": "757da81efc90d2c6d006d669f1c7e75b"
   },
   "frontend/src/pages/kurikulum/JadwalKbmPage.tsx": {
-    "mtime": 1784630420.6198053,
-    "ast_hash": "dcfcc76279b3f606825346eacfedf351",
-    "semantic_hash": "dcfcc76279b3f606825346eacfedf351"
+    "mtime": 1784826054.3715065,
+    "ast_hash": "f6da800d2ec1f7653415eb9db3941b8e",
+    "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/KurikulumDashboardPage.tsx": {
     "mtime": 1784786430.9570584,
@@ -2335,13 +2335,48 @@
     "semantic_hash": ""
   },
   "backend/src/import/kbm-import.service.ts": {
-    "mtime": 1784815324.2758522,
-    "ast_hash": "a45660f78eba252f1353c09ed6eb174c",
+    "mtime": 1784828526.6667817,
+    "ast_hash": "f13a5dd8b8908e7488588bd0a122208c",
     "semantic_hash": ""
   },
   "backend/src/migrations/1785100000000-AddGuruKode.ts": {
     "mtime": 1784795360.3177962,
     "ast_hash": "c497606b57de0306019a11a05a5497b9",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/JadwalMatriksPage.tsx": {
+    "mtime": 1784823301.9896424,
+    "ast_hash": "729f520b461238d5c4a160c3e12bcb41",
+    "semantic_hash": ""
+  },
+  "briefs/JADWAL-MATRIX-SPEC.md": {
+    "mtime": 1784819268.9869394,
+    "ast_hash": "9c59890d97ce60fdff1667a9763a22dd",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/jadwal-matriks.spec.ts": {
+    "mtime": 1784830971.862018,
+    "ast_hash": "a5f230b583a586ea8a060e730ad28077",
+    "semantic_hash": ""
+  },
+  "backend/src/kurikulum/jam-pelajaran.entity.ts": {
+    "mtime": 1784822918.2566657,
+    "ast_hash": "8ecfd96a20536be2bcaac248b35c44a0",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1785200000000-AddJamPelajaran.ts": {
+    "mtime": 1784822938.2819426,
+    "ast_hash": "6b97006be1eca516d31fe68bdde6b7c4",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/create_jam_pelajaran.sql": {
+    "mtime": 1784823582.1396224,
+    "ast_hash": "3ed4f97fa18d6fbec1b470e69c1487f6",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/check_jp.sql": {
+    "mtime": 1784825224.0405302,
+    "ast_hash": "3e63c098a72daf77999a5a8dd80ec633",
     "semantic_hash": ""
   }
 }

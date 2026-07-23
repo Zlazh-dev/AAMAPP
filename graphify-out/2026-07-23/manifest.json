@@ -395,8 +395,8 @@
     "semantic_hash": "ad97c899f0e13a4e5d8657260e1d0def"
   },
   "backend/src/kurikulum/kurikulum.controller.ts": {
-    "mtime": 1784786266.3611054,
-    "ast_hash": "5bc36d7566b3b77363afdf97bb2f4e72",
+    "mtime": 1784819926.4611094,
+    "ast_hash": "61ffd19009792d5f640497494c3095b4",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.module.ts": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.service.ts": {
-    "mtime": 1784786252.6841667,
-    "ast_hash": "ffd559256e2549dfd292ee6fc7397a1a",
+    "mtime": 1784819046.8468945,
+    "ast_hash": "a85cc4c54f67b843a0de15ede0f1b09b",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/libur.controller.ts": {
@@ -1180,13 +1180,13 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784794403.4742725,
-    "ast_hash": "35615dfdcd82fccc4340372db0595078",
+    "mtime": 1784817130.631752,
+    "ast_hash": "305d59234b09fff15237b4af699afc3e",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
-    "mtime": 1784786404.0864043,
-    "ast_hash": "778e98c3d93094f170d63f13bdab99aa",
+    "mtime": 1784817275.9146936,
+    "ast_hash": "5587141903dd379e3465a85c47f7bb2e",
     "semantic_hash": ""
   },
   "frontend/src/app/AppLayout.tsx": {
@@ -1705,9 +1705,9 @@
     "semantic_hash": "757da81efc90d2c6d006d669f1c7e75b"
   },
   "frontend/src/pages/kurikulum/JadwalKbmPage.tsx": {
-    "mtime": 1784630420.6198053,
-    "ast_hash": "dcfcc76279b3f606825346eacfedf351",
-    "semantic_hash": "dcfcc76279b3f606825346eacfedf351"
+    "mtime": 1784817448.670117,
+    "ast_hash": "c50ec1afa47472bf17da300526dd1469",
+    "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/KurikulumDashboardPage.tsx": {
     "mtime": 1784786430.9570584,
@@ -2335,13 +2335,28 @@
     "semantic_hash": ""
   },
   "backend/src/import/kbm-import.service.ts": {
-    "mtime": 1784810486.3421524,
-    "ast_hash": "b00e40e4fa4e6d97bea53f4ff60e946f",
+    "mtime": 1784818591.5950227,
+    "ast_hash": "6ea705a5a036648b3468a682d0501da7",
     "semantic_hash": ""
   },
   "backend/src/migrations/1785100000000-AddGuruKode.ts": {
     "mtime": 1784795360.3177962,
     "ast_hash": "c497606b57de0306019a11a05a5497b9",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/JadwalMatriksPage.tsx": {
+    "mtime": 1784817679.0552704,
+    "ast_hash": "35bc3365c68cd751536cec8366615286",
+    "semantic_hash": ""
+  },
+  "briefs/JADWAL-MATRIX-SPEC.md": {
+    "mtime": 1784819268.9869394,
+    "ast_hash": "9c59890d97ce60fdff1667a9763a22dd",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/jadwal-matriks.spec.ts": {
+    "mtime": 1784820133.7088532,
+    "ast_hash": "532d1428227eb3c89a673ca71be77649",
     "semantic_hash": ""
   }
 }

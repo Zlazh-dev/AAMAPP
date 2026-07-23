@@ -173,9 +173,80 @@ export class KurikulumController {
     return this.svc.removeJadwal(id, req);
   }
 
+  // ─── Jadwal Matriks (JADWAL-MATRIX spec) ──────────────────────
+
+  /** GET /api/kurikulum/jadwal/matriks?hari=N[&taId=] */
+  @Get('jadwal/matriks')
+  @Roles('admin', 'kurikulum')
+  listJadwalMatriks(
+    @Query('hari') hariStr: string,
+    @Query('taId') taIdStr?: string,
+  ) {
+    const hari = parseInt(hariStr, 10);
+    const taId = taIdStr ? parseInt(taIdStr, 10) : undefined;
+    return this.svc.listJadwalMatriks({ hari, taId });
+  }
+
+  /** POST /api/kurikulum/jadwal/batch-assign */
+  @Post('jadwal/batch-assign')
+  @Roles('admin', 'kurikulum')
+  batchAssignJadwal(@Body() body: { hari: number; slots: Array<{ kelasId: number; penugasanId: number; jamMulai: string; jamSelesai: string }> }, @Req() req: Request) {
+    return this.svc.batchAssignJadwal(body, req);
+  }
+
+  /** POST /api/kurikulum/jadwal/batch-hapus
+   *  Body: { ids: number[] } — transaksi semua-atau-batal, guard presensi_sesi.
+   *  POST (bukan DELETE) karena body JSON wajib untuk operasi batch.
+   */
+  @Post('jadwal/batch-hapus')
+  @Roles('admin', 'kurikulum')
+  batchHapusJadwal(@Body() body: { ids: number[] }, @Req() req: Request) {
+    return this.svc.batchHapusJadwal(body, req);
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // JAM PELAJARAN (JADWAL-MATRIX-FIX Butir 6)
+  // ─────────────────────────────────────────────────────────────
+
+  /** GET /api/kurikulum/jam-pelajaran?hari=N[&taId=] */
+  @Get('jam-pelajaran')
+  @Roles('admin', 'kurikulum')
+  listJamPelajaran(@Query('hari') hariStr: string, @Query('taId') taIdStr?: string) {
+    const hari = parseInt(hariStr, 10);
+    const taId = taIdStr ? parseInt(taIdStr, 10) : undefined;
+    return this.svc.listJamPelajaran({ hari, taId });
+  }
+
+  /** POST /api/kurikulum/jam-pelajaran — tambah JP baru */
+  @Post('jam-pelajaran')
+  @Roles('admin', 'kurikulum')
+  addJamPelajaran(
+    @Body() body: { hari: number; jamMulai: string; jamSelesai: string; taId?: number },
+  ) {
+    return this.svc.addJamPelajaran(body);
+  }
+
+  /** PATCH /api/kurikulum/jam-pelajaran/:id — edit jam JP + geser jadwal */
+  @Patch('jam-pelajaran/:id')
+  @Roles('admin', 'kurikulum')
+  updateJamPelajaran(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { jamMulai: string; jamSelesai: string },
+  ) {
+    return this.svc.updateJamPelajaran(id, body);
+  }
+
+  /** DELETE /api/kurikulum/jam-pelajaran/:id — hapus JP (guard: sel kosong) */
+  @Delete('jam-pelajaran/:id')
+  @Roles('admin', 'kurikulum')
+  removeJamPelajaran(@Param('id', ParseIntPipe) id: number) {
+    return this.svc.removeJamPelajaran(id);
+  }
+
   // ─────────────────────────────────────────────────────────────
   // KKM
   // ─────────────────────────────────────────────────────────────
+
 
   @Get('pengaturan/kkm')
   @Roles('admin', 'kurikulum', 'kepsek', 'guru')

@@ -1,0 +1,2382 @@
+{
+  ".claude/launch.json": {
+    "mtime": 1783962569.812347,
+    "ast_hash": "65fa9e27db4d22031b22de006da296bb",
+    "semantic_hash": "65fa9e27db4d22031b22de006da296bb"
+  },
+  ".claude/settings.local.json": {
+    "mtime": 1783962392.4848936,
+    "ast_hash": "b63d9bc81332f7c682f342e027134c36",
+    "semantic_hash": "b63d9bc81332f7c682f342e027134c36"
+  },
+  "backend/nest-cli.json": {
+    "mtime": 1783944828.861896,
+    "ast_hash": "b6c9c4b64b7092bea720263a47b574cf",
+    "semantic_hash": "b6c9c4b64b7092bea720263a47b574cf"
+  },
+  "backend/package.json": {
+    "mtime": 1784531060.1728733,
+    "ast_hash": "0db95bf0b3fdf91e68b2f2ec1ea9f03f",
+    "semantic_hash": "0db95bf0b3fdf91e68b2f2ec1ea9f03f"
+  },
+  "backend/scripts/t11-static-check.js": {
+    "mtime": 1784033846.9665036,
+    "ast_hash": "377eb2fe4143b631e75b84ea9fd3996f",
+    "semantic_hash": "377eb2fe4143b631e75b84ea9fd3996f"
+  },
+  "backend/scripts/t11-upload-png.js": {
+    "mtime": 1784033931.4577737,
+    "ast_hash": "17abe484f6189da15a1ac1b6881108a4",
+    "semantic_hash": "17abe484f6189da15a1ac1b6881108a4"
+  },
+  "backend/src/app.module.ts": {
+    "mtime": 1784824052.3091395,
+    "ast_hash": "2d0615daf311aacca8c5be38928ebed2",
+    "semantic_hash": ""
+  },
+  "backend/src/audit/activity-log.entity.ts": {
+    "mtime": 1783944926.2238586,
+    "ast_hash": "c7db49c3bf421599ed74145988304dcc",
+    "semantic_hash": "c7db49c3bf421599ed74145988304dcc"
+  },
+  "backend/src/audit/audit.controller.ts": {
+    "mtime": 1783944942.1439252,
+    "ast_hash": "3eb1749d94ac3ed6a42c9ae934281e64",
+    "semantic_hash": "3eb1749d94ac3ed6a42c9ae934281e64"
+  },
+  "backend/src/audit/audit.module.ts": {
+    "mtime": 1783944953.4336777,
+    "ast_hash": "2e7c30331e3c5d0371d5c402dbea5189",
+    "semantic_hash": "2e7c30331e3c5d0371d5c402dbea5189"
+  },
+  "backend/src/audit/audit.service.ts": {
+    "mtime": 1784049484.1642082,
+    "ast_hash": "9ab2e5e48e00271d5d54747541741589",
+    "semantic_hash": "9ab2e5e48e00271d5d54747541741589"
+  },
+  "backend/src/auth/auth.controller.ts": {
+    "mtime": 1784267940.584427,
+    "ast_hash": "5b9ff198ea507f4c753f903617b60d9d",
+    "semantic_hash": "5b9ff198ea507f4c753f903617b60d9d"
+  },
+  "backend/src/auth/auth.module.ts": {
+    "mtime": 1783945071.4505744,
+    "ast_hash": "507e556b5b900e6f0d1026840b412748",
+    "semantic_hash": "507e556b5b900e6f0d1026840b412748"
+  },
+  "backend/src/auth/auth.service.ts": {
+    "mtime": 1783946452.5933285,
+    "ast_hash": "5cde6009e82cb6c2255b31d3217a9255",
+    "semantic_hash": "5cde6009e82cb6c2255b31d3217a9255"
+  },
+  "backend/src/common/current-user.decorator.ts": {
+    "mtime": 1783944899.359542,
+    "ast_hash": "1131d7a5da4661b52a3f07c0d0fb884a",
+    "semantic_hash": "1131d7a5da4661b52a3f07c0d0fb884a"
+  },
+  "backend/src/common/device.util.ts": {
+    "mtime": 1783944873.942127,
+    "ast_hash": "955407604456ee22fd81aaa5c3122a8d",
+    "semantic_hash": "955407604456ee22fd81aaa5c3122a8d"
+  },
+  "backend/src/common/public.decorator.ts": {
+    "mtime": 1784267836.2670224,
+    "ast_hash": "12dc4a17e9e29ea4e83cc6e3ffea6c48",
+    "semantic_hash": "12dc4a17e9e29ea4e83cc6e3ffea6c48"
+  },
+  "backend/src/common/roles.decorator.ts": {
+    "mtime": 1783944878.4855008,
+    "ast_hash": "155f61ea03e3ef7d3d5e2fee554f8428",
+    "semantic_hash": "155f61ea03e3ef7d3d5e2fee554f8428"
+  },
+  "backend/src/common/roles.guard.ts": {
+    "mtime": 1784485854.1391377,
+    "ast_hash": "05f4bcfcd8e9bd6d74c7f19c8dd98a60",
+    "semantic_hash": "05f4bcfcd8e9bd6d74c7f19c8dd98a60"
+  },
+  "backend/src/common/session-auth.guard.ts": {
+    "mtime": 1784267864.0675747,
+    "ast_hash": "6cb579a96e9e0d67f55c6b1c2c3c959a",
+    "semantic_hash": "6cb579a96e9e0d67f55c6b1c2c3c959a"
+  },
+  "backend/src/common/wib.util.ts": {
+    "mtime": 1783944867.8983395,
+    "ast_hash": "a13b7896f899d5a7d1d343791b995c74",
+    "semantic_hash": "a13b7896f899d5a7d1d343791b995c74"
+  },
+  "backend/src/data-source.ts": {
+    "mtime": 1784566352.7426975,
+    "ast_hash": "4b17fbb4afd53f3c7e6a1d2fd5c3aecc",
+    "semantic_hash": "4b17fbb4afd53f3c7e6a1d2fd5c3aecc"
+  },
+  "backend/src/ekskul/dto/ekskul.dto.ts": {
+    "mtime": 1784399001.7340393,
+    "ast_hash": "f924397855ea34f7cfc497c94f04cd71",
+    "semantic_hash": "f924397855ea34f7cfc497c94f04cd71"
+  },
+  "backend/src/ekskul/ekskul-kehadiran.entity.ts": {
+    "mtime": 1784398984.0758126,
+    "ast_hash": "394f17090abc6c1b71f65744f973e438",
+    "semantic_hash": "394f17090abc6c1b71f65744f973e438"
+  },
+  "backend/src/ekskul/ekskul-nilai.entity.ts": {
+    "mtime": 1784398972.1318884,
+    "ast_hash": "119478bd5f356dbeb065de53252ac8be",
+    "semantic_hash": "119478bd5f356dbeb065de53252ac8be"
+  },
+  "backend/src/ekskul/ekskul-peserta.entity.ts": {
+    "mtime": 1784398949.7295198,
+    "ast_hash": "28de8ee3f586831abe1622dbb037ccfc",
+    "semantic_hash": "28de8ee3f586831abe1622dbb037ccfc"
+  },
+  "backend/src/ekskul/ekskul-tujuan.entity.ts": {
+    "mtime": 1784398960.588623,
+    "ast_hash": "32a62d739142801fd00764130b99d213",
+    "semantic_hash": "32a62d739142801fd00764130b99d213"
+  },
+  "backend/src/ekskul/ekskul.controller.ts": {
+    "mtime": 1784752075.487085,
+    "ast_hash": "b4a571fce0b2b1957d8ecc957fae80b9",
+    "semantic_hash": ""
+  },
+  "backend/src/ekskul/ekskul.entity.ts": {
+    "mtime": 1784398938.877554,
+    "ast_hash": "c3163f0c497cb270d0ce2d31a79ca031",
+    "semantic_hash": "c3163f0c497cb270d0ce2d31a79ca031"
+  },
+  "backend/src/ekskul/ekskul.module.ts": {
+    "mtime": 1784399120.1407366,
+    "ast_hash": "ee52588a2c9f2d5c623c1ff116a38168",
+    "semantic_hash": "ee52588a2c9f2d5c623c1ff116a38168"
+  },
+  "backend/src/ekskul/ekskul.service.ts": {
+    "mtime": 1784556909.1463878,
+    "ast_hash": "08fade1bffb0a3f60fb0aa2b1d4884e2",
+    "semantic_hash": "08fade1bffb0a3f60fb0aa2b1d4884e2"
+  },
+  "backend/src/guru/dto/create-guru.dto.ts": {
+    "mtime": 1784752632.8379555,
+    "ast_hash": "23c3ee8ac9095e0b5ea60c0732a51eb4",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru.controller.ts": {
+    "mtime": 1784752651.4009738,
+    "ast_hash": "300c30b4855d2ca4f246c56a1e361242",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru.entity.ts": {
+    "mtime": 1784795348.2537403,
+    "ast_hash": "d2cf8c15056ebefad8ee696a59c3398c",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru.module.ts": {
+    "mtime": 1784752543.3107903,
+    "ast_hash": "90867add5617932907d8340220c5d4de",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru.service.ts": {
+    "mtime": 1784791775.1634207,
+    "ast_hash": "25b4fec87c31ec104f313f058254853c",
+    "semantic_hash": ""
+  },
+  "backend/src/import/import.controller.ts": {
+    "mtime": 1784795687.6509223,
+    "ast_hash": "d6d0e927aba8067eca882843e57b0b86",
+    "semantic_hash": ""
+  },
+  "backend/src/import/import.module.ts": {
+    "mtime": 1784795613.7050917,
+    "ast_hash": "ee10695c2fcc04d28c0d4fe9a7509327",
+    "semantic_hash": ""
+  },
+  "backend/src/import/import.service.ts": {
+    "mtime": 1784752679.9008954,
+    "ast_hash": "dbc743d46d97274a0b36ab53035483dd",
+    "semantic_hash": ""
+  },
+  "backend/src/izin/dto/ajukan-izin.dto.ts": {
+    "mtime": 1784369987.0318758,
+    "ast_hash": "4588593d98be2892ae00b9fc6cf745e9",
+    "semantic_hash": "4588593d98be2892ae00b9fc6cf745e9"
+  },
+  "backend/src/izin/dto/keputusan.dto.ts": {
+    "mtime": 1784369995.8378248,
+    "ast_hash": "115a2afc94f94880dbbc3cf5facb05f5",
+    "semantic_hash": "115a2afc94f94880dbbc3cf5facb05f5"
+  },
+  "backend/src/izin/izin-guru.entity.ts": {
+    "mtime": 1784369972.720658,
+    "ast_hash": "90d2954d3195d1291a7de24375d3e40f",
+    "semantic_hash": "90d2954d3195d1291a7de24375d3e40f"
+  },
+  "backend/src/izin/izin.controller.ts": {
+    "mtime": 1784752047.3041706,
+    "ast_hash": "632335d79a2fea27ed48800dcb00fb28",
+    "semantic_hash": ""
+  },
+  "backend/src/izin/izin.module.ts": {
+    "mtime": 1784370460.2769303,
+    "ast_hash": "581d21e8b79221145558c151a98bd285",
+    "semantic_hash": "581d21e8b79221145558c151a98bd285"
+  },
+  "backend/src/izin/izin.service.ts": {
+    "mtime": 1784370061.5886443,
+    "ast_hash": "3d6a008eda95ded679cb36c35b368401",
+    "semantic_hash": "3d6a008eda95ded679cb36c35b368401"
+  },
+  "backend/src/kelas/dto/create-kelas.dto.ts": {
+    "mtime": 1784047824.0093367,
+    "ast_hash": "60b95c762568d26d577a7ac91bc47835",
+    "semantic_hash": "60b95c762568d26d577a7ac91bc47835"
+  },
+  "backend/src/kelas/kelas.controller.ts": {
+    "mtime": 1784526723.9015942,
+    "ast_hash": "09a7b55a70f67b772ea4a358869daf2c",
+    "semantic_hash": "09a7b55a70f67b772ea4a358869daf2c"
+  },
+  "backend/src/kelas/kelas.entity.ts": {
+    "mtime": 1784031808.3795872,
+    "ast_hash": "36352a5d4ae61f143c88ddb94d00ec8b",
+    "semantic_hash": "36352a5d4ae61f143c88ddb94d00ec8b"
+  },
+  "backend/src/kelas/kelas.module.ts": {
+    "mtime": 1784526633.4656522,
+    "ast_hash": "9c0c65282925e82d0b0794893b560c30",
+    "semantic_hash": "9c0c65282925e82d0b0794893b560c30"
+  },
+  "backend/src/kelas/kelas.service.ts": {
+    "mtime": 1784526712.8784842,
+    "ast_hash": "1d4a2585d586775866942317b988c93e",
+    "semantic_hash": "1d4a2585d586775866942317b988c93e"
+  },
+  "backend/src/kesiswaan/dto/catat-pelanggaran.dto.ts": {
+    "mtime": 1784380121.632869,
+    "ast_hash": "0a10c2e39dfce307da674c1315d85756",
+    "semantic_hash": "0a10c2e39dfce307da674c1315d85756"
+  },
+  "backend/src/kesiswaan/dto/create-katalog.dto.ts": {
+    "mtime": 1784380112.6747403,
+    "ast_hash": "7c8358356181ff27f7fde66da2725e61",
+    "semantic_hash": "7c8358356181ff27f7fde66da2725e61"
+  },
+  "backend/src/kesiswaan/dto/keputusan-pelanggaran.dto.ts": {
+    "mtime": 1784380129.4308314,
+    "ast_hash": "647266d0e6a7968108da5cc179fe9352",
+    "semantic_hash": "647266d0e6a7968108da5cc179fe9352"
+  },
+  "backend/src/kesiswaan/dto/selesai-tindak-lanjut.dto.ts": {
+    "mtime": 1784384193.6976664,
+    "ast_hash": "170ba0e971dbfc642b1115f3a88dde1e",
+    "semantic_hash": "170ba0e971dbfc642b1115f3a88dde1e"
+  },
+  "backend/src/kesiswaan/katalog-pelanggaran.entity.ts": {
+    "mtime": 1784380081.313476,
+    "ast_hash": "b1473a973644ed2d7ec8d18d3f393116",
+    "semantic_hash": "b1473a973644ed2d7ec8d18d3f393116"
+  },
+  "backend/src/kesiswaan/kesiswaan.controller.ts": {
+    "mtime": 1784543397.2578635,
+    "ast_hash": "05aab5e5ff3a6eb6db050d1a3f098940",
+    "semantic_hash": "05aab5e5ff3a6eb6db050d1a3f098940"
+  },
+  "backend/src/kesiswaan/kesiswaan.module.ts": {
+    "mtime": 1784543300.9684367,
+    "ast_hash": "3c214fb14729fedf3dbc3e9dff8b98f5",
+    "semantic_hash": "3c214fb14729fedf3dbc3e9dff8b98f5"
+  },
+  "backend/src/kesiswaan/kesiswaan.service.ts": {
+    "mtime": 1784629595.3291125,
+    "ast_hash": "614d3b615ca505d499e5c8725d59b040",
+    "semantic_hash": "614d3b615ca505d499e5c8725d59b040"
+  },
+  "backend/src/kesiswaan/pelanggaran.entity.ts": {
+    "mtime": 1784380103.6251347,
+    "ast_hash": "b0e018b164ffb78820b44e19c5222956",
+    "semantic_hash": "b0e018b164ffb78820b44e19c5222956"
+  },
+  "backend/src/kesiswaan/tindak-lanjut.entity.ts": {
+    "mtime": 1784384186.9081092,
+    "ast_hash": "61ec6337f3a62e1910e6044f9bd71927",
+    "semantic_hash": "61ec6337f3a62e1910e6044f9bd71927"
+  },
+  "backend/src/kokurikuler/dto/kokurikuler.dto.ts": {
+    "mtime": 1784397258.8469157,
+    "ast_hash": "bcde4352e73d36dba1302210366865ec",
+    "semantic_hash": "bcde4352e73d36dba1302210366865ec"
+  },
+  "backend/src/kokurikuler/kokurikuler-asesmen.entity.ts": {
+    "mtime": 1784396935.1808095,
+    "ast_hash": "954c6e701ab26e0cd9cf605d61e55126",
+    "semantic_hash": "954c6e701ab26e0cd9cf605d61e55126"
+  },
+  "backend/src/kokurikuler/kokurikuler-kegiatan.entity.ts": {
+    "mtime": 1784396897.7341013,
+    "ast_hash": "015c588d94c81c0efc917474769d5d42",
+    "semantic_hash": "015c588d94c81c0efc917474769d5d42"
+  },
+  "backend/src/kokurikuler/kokurikuler-target.entity.ts": {
+    "mtime": 1784396911.1106327,
+    "ast_hash": "617b09ca3efa67de86b9710eb0934742",
+    "semantic_hash": "617b09ca3efa67de86b9710eb0934742"
+  },
+  "backend/src/kokurikuler/kokurikuler-tim.entity.ts": {
+    "mtime": 1784396921.7096748,
+    "ast_hash": "fe459794775348b826eb889dde888aa6",
+    "semantic_hash": "fe459794775348b826eb889dde888aa6"
+  },
+  "backend/src/kokurikuler/kokurikuler.controller.ts": {
+    "mtime": 1784752070.2033546,
+    "ast_hash": "6ccafd5f723e0f49e8e7a9649ac15636",
+    "semantic_hash": ""
+  },
+  "backend/src/kokurikuler/kokurikuler.module.ts": {
+    "mtime": 1784397071.268687,
+    "ast_hash": "65074c605e1088e847cecd3324bf50c0",
+    "semantic_hash": "65074c605e1088e847cecd3324bf50c0"
+  },
+  "backend/src/kokurikuler/kokurikuler.service.ts": {
+    "mtime": 1784557073.1538236,
+    "ast_hash": "ce5266b4aa64c80b21512d9353609c1a",
+    "semantic_hash": "ce5266b4aa64c80b21512d9353609c1a"
+  },
+  "backend/src/kurikulum/dto/bulk-libur.dto.ts": {
+    "mtime": 1784100353.147398,
+    "ast_hash": "7ea58e2585fbc90fdd32ff8fedb35ba6",
+    "semantic_hash": "7ea58e2585fbc90fdd32ff8fedb35ba6"
+  },
+  "backend/src/kurikulum/dto/create-jadwal.dto.ts": {
+    "mtime": 1784055655.7941837,
+    "ast_hash": "d36564a67bdfc89185320f6d1014e67c",
+    "semantic_hash": "d36564a67bdfc89185320f6d1014e67c"
+  },
+  "backend/src/kurikulum/dto/create-libur.dto.ts": {
+    "mtime": 1784052879.2432816,
+    "ast_hash": "bb62ad36365f17397fa5cd16d8d40a28",
+    "semantic_hash": "bb62ad36365f17397fa5cd16d8d40a28"
+  },
+  "backend/src/kurikulum/dto/create-mapel.dto.ts": {
+    "mtime": 1784051600.8180506,
+    "ast_hash": "15a9f82852e12d896cbb54b9488cb9cc",
+    "semantic_hash": "15a9f82852e12d896cbb54b9488cb9cc"
+  },
+  "backend/src/kurikulum/dto/create-penugasan.dto.ts": {
+    "mtime": 1784052841.5896516,
+    "ast_hash": "63ebb2795e2a17f41c416ad600a435a5",
+    "semantic_hash": "63ebb2795e2a17f41c416ad600a435a5"
+  },
+  "backend/src/kurikulum/dto/update-jadwal.dto.ts": {
+    "mtime": 1784052955.193539,
+    "ast_hash": "a6cb5856407c03dfaada3129dd00db51",
+    "semantic_hash": "a6cb5856407c03dfaada3129dd00db51"
+  },
+  "backend/src/kurikulum/dto/update-kkm.dto.ts": {
+    "mtime": 1784054678.4974368,
+    "ast_hash": "187d84e88ff47e4fa7df8e708bd318a7",
+    "semantic_hash": "187d84e88ff47e4fa7df8e708bd318a7"
+  },
+  "backend/src/kurikulum/dto/update-mapel.dto.ts": {
+    "mtime": 1784051602.8444905,
+    "ast_hash": "28a02fdc626b19b0149ec59bbb0bfeb4",
+    "semantic_hash": "28a02fdc626b19b0149ec59bbb0bfeb4"
+  },
+  "backend/src/kurikulum/dto/update-penugasan.dto.ts": {
+    "mtime": 1784052848.7994897,
+    "ast_hash": "bd6c8e8912d0e79447316eb842697f03",
+    "semantic_hash": "bd6c8e8912d0e79447316eb842697f03"
+  },
+  "backend/src/kurikulum/jadwal-kbm.entity.ts": {
+    "mtime": 1784052758.859419,
+    "ast_hash": "ab43a390d3ee27f8197205051e80b010",
+    "semantic_hash": "ab43a390d3ee27f8197205051e80b010"
+  },
+  "backend/src/kurikulum/kalender-libur.entity.ts": {
+    "mtime": 1784052766.4128041,
+    "ast_hash": "ad97c899f0e13a4e5d8657260e1d0def",
+    "semantic_hash": "ad97c899f0e13a4e5d8657260e1d0def"
+  },
+  "backend/src/kurikulum/kurikulum.controller.ts": {
+    "mtime": 1784823098.1908028,
+    "ast_hash": "d0406ac9bbcc72e96743d9ea586d0d60",
+    "semantic_hash": ""
+  },
+  "backend/src/kurikulum/kurikulum.module.ts": {
+    "mtime": 1784822948.3524578,
+    "ast_hash": "718876cad331f8f9b833df9123ba492e",
+    "semantic_hash": ""
+  },
+  "backend/src/kurikulum/kurikulum.service.ts": {
+    "mtime": 1784826399.6463926,
+    "ast_hash": "408edb7e65d26767181d171aa356c263",
+    "semantic_hash": ""
+  },
+  "backend/src/kurikulum/libur.controller.ts": {
+    "mtime": 1784485854.1477766,
+    "ast_hash": "1b963ef6aeb7aefede18db8449c65e42",
+    "semantic_hash": "1b963ef6aeb7aefede18db8449c65e42"
+  },
+  "backend/src/kurikulum/mapel.entity.ts": {
+    "mtime": 1784051573.6640062,
+    "ast_hash": "2b0546584d19d6501dada9357f10e065",
+    "semantic_hash": "2b0546584d19d6501dada9357f10e065"
+  },
+  "backend/src/kurikulum/penugasan.entity.ts": {
+    "mtime": 1784052749.8379872,
+    "ast_hash": "513ee0543d70af39245eee05ab26b334",
+    "semantic_hash": "513ee0543d70af39245eee05ab26b334"
+  },
+  "backend/src/laporan/laporan.controller.ts": {
+    "mtime": 1784752063.2933962,
+    "ast_hash": "a29b23bef6e0087423e7308ea11d858d",
+    "semantic_hash": ""
+  },
+  "backend/src/laporan/laporan.module.ts": {
+    "mtime": 1784374027.092046,
+    "ast_hash": "da0fe799a83fc6654903f9c1173321ed",
+    "semantic_hash": "da0fe799a83fc6654903f9c1173321ed"
+  },
+  "backend/src/laporan/laporan.service.ts": {
+    "mtime": 1784632198.4117513,
+    "ast_hash": "89ae513dbec89a1798f129f5f15ea4c9",
+    "semantic_hash": "89ae513dbec89a1798f129f5f15ea4c9"
+  },
+  "backend/src/main.ts": {
+    "mtime": 1784531172.779344,
+    "ast_hash": "688d3295463c9aee95201c8131516a5c",
+    "semantic_hash": "688d3295463c9aee95201c8131516a5c"
+  },
+  "backend/src/migrations/1784653542466-InitialSchema.ts": {
+    "mtime": 1784653546.8049212,
+    "ast_hash": "ba0f49cda9657ba8f758e1353201bee3",
+    "semantic_hash": "ba0f49cda9657ba8f758e1353201bee3"
+  },
+  "backend/src/migrations/1784800000000-AddGuruHadirPada.ts": {
+    "mtime": 1784676878.7320962,
+    "ast_hash": "25d712e2d03ccc1dfd742bc7f3135e29",
+    "semantic_hash": "25d712e2d03ccc1dfd742bc7f3135e29"
+  },
+  "backend/src/pengaturan/pengaturan.controller.ts": {
+    "mtime": 1784540650.79277,
+    "ast_hash": "f4302eca4d621f1ca2cae0d1064590e5",
+    "semantic_hash": "f4302eca4d621f1ca2cae0d1064590e5"
+  },
+  "backend/src/pengaturan/pengaturan.entity.ts": {
+    "mtime": 1784062366.0033476,
+    "ast_hash": "037b06b83a35f5d9ed5f9e1217812410",
+    "semantic_hash": "037b06b83a35f5d9ed5f9e1217812410"
+  },
+  "backend/src/pengaturan/pengaturan.module.ts": {
+    "mtime": 1784049831.082932,
+    "ast_hash": "bd244154ae6ae72eb88c0bdd904c4193",
+    "semantic_hash": "bd244154ae6ae72eb88c0bdd904c4193"
+  },
+  "backend/src/pengaturan/pengaturan.service.ts": {
+    "mtime": 1784361387.0204082,
+    "ast_hash": "823265cfab55c1fb1352b76442be1923",
+    "semantic_hash": "823265cfab55c1fb1352b76442be1923"
+  },
+  "backend/src/penilaian/dto/nilai.dto.ts": {
+    "mtime": 1784390566.216001,
+    "ast_hash": "cd605696dda29c47f266053fc70423ef",
+    "semantic_hash": "cd605696dda29c47f266053fc70423ef"
+  },
+  "backend/src/penilaian/dto/penilaian.dto.ts": {
+    "mtime": 1784390557.69142,
+    "ast_hash": "480b348e949f749995794a19e8773c72",
+    "semantic_hash": "480b348e949f749995794a19e8773c72"
+  },
+  "backend/src/penilaian/dto/tp.dto.ts": {
+    "mtime": 1784390544.5012324,
+    "ast_hash": "8a1cc3f08838b9651c12ad407631e474",
+    "semantic_hash": "8a1cc3f08838b9651c12ad407631e474"
+  },
+  "backend/src/penilaian/nilai.entity.ts": {
+    "mtime": 1784390536.3647063,
+    "ast_hash": "1bd9f218f87b794666bdba38a74cb7de",
+    "semantic_hash": "1bd9f218f87b794666bdba38a74cb7de"
+  },
+  "backend/src/penilaian/penilaian-tp.entity.ts": {
+    "mtime": 1784390520.1715336,
+    "ast_hash": "e94fb80eccff1e5c8b4bd245d38a7438",
+    "semantic_hash": "e94fb80eccff1e5c8b4bd245d38a7438"
+  },
+  "backend/src/penilaian/penilaian.controller.ts": {
+    "mtime": 1784485854.1512914,
+    "ast_hash": "604d5e8ac0453dd363da925358966596",
+    "semantic_hash": "604d5e8ac0453dd363da925358966596"
+  },
+  "backend/src/penilaian/penilaian.entity.ts": {
+    "mtime": 1784390510.1039844,
+    "ast_hash": "c8328a1e15db27075f5997230e21d225",
+    "semantic_hash": "c8328a1e15db27075f5997230e21d225"
+  },
+  "backend/src/penilaian/penilaian.module.ts": {
+    "mtime": 1784390694.9198043,
+    "ast_hash": "6195330fd5ee33512086b6c66884de62",
+    "semantic_hash": "6195330fd5ee33512086b6c66884de62"
+  },
+  "backend/src/penilaian/penilaian.service.ts": {
+    "mtime": 1784390651.4001474,
+    "ast_hash": "5cce480a8765a6dd6bdcdda767a03f11",
+    "semantic_hash": "5cce480a8765a6dd6bdcdda767a03f11"
+  },
+  "backend/src/penilaian/tujuan-pembelajaran.entity.ts": {
+    "mtime": 1784390493.7219398,
+    "ast_hash": "45d96f3a24670802e842ad052488c854",
+    "semantic_hash": "45d96f3a24670802e842ad052488c854"
+  },
+  "backend/src/presensi-guru/dto/enroll-wajah.dto.ts": {
+    "mtime": 1784791446.867386,
+    "ast_hash": "ccb5131fa9e0b6895495628c97c0ad2f",
+    "semantic_hash": ""
+  },
+  "backend/src/presensi-guru/dto/manual.dto.ts": {
+    "mtime": 1784359495.2990224,
+    "ast_hash": "bc91571c5eec53c86324364609d8ee96",
+    "semantic_hash": "bc91571c5eec53c86324364609d8ee96"
+  },
+  "backend/src/presensi-guru/dto/scan.dto.ts": {
+    "mtime": 1784359486.006277,
+    "ast_hash": "045e8fcb70fb1d5cc5cd405d765a01aa",
+    "semantic_hash": "045e8fcb70fb1d5cc5cd405d765a01aa"
+  },
+  "backend/src/presensi-guru/presensi-guru.controller.ts": {
+    "mtime": 1784791852.4004974,
+    "ast_hash": "206dd3ad206c9509e1df7ca0c195adcb",
+    "semantic_hash": ""
+  },
+  "backend/src/presensi-guru/presensi-guru.module.ts": {
+    "mtime": 1784370169.7801645,
+    "ast_hash": "83ef3dd529f1a76349156114e36a997c",
+    "semantic_hash": "83ef3dd529f1a76349156114e36a997c"
+  },
+  "backend/src/presensi-guru/presensi-guru.service.ts": {
+    "mtime": 1784791742.3860688,
+    "ast_hash": "c7a165255b5bfd422e006e6da24104c3",
+    "semantic_hash": ""
+  },
+  "backend/src/presensi-guru/presensi-harian-guru.entity.ts": {
+    "mtime": 1784361230.5137763,
+    "ast_hash": "b580cf8591f9e8b7e4e4540fe11b3600",
+    "semantic_hash": "b580cf8591f9e8b7e4e4540fe11b3600"
+  },
+  "backend/src/presensi/dto/simpan-roster.dto.ts": {
+    "mtime": 1784276654.6956878,
+    "ast_hash": "034ba37b7f3063a7f4168de03f1e5e3a",
+    "semantic_hash": "034ba37b7f3063a7f4168de03f1e5e3a"
+  },
+  "backend/src/presensi/presensi-sesi.entity.ts": {
+    "mtime": 1784676865.8545055,
+    "ast_hash": "8194adaa6037a4d52be5752cef578c33",
+    "semantic_hash": "8194adaa6037a4d52be5752cef578c33"
+  },
+  "backend/src/presensi/presensi-siswa.entity.ts": {
+    "mtime": 1784276572.4410896,
+    "ast_hash": "52f8bada4b27e8288b9706fe0b021a3f",
+    "semantic_hash": "52f8bada4b27e8288b9706fe0b021a3f"
+  },
+  "backend/src/presensi/presensi.controller.ts": {
+    "mtime": 1784752057.3400097,
+    "ast_hash": "11a02ba4f220cf23ed157e95dbd707d8",
+    "semantic_hash": ""
+  },
+  "backend/src/presensi/presensi.module.ts": {
+    "mtime": 1784380359.3519037,
+    "ast_hash": "578522f8ffb2762cfd16515d0ef83c64",
+    "semantic_hash": "578522f8ffb2762cfd16515d0ef83c64"
+  },
+  "backend/src/presensi/presensi.service.ts": {
+    "mtime": 1784716886.8386383,
+    "ast_hash": "c0cfa7ea630223c4ca197b17d17ce122",
+    "semantic_hash": ""
+  },
+  "backend/src/profile/profile.controller.ts": {
+    "mtime": 1783945096.92461,
+    "ast_hash": "1065a5b6af72e45e12d0484f65b734ec",
+    "semantic_hash": "1065a5b6af72e45e12d0484f65b734ec"
+  },
+  "backend/src/profile/profile.module.ts": {
+    "mtime": 1783945112.648838,
+    "ast_hash": "6b225f822d9acbb3d41bcde18f5a5e9b",
+    "semantic_hash": "6b225f822d9acbb3d41bcde18f5a5e9b"
+  },
+  "backend/src/profile/profile.service.ts": {
+    "mtime": 1783945087.11075,
+    "ast_hash": "5564354e5a9ef61e421d48c08eb42ffb",
+    "semantic_hash": "5564354e5a9ef61e421d48c08eb42ffb"
+  },
+  "backend/src/rapor/dto/rapor.dto.ts": {
+    "mtime": 1784393497.1069465,
+    "ast_hash": "3c0fc930a6515188e340fc5c80a9d936",
+    "semantic_hash": "3c0fc930a6515188e340fc5c80a9d936"
+  },
+  "backend/src/rapor/rapor-mapel-override.entity.ts": {
+    "mtime": 1784393486.123823,
+    "ast_hash": "537e82a0321315e35ef28c9f4a13b149",
+    "semantic_hash": "537e82a0321315e35ef28c9f4a13b149"
+  },
+  "backend/src/rapor/rapor.controller.ts": {
+    "mtime": 1784787099.2958312,
+    "ast_hash": "98c687057b90526fa5bfa9349fb6e126",
+    "semantic_hash": ""
+  },
+  "backend/src/rapor/rapor.entity.ts": {
+    "mtime": 1784393474.0119128,
+    "ast_hash": "a292ffa11afe9926e01249f30952341f",
+    "semantic_hash": "a292ffa11afe9926e01249f30952341f"
+  },
+  "backend/src/rapor/rapor.module.ts": {
+    "mtime": 1784755506.9513245,
+    "ast_hash": "a5935ab3141c5ad5f712151dd59f892b",
+    "semantic_hash": ""
+  },
+  "backend/src/rapor/rapor.service.ts": {
+    "mtime": 1784787137.310909,
+    "ast_hash": "f8f6cf374a96f5c9ca36e5aede3e0819",
+    "semantic_hash": ""
+  },
+  "backend/src/seed/seed.module.ts": {
+    "mtime": 1784485854.155817,
+    "ast_hash": "795bfabdc016ebbe5f407774f1b9cbd2",
+    "semantic_hash": "795bfabdc016ebbe5f407774f1b9cbd2"
+  },
+  "backend/src/seed/seed.service.ts": {
+    "mtime": 1784654361.0948584,
+    "ast_hash": "f0570144a16a0726fc0c60b6a5ca95dd",
+    "semantic_hash": "f0570144a16a0726fc0c60b6a5ca95dd"
+  },
+  "backend/src/sessions/admin-sessions.controller.ts": {
+    "mtime": 1784068936.760844,
+    "ast_hash": "0f5c5da94c99da89a302d920403f24fa",
+    "semantic_hash": "0f5c5da94c99da89a302d920403f24fa"
+  },
+  "backend/src/sessions/session.entity.ts": {
+    "mtime": 1784531110.4955838,
+    "ast_hash": "29fd65649197edadb12e1912fc7e4b9e",
+    "semantic_hash": "29fd65649197edadb12e1912fc7e4b9e"
+  },
+  "backend/src/sessions/sessions.module.ts": {
+    "mtime": 1783945280.0898082,
+    "ast_hash": "4fd359a8c81f4317fe39b9f5ce5bc4dd",
+    "semantic_hash": "4fd359a8c81f4317fe39b9f5ce5bc4dd"
+  },
+  "backend/src/sessions/sessions.service.ts": {
+    "mtime": 1784531474.4132633,
+    "ast_hash": "7683e243eb26849f1ad4c5b1a266840d",
+    "semantic_hash": "7683e243eb26849f1ad4c5b1a266840d"
+  },
+  "backend/src/siswa/dto/create-siswa.dto.ts": {
+    "mtime": 1784188900.3476179,
+    "ast_hash": "7f02142c66a5071138e1eb7d4f5c783a",
+    "semantic_hash": "7f02142c66a5071138e1eb7d4f5c783a"
+  },
+  "backend/src/siswa/siswa.controller.ts": {
+    "mtime": 1784485854.1585436,
+    "ast_hash": "1e19d70f3fa6376ec0b267f8ded8b546",
+    "semantic_hash": "1e19d70f3fa6376ec0b267f8ded8b546"
+  },
+  "backend/src/siswa/siswa.entity.ts": {
+    "mtime": 1784031809.615971,
+    "ast_hash": "f84d4d84a8785dbc76c8945da5a5c4af",
+    "semantic_hash": "f84d4d84a8785dbc76c8945da5a5c4af"
+  },
+  "backend/src/siswa/siswa.module.ts": {
+    "mtime": 1784032986.2506514,
+    "ast_hash": "31a3e5534bc9f49c7a85be252ee4472e",
+    "semantic_hash": "31a3e5534bc9f49c7a85be252ee4472e"
+  },
+  "backend/src/siswa/siswa.service.ts": {
+    "mtime": 1784520502.0661783,
+    "ast_hash": "4b7826e76ef1b7421af632a6f2318641",
+    "semantic_hash": "4b7826e76ef1b7421af632a6f2318641"
+  },
+  "backend/src/tahun-ajaran/dto/create-tahun-ajaran.dto.ts": {
+    "mtime": 1784049318.293998,
+    "ast_hash": "4af199e3d89bda962335edf4b6dac05d",
+    "semantic_hash": "4af199e3d89bda962335edf4b6dac05d"
+  },
+  "backend/src/tahun-ajaran/tahun-ajaran.controller.ts": {
+    "mtime": 1784485854.1595435,
+    "ast_hash": "2ae75894090fb8da7a344d57cf306893",
+    "semantic_hash": "2ae75894090fb8da7a344d57cf306893"
+  },
+  "backend/src/tahun-ajaran/tahun-ajaran.entity.ts": {
+    "mtime": 1784051505.567074,
+    "ast_hash": "d9d60931076fdfdbff96ee242dbc87fa",
+    "semantic_hash": "d9d60931076fdfdbff96ee242dbc87fa"
+  },
+  "backend/src/tahun-ajaran/tahun-ajaran.module.ts": {
+    "mtime": 1784046494.6532195,
+    "ast_hash": "3d9ea500eebbb9ea5ff5e43c53061fa3",
+    "semantic_hash": "3d9ea500eebbb9ea5ff5e43c53061fa3"
+  },
+  "backend/src/tahun-ajaran/tahun-ajaran.service.ts": {
+    "mtime": 1784519610.2082067,
+    "ast_hash": "200ce446f3cce9376f6a1bd435c7c16d",
+    "semantic_hash": "200ce446f3cce9376f6a1bd435c7c16d"
+  },
+  "backend/src/types/express-session.d.ts": {
+    "mtime": 1784032567.6508443,
+    "ast_hash": "34ff48955500ebf1fd2c57a4e643ae7c",
+    "semantic_hash": "34ff48955500ebf1fd2c57a4e643ae7c"
+  },
+  "backend/src/uploads/uploads.controller.ts": {
+    "mtime": 1784267973.938841,
+    "ast_hash": "0c0c32a4e577aa99203d75815eb7a959",
+    "semantic_hash": "0c0c32a4e577aa99203d75815eb7a959"
+  },
+  "backend/src/uploads/uploads.module.ts": {
+    "mtime": 1784032884.753526,
+    "ast_hash": "9c3c53ebf2dabf168490daf71c5a9e47",
+    "semantic_hash": "9c3c53ebf2dabf168490daf71c5a9e47"
+  },
+  "backend/src/users/user.entity.ts": {
+    "mtime": 1783944906.7500849,
+    "ast_hash": "db9cc45e88592d6a7d9369690d2282bb",
+    "semantic_hash": "db9cc45e88592d6a7d9369690d2282bb"
+  },
+  "backend/src/users/users.controller.ts": {
+    "mtime": 1784752599.6894112,
+    "ast_hash": "e6a61543c619ad6a961d2ab339e8cddd",
+    "semantic_hash": ""
+  },
+  "backend/src/users/users.module.ts": {
+    "mtime": 1784752575.3758938,
+    "ast_hash": "65f2a2e9c55cd3534511574745d8b27d",
+    "semantic_hash": ""
+  },
+  "backend/src/users/users.service.ts": {
+    "mtime": 1784068891.9987693,
+    "ast_hash": "c2b478a837f874e94bd23fe278853398",
+    "semantic_hash": "c2b478a837f874e94bd23fe278853398"
+  },
+  "backend/tsconfig.json": {
+    "mtime": 1783944823.2751174,
+    "ast_hash": "4c22f2911ca56a097b3caeba3ab59e50",
+    "semantic_hash": "4c22f2911ca56a097b3caeba3ab59e50"
+  },
+  "bulk.json": {
+    "mtime": 1784101028.1324787,
+    "ast_hash": "e8923ca0879d507409c5a0dde7dc5630",
+    "semantic_hash": "e8923ca0879d507409c5a0dde7dc5630"
+  },
+  "bulk2.json": {
+    "mtime": 1784101028.1954854,
+    "ast_hash": "f1fd1b7a9bb59fb423fcb8235a72a679",
+    "semantic_hash": "f1fd1b7a9bb59fb423fcb8235a72a679"
+  },
+  "frontend/e2e/gelombang1/form-fokus.spec.ts": {
+    "mtime": 1784531597.790407,
+    "ast_hash": "592359cfb64b9876e4c6d0e5e3e254fe",
+    "semantic_hash": "592359cfb64b9876e4c6d0e5e3e254fe"
+  },
+  "frontend/e2e/gelombang1/libur-rentang.spec.ts": {
+    "mtime": 1784531597.7939956,
+    "ast_hash": "7177728b584bccda6f0af8c5219d7d44",
+    "semantic_hash": "7177728b584bccda6f0af8c5219d7d44"
+  },
+  "frontend/e2e/gelombang1/libur-seleksi.spec.ts": {
+    "mtime": 1784531597.7971313,
+    "ast_hash": "2f499028bbac58a320190639c4b354f4",
+    "semantic_hash": "2f499028bbac58a320190639c4b354f4"
+  },
+  "frontend/e2e/gelombang2/akun.spec.ts": {
+    "mtime": 1784531597.8001301,
+    "ast_hash": "8a548be3c103dffe18e0b8362c47fd52",
+    "semantic_hash": "8a548be3c103dffe18e0b8362c47fd52"
+  },
+  "frontend/e2e/gelombang2/auth.spec.ts": {
+    "mtime": 1784531597.8024366,
+    "ast_hash": "928b57a64ee465ef0d7461cb331861af",
+    "semantic_hash": "928b57a64ee465ef0d7461cb331861af"
+  },
+  "frontend/e2e/gelombang2/backlink-adaptif.mobile.spec.ts": {
+    "mtime": 1784531597.8057246,
+    "ast_hash": "8b03d6aa82c7b0ce9f6cd47bbaaa8a1b",
+    "semantic_hash": "8b03d6aa82c7b0ce9f6cd47bbaaa8a1b"
+  },
+  "frontend/e2e/gelombang2/backlink-adaptif.spec.ts": {
+    "mtime": 1784531597.8102367,
+    "ast_hash": "31bf0047d8fe9ab25e812158c1543ffb",
+    "semantic_hash": "31bf0047d8fe9ab25e812158c1543ffb"
+  },
+  "frontend/e2e/gelombang2/bug-laporan-drift-2.spec.ts": {
+    "mtime": 1784633185.0522752,
+    "ast_hash": "6ad3c8bc8dc6e67915a2909b1682e58a",
+    "semantic_hash": "6ad3c8bc8dc6e67915a2909b1682e58a"
+  },
+  "frontend/e2e/gelombang2/bug-laporan-drift.spec.ts": {
+    "mtime": 1784631092.73449,
+    "ast_hash": "da6c0a466ff257a509a1c56bf3323c62",
+    "semantic_hash": "da6c0a466ff257a509a1c56bf3323c62"
+  },
+  "frontend/e2e/gelombang2/cabut-sesi.spec.ts": {
+    "mtime": 1784531597.8133974,
+    "ast_hash": "e20180860bac34049ac83de993ad004a",
+    "semantic_hash": "e20180860bac34049ac83de993ad004a"
+  },
+  "frontend/e2e/gelombang2/ekskul-f6d-backend.spec.ts": {
+    "mtime": 1784531597.8187404,
+    "ast_hash": "97008a511d76980c1d6666442894f2cb",
+    "semantic_hash": "97008a511d76980c1d6666442894f2cb"
+  },
+  "frontend/e2e/gelombang2/ekskul-f6d.spec.ts": {
+    "mtime": 1784531597.825691,
+    "ast_hash": "e6758d7356ceb6bfc2bd90ba137b0bd7",
+    "semantic_hash": "e6758d7356ceb6bfc2bd90ba137b0bd7"
+  },
+  "frontend/e2e/gelombang2/filter-bar.spec.ts": {
+    "mtime": 1784531597.8302069,
+    "ast_hash": "d51f398292618d9bcc661530c6ef869c",
+    "semantic_hash": "d51f398292618d9bcc661530c6ef869c"
+  },
+  "frontend/e2e/gelombang2/guru-crud.spec.ts": {
+    "mtime": 1784531597.8342407,
+    "ast_hash": "477849905430a403833b87de2538eb96",
+    "semantic_hash": "477849905430a403833b87de2538eb96"
+  },
+  "frontend/e2e/gelombang2/image-uploader.spec.ts": {
+    "mtime": 1784531597.8420153,
+    "ast_hash": "def241d343389ba99acbf8cbbbbeed88",
+    "semantic_hash": "def241d343389ba99acbf8cbbbbeed88"
+  },
+  "frontend/e2e/gelombang2/import-wizard.spec.ts": {
+    "mtime": 1784531597.8473809,
+    "ast_hash": "07a352c7578ca486201295454a6645b1",
+    "semantic_hash": "07a352c7578ca486201295454a6645b1"
+  },
+  "frontend/e2e/gelombang2/izin-guru-backend.spec.ts": {
+    "mtime": 1784531597.8513935,
+    "ast_hash": "9b53144a68668402e952fb50cdd41c52",
+    "semantic_hash": "9b53144a68668402e952fb50cdd41c52"
+  },
+  "frontend/e2e/gelombang2/izin-guru.spec.ts": {
+    "mtime": 1784531597.8580022,
+    "ast_hash": "c178418e162435a73c86e2c6d314f7d4",
+    "semantic_hash": "c178418e162435a73c86e2c6d314f7d4"
+  },
+  "frontend/e2e/gelombang2/jadwal-crud.spec.ts": {
+    "mtime": 1784551470.9233844,
+    "ast_hash": "2248b041dd79959146b0696da54fd340",
+    "semantic_hash": "2248b041dd79959146b0696da54fd340"
+  },
+  "frontend/e2e/gelombang2/jadwal-mobile.mobile.spec.ts": {
+    "mtime": 1784531597.8676455,
+    "ast_hash": "02b914de1e887199082ca8ad8a94f4b9",
+    "semantic_hash": "02b914de1e887199082ca8ad8a94f4b9"
+  },
+  "frontend/e2e/gelombang2/kelas-assign-siswa.spec.ts": {
+    "mtime": 1784531597.8756871,
+    "ast_hash": "adf912699b295950997eb511e81e79c3",
+    "semantic_hash": "adf912699b295950997eb511e81e79c3"
+  },
+  "frontend/e2e/gelombang2/kelas-crud.spec.ts": {
+    "mtime": 1784531597.8790517,
+    "ast_hash": "8899db6dd505194d0244fde769cb2cc6",
+    "semantic_hash": "8899db6dd505194d0244fde769cb2cc6"
+  },
+  "frontend/e2e/gelombang2/kelas-hapus-total.spec.ts": {
+    "mtime": 1784554824.9229627,
+    "ast_hash": "aa6b7e9eb8cb85fc4e1dca97b56a0129",
+    "semantic_hash": "aa6b7e9eb8cb85fc4e1dca97b56a0129"
+  },
+  "frontend/e2e/gelombang2/kesiswaan-f5a-backend.spec.ts": {
+    "mtime": 1784531597.8915706,
+    "ast_hash": "bc4192b0ad179f431e4e257b6d902eba",
+    "semantic_hash": "bc4192b0ad179f431e4e257b6d902eba"
+  },
+  "frontend/e2e/gelombang2/kesiswaan-f5b-backend.spec.ts": {
+    "mtime": 1784531597.896595,
+    "ast_hash": "fbfce2b18c2ed3d1f192d1c2a31b4566",
+    "semantic_hash": "fbfce2b18c2ed3d1f192d1c2a31b4566"
+  },
+  "frontend/e2e/gelombang2/kesiswaan-f5b.spec.ts": {
+    "mtime": 1784531597.9011042,
+    "ast_hash": "1fc4fe5d9e702ff56b776823b07dbe93",
+    "semantic_hash": "1fc4fe5d9e702ff56b776823b07dbe93"
+  },
+  "frontend/e2e/gelombang2/kesiswaan-frontend.spec.ts": {
+    "mtime": 1784531597.9079704,
+    "ast_hash": "2bceac9067ea3bb337880e451e633723",
+    "semantic_hash": "2bceac9067ea3bb337880e451e633723"
+  },
+  "frontend/e2e/gelombang2/kokurikuler-f6c-backend.spec.ts": {
+    "mtime": 1784531597.9140885,
+    "ast_hash": "d7e435eb795ae1358b08c5142a64aedd",
+    "semantic_hash": "d7e435eb795ae1358b08c5142a64aedd"
+  },
+  "frontend/e2e/gelombang2/kokurikuler-f6c.spec.ts": {
+    "mtime": 1784531597.9204307,
+    "ast_hash": "db06e05e7fb3c834ab68d784c7f2ba1b",
+    "semantic_hash": "db06e05e7fb3c834ab68d784c7f2ba1b"
+  },
+  "frontend/e2e/gelombang2/laporan-backend.spec.ts": {
+    "mtime": 1784531597.92532,
+    "ast_hash": "73ca883f4f27cf6c70feddad343df32e",
+    "semantic_hash": "73ca883f4f27cf6c70feddad343df32e"
+  },
+  "frontend/e2e/gelombang2/laporan-dashboard.spec.ts": {
+    "mtime": 1784531597.932155,
+    "ast_hash": "81d2637a00ce58648a5ae12afc69b55a",
+    "semantic_hash": "81d2637a00ce58648a5ae12afc69b55a"
+  },
+  "frontend/e2e/gelombang2/libur-crud.spec.ts": {
+    "mtime": 1784531597.935917,
+    "ast_hash": "0b1a29c77e764b5aa93a0da0277c4716",
+    "semantic_hash": "0b1a29c77e764b5aa93a0da0277c4716"
+  },
+  "frontend/e2e/gelombang2/libur-nasional-banner.spec.ts": {
+    "mtime": 1784531597.9414577,
+    "ast_hash": "6e5a020370cf00f0c990677f173f653b",
+    "semantic_hash": "6e5a020370cf00f0c990677f173f653b"
+  },
+  "frontend/e2e/gelombang2/mapel-crud.spec.ts": {
+    "mtime": 1784550933.4207432,
+    "ast_hash": "b6a50d974bdbc6d6a8a40ad70545c8b7",
+    "semantic_hash": "b6a50d974bdbc6d6a8a40ad70545c8b7"
+  },
+  "frontend/e2e/gelombang2/menu-admin.spec.ts": {
+    "mtime": 1784531597.9545445,
+    "ast_hash": "115af13ca8a7f9024e84cab754037c13",
+    "semantic_hash": "115af13ca8a7f9024e84cab754037c13"
+  },
+  "frontend/e2e/gelombang2/model-lokal-network.spec.ts": {
+    "mtime": 1784749735.1930907,
+    "ast_hash": "6ec7f828701a9cfa2271f8f5332dc507",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/multi-checkbox.spec.ts": {
+    "mtime": 1784531597.9586484,
+    "ast_hash": "53da3341b9698156bd3a58b9c9e505c0",
+    "semantic_hash": "53da3341b9698156bd3a58b9c9e505c0"
+  },
+  "frontend/e2e/gelombang2/nits-bad-request.spec.ts": {
+    "mtime": 1784531597.965415,
+    "ast_hash": "ff5918dd67a891bb029ef4285632b206",
+    "semantic_hash": "ff5918dd67a891bb029ef4285632b206"
+  },
+  "frontend/e2e/gelombang2/paginasi-admin.spec.ts": {
+    "mtime": 1784553919.452676,
+    "ast_hash": "3c35f5e3087eab56e9a8e220b0fd2b08",
+    "semantic_hash": "3c35f5e3087eab56e9a8e220b0fd2b08"
+  },
+  "frontend/e2e/gelombang2/paginasi-backend.spec.ts": {
+    "mtime": 1784557465.1806235,
+    "ast_hash": "5737d37c42e192edf74cc85095266425",
+    "semantic_hash": "5737d37c42e192edf74cc85095266425"
+  },
+  "frontend/e2e/gelombang2/paginasi-kesiswaan.spec.ts": {
+    "mtime": 1784548135.8076055,
+    "ast_hash": "ebeb3a13e2919ae480974bcccfc0cd83",
+    "semantic_hash": "ebeb3a13e2919ae480974bcccfc0cd83"
+  },
+  "frontend/e2e/gelombang2/paginasi-kurikulum.spec.ts": {
+    "mtime": 1784549955.333697,
+    "ast_hash": "00e0c58a0d728c3b7c7014eec08ac875",
+    "semantic_hash": "00e0c58a0d728c3b7c7014eec08ac875"
+  },
+  "frontend/e2e/gelombang2/paginasi-pelanggaran.spec.ts": {
+    "mtime": 1784545391.8898642,
+    "ast_hash": "f78cada678c29caecdb9aa6b26f0abd2",
+    "semantic_hash": "f78cada678c29caecdb9aa6b26f0abd2"
+  },
+  "frontend/e2e/gelombang2/pelanggaran-detail.spec.ts": {
+    "mtime": 1784543967.1836474,
+    "ast_hash": "04bd910cb1953a335ca4f34def035aa1",
+    "semantic_hash": "04bd910cb1953a335ca4f34def035aa1"
+  },
+  "frontend/e2e/gelombang2/pengaturan-otorisasi.spec.ts": {
+    "mtime": 1784540695.668643,
+    "ast_hash": "8620d241cb91c20b85e9953b249f57da",
+    "semantic_hash": "8620d241cb91c20b85e9953b249f57da"
+  },
+  "frontend/e2e/gelombang2/pengaturan.spec.ts": {
+    "mtime": 1784537219.0916278,
+    "ast_hash": "686ddfb993abbb77dae1744990f3f490",
+    "semantic_hash": "686ddfb993abbb77dae1744990f3f490"
+  },
+  "frontend/e2e/gelombang2/penilaian-f6a-backend.spec.ts": {
+    "mtime": 1784531597.976325,
+    "ast_hash": "55eac0096d856097951c932f7e9da3ed",
+    "semantic_hash": "55eac0096d856097951c932f7e9da3ed"
+  },
+  "frontend/e2e/gelombang2/penilaian-f6a.spec.ts": {
+    "mtime": 1784531597.982331,
+    "ast_hash": "589ead8a28e8b4a82fada325b5cf614f",
+    "semantic_hash": "589ead8a28e8b4a82fada325b5cf614f"
+  },
+  "frontend/e2e/gelombang2/penugasan-crud.spec.ts": {
+    "mtime": 1784531597.986584,
+    "ast_hash": "884c8e20d35020337d5f73a94b4703ab",
+    "semantic_hash": "884c8e20d35020337d5f73a94b4703ab"
+  },
+  "frontend/e2e/gelombang2/presensi-admin-fix2.spec.ts": {
+    "mtime": 1784531597.992528,
+    "ast_hash": "fa96e43a74bf3201991aed3255275028",
+    "semantic_hash": "fa96e43a74bf3201991aed3255275028"
+  },
+  "frontend/e2e/gelombang2/presensi-siswa.spec.ts": {
+    "mtime": 1784531597.9965303,
+    "ast_hash": "ccd29741d01d60f5ea55aa2cf772038c",
+    "semantic_hash": "ccd29741d01d60f5ea55aa2cf772038c"
+  },
+  "frontend/e2e/gelombang2/presensi-wajah-ui.spec.ts": {
+    "mtime": 1784531598.001041,
+    "ast_hash": "28d6c5fab221974296b076c809a8c86d",
+    "semantic_hash": "28d6c5fab221974296b076c809a8c86d"
+  },
+  "frontend/e2e/gelombang2/presensi-wajah.spec.ts": {
+    "mtime": 1784663211.513253,
+    "ast_hash": "22f627c6bc54a4182d4310b28167e17b",
+    "semantic_hash": "22f627c6bc54a4182d4310b28167e17b"
+  },
+  "frontend/e2e/gelombang2/rapor-f6b-backend.spec.ts": {
+    "mtime": 1784531598.0082726,
+    "ast_hash": "4007770c9274da3ca514e67d13cf0536",
+    "semantic_hash": "4007770c9274da3ca514e67d13cf0536"
+  },
+  "frontend/e2e/gelombang2/rapor-f6b.spec.ts": {
+    "mtime": 1784531598.0155656,
+    "ast_hash": "4f3fb281a807ae78644da7f67736620c",
+    "semantic_hash": "4f3fb281a807ae78644da7f67736620c"
+  },
+  "frontend/e2e/gelombang2/rapor-integrasi-backend.spec.ts": {
+    "mtime": 1784531598.0205646,
+    "ast_hash": "693ec0bbc25be7aee1647e25810c9c95",
+    "semantic_hash": "693ec0bbc25be7aee1647e25810c9c95"
+  },
+  "frontend/e2e/gelombang2/rapor-integrasi.spec.ts": {
+    "mtime": 1784531598.0251086,
+    "ast_hash": "ef645b427707b57a2c6bf8097fa91ff6",
+    "semantic_hash": "ef645b427707b57a2c6bf8097fa91ff6"
+  },
+  "frontend/e2e/gelombang2/rbac-negatif.spec.ts": {
+    "mtime": 1784537280.9940555,
+    "ast_hash": "2446d7d2826e9d1a8847d232c0bd7567",
+    "semantic_hash": "2446d7d2826e9d1a8847d232c0bd7567"
+  },
+  "frontend/e2e/gelombang2/rekap-presensi.spec.ts": {
+    "mtime": 1784531598.0336661,
+    "ast_hash": "34dda5a0f273a89687a2874618a53808",
+    "semantic_hash": "34dda5a0f273a89687a2874618a53808"
+  },
+  "frontend/e2e/gelombang2/rekap-tu-backend.spec.ts": {
+    "mtime": 1784531598.0380154,
+    "ast_hash": "51046600b39defd9ca4d8c05d9216c99",
+    "semantic_hash": "51046600b39defd9ca4d8c05d9216c99"
+  },
+  "frontend/e2e/gelombang2/search-select.spec.ts": {
+    "mtime": 1784531598.0445893,
+    "ast_hash": "dd67c3b8b4b642b939b4bc866cbbef0f",
+    "semantic_hash": "dd67c3b8b4b642b939b4bc866cbbef0f"
+  },
+  "frontend/e2e/gelombang2/security.spec.ts": {
+    "mtime": 1784531598.0485883,
+    "ast_hash": "4ab251a5f4c8328c37083d6449dfddfd",
+    "semantic_hash": "4ab251a5f4c8328c37083d6449dfddfd"
+  },
+  "frontend/e2e/gelombang2/sesi-dedupe.spec.ts": {
+    "mtime": 1784532781.0561235,
+    "ast_hash": "e1a8f2a103071c572e9749b83b91441a",
+    "semantic_hash": "e1a8f2a103071c572e9749b83b91441a"
+  },
+  "frontend/e2e/gelombang2/siswa-crud.spec.ts": {
+    "mtime": 1784531598.0531242,
+    "ast_hash": "c6896522575bce92bbc98c0071103472",
+    "semantic_hash": "c6896522575bce92bbc98c0071103472"
+  },
+  "frontend/e2e/gelombang2/siswa-pindah-kelas.spec.ts": {
+    "mtime": 1784531598.061108,
+    "ast_hash": "9f2a09fd5869b5196895d9748ce8744c",
+    "semantic_hash": "9f2a09fd5869b5196895d9748ce8744c"
+  },
+  "frontend/e2e/gelombang2/subpagelinks-posisi.spec.ts": {
+    "mtime": 1784543059.1623285,
+    "ast_hash": "38944c836ed30a5d2422639f470a3a01",
+    "semantic_hash": "38944c836ed30a5d2422639f470a3a01"
+  },
+  "frontend/e2e/gelombang2/tahun-ajaran.spec.ts": {
+    "mtime": 1784531598.0656526,
+    "ast_hash": "dde0c6d53923be89897fcec306333323",
+    "semantic_hash": "dde0c6d53923be89897fcec306333323"
+  },
+  "frontend/e2e/gelombang2/tu-akses-sekolah.spec.ts": {
+    "mtime": 1784538962.971684,
+    "ast_hash": "c4010f9a1b55d24db5316f74b835c07b",
+    "semantic_hash": "c4010f9a1b55d24db5316f74b835c07b"
+  },
+  "frontend/e2e/gelombang2/tu-rekap.spec.ts": {
+    "mtime": 1784531598.073366,
+    "ast_hash": "61bea849728771a9e1cf1896774bf7bc",
+    "semantic_hash": "61bea849728771a9e1cf1896774bf7bc"
+  },
+  "frontend/e2e/gelombang2/ui-desktop.spec.ts": {
+    "mtime": 1784531598.0773664,
+    "ast_hash": "cebe038eec91ec2dcc0bce0829b66a94",
+    "semantic_hash": "cebe038eec91ec2dcc0bce0829b66a94"
+  },
+  "frontend/e2e/gelombang2/ui-mobile.mobile.spec.ts": {
+    "mtime": 1784531598.08088,
+    "ast_hash": "cb11d5da154f746bf1a3f75766f31c13",
+    "semantic_hash": "cb11d5da154f746bf1a3f75766f31c13"
+  },
+  "frontend/e2e/gelombang2/unsaved-guard.spec.ts": {
+    "mtime": 1784531598.087155,
+    "ast_hash": "6124325c1748e0db5cbc41164069abc2",
+    "semantic_hash": "6124325c1748e0db5cbc41164069abc2"
+  },
+  "frontend/e2e/gelombang2/ux-polish-be.spec.ts": {
+    "mtime": 1784531598.092702,
+    "ast_hash": "fddc22b5a11b5691b2c2e722921bea4c",
+    "semantic_hash": "fddc22b5a11b5691b2c2e722921bea4c"
+  },
+  "frontend/e2e/gelombang2/ux-polish-gel1.spec.ts": {
+    "mtime": 1784531598.0967,
+    "ast_hash": "39c156960794f22cac6b0cd3a2e1ed59",
+    "semantic_hash": "39c156960794f22cac6b0cd3a2e1ed59"
+  },
+  "frontend/e2e/gelombang2/ux-polish-mobile.spec.ts": {
+    "mtime": 1784627730.3975568,
+    "ast_hash": "537941c58f5c190f40112ea8a4da1181",
+    "semantic_hash": "537941c58f5c190f40112ea8a4da1181"
+  },
+  "frontend/e2e/gelombang2/wali-force.spec.ts": {
+    "mtime": 1784551167.8683844,
+    "ast_hash": "1ef65fe1060c2669bc83ac94690085ae",
+    "semantic_hash": "1ef65fe1060c2669bc83ac94690085ae"
+  },
+  "frontend/e2e/helpers/api.ts": {
+    "mtime": 1784196779.5086749,
+    "ast_hash": "06a130154fdecaecd9701d28a7f7c5a1",
+    "semantic_hash": "06a130154fdecaecd9701d28a7f7c5a1"
+  },
+  "frontend/e2e/helpers/auth.ts": {
+    "mtime": 1784531579.2230906,
+    "ast_hash": "21c0ea9436ab1770cd68ba1cda92447e",
+    "semantic_hash": "21c0ea9436ab1770cd68ba1cda92447e"
+  },
+  "frontend/package.json": {
+    "mtime": 1784734057.399787,
+    "ast_hash": "dd9c0d6e33eda114ea7c06aaadc383fd",
+    "semantic_hash": ""
+  },
+  "frontend/playwright.config.ts": {
+    "mtime": 1784161747.167077,
+    "ast_hash": "40de797dc5d3288ebc67bbcc8821410a",
+    "semantic_hash": "40de797dc5d3288ebc67bbcc8821410a"
+  },
+  "frontend/postcss.config.js": {
+    "mtime": 1783945178.7219834,
+    "ast_hash": "c735540bb63936a123bc867d950c9f69",
+    "semantic_hash": "c735540bb63936a123bc867d950c9f69"
+  },
+  "frontend/public/models/blazeface.json": {
+    "mtime": 1784361225.5288749,
+    "ast_hash": "637e40255cfa7e56c080b41d3e08e5a0",
+    "semantic_hash": "637e40255cfa7e56c080b41d3e08e5a0"
+  },
+  "frontend/public/models/faceres.json": {
+    "mtime": 1784361225.5856254,
+    "ast_hash": "373e0bb37dde4b203dee920697627646",
+    "semantic_hash": "373e0bb37dde4b203dee920697627646"
+  },
+  "frontend/src/api/client.ts": {
+    "mtime": 1784823145.3112218,
+    "ast_hash": "b6b558beab3807f54676960671c91899",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/App.tsx": {
+    "mtime": 1784825925.4865348,
+    "ast_hash": "a043d49620a643fff63e7f9f04a4db9b",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/AppLayout.tsx": {
+    "mtime": 1784060798.5338228,
+    "ast_hash": "2640dbe27db4d784d8b4171e89bf7efd",
+    "semantic_hash": "2640dbe27db4d784d8b4171e89bf7efd"
+  },
+  "frontend/src/app/AuthContext.tsx": {
+    "mtime": 1784752007.7205968,
+    "ast_hash": "0de1af3d46d92d4138d6defe2ab375e7",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/guards.tsx": {
+    "mtime": 1784751982.511117,
+    "ast_hash": "bd2a0d513d05b0c604393c57e9648310",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/menu.ts": {
+    "mtime": 1784716784.3414598,
+    "ast_hash": "d826f15845682cf673046b14f7f63c6d",
+    "semantic_hash": ""
+  },
+  "frontend/src/app/useUnsavedChanges.tsx": {
+    "mtime": 1783975204.5422761,
+    "ast_hash": "11fad5e57ff9cfd5820e1de2943fb9bb",
+    "semantic_hash": "11fad5e57ff9cfd5820e1de2943fb9bb"
+  },
+  "frontend/src/components/AdaptiveSelect.tsx": {
+    "mtime": 1784560329.8928616,
+    "ast_hash": "08e8072cd390aa78cddad312519b2bea",
+    "semantic_hash": "08e8072cd390aa78cddad312519b2bea"
+  },
+  "frontend/src/components/BackLink.tsx": {
+    "mtime": 1784626530.6759133,
+    "ast_hash": "80f7ae8f48f379eb44ebe78dd88d98f5",
+    "semantic_hash": "80f7ae8f48f379eb44ebe78dd88d98f5"
+  },
+  "frontend/src/components/Badge.tsx": {
+    "mtime": 1783945311.4549885,
+    "ast_hash": "8d9513cc0817d2c8613077c59fc27d96",
+    "semantic_hash": "8d9513cc0817d2c8613077c59fc27d96"
+  },
+  "frontend/src/components/Button.tsx": {
+    "mtime": 1783975292.4423368,
+    "ast_hash": "f88c958ccdfc95f685811105875f90b2",
+    "semantic_hash": "f88c958ccdfc95f685811105875f90b2"
+  },
+  "frontend/src/components/Card.tsx": {
+    "mtime": 1784485854.2196772,
+    "ast_hash": "13fff24b98c0aa0c68559a3e333dd30c",
+    "semantic_hash": "13fff24b98c0aa0c68559a3e333dd30c"
+  },
+  "frontend/src/components/ConfirmDialog.tsx": {
+    "mtime": 1783975394.756974,
+    "ast_hash": "1c61b4c64531c7deb29f6880c41ffb3e",
+    "semantic_hash": "1c61b4c64531c7deb29f6880c41ffb3e"
+  },
+  "frontend/src/components/EmptyState.tsx": {
+    "mtime": 1783945360.9377353,
+    "ast_hash": "6a8c37bcaef5b28781c15834dc0bff8a",
+    "semantic_hash": "6a8c37bcaef5b28781c15834dc0bff8a"
+  },
+  "frontend/src/components/ErrorBoundary.tsx": {
+    "mtime": 1784068781.014747,
+    "ast_hash": "92046a00d230459666f97595e8c11fa4",
+    "semantic_hash": "92046a00d230459666f97595e8c11fa4"
+  },
+  "frontend/src/components/FilterBar.tsx": {
+    "mtime": 1784061166.4207954,
+    "ast_hash": "06986796497352cb99ebf08c085c5977",
+    "semantic_hash": "06986796497352cb99ebf08c085c5977"
+  },
+  "frontend/src/components/FormDrawer.tsx": {
+    "mtime": 1784472291.8647056,
+    "ast_hash": "60bf8048e23318f7fcb29d5f0a748acb",
+    "semantic_hash": "60bf8048e23318f7fcb29d5f0a748acb"
+  },
+  "frontend/src/components/ImageUploader.tsx": {
+    "mtime": 1784057944.6354845,
+    "ast_hash": "1ad8320a73a65a53b951b546a5aad98d",
+    "semantic_hash": "1ad8320a73a65a53b951b546a5aad98d"
+  },
+  "frontend/src/components/LeafletMap.tsx": {
+    "mtime": 1784100276.2626774,
+    "ast_hash": "a94bbdd41a763e13d8eae89eed9d33d4",
+    "semantic_hash": "a94bbdd41a763e13d8eae89eed9d33d4"
+  },
+  "frontend/src/components/PageContainer.tsx": {
+    "mtime": 1784626507.9848816,
+    "ast_hash": "6e405924b69c25ce1397fa5a01981504",
+    "semantic_hash": "6e405924b69c25ce1397fa5a01981504"
+  },
+  "frontend/src/components/PageMenu.tsx": {
+    "mtime": 1784630420.5421348,
+    "ast_hash": "0b3b27e337b7ddf7574e90cfdb048fcb",
+    "semantic_hash": "0b3b27e337b7ddf7574e90cfdb048fcb"
+  },
+  "frontend/src/components/PageSkeleton.tsx": {
+    "mtime": 1784068787.181843,
+    "ast_hash": "c06af3a6f23a6303fb81c39aea6bea7c",
+    "semantic_hash": "c06af3a6f23a6303fb81c39aea6bea7c"
+  },
+  "frontend/src/components/Pagination.tsx": {
+    "mtime": 1784544928.7571144,
+    "ast_hash": "66f12f7e8f2d96ff53c0bbb6218d098f",
+    "semantic_hash": "66f12f7e8f2d96ff53c0bbb6218d098f"
+  },
+  "frontend/src/components/SaveSuccess.tsx": {
+    "mtime": 1784061312.1332633,
+    "ast_hash": "e44071803181429534bd75dba040973b",
+    "semantic_hash": "e44071803181429534bd75dba040973b"
+  },
+  "frontend/src/components/SearchSelect.tsx": {
+    "mtime": 1784547323.8921664,
+    "ast_hash": "172635f2f687709865cf5029277d907d",
+    "semantic_hash": "172635f2f687709865cf5029277d907d"
+  },
+  "frontend/src/components/Skeleton.tsx": {
+    "mtime": 1783945368.5753229,
+    "ast_hash": "d2f6fe7ea8fb7362c3fc38bb7886b27c",
+    "semantic_hash": "d2f6fe7ea8fb7362c3fc38bb7886b27c"
+  },
+  "frontend/src/components/SubPageLinks.tsx": {
+    "mtime": 1784542127.163548,
+    "ast_hash": "a96a0632078382e0c550ba32c18da586",
+    "semantic_hash": "a96a0632078382e0c550ba32c18da586"
+  },
+  "frontend/src/components/Table.tsx": {
+    "mtime": 1784451763.186831,
+    "ast_hash": "dd3ffd62bf19d9797be890a409501c7d",
+    "semantic_hash": "dd3ffd62bf19d9797be890a409501c7d"
+  },
+  "frontend/src/components/Toast.tsx": {
+    "mtime": 1783945331.3586478,
+    "ast_hash": "8e67c910d157382e59ea71efc936fbf5",
+    "semantic_hash": "8e67c910d157382e59ea71efc936fbf5"
+  },
+  "frontend/src/components/UnsavedGuard.tsx": {
+    "mtime": 1784062610.6500669,
+    "ast_hash": "e7f0935e9b1d60316efdc51476fa0f42",
+    "semantic_hash": "e7f0935e9b1d60316efdc51476fa0f42"
+  },
+  "frontend/src/css-modules.d.ts": {
+    "mtime": 1784070096.58329,
+    "ast_hash": "e64a43d783f568553d7d0136f1127adb",
+    "semantic_hash": "e64a43d783f568553d7d0136f1127adb"
+  },
+  "frontend/src/global.d.ts": {
+    "mtime": 1783945937.325073,
+    "ast_hash": "8364e99dab2f19731a19fb252a3bd701",
+    "semantic_hash": "8364e99dab2f19731a19fb252a3bd701"
+  },
+  "frontend/src/hooks/useCachedList.ts": {
+    "mtime": 1784069044.4592078,
+    "ast_hash": "bddb25b49de56146d6cfcfdd24200391",
+    "semantic_hash": "bddb25b49de56146d6cfcfdd24200391"
+  },
+  "frontend/src/lib/exportExcel.ts": {
+    "mtime": 1784372203.3587396,
+    "ast_hash": "62764f94584888cd80ec1836b0d19c5f",
+    "semantic_hash": "62764f94584888cd80ec1836b0d19c5f"
+  },
+  "frontend/src/lib/exportPdf.ts": {
+    "mtime": 1784402329.6634476,
+    "ast_hash": "fc7f9fa49871f91466e36682762d99e1",
+    "semantic_hash": "fc7f9fa49871f91466e36682762d99e1"
+  },
+  "frontend/src/lib/faceHuman.ts": {
+    "mtime": 1784735972.455405,
+    "ast_hash": "6528a66901870ff109a2304105ae5507",
+    "semantic_hash": ""
+  },
+  "frontend/src/main.tsx": {
+    "mtime": 1783959355.0764163,
+    "ast_hash": "55c33d2525023fc9f7357645178a4618",
+    "semantic_hash": "55c33d2525023fc9f7357645178a4618"
+  },
+  "frontend/src/pages/admin/AdminDashboardPage.tsx": {
+    "mtime": 1784626741.5486107,
+    "ast_hash": "83bc04ff1b2e07afc98ba436b2cd3578",
+    "semantic_hash": "83bc04ff1b2e07afc98ba436b2cd3578"
+  },
+  "frontend/src/pages/admin/akun/AkunAktivitasPage.tsx": {
+    "mtime": 1784542669.738689,
+    "ast_hash": "5735cf0e77e192a2d9fec284d5160708",
+    "semantic_hash": "5735cf0e77e192a2d9fec284d5160708"
+  },
+  "frontend/src/pages/admin/akun/AkunBaruPage.tsx": {
+    "mtime": 1784485854.2263455,
+    "ast_hash": "9d46604069fb05900a7be4b09bef28df",
+    "semantic_hash": "9d46604069fb05900a7be4b09bef28df"
+  },
+  "frontend/src/pages/admin/akun/AkunDaftarPage.tsx": {
+    "mtime": 1784626741.6282578,
+    "ast_hash": "d18553cbdb1e6e29b534837ae46a57f2",
+    "semantic_hash": "d18553cbdb1e6e29b534837ae46a57f2"
+  },
+  "frontend/src/pages/admin/akun/AkunDetailPage.tsx": {
+    "mtime": 1784752845.3750253,
+    "ast_hash": "377cd3227903eac863d047cad4101e60",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/akun/AkunEditPage.tsx": {
+    "mtime": 1784518033.645326,
+    "ast_hash": "cbc415ce51a64e1e84a3a8e5e86e178e",
+    "semantic_hash": "cbc415ce51a64e1e84a3a8e5e86e178e"
+  },
+  "frontend/src/pages/admin/akun/AkunSesiPage.tsx": {
+    "mtime": 1784553364.0254872,
+    "ast_hash": "df3969b77b3583c3be65c91f9761711f",
+    "semantic_hash": "df3969b77b3583c3be65c91f9761711f"
+  },
+  "frontend/src/pages/admin/akun/PersetujuanDetailPage.tsx": {
+    "mtime": 1784518033.6629384,
+    "ast_hash": "5fecdd9b4495bde0a389ac9cd3dc818b",
+    "semantic_hash": "5fecdd9b4495bde0a389ac9cd3dc818b"
+  },
+  "frontend/src/pages/admin/akun/PersetujuanPage.tsx": {
+    "mtime": 1784542671.1962152,
+    "ast_hash": "2334658b627628188ae132fbb9a96709",
+    "semantic_hash": "2334658b627628188ae132fbb9a96709"
+  },
+  "frontend/src/pages/admin/akun/RoleSelector.tsx": {
+    "mtime": 1783945809.7104743,
+    "ast_hash": "3a9faf70a738700657fc2a4fd82494bd",
+    "semantic_hash": "3a9faf70a738700657fc2a4fd82494bd"
+  },
+  "frontend/src/pages/admin/izin/AdminIzinGuruPage.tsx": {
+    "mtime": 1784518070.8886836,
+    "ast_hash": "527f9d3c615e81faaa2623a2e24326a7",
+    "semantic_hash": "527f9d3c615e81faaa2623a2e24326a7"
+  },
+  "frontend/src/pages/admin/kelas/KelasDetailPage.tsx": {
+    "mtime": 1784553195.9868796,
+    "ast_hash": "2fac005bb6ebac6c1329f407832aab7c",
+    "semantic_hash": "2fac005bb6ebac6c1329f407832aab7c"
+  },
+  "frontend/src/pages/admin/kelas/KelasFormPage.tsx": {
+    "mtime": 1784518070.905752,
+    "ast_hash": "3df22a4ee2aac4a1b8534941cb9556ed",
+    "semantic_hash": "3df22a4ee2aac4a1b8534941cb9556ed"
+  },
+  "frontend/src/pages/admin/kelas/KelasListPage.tsx": {
+    "mtime": 1784756523.7289684,
+    "ast_hash": "7918557f45fb137599b4405f59d77e0c",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/laporan/LaporanPages.tsx": {
+    "mtime": 1784632516.896476,
+    "ast_hash": "2eb7d570c6e0c9fcc2110a97806ce247",
+    "semantic_hash": "2eb7d570c6e0c9fcc2110a97806ce247"
+  },
+  "frontend/src/pages/admin/orang/GuruDetailPage.tsx": {
+    "mtime": 1784794438.601982,
+    "ast_hash": "c8492f549258238b7913182c6f7acf1d",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/orang/GuruFormPage.tsx": {
+    "mtime": 1784752795.9977572,
+    "ast_hash": "2bd4fcd19dcd3a6b7071ff4ea3a70595",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/admin/orang/GuruListPage.tsx": {
+    "mtime": 1784626741.6478217,
+    "ast_hash": "64f8ad4763ce442c871649473e228d99",
+    "semantic_hash": "64f8ad4763ce442c871649473e228d99"
+  },
+  "frontend/src/pages/admin/orang/ImportPage.tsx": {
+    "mtime": 1784542672.068272,
+    "ast_hash": "b67c946858edec368166d1f92c489fe9",
+    "semantic_hash": "b67c946858edec368166d1f92c489fe9"
+  },
+  "frontend/src/pages/admin/orang/SiswaDetailPage.tsx": {
+    "mtime": 1784517918.3799245,
+    "ast_hash": "13a9dedf82b99891a0ce852428cbee47",
+    "semantic_hash": "13a9dedf82b99891a0ce852428cbee47"
+  },
+  "frontend/src/pages/admin/orang/SiswaFormPage.tsx": {
+    "mtime": 1784554987.9208405,
+    "ast_hash": "bb82aade40fec5415f12e8c1300ded9c",
+    "semantic_hash": "bb82aade40fec5415f12e8c1300ded9c"
+  },
+  "frontend/src/pages/admin/orang/SiswaListPage.tsx": {
+    "mtime": 1784626741.6564925,
+    "ast_hash": "4b919c95fb881f18860b307642eaa8e0",
+    "semantic_hash": "4b919c95fb881f18860b307642eaa8e0"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanJamPage.tsx": {
+    "mtime": 1784488620.1576366,
+    "ast_hash": "27e31742586fd6616eb9ccbc3eb6ed9b",
+    "semantic_hash": "27e31742586fd6616eb9ccbc3eb6ed9b"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanKkmPage.tsx": {
+    "mtime": 1784485854.2473388,
+    "ast_hash": "42aa9cf3a0d4a1a5e039c74fc5f33a20",
+    "semantic_hash": "42aa9cf3a0d4a1a5e039c74fc5f33a20"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanLiburPage.tsx": {
+    "mtime": 1784517824.382589,
+    "ast_hash": "b4172f33eb8a1798f555ac70ea7d79b0",
+    "semantic_hash": "b4172f33eb8a1798f555ac70ea7d79b0"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanLokasiPage.tsx": {
+    "mtime": 1784488620.1651292,
+    "ast_hash": "37d30ef201506846290098031b891402",
+    "semantic_hash": "37d30ef201506846290098031b891402"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanSekolahPage.tsx": {
+    "mtime": 1784537080.2144592,
+    "ast_hash": "bff0cade8e955412586451124144f99e",
+    "semantic_hash": "bff0cade8e955412586451124144f99e"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanTahunAjaranFormPage.tsx": {
+    "mtime": 1784488620.1674745,
+    "ast_hash": "8b83e25609a6f61fdbafe93dc8784554",
+    "semantic_hash": "8b83e25609a6f61fdbafe93dc8784554"
+  },
+  "frontend/src/pages/admin/pengaturan/PengaturanTahunAjaranPage.tsx": {
+    "mtime": 1784485854.253118,
+    "ast_hash": "72bc94af2e4d9624bad7a59b7b856a2a",
+    "semantic_hash": "72bc94af2e4d9624bad7a59b7b856a2a"
+  },
+  "frontend/src/pages/admin/presensi/MatriksPresensiSiswaPage.tsx": {
+    "mtime": 1784630420.6012518,
+    "ast_hash": "a19d5fdae60e44a81ea4886f92a5f9a2",
+    "semantic_hash": "a19d5fdae60e44a81ea4886f92a5f9a2"
+  },
+  "frontend/src/pages/admin/presensi/PresensiGuruDetailPage.tsx": {
+    "mtime": 1784627274.2192118,
+    "ast_hash": "fa8837dcbb1faf448a464e26c6eca0a0",
+    "semantic_hash": "fa8837dcbb1faf448a464e26c6eca0a0"
+  },
+  "frontend/src/pages/admin/presensi/PresensiGuruPage.tsx": {
+    "mtime": 1784627334.401034,
+    "ast_hash": "e70eb1d9356e80502daf9bfef333e586",
+    "semantic_hash": "e70eb1d9356e80502daf9bfef333e586"
+  },
+  "frontend/src/pages/admin/presensi/RosterDetailSheet.tsx": {
+    "mtime": 1784310403.7970068,
+    "ast_hash": "8b881bf4fdddcc27f351fefa20b91b88",
+    "semantic_hash": "8b881bf4fdddcc27f351fefa20b91b88"
+  },
+  "frontend/src/pages/daftar/DaftarPage.tsx": {
+    "mtime": 1784517824.4001386,
+    "ast_hash": "dce00db33de0eb79a1cf9b5fda7201cf",
+    "semantic_hash": "dce00db33de0eb79a1cf9b5fda7201cf"
+  },
+  "frontend/src/pages/ekskul/EkskulAdminPage.tsx": {
+    "mtime": 1784555185.6837745,
+    "ast_hash": "03b19f18fd5cdb54a776a75a5da45bf8",
+    "semantic_hash": "03b19f18fd5cdb54a776a75a5da45bf8"
+  },
+  "frontend/src/pages/ekskul/EkskulPembinaPage.tsx": {
+    "mtime": 1784630420.603279,
+    "ast_hash": "18c007e1797d9c07fcaf6e72c8319c90",
+    "semantic_hash": "18c007e1797d9c07fcaf6e72c8319c90"
+  },
+  "frontend/src/pages/ekskul/RaporEkskulPage.tsx": {
+    "mtime": 1784626741.675029,
+    "ast_hash": "b0d1ece75071eb64ff462a40497cc2af",
+    "semantic_hash": "b0d1ece75071eb64ff462a40497cc2af"
+  },
+  "frontend/src/pages/guru/GuruEnrollWizardPage.tsx": {
+    "mtime": 1784792781.908921,
+    "ast_hash": "51ed0d2096526db309f8d6ec36ec234f",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/GuruPelanggaranPage.tsx": {
+    "mtime": 1784626741.6860404,
+    "ast_hash": "3ec7047e8522b8e8d09a2bfdd4ac1b08",
+    "semantic_hash": "3ec7047e8522b8e8d09a2bfdd4ac1b08"
+  },
+  "frontend/src/pages/guru/GuruPenilaianDashboard.tsx": {
+    "mtime": 1784787327.8706672,
+    "ast_hash": "19cae5964ab38829bfd5455a599ab108",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/GuruPresensiDashboard.tsx": {
+    "mtime": 1784630420.605486,
+    "ast_hash": "06aa3bc690a8fee87f008d3de9586a6c",
+    "semantic_hash": "06aa3bc690a8fee87f008d3de9586a6c"
+  },
+  "frontend/src/pages/guru/GuruWajahPage.tsx": {
+    "mtime": 1784626741.7038798,
+    "ast_hash": "01fb276effccce9ca5a21b9fed933dd9",
+    "semantic_hash": "01fb276effccce9ca5a21b9fed933dd9"
+  },
+  "frontend/src/pages/guru/InputNilaiPage.tsx": {
+    "mtime": 1784626741.7094085,
+    "ast_hash": "92542e2bfff21f5c1ee90f765604ed90",
+    "semantic_hash": "92542e2bfff21f5c1ee90f765604ed90"
+  },
+  "frontend/src/pages/guru/IzinGuruPage.tsx": {
+    "mtime": 1784755305.163926,
+    "ast_hash": "488de7633acb991c45d5d1f5ff3c881c",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/KbmHariIniPage.tsx": {
+    "mtime": 1784716838.6988635,
+    "ast_hash": "9ef007027a2ffb26cb760a4431ad4e57",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/PenilaianDetailShell.tsx": {
+    "mtime": 1784630420.6069908,
+    "ast_hash": "221f6b0da5c1dfb8f63d8f9a06c93fd4",
+    "semantic_hash": "221f6b0da5c1dfb8f63d8f9a06c93fd4"
+  },
+  "frontend/src/pages/guru/PenilaianListPage.tsx": {
+    "mtime": 1784517877.4172795,
+    "ast_hash": "f8fb1baca353cf8e343fa30a051d518e",
+    "semantic_hash": "f8fb1baca353cf8e343fa30a051d518e"
+  },
+  "frontend/src/pages/guru/RaporDetailPage.tsx": {
+    "mtime": 1784626741.7294936,
+    "ast_hash": "39fe152c0b623c7cc55fd78bb0cdb41d",
+    "semantic_hash": "39fe152c0b623c7cc55fd78bb0cdb41d"
+  },
+  "frontend/src/pages/guru/RaporListPage.tsx": {
+    "mtime": 1784787198.9217389,
+    "ast_hash": "81ca8b01033188e297237f6f84bfaaed",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/RekapNilaiPage.tsx": {
+    "mtime": 1784630420.6095324,
+    "ast_hash": "54d74238b04914f7a58176896933ac38",
+    "semantic_hash": "54d74238b04914f7a58176896933ac38"
+  },
+  "frontend/src/pages/guru/RekapPresensiPage.tsx": {
+    "mtime": 1784787236.4527159,
+    "ast_hash": "d7de0cebbf0667ca1686c7dabf9889c5",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/RosterPage.tsx": {
+    "mtime": 1784716999.9762795,
+    "ast_hash": "dbb7eb039db9fed762b744269f2b0239",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/ScanOverlay.tsx": {
+    "mtime": 1784789772.493072,
+    "ast_hash": "154146f13d344a429a45c2593db15dc9",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/guru/TujuanPembelajaranPage.tsx": {
+    "mtime": 1784517877.4307399,
+    "ast_hash": "42eba9699899b9abcc1853fbc2984156",
+    "semantic_hash": "42eba9699899b9abcc1853fbc2984156"
+  },
+  "frontend/src/pages/kesiswaan/KesiswaanDashboardPage.tsx": {
+    "mtime": 1784626741.747802,
+    "ast_hash": "aed97afdcf77b9e642ae8577d78659f3",
+    "semantic_hash": "aed97afdcf77b9e642ae8577d78659f3"
+  },
+  "frontend/src/pages/kesiswaan/LaporanDemeritPage.tsx": {
+    "mtime": 1784630574.708805,
+    "ast_hash": "ba8e1c7b3cf06bfb8d8512c817d0c7f6",
+    "semantic_hash": "ba8e1c7b3cf06bfb8d8512c817d0c7f6"
+  },
+  "frontend/src/pages/kesiswaan/PelanggaranDetailPage.tsx": {
+    "mtime": 1784543512.207785,
+    "ast_hash": "6e050fb4399af4cbb49a12e8379c2e70",
+    "semantic_hash": "6e050fb4399af4cbb49a12e8379c2e70"
+  },
+  "frontend/src/pages/kesiswaan/PelanggaranPage.tsx": {
+    "mtime": 1784547474.388558,
+    "ast_hash": "6853a5b2dfe69bde4989bd753f8f5f50",
+    "semantic_hash": "6853a5b2dfe69bde4989bd753f8f5f50"
+  },
+  "frontend/src/pages/kesiswaan/RewardPage.tsx": {
+    "mtime": 1784518070.9208627,
+    "ast_hash": "811cd7021c5a68c165a308946ea9ea99",
+    "semantic_hash": "811cd7021c5a68c165a308946ea9ea99"
+  },
+  "frontend/src/pages/kesiswaan/TataTertibPage.tsx": {
+    "mtime": 1784547760.8960867,
+    "ast_hash": "9c83858f9a0e6ffb424c241bc7d9b77f",
+    "semantic_hash": "9c83858f9a0e6ffb424c241bc7d9b77f"
+  },
+  "frontend/src/pages/kesiswaan/TindakLanjutPage.tsx": {
+    "mtime": 1784517877.3554313,
+    "ast_hash": "b89bb8e0affb455d2ba01d4ddc23914b",
+    "semantic_hash": "b89bb8e0affb455d2ba01d4ddc23914b"
+  },
+  "frontend/src/pages/kesiswaan/VerifikasiPage.tsx": {
+    "mtime": 1784547816.3085625,
+    "ast_hash": "382ff08b8981656f31ec4d1e3a076cca",
+    "semantic_hash": "382ff08b8981656f31ec4d1e3a076cca"
+  },
+  "frontend/src/pages/kokurikuler/GuruKokurikulerPage.tsx": {
+    "mtime": 1784626741.764159,
+    "ast_hash": "df007dd42121c50adce8790537830a30",
+    "semantic_hash": "df007dd42121c50adce8790537830a30"
+  },
+  "frontend/src/pages/kokurikuler/KokurikulerAsesmenPage.tsx": {
+    "mtime": 1784626741.7701576,
+    "ast_hash": "0651dbbb975da93cd31807c6a4c9ba8b",
+    "semantic_hash": "0651dbbb975da93cd31807c6a4c9ba8b"
+  },
+  "frontend/src/pages/kokurikuler/KokurikulerKegiatanPage.tsx": {
+    "mtime": 1784555185.6722188,
+    "ast_hash": "e8572bc3672a308d461db32436a774df",
+    "semantic_hash": "e8572bc3672a308d461db32436a774df"
+  },
+  "frontend/src/pages/kokurikuler/KokurikulerTimPage.tsx": {
+    "mtime": 1784630420.6182516,
+    "ast_hash": "8dccf20ab35c72e775e9eb750e9f09b7",
+    "semantic_hash": "8dccf20ab35c72e775e9eb750e9f09b7"
+  },
+  "frontend/src/pages/kokurikuler/RaporKokurikulerPage.tsx": {
+    "mtime": 1784626741.7842007,
+    "ast_hash": "1b5ef60c142566eb51c711db394a263e",
+    "semantic_hash": "1b5ef60c142566eb51c711db394a263e"
+  },
+  "frontend/src/pages/kokurikuler/kokurikulerConstants.ts": {
+    "mtime": 1784396946.3596458,
+    "ast_hash": "757da81efc90d2c6d006d669f1c7e75b",
+    "semantic_hash": "757da81efc90d2c6d006d669f1c7e75b"
+  },
+  "frontend/src/pages/kurikulum/JadwalKbmPage.tsx": {
+    "mtime": 1784826054.3715065,
+    "ast_hash": "f6da800d2ec1f7653415eb9db3941b8e",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/KurikulumDashboardPage.tsx": {
+    "mtime": 1784786430.9570584,
+    "ast_hash": "9f21f44767d66116c97d6c0141464448",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/MapelFormPage.tsx": {
+    "mtime": 1784518033.6660824,
+    "ast_hash": "52a1a72d02feff23e1e161f2ca55b670",
+    "semantic_hash": "52a1a72d02feff23e1e161f2ca55b670"
+  },
+  "frontend/src/pages/kurikulum/MapelListPage.tsx": {
+    "mtime": 1784626741.7997403,
+    "ast_hash": "817d7cf7514ba84a7bb289132b97460d",
+    "semantic_hash": "817d7cf7514ba84a7bb289132b97460d"
+  },
+  "frontend/src/pages/kurikulum/PenugasanFormPage.tsx": {
+    "mtime": 1784549372.5134199,
+    "ast_hash": "7dc0d0e3789e72d157fcc38fb220eda6",
+    "semantic_hash": "7dc0d0e3789e72d157fcc38fb220eda6"
+  },
+  "frontend/src/pages/kurikulum/PenugasanPage.tsx": {
+    "mtime": 1784549294.230182,
+    "ast_hash": "c49323c1b98b54b94776cc8cc5d0e186",
+    "semantic_hash": "c49323c1b98b54b94776cc8cc5d0e186"
+  },
+  "frontend/src/pages/kurikulum/TahunAjaranKkmPage.tsx": {
+    "mtime": 1784517824.5448978,
+    "ast_hash": "35c52d91f65ae3c0e108e8645a73dfd2",
+    "semantic_hash": "35c52d91f65ae3c0e108e8645a73dfd2"
+  },
+  "frontend/src/pages/kurikulum/WaliKelasPage.tsx": {
+    "mtime": 1784548841.3359804,
+    "ast_hash": "e7b041c6ff8ddb68f4d59d9d302ec12f",
+    "semantic_hash": "e7b041c6ff8ddb68f4d59d9d302ec12f"
+  },
+  "frontend/src/pages/login/LoginPage.tsx": {
+    "mtime": 1783956589.5164025,
+    "ast_hash": "d00b4a7028ce1828b1b573da79ecfdc5",
+    "semantic_hash": "d00b4a7028ce1828b1b573da79ecfdc5"
+  },
+  "frontend/src/pages/placeholder/PlaceholderPage.tsx": {
+    "mtime": 1784626741.8132882,
+    "ast_hash": "36cb63c11e62b3f55c8fb2e88c72cd38",
+    "semantic_hash": "36cb63c11e62b3f55c8fb2e88c72cd38"
+  },
+  "frontend/src/pages/profil/ProfilPage.tsx": {
+    "mtime": 1784626741.8192253,
+    "ast_hash": "ce7cc412f30bd319bf6215f2f12a7c80",
+    "semantic_hash": "ce7cc412f30bd319bf6215f2f12a7c80"
+  },
+  "frontend/src/pages/tu/TuDashboardPage.tsx": {
+    "mtime": 1784626741.8264241,
+    "ast_hash": "e252e7a1721d41c3913ba27b28a4f6ce",
+    "semantic_hash": "e252e7a1721d41c3913ba27b28a4f6ce"
+  },
+  "frontend/src/pages/tu/TuPengaturanPage.tsx": {
+    "mtime": 1784630695.9207387,
+    "ast_hash": "b900cca9657423d463371a4be56d01bb",
+    "semantic_hash": "b900cca9657423d463371a4be56d01bb"
+  },
+  "frontend/src/pages/tu/TuRekapGuruPage.tsx": {
+    "mtime": 1784517877.4007719,
+    "ast_hash": "5a6a41196f65211ec0cfa4beedb5f0c2",
+    "semantic_hash": "5a6a41196f65211ec0cfa4beedb5f0c2"
+  },
+  "frontend/tailwind.config.js": {
+    "mtime": 1783945170.6736257,
+    "ast_hash": "886aed7868701e13b922abf93b08479a",
+    "semantic_hash": "886aed7868701e13b922abf93b08479a"
+  },
+  "frontend/tsconfig.json": {
+    "mtime": 1783946118.9122207,
+    "ast_hash": "32550a82a70a0c5f7d5e0c203834ebc5",
+    "semantic_hash": "32550a82a70a0c5f7d5e0c203834ebc5"
+  },
+  "frontend/vite.config.ts": {
+    "mtime": 1783945156.9614117,
+    "ast_hash": "7f501156e5880e2976c006e73340ad6c",
+    "semantic_hash": "7f501156e5880e2976c006e73340ad6c"
+  },
+  "login.json": {
+    "mtime": 1784135489.5984962,
+    "ast_hash": "d3ba572aa1ed294b02049b4ff7b01e6a",
+    "semantic_hash": "d3ba572aa1ed294b02049b4ff7b01e6a"
+  },
+  "login_resp.json": {
+    "mtime": 1784135489.849645,
+    "ast_hash": "003a95c94a5b4dc4193a22e41e444365",
+    "semantic_hash": "003a95c94a5b4dc4193a22e41e444365"
+  },
+  "scratch/b_dup_penugasan.json": {
+    "mtime": 1784056003.4835458,
+    "ast_hash": "666d73deb4d0292ac06b65e2d044464d",
+    "semantic_hash": "666d73deb4d0292ac06b65e2d044464d"
+  },
+  "scratch/b_g1.json": {
+    "mtime": 1784055989.7384388,
+    "ast_hash": "664c4a1d05effe2aa9742bf98e09daff",
+    "semantic_hash": "664c4a1d05effe2aa9742bf98e09daff"
+  },
+  "scratch/b_g2.json": {
+    "mtime": 1784055991.7799637,
+    "ast_hash": "0dfbd272bb50752a4ec5dbf2bf3a5cb9",
+    "semantic_hash": "0dfbd272bb50752a4ec5dbf2bf3a5cb9"
+  },
+  "scratch/b_g3.json": {
+    "mtime": 1784055993.827286,
+    "ast_hash": "88120c0ae737687426c8b70e95bbd4d7",
+    "semantic_hash": "88120c0ae737687426c8b70e95bbd4d7"
+  },
+  "scratch/b_jadwal1.json": {
+    "mtime": 1784056019.285625,
+    "ast_hash": "5168982dc2cc1ac777fe3955fd70d5da",
+    "semantic_hash": "5168982dc2cc1ac777fe3955fd70d5da"
+  },
+  "scratch/b_jadwal_bentrok_guru.json": {
+    "mtime": 1784056023.7185524,
+    "ast_hash": "88d518442d35ab3b358112b3b2a218a1",
+    "semantic_hash": "88d518442d35ab3b358112b3b2a218a1"
+  },
+  "scratch/b_jadwal_bentrok_kelas.json": {
+    "mtime": 1784056021.3640873,
+    "ast_hash": "74c06f9474889c3871fe008a570c2399",
+    "semantic_hash": "74c06f9474889c3871fe008a570c2399"
+  },
+  "scratch/b_k7a.json": {
+    "mtime": 1784055979.5804644,
+    "ast_hash": "8de12af73a4a4072984d452d10de3ab4",
+    "semantic_hash": "8de12af73a4a4072984d452d10de3ab4"
+  },
+  "scratch/b_k7b.json": {
+    "mtime": 1784055987.697629,
+    "ast_hash": "94780f598d1f95b94402854df359ff40",
+    "semantic_hash": "94780f598d1f95b94402854df359ff40"
+  },
+  "scratch/b_kkm.json": {
+    "mtime": 1784056025.7405872,
+    "ast_hash": "877500cb21366aab6f7dc8e22151812e",
+    "semantic_hash": "877500cb21366aab6f7dc8e22151812e"
+  },
+  "scratch/b_libur.json": {
+    "mtime": 1784056027.934572,
+    "ast_hash": "68d80391a2d87117f4be12315ec147b0",
+    "semantic_hash": "68d80391a2d87117f4be12315ec147b0"
+  },
+  "scratch/b_mapel.json": {
+    "mtime": 1784055977.5628104,
+    "ast_hash": "44eea66b6377aa139f892d1ea2f85db5",
+    "semantic_hash": "44eea66b6377aa139f892d1ea2f85db5"
+  },
+  "scratch/b_patch_guru3.json": {
+    "mtime": 1784056005.524695,
+    "ast_hash": "6bcc9726d97636e1944a98c3f0090d4b",
+    "semantic_hash": "6bcc9726d97636e1944a98c3f0090d4b"
+  },
+  "scratch/b_patch_guru999.json": {
+    "mtime": 1784056007.5464149,
+    "ast_hash": "bc2f786b3c89231c4a039845635903a0",
+    "semantic_hash": "bc2f786b3c89231c4a039845635903a0"
+  },
+  "scratch/b_penugasan.json": {
+    "mtime": 1784056001.4493268,
+    "ast_hash": "9a304209662d8def71000aab0d0da895",
+    "semantic_hash": "9a304209662d8def71000aab0d0da895"
+  },
+  "scratch/b_ta.json": {
+    "mtime": 1784055974.500441,
+    "ast_hash": "e5d892bde8a3834b2a5ef72c2e86f6ff",
+    "semantic_hash": "e5d892bde8a3834b2a5ef72c2e86f6ff"
+  },
+  "scratch/bentrok.json": {
+    "mtime": 1784055922.2524636,
+    "ast_hash": "1209fdad06cf2ec5d36fe0b261ff1a12",
+    "semantic_hash": "1209fdad06cf2ec5d36fe0b261ff1a12"
+  },
+  "scratch/dup_penugasan.json": {
+    "mtime": 1784055867.117617,
+    "ast_hash": "39b65c960c29e6a761e2750bf625162e",
+    "semantic_hash": "39b65c960c29e6a761e2750bf625162e"
+  },
+  "scratch/guru-create.json": {
+    "mtime": 1784047595.3434677,
+    "ast_hash": "799a808f7d7ed11f9cca5a6eabcec36c",
+    "semantic_hash": "799a808f7d7ed11f9cca5a6eabcec36c"
+  },
+  "scratch/guru404.json": {
+    "mtime": 1784055897.0409904,
+    "ast_hash": "bc2f786b3c89231c4a039845635903a0",
+    "semantic_hash": "bc2f786b3c89231c4a039845635903a0"
+  },
+  "scratch/guru_bentrok.json": {
+    "mtime": 1784055936.8529415,
+    "ast_hash": "88d518442d35ab3b358112b3b2a218a1",
+    "semantic_hash": "88d518442d35ab3b358112b3b2a218a1"
+  },
+  "scratch/inspect.sql": {
+    "mtime": 1784047723.0547528,
+    "ast_hash": "602c3a5e976422e25cef59071700d4f5",
+    "semantic_hash": "602c3a5e976422e25cef59071700d4f5"
+  },
+  "scratch/jadwal_7a.json": {
+    "mtime": 1784055945.0982647,
+    "ast_hash": "36046beb22539fb70f16a6057831a5fa",
+    "semantic_hash": "36046beb22539fb70f16a6057831a5fa"
+  },
+  "scratch/kelas-create.json": {
+    "mtime": 1784047742.6056077,
+    "ast_hash": "6fd1282229fba140bd6320c703eb45d8",
+    "semantic_hash": "6fd1282229fba140bd6320c703eb45d8"
+  },
+  "scratch/login.json": {
+    "mtime": 1784047547.2827737,
+    "ast_hash": "341e962ecd95be270bbb5c743a8ec8b5",
+    "semantic_hash": "341e962ecd95be270bbb5c743a8ec8b5"
+  },
+  "scratch/siswa-create.json": {
+    "mtime": 1784047785.109542,
+    "ast_hash": "e098da1acd7c1801a36133ff1731ae2c",
+    "semantic_hash": "e098da1acd7c1801a36133ff1731ae2c"
+  },
+  "scratch/smoke_final.ps1": {
+    "mtime": 1784056067.880381,
+    "ast_hash": "bcd82c1500af6151e32316eb50107739",
+    "semantic_hash": "bcd82c1500af6151e32316eb50107739"
+  },
+  "scratch/smoke_t12fix.ps1": {
+    "mtime": 1784055818.7345257,
+    "ast_hash": "1f19fe522146c61e09e304312886ecb7",
+    "semantic_hash": "1f19fe522146c61e09e304312886ecb7"
+  },
+  "scratch/smoke_t12fix_phase2.ps1": {
+    "mtime": 1784055845.3367674,
+    "ast_hash": "e02e91c094fa66d5b4c2209459f9c0b2",
+    "semantic_hash": "e02e91c094fa66d5b4c2209459f9c0b2"
+  },
+  "scratch/t16-checklist.mjs": {
+    "mtime": 1784235926.0716984,
+    "ast_hash": "dddcef1c162a996b48df460fc265758c",
+    "semantic_hash": "dddcef1c162a996b48df460fc265758c"
+  },
+  "scripts/backup-db.ps1": {
+    "mtime": 1784197033.958945,
+    "ast_hash": "b38f885ff98c694c407c2c1246f58d69",
+    "semantic_hash": "b38f885ff98c694c407c2c1246f58d69"
+  },
+  "scripts/backup-db.sh": {
+    "mtime": 1784196755.989132,
+    "ast_hash": "40c46fbb1c950ee4586a5048553a3bed",
+    "semantic_hash": "40c46fbb1c950ee4586a5048553a3bed"
+  },
+  "scripts/restore-db.ps1": {
+    "mtime": 1784197081.6059098,
+    "ast_hash": "2f2ebac5089e00ebaa466c29b326f97b",
+    "semantic_hash": "2f2ebac5089e00ebaa466c29b326f97b"
+  },
+  "scripts/restore-db.sh": {
+    "mtime": 1784196805.9243796,
+    "ast_hash": "00fa8afda8d13c3446a0bd66c6bcebd6",
+    "semantic_hash": "00fa8afda8d13c3446a0bd66c6bcebd6"
+  },
+  "test-results/.last-run.json": {
+    "mtime": 1784360144.7144728,
+    "ast_hash": "ff6d5dab1dfd50cea584142bc288ce9e",
+    "semantic_hash": "ff6d5dab1dfd50cea584142bc288ce9e"
+  },
+  "frontend/e2e/gelombang2/hadir-sesi.spec.ts": {
+    "mtime": 1784717045.0420358,
+    "ast_hash": "3ac4ce16271285bd10f218e172170952",
+    "semantic_hash": ""
+  },
+  "PROMPT_AGENT.md": {
+    "mtime": 1784626215.5105984,
+    "ast_hash": "d62e35f03d8feae91dda172a25ea738d",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1784235981.203539,
+    "ast_hash": "3435e20e9529643bfec6ab58a3b35596",
+    "semantic_hash": ""
+  },
+  "SPEC-KANON.md": {
+    "mtime": 1784270737.76798,
+    "ast_hash": "7ec1dee61f6a04ba101fb0e0643bbc33",
+    "semantic_hash": ""
+  },
+  "aamapp-cookies.txt": {
+    "mtime": 1784047553.8627577,
+    "ast_hash": "fc31b34eb1f36e5ff23be7f4621aa04e",
+    "semantic_hash": ""
+  },
+  "backups/PROMPT_AGENT.backup-0713-v09.md": {
+    "mtime": 1784237011.5313067,
+    "ast_hash": "c72e1212213ffae794c38ca1387f6884",
+    "semantic_hash": ""
+  },
+  "backups/PROMPT_AGENT.tail-setelah-insiden.md": {
+    "mtime": 1784236390.989965,
+    "ast_hash": "7669250ab7f5a0c73a7caed97921c131",
+    "semantic_hash": ""
+  },
+  "backups/rekon-bagian1-spec-f1.md": {
+    "mtime": 1784237224.0706806,
+    "ast_hash": "16d1724e35701af3fb5cbf73f1b27cef",
+    "semantic_hash": ""
+  },
+  "backups/rekon-bagian2-keputusan.md": {
+    "mtime": 1784237311.526474,
+    "ast_hash": "27ce3a35b2d9d543cb11e8541f096312",
+    "semantic_hash": ""
+  },
+  "backups/rekon-bagian3-log.md": {
+    "mtime": 1784237373.502707,
+    "ast_hash": "8d08193ae68438ab88f0bb1343891571",
+    "semantic_hash": ""
+  },
+  "briefs/AGENT-1-AKTIF.md": {
+    "mtime": 1784752261.0559535,
+    "ast_hash": "9bfe4894c33ffb6cea4bddfb46b50223",
+    "semantic_hash": ""
+  },
+  "briefs/AGENT-1.md": {
+    "mtime": 1784488659.0230227,
+    "ast_hash": "7b1dfdd4ea65b6a55c86a5e6cc31fe8f",
+    "semantic_hash": ""
+  },
+  "briefs/AGENT-2.md": {
+    "mtime": 1784485854.1655982,
+    "ast_hash": "4672bfccf0a7b6123c28ea7cc0058d42",
+    "semantic_hash": ""
+  },
+  "briefs/AGENT-3.md": {
+    "mtime": 1784269859.9588127,
+    "ast_hash": "29280f3600a06a21083f6fa9e2446328",
+    "semantic_hash": ""
+  },
+  "briefs/BANDING-PENILAIAN-RADIG.md": {
+    "mtime": 1784658691.4285526,
+    "ast_hash": "e3f140360afba12a20425dae699eabee",
+    "semantic_hash": ""
+  },
+  "briefs/CARD-DESIGN-STANDARD.md": {
+    "mtime": 1784450008.710526,
+    "ast_hash": "c5a4a63aa07f8357995982eb7e4baf5e",
+    "semantic_hash": ""
+  },
+  "briefs/F2-SPEC.md": {
+    "mtime": 1784356409.9746017,
+    "ast_hash": "4e6937ea9d8bcc1563677a35c239d694",
+    "semantic_hash": ""
+  },
+  "briefs/F3-SPEC.md": {
+    "mtime": 1784367660.2082047,
+    "ast_hash": "549ce84e44740157b4b37586b29250e3",
+    "semantic_hash": ""
+  },
+  "briefs/F4-SPEC.md": {
+    "mtime": 1784373575.7053726,
+    "ast_hash": "77a02c4176c17dc7e65247152aaad176",
+    "semantic_hash": ""
+  },
+  "briefs/F5-SPEC.md": {
+    "mtime": 1784383954.586581,
+    "ast_hash": "1fd9ccd177afebce6b3f71f7563b26c8",
+    "semantic_hash": ""
+  },
+  "briefs/F6-SPEC.md": {
+    "mtime": 1784401774.3310187,
+    "ast_hash": "44d3b2391587b3df61c099e6f9c503f1",
+    "semantic_hash": ""
+  },
+  "briefs/IA-HIERARCHY-V2.md": {
+    "mtime": 1784536801.158761,
+    "ast_hash": "40819363194f630b82a0a1c2bb46e567",
+    "semantic_hash": ""
+  },
+  "briefs/IA-MIGRATION-MAP.md": {
+    "mtime": 1784461414.4641614,
+    "ast_hash": "16e8382a10e1e230049746243855cd9a",
+    "semantic_hash": ""
+  },
+  "briefs/RBAC-AUDIT-FIX.md": {
+    "mtime": 1784666552.5007668,
+    "ast_hash": "ff0afad4f92a0e2a76ed9f369609c87f",
+    "semantic_hash": ""
+  },
+  "briefs/UX-POLISH-SPEC.md": {
+    "mtime": 1784625978.2214227,
+    "ast_hash": "bde6f9654ed9e0ff6c0d5a67155bf126",
+    "semantic_hash": ""
+  },
+  "cookies.txt": {
+    "mtime": 1784135489.8466477,
+    "ast_hash": "fc31b34eb1f36e5ff23be7f4621aa04e",
+    "semantic_hash": ""
+  },
+  "deploy/README-DEPLOY.md": {
+    "mtime": 1784269706.366045,
+    "ast_hash": "621e9417ad61d38cda6d38817c7df69a",
+    "semantic_hash": ""
+  },
+  "deploy/docker-compose.prod.yml": {
+    "mtime": 1784196848.4453816,
+    "ast_hash": "ae3ea91595f02ae878f5c264ce29ef96",
+    "semantic_hash": ""
+  },
+  "deploy/test.txt": {
+    "mtime": 1784198962.5292852,
+    "ast_hash": "0c6d0cc03a2f8e2e224722d3489e5c0b",
+    "semantic_hash": ""
+  },
+  "docker-compose.prod.yml": {
+    "mtime": 1784467864.4450486,
+    "ast_hash": "23496d518d08da269a858f3113200c96",
+    "semantic_hash": ""
+  },
+  "docker-compose.yml": {
+    "mtime": 1784268241.5833297,
+    "ast_hash": "81698b82eee9648a71c127d3aa7cd243",
+    "semantic_hash": ""
+  },
+  "docs/API-REFERENCE.md": {
+    "mtime": 1784355293.348134,
+    "ast_hash": "cb8cdb38bf6406c921b496af883204e5",
+    "semantic_hash": ""
+  },
+  "docs/ARSITEKTUR.md": {
+    "mtime": 1784199243.3776028,
+    "ast_hash": "db469056ec016b6656813d024b36fd81",
+    "semantic_hash": ""
+  },
+  "docs/AUDIT-KEAMANAN-PRA-PRODUKSI.md": {
+    "mtime": 1784240251.3402162,
+    "ast_hash": "ce441d1978213056c7f84152875196fb",
+    "semantic_hash": ""
+  },
+  "docs/DEPLOY.md": {
+    "mtime": 1784467493.4170592,
+    "ast_hash": "4d7246c8bed1f680842bda85d4ec9970",
+    "semantic_hash": ""
+  },
+  "docs/HARDENING-CHECKLIST.md": {
+    "mtime": 1784267300.325174,
+    "ast_hash": "cd5a46e9b2036cfb34573707a0bd1e2b",
+    "semantic_hash": ""
+  },
+  "docs/KAMUS-DATA.md": {
+    "mtime": 1784355329.5736141,
+    "ast_hash": "91409b2bee6a1eb0cd327d1e5a790da4",
+    "semantic_hash": ""
+  },
+  "frontend/index.html": {
+    "mtime": 1783945187.4140215,
+    "ast_hash": "c9b1023b1d6b92ad4f951f06f7b435c5",
+    "semantic_hash": ""
+  },
+  "planning/F2-RISET-PRESENSI-SISWA.md": {
+    "mtime": 1784204469.4706085,
+    "ast_hash": "6f0602381cc82304afb492b4388dde31",
+    "semantic_hash": ""
+  },
+  "planning/F3-RISET-PRESENSI-WAJAH.md": {
+    "mtime": 1784240582.4051392,
+    "ast_hash": "32f551c16daa7170d1b09ef2650ecab3",
+    "semantic_hash": ""
+  },
+  "planning/F4-RISET-IZIN-LAPORAN.md": {
+    "mtime": 1784269620.5443788,
+    "ast_hash": "e58faaae25082893f2c565cde7a819f2",
+    "semantic_hash": ""
+  },
+  "planning/F6-RISET-RAPOR-B.md": {
+    "mtime": 1784234508.9256842,
+    "ast_hash": "897e7da004444d01a0b3589ab2dd725d",
+    "semantic_hash": ""
+  },
+  "planning/F6-RISET-RAPOR.md": {
+    "mtime": 1784205362.5707378,
+    "ast_hash": "77e96a4d406d9c59c725eb33805d2cfc",
+    "semantic_hash": ""
+  },
+  "planning/LOG-PROGRES.md": {
+    "mtime": 1784211673.019976,
+    "ast_hash": "48449cf4cf5130c2abf070e32f7c3bc6",
+    "semantic_hash": ""
+  },
+  "scratch/agent2-ops1-report.md": {
+    "mtime": 1784197557.8557734,
+    "ast_hash": "8aa85c72657cc7ffc430d5e534dbfdeb",
+    "semantic_hash": ""
+  },
+  "warm-beaming-cray.md": {
+    "mtime": 1783962526.094134,
+    "ast_hash": "d6a7ef2eb7a53de8584b2f0e19628474",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/antispoof.json": {
+    "mtime": 1784361225.524589,
+    "ast_hash": "7ee082dd29f8cc0913769c8b5e9323ba",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/facemesh.json": {
+    "mtime": 1784361225.5773704,
+    "ast_hash": "859af0783f8f522a2f66b5d12f9d0cd7",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/iris.json": {
+    "mtime": 1784361225.7288928,
+    "ast_hash": "9c0bc3a1346c80bdf86fb3b35382d263",
+    "semantic_hash": ""
+  },
+  "frontend/public/models/liveness.json": {
+    "mtime": 1784361225.7298918,
+    "ast_hash": "81dbf17ae780b227323eeae5724e6a76",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_internal.js": {
+    "mtime": 1784734057.2152834,
+    "ast_hash": "4a77caa20137170bdd50b84ce7d640ae",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_module_internal.js": {
+    "mtime": 1784734057.225237,
+    "ast_hash": "241a27add2cc666730f6c8650080a4cf",
+    "semantic_hash": ""
+  },
+  "frontend/public/mediapipe/vision_wasm_nosimd_internal.js": {
+    "mtime": 1784734057.2336376,
+    "ast_hash": "60141754615a939dd3e2781f922a436f",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/faceLandmarker.ts": {
+    "mtime": 1784736005.4904315,
+    "ast_hash": "2586713d35d20da3164e4d3387ea15cb",
+    "semantic_hash": ""
+  },
+  ".claude/settings.json": {
+    "mtime": 1784740931.3729806,
+    "ast_hash": "075118244482995463ecebf0efd8b51d",
+    "semantic_hash": ""
+  },
+  ".opencode/opencode.json": {
+    "mtime": 1784748432.7043283,
+    "ast_hash": "1efe24ecf938911d4f23e4b1c6ec91f7",
+    "semantic_hash": ""
+  },
+  ".opencode/plugins/graphify.js": {
+    "mtime": 1784740879.532634,
+    "ast_hash": "b33d000860642c6f4907a877e0387a21",
+    "semantic_hash": ""
+  },
+  ".agents/rules/graphify.md": {
+    "mtime": 1784740879.0098965,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": ""
+  },
+  ".agents/workflows/graphify.md": {
+    "mtime": 1784740879.0098965,
+    "ast_hash": "637776aa6f7496d069afe7520c845c8a",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1784740879.532634,
+    "ast_hash": "21ceb6533048be51308e69e7b74a35cf",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1784744953.854473,
+    "ast_hash": "af9b9439e49252e28b7c1be085565dd9",
+    "semantic_hash": ""
+  },
+  "backend/src/guru/guru-link.service.ts": {
+    "mtime": 1784753504.912694,
+    "ast_hash": "e977e94eb0e2272ef209115cea11841f",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1784900000000-AddGuruEmail.ts": {
+    "mtime": 1784752533.6517825,
+    "ast_hash": "e84252fde81e5df32ab0128370cefa52",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/akun-guru-link.spec.ts": {
+    "mtime": 1784753079.2953496,
+    "ast_hash": "ef7ab1a6c0b9eceb376b009f45283d65",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/rbac-fix.spec.ts": {
+    "mtime": 1784752323.5292153,
+    "ast_hash": "effd2555771fd4224bbe4ea4b5aabd44",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/liveness-state-machine.spec.ts": {
+    "mtime": 1784789950.984291,
+    "ast_hash": "ca0e9f5652fa99d1fe54e99b754bb1ff",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/livenessStateMachine.ts": {
+    "mtime": 1784789222.08617,
+    "ast_hash": "d00e3fd6e47386e0a89473fd31e1c727",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/MonitoringNilaiPage.tsx": {
+    "mtime": 1784786372.3599992,
+    "ast_hash": "f50dd67cadd052712e8e350501f2cbfe",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/shared/LegerKelasPage.tsx": {
+    "mtime": 1784787406.822174,
+    "ast_hash": "56c5d7e350b7aa17cd86cd2b79922e89",
+    "semantic_hash": ""
+  },
+  "test.sql": {
+    "mtime": 1784755737.0304053,
+    "ast_hash": "d6eb4b8fb8a269c0b141e2f4ef2bb562",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1785000000000-AddGuruFaceSnapshot.ts": {
+    "mtime": 1784791428.4408414,
+    "ast_hash": "c18769171e7249dca931b997c131940c",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/face-snapshot.spec.ts": {
+    "mtime": 1784793145.5549874,
+    "ast_hash": "8f3bd46a4179ac6ac53a6bfd2ea7e1ff",
+    "semantic_hash": ""
+  },
+  "backend/src/import/kbm-import.service.ts": {
+    "mtime": 1784828526.6667817,
+    "ast_hash": "f13a5dd8b8908e7488588bd0a122208c",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1785100000000-AddGuruKode.ts": {
+    "mtime": 1784795360.3177962,
+    "ast_hash": "c497606b57de0306019a11a05a5497b9",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/JadwalMatriksPage.tsx": {
+    "mtime": 1784823301.9896424,
+    "ast_hash": "729f520b461238d5c4a160c3e12bcb41",
+    "semantic_hash": ""
+  },
+  "briefs/JADWAL-MATRIX-SPEC.md": {
+    "mtime": 1784819268.9869394,
+    "ast_hash": "9c59890d97ce60fdff1667a9763a22dd",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/jadwal-matriks.spec.ts": {
+    "mtime": 1784829510.546689,
+    "ast_hash": "0c240cdc4307774dde14406b3f5730ab",
+    "semantic_hash": ""
+  },
+  "backend/src/kurikulum/jam-pelajaran.entity.ts": {
+    "mtime": 1784822918.2566657,
+    "ast_hash": "8ecfd96a20536be2bcaac248b35c44a0",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/1785200000000-AddJamPelajaran.ts": {
+    "mtime": 1784822938.2819426,
+    "ast_hash": "6b97006be1eca516d31fe68bdde6b7c4",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/create_jam_pelajaran.sql": {
+    "mtime": 1784823582.1396224,
+    "ast_hash": "3ed4f97fa18d6fbec1b470e69c1487f6",
+    "semantic_hash": ""
+  },
+  "backend/src/migrations/check_jp.sql": {
+    "mtime": 1784825224.0405302,
+    "ast_hash": "3e63c098a72daf77999a5a8dd80ec633",
+    "semantic_hash": ""
+  }
+}
