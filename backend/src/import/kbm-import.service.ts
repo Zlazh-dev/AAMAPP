@@ -19,8 +19,32 @@ import { AuditService } from '../audit/audit.service';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
+/**
+ * Entry guru per-kode dari sheet "7. KODE" (raw, belum dedupe).
+ * Satu orang bisa punya beberapa kode karena mengampu banyak mapel.
+ */
+export interface GuruKodeEntry {
+  kode: string;
+  nama: string;
+  mapel: string;
+}
+
+/**
+ * Entry guru per-orang setelah dedupe by nama ternormalisasi.
+ * kodeList = semua kode yang dimiliki orang ini (mis. ["A7", "I4"]).
+ * kode = kode primer (yang disimpan di guru.kode).
+ */
+export interface GuruPersonEntry {
+  kode: string;        // kode primer (pertama secara alfanumerik)
+  kodeList: string[];  // semua kode orang ini
+  nama: string;        // nama asli (dari baris pertama ditemukan)
+  mapel: string;       // mapel utama (dari kode primer)
+}
+
+/** @deprecated Diganti GuruPersonEntry. Dipertahankan agar frontend tidak perlu update sekaligus. */
 export interface GuruPreviewEntry {
   kode: string;
+  kodeList: string[];
   nama: string;
   mapel: string;
 }
@@ -28,9 +52,9 @@ export interface GuruPreviewEntry {
 export interface KbmPreviewResult {
   tahapA: {
     mapel: number;
-    guru: number;
+    guru: number;         // jumlah ORANG unik (bukan kode)
     kelas: number;
-    guruList: GuruPreviewEntry[];
+    guruList: GuruPreviewEntry[];  // 44 orang, tiap orang ada kodeList
     conflicts: string[];
   };
   tahapB: { wali: number; penugasan: number; conflicts: string[] };
@@ -227,25 +251,22 @@ export class KbmImportService {
 
   private _parseTahapA(wb: ExcelJS.Workbook) {
     const mapelRows = this._parseMapel(wb);
-    const guruRows = this._parseGuru(wb);
+    const rawGuruRows = this._parseGuru(wb);   // 52 kode (per-kode)
     const kelasRows = this._parseKelas(wb);
 
-    const conflicts: string[] = [];
-    // Cek duplikat kode guru dalam file (sudah didedup di _parseGuru, tapi cek konsistensi nama)
-    const seenKode = new Map<string, string>();
-    for (const g of guruRows) {
-      if (g.kode && seenKode.has(g.kode)) {
-        conflicts.push(`Kode guru duplikat: ${g.kode} (${g.nama} vs ${seenKode.get(g.kode)})`);
-      } else if (g.kode) {
-        seenKode.set(g.kode, g.nama);
-      }
-    }
+    // Dedupe by person: 52 kode → 44 orang
+    const { persons, conflicts } = this._dedupeGuruByPerson(rawGuruRows);
 
     return {
       mapel: mapelRows.length,
-      guru: guruRows.length,
+      guru: persons.length,   // 44 orang
       kelas: kelasRows.length,
-      guruList: guruRows.map((g) => ({ kode: g.kode, nama: g.nama, mapel: g.mapel })),
+      guruList: persons.map((p) => ({
+        kode: p.kode,
+        kodeList: p.kodeList,
+        nama: p.nama,
+        mapel: p.mapel,
+      })),
       conflicts,
     };
   }
@@ -295,25 +316,23 @@ export class KbmImportService {
   }
 
   /**
-   * 7. KODE: parse guru (kode, nama, mapel). Dua kolom paralel. Dedup by kode.
-   * Hanya terima entri yang punya nomor urut INTEGER valid (C2 kiri / C7 kanan).
-   * Baris "lanjutan" (no urut kosong atau bukan angka) = merge-cell semu → skip.
-   * Baris header ("NO", "NAMA", dll.) punya nomor non-integer → skip.
+   * 7. KODE: parse guru PER-KODE (raw, belum dedupe by person).
+   * Mengembalikan 52 entri (satu per kode, semua kode valid).
+   * Dedup by kode saja — dedupe by person dilakukan di _dedupeGuruByPerson.
    */
-  private _parseGuru(wb: ExcelJS.Workbook): Array<{ kode: string; nama: string; mapel: string }> {
+  private _parseGuru(wb: ExcelJS.Workbook): GuruKodeEntry[] {
     const ws = wb.getWorksheet('7. KODE');
     if (!ws) throw new BadRequestException('Sheet "7. KODE" tidak ditemukan');
 
     const GURU_CODE_RE = /^[A-Z]\d{1,2}$/;
 
     const seen = new Set<string>();
-    const rows: Array<{ kode: string; nama: string; mapel: string }> = [];
+    const rows: GuruKodeEntry[] = [];
     for (let r = 13; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
 
       // Kolom kiri: C2=nomor urut, C3=nama, C4=kode guru, C5=mapel ampu
       const noKiriRaw = row.getCell(2).value;
-      // Nomor urut HARUS integer (1,2,3...) — reject string/null/non-numeric
       const noKiriNum = typeof noKiriRaw === 'number'
         ? Math.floor(noKiriRaw)
         : parseInt(this._cellText(noKiriRaw as ExcelJS.CellValue), 10);
@@ -346,6 +365,104 @@ export class KbmImportService {
     }
     return rows;
   }
+
+  /**
+   * Dedupe guru by person: kelompokkan kode-kode ber-nama identik (setelah
+   * normalisasi gelar/spasi) menjadi satu orang.
+   *
+   * Normalisasi nama:
+   *   1. Lowercase
+   *   2. Strip gelar akhir: ", S.Pd, Gr." / "M.Pd" / "S.Si" dll.
+   *   3. Trim + collapse whitespace
+   *
+   * Aturan:
+   *   - Nama identik (setelah normalisasi) → satu orang, kodeList gabungan.
+   *   - Nama hampir sama tapi TIDAK identik (mis. beda gelar minor) → tetap
+   *     dianggap satu orang jika normalisasi cocok.
+   *   - AGENT tidak boleh memutuskan sendiri jika ada ambiguitas — konflik
+   *     dilaporkan.
+   *
+   * Return:
+   *   persons  — 44 GuruPersonEntry (per orang, kode primer = terendah alfa)
+   *   kodeToPersonIdx — map kode → index di persons (untuk resolusi penugasan)
+   *   conflicts — pesan jika ada kesamaan nama yang mencurigakan
+   */
+  private _dedupeGuruByPerson(rawRows: GuruKodeEntry[]): {
+    persons: GuruPersonEntry[];
+    kodeToPersonIdx: Map<string, number>;
+    conflicts: string[];
+  } {
+    const conflicts: string[] = [];
+
+    /**
+     * Normalisasi nama untuk tujuan matching:
+     * Buang gelar (karena bisa tulis beda-beda), lowercase, collapse spaces.
+     * Contoh:
+     *   "Rohmah Handayani, S.Pd, Gr." → "rohmah handayani"
+     *   "Lailiyatur Rosyidah, M.Pd, Gr." → "lailiyatur rosyidah"
+     */
+    const normNama = (nama: string): string => {
+      return nama
+        .toLowerCase()
+        // Strip koma + gelar akademik (S.Pd, M.Pd, S.Si, S.Ikom, S.Hut, S.Ak, S.PdI, dll.)
+        .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
+        // Bersihkan sisa tanda baca & spasi ganda
+        .replace(/[,.]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    };
+
+    // Map normNama → index di persons[]
+    const normToIdx = new Map<string, number>();
+    const persons: GuruPersonEntry[] = [];
+    const kodeToPersonIdx = new Map<string, number>();
+
+    for (const entry of rawRows) {
+      const norm = normNama(entry.nama);
+      let idx = normToIdx.get(norm);
+
+      if (idx === undefined) {
+        // Orang baru
+        idx = persons.length;
+        normToIdx.set(norm, idx);
+        persons.push({
+          kode: entry.kode,       // kode primer = kode pertama ditemukan
+          kodeList: [entry.kode],
+          nama: entry.nama,       // nama asli dari baris pertama
+          mapel: entry.mapel,
+        });
+      } else {
+        // Orang yang sudah ada — tambahkan kode alias
+        persons[idx].kodeList.push(entry.kode);
+        // Kode primer = alfanumerik terendah (konsisten)
+        persons[idx].kode = [...persons[idx].kodeList].sort()[0];
+      }
+      kodeToPersonIdx.set(entry.kode, idx);
+    }
+
+    // Cek konflik: dua nama berbeda yang normNama-nya PERSIS sama
+    // (tidak mungkin dari logika di atas, tapi tampilkan jika beda nama asli)
+    for (const p of persons) {
+      if (p.kodeList.length > 1) {
+        // Verifikasi semua kode punya nama yang sama setelah normalisasi (konsistensi)
+        const allNames = rawRows
+          .filter((r) => p.kodeList.includes(r.kode))
+          .map((r) => r.nama);
+        const uniqueNamaAsli = [...new Set(allNames)];
+        if (uniqueNamaAsli.length > 1) {
+          // Nama asli berbeda tapi normalisasi cocok — laporkan sebagai konflik
+          conflicts.push(
+            `Multi-kode [${p.kodeList.join(', ')}] dikelompokkan jadi satu orang ` +
+            `tapi nama asli berbeda: ${uniqueNamaAsli.join(' | ')}. ` +
+            `Periksa manual — agent tidak memutuskan sendiri.`,
+          );
+        }
+      }
+    }
+
+    return { persons, kodeToPersonIdx, conflicts };
+  }
+
 
   /** 3. WALAS + 1. BEBAN "MENGAJAR KELAS": parse daftar kelas unik. */
   private _parseKelas(wb: ExcelJS.Workbook): string[] {
@@ -661,41 +778,59 @@ export class KbmImportService {
       const bebanMapelNames = this._parseUniqueMapelFromBeban(wb);
       for (const nama of bebanMapelNames) {
         const norm = this._normalizeMapelNama(nama);
-        // Cek apakah sudah ada (by normalized nama)
         const existing = await queryRunner.manager
           .createQueryBuilder(Mapel, 'm')
           .where('UPPER(m.nama) = :nama', { nama: norm })
           .getOne();
         if (!existing) {
-          // Buat mapel baru dengan kode = nama (tidak ada kode ACUAN)
           await queryRunner.manager.save(Mapel, { kode: norm, nama, urutan: 0 });
           mapelTersimpan++;
         }
       }
 
-      // ── Guru: upsert by kode (email kosong) ──
-      const guruRows = this._parseGuru(wb);
+      // ── Guru: dedupe by ORANG (bukan by kode). Simpan 44 orang, bukan 52 kode. ──
+      // guru.kode = kode primer (alfanumerik terendah dari kodeList).
+      // Kode alias disimpan in-memory — Tahap B akan membangun peta kode→guruId
+      // langsung dari DB (by nama matching), bukan dari field kode saja.
+      const rawGuruRows = this._parseGuru(wb);
+      const { persons } = this._dedupeGuruByPerson(rawGuruRows);
       let guruTersimpan = 0, guruDilewati = 0;
-      for (const g of guruRows) {
-        if (!g.kode) continue;
-        const existing = await queryRunner.manager.findOne(Guru, { where: { kode: g.kode } });
-        if (existing) {
-          existing.nama = g.nama;
-          await queryRunner.manager.save(existing);
+      for (const p of persons) {
+        // Cek by kode primer
+        const existingByKode = await queryRunner.manager.findOne(Guru, { where: { kode: p.kode } });
+        if (existingByKode) {
+          existingByKode.nama = p.nama;
+          await queryRunner.manager.save(existingByKode);
           guruDilewati++;
-        } else {
-          await queryRunner.manager.save(Guru, {
-            nama: g.nama,
-            kode: g.kode,
-            nip: null,
-            email: null,
-            jenisKelamin: 'L',
-            fotoUrl: '',
-            status: 'aktif',
-            faceStatus: 'BELUM',
-          });
-          guruTersimpan++;
+          continue;
         }
+        // Cek by nama (orang yang sama mungkin sudah ada tapi dengan kode lama/berbeda)
+        const normNamaUp = p.nama.toUpperCase().replace(/\s+/g, ' ').trim();
+        const existingByNama = await queryRunner.manager
+          .createQueryBuilder(Guru, 'g')
+          .where('UPPER(g.nama) = :nama', { nama: normNamaUp })
+          .getOne();
+        if (existingByNama) {
+          // Update kode primer jika belum di-set atau berbeda
+          if (!existingByNama.kode) {
+            existingByNama.kode = p.kode;
+          }
+          await queryRunner.manager.save(existingByNama);
+          guruDilewati++;
+          continue;
+        }
+        // Orang baru
+        await queryRunner.manager.save(Guru, {
+          nama: p.nama,
+          kode: p.kode,   // kode primer
+          nip: null,
+          email: null,
+          jenisKelamin: 'L',
+          fotoUrl: '',
+          status: 'aktif',
+          faceStatus: 'BELUM',
+        });
+        guruTersimpan++;
       }
 
       // ── Kelas: upsert by nama ──
@@ -726,7 +861,7 @@ export class KbmImportService {
         resource: 'import-kbm',
         ip: req.ip,
         userAgent: req.headers['user-agent'] as string,
-        summary: `Tahap A: ${mapelTersimpan} mapel baru, ${guruTersimpan} guru baru, ${kelasTersimpan} kelas baru`,
+        summary: `Tahap A: ${mapelTersimpan} mapel baru, ${guruTersimpan} guru baru (${persons.length} orang unik dari ${rawGuruRows.length} kode), ${kelasTersimpan} kelas baru`,
       });
 
       return {
@@ -789,11 +924,52 @@ export class KbmImportService {
 
       // ── Penugasan: upsert by (mapelId, kelasId, tahunAjaranId) ──
       const penugasanRows = this._parsePenugasan(wb);
-      // Build kode→guruId + mapelNama→mapelId maps
+
+      // Bangun peta kode→guruId yang mencakup SEMUA 52 kode (termasuk alias).
+      // Strategi: pertama, lookup by kode (field guru.kode = kode primer).
+      // Kode alias (mis. I4 untuk Rohmah yang kode primer = A7) tidak ada di DB.
+      // Untuk kode alias: lookup by nama orang di rawGuruRows → normNama → guruId.
+      const rawGuruRows = this._parseGuru(wb);
+      const { kodeToPersonIdx, persons: personList } = this._dedupeGuruByPerson(rawGuruRows);
+
+      // Map normNama → guruId dari DB (untuk kode alias)
       const guruByKode = new Map<string, number>();
+      const guruByNormNama = new Map<string, number>();
       for (const g of allGuru) {
         if (g.kode) guruByKode.set(g.kode, g.id);
+        // Normalisasi nama yang sama seperti di _dedupeGuruByPerson
+        const normNama = g.nama
+          .toLowerCase()
+          .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
+          .replace(/[,.]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        guruByNormNama.set(normNama, g.id);
       }
+
+      // Bangun peta kode alias → guruId via kodeToPersonIdx → nama orang → normNama → guruId
+      const kodeToGuruId = new Map<string, number>();
+      for (const [kode, personIdx] of kodeToPersonIdx) {
+        const person = personList[personIdx];
+        // Coba kode primer dulu
+        let guruId = guruByKode.get(person.kode);
+        if (!guruId) {
+          // Coba via normNama
+          const normNama = person.nama
+            .toLowerCase()
+            .replace(/,\s*[A-Z][a-zA-Z.]+(?:\s+[A-Z][a-zA-Z.]+)*/g, '')
+            .replace(/[,.]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          guruId = guruByNormNama.get(normNama);
+        }
+        if (guruId) {
+          kodeToGuruId.set(kode, guruId);
+        } else {
+          this.logger.warn(`Tahap B: tidak menemukan guruId untuk kode=${kode}, orang=${person.nama}`);
+        }
+      }
+
       const allMapel = await queryRunner.manager.find(Mapel);
       const mapelByNama = new Map<string, number>();
       const mapelByKode = new Map<string, number>();
@@ -809,7 +985,8 @@ export class KbmImportService {
 
       let penugasanTersimpan = 0, penugasanDilewati = 0;
       for (const p of penugasanRows) {
-        const guruId = guruByKode.get(p.kodeGuru);
+        // kodeToGuruId mencakup SEMUA 52 kode (primer + alias multi-mapel)
+        const guruId = kodeToGuruId.get(p.kodeGuru);
         // Match mapel by normalized nama (BEBAN uses "I P S", "P A I", "Pendidikan Pancasila") or kode
         const normNama = this._normalizeMapelNama(p.mapel);
         const mapelId = mapelByNama.get(normNama) ?? mapelByKode.get(p.mapel.toUpperCase());
