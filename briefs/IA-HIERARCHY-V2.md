@@ -84,12 +84,19 @@ Presensi Guru
 ├── Laporan Harian Guru             (sub)
 └── Izin Guru                       (sub)
 
-Pengaturan                          (halaman utama tersendiri)
-├── Jam KBM                         (sub)
-├── Hari Libur                      (sub)
-├── Lokasi Presensi                 (sub)
-└── Profil Sekolah                  (sub — pindahan dari admin, revisi 2026-07-20)
+Pengaturan                          (SATU HALAMAN PANJANG — tanpa sub halaman)
+├── § Jam KBM                       (section, scroll)
+├── § Hari Libur                    (section, scroll)
+├── § Lokasi Presensi               (section, scroll)
+└── § Profil Sekolah                (section, scroll)
 ```
+
+> REVISI 2026-07-24 (pemilik produk: "jangan dipisah pisah per sub halaman"):
+> Pengaturan TU BUKAN hub sub-halaman. Keempatnya = section ber-heading dalam
+> satu halaman `/tu/pengaturan` yang di-scroll ke bawah. Path sub-halaman lama
+> redirect ke situ. Prinsipnya: **kumpulan form pendek sejenis → satu halaman;
+> sub halaman hanya untuk entitas yang benar-benar berbeda** (detail, daftar).
+> Aturan "sub halaman dilarang di sidebar" untuk area lain TETAP berlaku.
 
 - **Dashboard TU** = monitoring **kehadiran guru saja**, dalam bentuk stats.
   (Halaman baru — TU sebelumnya mendarat langsung di Rekap Guru.)

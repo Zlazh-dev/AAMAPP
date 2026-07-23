@@ -186,7 +186,7 @@ const routes: RouteObject[] = [
           { path: '/admin/akun/:id/edit', element: <RequireRole roles={['admin']}><Lazy><AkunEditPage /></Lazy></RequireRole> },
 
           // Admin: Profil Sekolah PINDAH ke TU (IA-HIERARCHY-V2 revisi 2026-07-20)
-          { path: '/admin/sekolah', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
+          { path: '/admin/sekolah', element: <Navigate to="/tu/pengaturan" replace /> },
 
           // ── KURIKULUM (menyerap Data Orang, Kelas, Ekskul, TA, KKM) ────
           { path: '/kurikulum', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KurikulumDashboardPage /></Lazy></RequireRole> },
@@ -316,12 +316,13 @@ const routes: RouteObject[] = [
           { path: '/tu/izin-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><AdminIzinGuruPage /></Lazy></RequireRole> },
           // Laporan harian guru (pindahan dari /admin/laporan/harian-guru)
           { path: '/tu/laporan/harian-guru', element: <RequireRole roles={['tu','kesiswaan','admin','kepsek']}><Lazy><LaporanHarianGuruPage /></Lazy></RequireRole> },
-          // Pengaturan operasional TU — hub + 4 sub (IA-HIERARCHY-V2 revisi 2026-07-20)
+          // TU-PENGATURAN: satu halaman scroll, BUKAN hub sub-halaman.
+          // Rute sub lama → redirect ke /tu/pengaturan (IA-HIERARCHY-V2 revisi 2026-07-24).
           { path: '/tu/pengaturan', element: <RequireRole roles={['tu','admin']}><Lazy><TuPengaturanPage /></Lazy></RequireRole> },
-          { path: '/tu/pengaturan/jam', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanJamPage /></Lazy></RequireRole> },
-          { path: '/tu/pengaturan/lokasi', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLokasiPage /></Lazy></RequireRole> },
-          { path: '/tu/pengaturan/libur', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanLiburPage /></Lazy></RequireRole> },
-          { path: '/tu/pengaturan/sekolah', element: <RequireRole roles={['tu','admin']}><Lazy><PengaturanSekolahPage /></Lazy></RequireRole> },
+          { path: '/tu/pengaturan/jam', element: <Navigate to="/tu/pengaturan" replace /> },
+          { path: '/tu/pengaturan/lokasi', element: <Navigate to="/tu/pengaturan" replace /> },
+          { path: '/tu/pengaturan/libur', element: <Navigate to="/tu/pengaturan" replace /> },
+          { path: '/tu/pengaturan/sekolah', element: <Navigate to="/tu/pengaturan" replace /> },
 
           // ── Kepsek: sekarang redirect saja ──────────────────────────────
           { path: '/kepsek', element: <Navigate to="/kesiswaan/presensi-siswa" replace /> },
@@ -338,12 +339,12 @@ const routes: RouteObject[] = [
           { path: '/admin/kelas', element: <Navigate to="/kurikulum/kelas" replace /> },
           { path: '/admin/ekskul', element: <Navigate to="/kurikulum/ekskul" replace /> },
           { path: '/admin/pengaturan', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
-          { path: '/admin/pengaturan/sekolah', element: <Navigate to="/tu/pengaturan/sekolah" replace /> },
+          { path: '/admin/pengaturan/sekolah', element: <Navigate to="/tu/pengaturan" replace /> },
           { path: '/admin/pengaturan/tahun-ajaran', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
           { path: '/admin/pengaturan/kkm', element: <Navigate to="/kurikulum/tahun-ajaran-kkm" replace /> },
-          { path: '/admin/pengaturan/jam', element: <Navigate to="/tu/pengaturan/jam" replace /> },
-          { path: '/admin/pengaturan/lokasi', element: <Navigate to="/tu/pengaturan/lokasi" replace /> },
-          { path: '/admin/pengaturan/libur', element: <Navigate to="/tu/pengaturan/libur" replace /> },
+          { path: '/admin/pengaturan/jam', element: <Navigate to="/tu/pengaturan" replace /> },
+          { path: '/admin/pengaturan/lokasi', element: <Navigate to="/tu/pengaturan" replace /> },
+          { path: '/admin/pengaturan/libur', element: <Navigate to="/tu/pengaturan" replace /> },
           { path: '/admin/presensi-siswa', element: <Navigate to="/kesiswaan/presensi-siswa" replace /> },
           { path: '/admin/presensi-guru', element: <Navigate to="/tu/presensi-guru" replace /> },
           { path: '/admin/izin-guru', element: <Navigate to="/tu/izin-guru" replace /> },

@@ -118,7 +118,7 @@ function groupLiburRentang(list: LiburEntry[]): LiburRentang[] {
  * seleksi = 1; "+ Rentang" menambah rentang tanggal ke seleksi; impor +
  * deteksi otomatis libur nasional.
  */
-export function PengaturanLiburPage() {
+export function PengaturanLiburPage({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const [liburList, setLiburList] = useState<LiburEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -351,19 +351,19 @@ export function PengaturanLiburPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/tu/pengaturan" />
+        {!embedded && <BackLink to="/tu/pengaturan" />}
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
   }
 
   return (
-    <PageContainer size="lg" bottomBar={selected.size > 0}>
-      <BackLink to="/tu/pengaturan" mobileButton={selected.size === 0} />
+    <PageContainer size="lg" bottomBar={!embedded && selected.size > 0}>
+      {!embedded && <BackLink to="/tu/pengaturan" mobileButton={selected.size === 0} />}
       <div className="flex items-start justify-between gap-3 mt-4 mb-1 flex-wrap">
         <div>
-          <h2 className="text-lg font-heading font-semibold text-aam-text mb-1">Kalender Libur</h2>
-          <p className="text-xs text-aam-text-muted">Klik tanggal untuk memilih, lalu gunakan bar aksi di bawah</p>
+          {!embedded && <h2 className="text-lg font-heading font-semibold text-aam-text mb-1">Kalender Libur</h2>}
+          {!embedded && <p className="text-xs text-aam-text-muted">Klik tanggal untuk memilih, lalu gunakan bar aksi di bawah</p>}
         </div>
         <Button variant="secondary" size="sm" icon="cloud_download" onClick={() => openImportDialog()}>
           Impor Libur Nasional

@@ -1185,8 +1185,8 @@
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
-    "mtime": 1784825925.4865348,
-    "ast_hash": "a043d49620a643fff63e7f9f04a4db9b",
+    "mtime": 1784839345.4247074,
+    "ast_hash": "5dc290baa0f58fdef52ae8d4db152add",
     "semantic_hash": ""
   },
   "frontend/src/app/AppLayout.tsx": {
@@ -1475,9 +1475,9 @@
     "semantic_hash": "4b919c95fb881f18860b307642eaa8e0"
   },
   "frontend/src/pages/admin/pengaturan/PengaturanJamPage.tsx": {
-    "mtime": 1784488620.1576366,
-    "ast_hash": "27e31742586fd6616eb9ccbc3eb6ed9b",
-    "semantic_hash": "27e31742586fd6616eb9ccbc3eb6ed9b"
+    "mtime": 1784839400.230238,
+    "ast_hash": "5d1c06f5a20e4df1c8347b071c141ae7",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/pengaturan/PengaturanKkmPage.tsx": {
     "mtime": 1784485854.2473388,
@@ -1485,19 +1485,19 @@
     "semantic_hash": "42aa9cf3a0d4a1a5e039c74fc5f33a20"
   },
   "frontend/src/pages/admin/pengaturan/PengaturanLiburPage.tsx": {
-    "mtime": 1784517824.382589,
-    "ast_hash": "b4172f33eb8a1798f555ac70ea7d79b0",
-    "semantic_hash": "b4172f33eb8a1798f555ac70ea7d79b0"
+    "mtime": 1784839421.3054855,
+    "ast_hash": "8ae6b0858ded01947d9ddcf0f6900f86",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/pengaturan/PengaturanLokasiPage.tsx": {
-    "mtime": 1784488620.1651292,
-    "ast_hash": "37d30ef201506846290098031b891402",
-    "semantic_hash": "37d30ef201506846290098031b891402"
+    "mtime": 1784839443.484509,
+    "ast_hash": "9834d99533e8b5adf99e102da54b86f8",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/pengaturan/PengaturanSekolahPage.tsx": {
-    "mtime": 1784537080.2144592,
-    "ast_hash": "bff0cade8e955412586451124144f99e",
-    "semantic_hash": "bff0cade8e955412586451124144f99e"
+    "mtime": 1784839464.0895247,
+    "ast_hash": "be1685363750bd42a549a1bf1c461ecf",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/pengaturan/PengaturanTahunAjaranFormPage.tsx": {
     "mtime": 1784488620.1674745,
@@ -1765,9 +1765,9 @@
     "semantic_hash": "e252e7a1721d41c3913ba27b28a4f6ce"
   },
   "frontend/src/pages/tu/TuPengaturanPage.tsx": {
-    "mtime": 1784630695.9207387,
-    "ast_hash": "b900cca9657423d463371a4be56d01bb",
-    "semantic_hash": "b900cca9657423d463371a4be56d01bb"
+    "mtime": 1784839228.2924883,
+    "ast_hash": "27f04569845fde1be69dc7d629dc0d7b",
+    "semantic_hash": ""
   },
   "frontend/src/pages/tu/TuRekapGuruPage.tsx": {
     "mtime": 1784517877.4007719,
@@ -2080,8 +2080,8 @@
     "semantic_hash": ""
   },
   "briefs/IA-HIERARCHY-V2.md": {
-    "mtime": 1784536801.158761,
-    "ast_hash": "40819363194f630b82a0a1c2bb46e567",
+    "mtime": 1784838880.2634778,
+    "ast_hash": "63a760de7964bfbbf6ab2f59fb1f4775",
     "semantic_hash": ""
   },
   "briefs/IA-MIGRATION-MAP.md": {
@@ -2387,6 +2387,11 @@
   "scripts/bersihkan-data-uji.sql": {
     "mtime": 1784832666.8840902,
     "ast_hash": "d0ea5d2fb034dae3e12915a2bb545212",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/tu-pengaturan.spec.ts": {
+    "mtime": 1784839581.3588588,
+    "ast_hash": "729ff8089368bd1d3eec669c7ee5a175",
     "semantic_hash": ""
   }
 }

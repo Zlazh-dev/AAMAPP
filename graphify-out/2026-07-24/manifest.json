@@ -1705,8 +1705,8 @@
     "semantic_hash": "757da81efc90d2c6d006d669f1c7e75b"
   },
   "frontend/src/pages/kurikulum/JadwalKbmPage.tsx": {
-    "mtime": 1784826054.3715065,
-    "ast_hash": "f6da800d2ec1f7653415eb9db3941b8e",
+    "mtime": 1784835317.1815653,
+    "ast_hash": "bb9af56fbc466e9d7cb593230913ab20",
     "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/KurikulumDashboardPage.tsx": {
@@ -2345,8 +2345,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/JadwalMatriksPage.tsx": {
-    "mtime": 1784823301.9896424,
-    "ast_hash": "729f520b461238d5c4a160c3e12bcb41",
+    "mtime": 1784835374.2838423,
+    "ast_hash": "145b90b4f723c484edd1953cc90fdcd9",
     "semantic_hash": ""
   },
   "briefs/JADWAL-MATRIX-SPEC.md": {
@@ -2377,6 +2377,16 @@
   "backend/src/migrations/check_jp.sql": {
     "mtime": 1784825224.0405302,
     "ast_hash": "3e63c098a72daf77999a5a8dd80ec633",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/jadwal-matrix-render.spec.ts": {
+    "mtime": 1784835759.91166,
+    "ast_hash": "56ddfb48ee93da341d6c9e6a6c142bfb",
+    "semantic_hash": ""
+  },
+  "scripts/bersihkan-data-uji.sql": {
+    "mtime": 1784832666.8840902,
+    "ast_hash": "d0ea5d2fb034dae3e12915a2bb545212",
     "semantic_hash": ""
   }
 }

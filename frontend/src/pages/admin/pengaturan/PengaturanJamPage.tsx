@@ -17,7 +17,7 @@ const EMPTY: JamPresensi = { jamMasuk: '06:30', jamPulang: '15:00', toleransiMen
  * Input waktu = native time input (pengecualian §15.0).
  * Pratinjau kalimat "Guru terlambat bila check-in setelah HH:MM WIB".
  */
-export function PengaturanJamPage() {
+export function PengaturanJamPage({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const [data, setData] = useState<JamPresensi>(EMPTY);
   const [original, setOriginal] = useState<JamPresensi>(EMPTY);
@@ -81,7 +81,7 @@ export function PengaturanJamPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/tu/pengaturan" />
+        {!embedded && <BackLink to="/tu/pengaturan" />}
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -89,10 +89,10 @@ export function PengaturanJamPage() {
 
   return (
     <UnsavedGuard dirty={dirty}>
-      <PageContainer size="md" bottomBar>
-        <BackLink to="/tu/pengaturan" />
-        <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Jam Presensi</h2>
-        <p className="text-xs text-aam-text-muted mb-6">Jam masuk, pulang, toleransi keterlambatan, dan cutoff</p>
+      <PageContainer size="md" bottomBar={!embedded}>
+        {!embedded && <BackLink to="/tu/pengaturan" />}
+        {!embedded && <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Jam Presensi</h2>}
+        {!embedded && <p className="text-xs text-aam-text-muted mb-6">Jam masuk, pulang, toleransi keterlambatan, dan cutoff</p>}
 
         <Card icon="schedule">
           <div className="space-y-5">

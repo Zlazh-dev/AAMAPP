@@ -21,7 +21,7 @@ type GeoStatus = 'idle' | 'loading' | 'success' | 'denied' | 'error';
  * /tu/rekap-guru/lokasi — verifikasi lokasi presensi HP (T14, §15.3).
  * Saklar aktif + koordinat + "Gunakan lokasi saya" + radius.
  */
-export function PengaturanLokasiPage() {
+export function PengaturanLokasiPage({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const [data, setData] = useState<LokasiPengaturan>(EMPTY);
   const [original, setOriginal] = useState<LokasiPengaturan>(EMPTY);
@@ -104,7 +104,7 @@ export function PengaturanLokasiPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/tu/pengaturan" />
+        {!embedded && <BackLink to="/tu/pengaturan" />}
         <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
@@ -112,10 +112,10 @@ export function PengaturanLokasiPage() {
 
   return (
     <UnsavedGuard dirty={dirty}>
-      <PageContainer size="md" bottomBar>
-        <BackLink to="/tu/pengaturan" />
-        <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Lokasi Sekolah</h2>
-        <p className="text-xs text-aam-text-muted mb-6">Verifikasi lokasi untuk presensi via HP (geofence)</p>
+      <PageContainer size="md" bottomBar={!embedded}>
+        {!embedded && <BackLink to="/tu/pengaturan" />}
+        {!embedded && <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Lokasi Sekolah</h2>}
+        {!embedded && <p className="text-xs text-aam-text-muted mb-6">Verifikasi lokasi untuk presensi via HP (geofence)</p>}
 
         <Card icon="location_on">
           <div className="space-y-5">

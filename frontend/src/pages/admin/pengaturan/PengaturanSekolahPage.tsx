@@ -20,7 +20,7 @@ const EMPTY: ProfilSekolah = {
  * /admin/sekolah � profil sekolah (T14, �15.3).
  * Simpan sendiri + feedback inline + "Terakhir disimpan oleh X".
  */
-export function PengaturanSekolahPage() {
+export function PengaturanSekolahPage({ embedded = false }: { embedded?: boolean } = {}) {
   const toast = useToast();
   const [data, setData] = useState<ProfilSekolah>(EMPTY);
   const [original, setOriginal] = useState<ProfilSekolah>(EMPTY);
@@ -76,18 +76,18 @@ export function PengaturanSekolahPage() {
   if (loading) {
     return (
       <PageContainer size="xl">
-        <BackLink to="/tu/pengaturan" />
-        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat�</div>
+        {!embedded && <BackLink to="/tu/pengaturan" />}
+        <div className="mt-8 text-center text-sm text-aam-text-muted">Memuat…</div>
       </PageContainer>
     );
   }
 
   return (
     <UnsavedGuard dirty={dirty}>
-      <PageContainer size="md" bottomBar>
-        <BackLink to="/tu/pengaturan" />
-        <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Profil Sekolah</h2>
-        <p className="text-xs text-aam-text-muted mb-6">Data sekolah untuk kop dokumen & rapor</p>
+      <PageContainer size="md" bottomBar={!embedded}>
+        {!embedded && <BackLink to="/tu/pengaturan" />}
+        {!embedded && <h2 className="text-lg font-heading font-semibold text-aam-text mt-4 mb-1">Profil Sekolah</h2>}
+        {!embedded && <p className="text-xs text-aam-text-muted mb-6">Data sekolah untuk kop dokumen & rapor</p>}
 
         <Card icon="school">
           <div className="space-y-5">
