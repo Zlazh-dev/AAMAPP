@@ -2,8 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useToast } from '../../components/Toast';
+import {
+  initialPoseState,
+  reducePose,
+  roleForPose,
+  POSE_WINDOW_MS,
+  type PoseState,
+} from '../../lib/livenessStateMachine';
 
-const POSE_LABELS = ['Depan', 'Sedikit Kiri', 'Sedikit Kanan'];
+const POSE_LABELS = ['Depan', 'Toleh ke satu sisi', 'Toleh ke sisi sebaliknya'];
 const MIN_POSES = 3;
 const STABLE_FRAMES_NEEDED = 2;
 const MANUAL_TRIGGER_MS = 5000;
@@ -64,6 +71,10 @@ export function GuruEnrollWizardPage() {
   const challengePassedRef = useRef(false);
   /** setTimeout jendela liveness (3 detik setelah pose terdeteksi) */
   const challengeWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** State machine pose (murni) — sumber kebenaran untuk idx/sign/challengePassed */
+  const poseStateRef = useRef<PoseState>(initialPoseState());
+  /** performance.now() saat challenge pose saat ini pass (mulai jendela ambil) */
+  const challengeStartRef = useRef(0);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animFrameRef.current);
@@ -171,6 +182,8 @@ export function GuruEnrollWizardPage() {
 
     consecutiveGoodRef.current = 0;
     challengePassedRef.current = false;
+    poseStateRef.current = initialPoseState();
+    challengeStartRef.current = 0;
     if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     setPhase('camera');
     setStatus(`Pose 1/${MIN_POSES}: ${POSE_LABELS[0]}`);
@@ -214,81 +227,93 @@ export function GuruEnrollWizardPage() {
           console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} bL=${blinkL} bR=${blinkR} yaw=${yaw}°`);
         }
 
-        if (quality.ok) {
+        const idx = embeddings.length;
+        const role = roleForPose(idx);
+        // Bug2: pose turn → gerbang longgar (cukup lmResult ada). Depan → gerbang penuh.
+        // Bug4: lmResult null → skip frame, jangan pernah gagal/reset.
+        const gateOk = lmResult === null ? false : (role === 'depan' ? quality.ok : true);
+
+        if (lmResult === null) {
+          // Bug4: frame n/a → lewati, jangan sentuh counter/tantangan
+        } else if (gateOk) {
           consecutiveGoodRef.current++;
           if (consecutiveGoodRef.current >= STABLE_FRAMES_NEEDED) {
+            const elapsed = challengePassedRef.current
+              ? performance.now() - challengeStartRef.current
+              : 0;
+
             if (!challengePassedRef.current) {
-              // ── Fase tantangan pose (tergantung pose index) ─────────────────
-              const idx = embeddings.length;
-              let passed = false;
-              let hint = '';
+              // ── Fase tantangan pose via state machine murni ────────────────
+              const { state: next, decision } = reducePose(poseStateRef.current, {
+                lm: lmResult,
+                qualityOk: quality.ok,
+                poseElapsedMs: elapsed,
+                captureResult: null,
+              });
+              poseStateRef.current = next;
 
-              if (idx === 0) {
-                hint = 'Lihat lurus ke depan…';
-                if (lmResult && Math.abs(lmResult.yaw) < 12) passed = true;
-              } else if (idx === 1) {
-                hint = 'Toleh sedikit ke kiri…';
-                if (lmResult && lmResult.yaw > 15) passed = true;
-              } else if (idx === 2) {
-                hint = 'Toleh sedikit ke kanan…';
-                if (lmResult && lmResult.yaw < -15) passed = true;
-              }
-
-              setStatus(hint);
-
-              if (passed) {
+              if (decision.kind === 'wait') {
+                setStatus(decision.hint);
+              } else if (decision.kind === 'challenge-passed') {
                 challengePassedRef.current = true;
+                challengeStartRef.current = performance.now();
                 if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
                 challengeWindowRef.current = setTimeout(() => {
-                  // Jendela pose tertutup — reset
+                  // Bug1: reset HANYA saat jendela 3 detik habis
                   challengePassedRef.current = false;
                   consecutiveGoodRef.current = 0;
-                }, 3000);
+                  poseStateRef.current = { ...poseStateRef.current, challengePassed: false };
+                }, POSE_WINDOW_MS);
+                setStatus(decision.hint);
               }
+              // decision.kind === 'skip' → diam (frame n/a di tengah)
             } else {
-              // ── Jendela pose terbuka — ambil embedding ─────────────
+              // ── Jendela pose terbuka — ambil embedding ─────────────────────
               if (manualTimerRef.current) clearTimeout(manualTimerRef.current);
               setShowManualBtn(false);
               setStatus('✓ Memotret…');
 
               let det: import('../../lib/faceHuman').FaceDetection | null = null;
+              let captureResult: 'success' | 'fail' = 'fail';
               try {
                 det = await mod.detectEmbedding(video);
+                captureResult = det ? 'success' : 'fail';
               } catch (err: unknown) {
                 setStatus(
                   err instanceof Error
                     ? err.message
                     : `Gagal ambil embedding: ${String(err)}`,
                 );
-                consecutiveGoodRef.current = 0;
-                challengePassedRef.current = false;
-                if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
-                return;
+                // Bug1: JANGAN reset challengePassed — coba frame berikutnya
+                captureResult = 'fail';
               }
 
               if (det) {
+                // Capture berhasil → advance pose (reset challenge untuk pose berikutnya)
                 consecutiveGoodRef.current = 0;
                 challengePassedRef.current = false;
                 if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
                 setEmbeddings((prev) => {
-                  const next = [...prev, det!.embedding];
-                  const newIdx = next.length;
+                  const nextEmb = [...prev, det!.embedding];
+                  const newIdx = nextEmb.length;
                   if (newIdx < MIN_POSES) {
+                    poseStateRef.current = {
+                      poseIndex: newIdx,
+                      challengePassed: false,
+                      challengeSign: 0,
+                    };
                     setStatus(`Pose ${newIdx + 1}/${MIN_POSES}: ${POSE_LABELS[newIdx] ?? 'Pose selanjutnya'}`);
                     startManualTimer();
                   } else {
                     stopped = true;
                     stopCamera();
                     setPhase('done');
-                    setStatus(`${next.length} pose berhasil ditangkap`);
+                    setStatus(`${nextEmb.length} pose berhasil ditangkap`);
                   }
-                  return next;
+                  return nextEmb;
                 });
-              } else {
-                consecutiveGoodRef.current = 0;
-                challengePassedRef.current = false;
-                setStatus('Skor wajah terlalu rendah — tahan lebih dekat dan pastikan cahaya cukup');
               }
+              // Bug1: det null / throw → skip, jangan reset (jendela masih terbuka)
             }
           } else {
             setStatus(`Tahan… (${consecutiveGoodRef.current}/${STABLE_FRAMES_NEEDED})`);
@@ -363,6 +388,8 @@ export function GuruEnrollWizardPage() {
     setShowManualBtn(false);
     consecutiveGoodRef.current = 0;
     challengePassedRef.current = false;
+    poseStateRef.current = initialPoseState();
+    challengeStartRef.current = 0;
     if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     stopCamera();
     const cancelled = { v: false };

@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, ApiError } from '../../api/client';
 import { useToast } from '../../components/Toast';
+import {
+  initialBlinkState,
+  reduceBlink,
+  type BlinkState,
+} from '../../lib/livenessStateMachine';
 
 type ScanPhase =
   | 'idle'
@@ -63,6 +68,8 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
   const challengePassedRef = useRef(false);
   /** setTimeout untuk menutup jendela liveness (3 detik setelah terdeteksi) */
   const challengeWindowRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** State machine kedip (pola naik ≥0.45 → turun ≤1s, bukan ambang statis) */
+  const blinkStateRef = useRef<BlinkState>(initialBlinkState());
 
   const [phase, setPhase] = useState<ScanPhase>('idle');
   const [statusMsg, setStatusMsg] = useState('Memulai…');
@@ -262,31 +269,43 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
           console.log(`[wajah] n=${d.faceCount} skor=${d.score.toFixed(3)} box=${box} det=${d.detectMs}ms be=${d.backend} bL=${blinkL} bR=${blinkR} yaw=${yaw}° chl=${activeChallengeRef.current}`);
         }
 
-        if (quality.ok) {
+        const ch = activeChallengeRef.current;
+        const isTurn = ch === 'left' || ch === 'right';
+        // Bug2: pose toleh → gerbang longgar (cukup lmResult ada). Blink → gerbang penuh.
+        // Bug4: lmResult null → skip frame, jangan pernah gagal/reset.
+        const gateOk = lmResult === null ? false : (isTurn ? true : quality.ok);
+
+        if (lmResult === null) {
+          // Bug4: frame n/a → lewati, jangan sentuh counter/tantangan
+        } else if (gateOk) {
           goodFrames++;
           if (goodFrames >= STABLE_FRAMES_NEEDED) {
             if (!challengePassedRef.current) {
               // ── Fase tantangan liveness ───────────────────────────────
-              const ch = activeChallengeRef.current;
               let passed = false;
-              
+
               if (ch === 'blink') {
                 setStatus('Kedipkan mata Anda…');
-                if (lmResult && (lmResult.blinkL > 0.4 || lmResult.blinkR > 0.4)) passed = true;
-              } else if (ch === 'left') {
-                setStatus('Toleh sedikit ke kiri…');
-                // Toleh kiri dari sudut pandang user = yaw positif
-                if (lmResult && lmResult.yaw > 15) passed = true;
-              } else if (ch === 'right') {
-                setStatus('Toleh sedikit ke kanan…');
-                // Toleh kanan dari sudut pandang user = yaw negatif
-                if (lmResult && lmResult.yaw < -15) passed = true;
+                // Bug5: pola naik ≥0.45 lalu turun ≤1 detik (bukan ambang statis)
+                const value = Math.max(lmResult.blinkL, lmResult.blinkR);
+                const { state: bs, blinked } = reduceBlink(
+                  blinkStateRef.current,
+                  value,
+                  performance.now(),
+                );
+                blinkStateRef.current = bs;
+                if (blinked) passed = true;
+              } else if (ch === 'left' || ch === 'right') {
+                // Bug3: terima salah satu arah (imun terhadap cermin & konvensi tanda)
+                setStatus('Toleh sedikit ke kiri atau kanan…');
+                if (Math.abs(lmResult.yaw) >= 15) passed = true;
               }
 
               if (passed) {
                 challengePassedRef.current = true;
                 if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
                 challengeWindowRef.current = setTimeout(() => {
+                  // Bug1: reset HANYA saat jendela 3 detik habis
                   challengePassedRef.current = false;
                   goodFrames = 0;
                 }, 3000);
@@ -306,8 +325,7 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
                     ? err.message
                     : `Gagal ambil embedding: ${String(err)}`,
                 );
-                goodFrames = 0;
-                challengePassedRef.current = false;
+                // Bug1: JANGAN reset challengePassed — coba frame berikutnya
                 if (!stopped) animFrameRef.current = requestAnimationFrame(loop);
                 return;
               }
@@ -319,9 +337,8 @@ export function ScanOverlay({ onClose }: ScanOverlayProps) {
                 await doScan(det.embedding);
                 return;
               } else {
-                setStatus('Skor wajah terlalu rendah — pastikan cahaya cukup dan wajah terlihat jelas');
-                goodFrames = 0;
-                challengePassedRef.current = false;
+                // Bug1: det null → skip, jangan reset (jendela masih terbuka)
+                setStatus('Skor wajah terlalu rendah — coba lagi…');
               }
             }
           } else {

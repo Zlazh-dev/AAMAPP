@@ -1,49 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
+import { useAuth } from '../../app/AuthContext';
 import ExcelJS from 'exceljs';
 import { exportToPdf, PdfColumn } from '../../lib/exportPdf';
 import { Button } from '../../components/Button';
+import { SearchSelect } from '../../components/SearchSelect';
 
+/**
+ * LegerKelasPage — Matriks leger nilai seluruh siswa di satu kelas.
+ *
+ * Dua pintu masuk dengan sumber data BERBEDA (prinsip produk):
+ *
+ *  - /guru/rapor/leger/:kelasId  → guru wali: :kelasId WAJIB ada (dari navigasi
+ *    RaporListPage, guru sudah tahu kelasnya). Bila dibuka tanpa :kelasId,
+ *    ambil kelas wali lewat getKelasWali() [guru-scoped] — BUKAN adminGetKelas global.
+ *
+ *  - /kurikulum/leger/:kelasId  → kurikulum/admin/kepsek: boleh pilih kelas
+ *    via SearchSelect yang hit adminGetKelas dengan onSearch (bukan limit:50 borongan).
+ *
+ * TIDAK ADA panggilan adminGetKelas di jalur guru.
+ */
 export default function LegerKelasPage() {
   const { kelasId: paramKelasId } = useParams();
   const navigate = useNavigate();
-  const [selectedKelasId, setSelectedKelasId] = useState<number | null>(paramKelasId ? Number(paramKelasId) : null);
-  
-  const [kelasOptions, setKelasOptions] = useState<any[]>([]);
+  const { user } = useAuth();
+
+  const isGuruOnly = !!(
+    user?.roles.includes('guru') &&
+    !user?.roles.includes('admin') &&
+    !user?.roles.includes('kepsek') &&
+    !user?.roles.includes('kurikulum')
+  );
+
+  const [selectedKelasId, setSelectedKelasId] = useState<number | null>(
+    paramKelasId ? Number(paramKelasId) : null,
+  );
+
+  // Untuk guru tanpa :kelasId — tampilkan kelas wali satu-satunya
+  const [guruKelasOptions, setGuruKelasOptions] = useState<{ id: number; nama: string }[]>([]);
+  const [loadingKelasWali, setLoadingKelasWali] = useState(false);
+
+  // Untuk kurikulum — SearchSelect onSearch (bukan limit borongan)
   const [profilData, setProfilData] = useState<any>(null);
-  
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!paramKelasId) {
-      // Load kelas options for kurikulum
-      (async () => {
-        try {
-          const res = await (api as any).getRaporKelasOptions?.();
-          const list = res?.data ?? res ?? [];
-          setKelasOptions(list);
-          if (list.length > 0 && !selectedKelasId) {
-            setSelectedKelasId(list[0].id);
-          }
-        } catch {
-          try {
-            const r = await api.adminGetKelas({ limit: 50 });
-            const list = r?.data ?? [];
-            setKelasOptions(list);
-            if (list.length > 0 && !selectedKelasId) {
-              setSelectedKelasId(list[0].id);
-            }
-          } catch (e) {
-            // silent
-          }
-        }
-      })();
-    }
-  }, [paramKelasId, selectedKelasId]);
-
+  // Profil sekolah (untuk PDF)
   useEffect(() => {
     api.getPengaturan()
       .then(entries => {
@@ -55,22 +59,56 @@ export default function LegerKelasPage() {
       .catch(() => {});
   }, []);
 
+  // Tanpa :kelasId — load kelas berdasarkan peran
+  useEffect(() => {
+    if (paramKelasId) return; // sudah ada kelasId dari URL
+
+    if (isGuruOnly) {
+      // Guru: ambil kelas wali dari endpoint guru-scoped
+      setLoadingKelasWali(true);
+      api.getKelasWali()
+        .then(res => {
+          const list = res.data ?? [];
+          setGuruKelasOptions(list);
+          if (list.length === 1) {
+            // Guru hanya punya 1 kelas wali — langsung pilih
+            setSelectedKelasId(list[0].id);
+          } else if (list.length > 1) {
+            // Lebih dari 1 (jarang, tapi bisa) — pilih pertama
+            setSelectedKelasId(list[0].id);
+          }
+        })
+        .catch(() => setError('Gagal memuat kelas wali'))
+        .finally(() => setLoadingKelasWali(false));
+    }
+    // Kurikulum: tidak preload — SearchSelect onSearch yang handle
+  }, [paramKelasId, isGuruOnly]);
+
+  // Search kelas untuk kurikulum (SearchSelect onSearch — harus return Promise<SearchSelectOption[]>)
+  async function handleKelasSearch(q: string) {
+    try {
+      const res = await api.adminGetKelas({ q: q || undefined, limit: 20 });
+      return (res.data ?? []).map((k: any) => ({
+        value: String(k.id),
+        label: `${k.nama} (Tingkat ${k.tingkat})`,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  // Load leger saat selectedKelasId berubah
   useEffect(() => {
     if (!selectedKelasId) return;
     setIsLoading(true);
     setError(null);
     api.getLegerKelas(selectedKelasId)
-      .then(res => {
-        setData(res);
-      })
-      .catch(() => {
-        setError('Gagal memuat leger kelas');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .then(res => setData(res))
+      .catch(() => setError('Gagal memuat leger kelas — pastikan Anda adalah wali kelas ini.'))
+      .finally(() => setIsLoading(false));
   }, [selectedKelasId]);
 
+  // PDF export
   const handleExportPdf = async () => {
     if (!profilData || !data) return;
     const columns: PdfColumn[] = [
@@ -78,80 +116,51 @@ export default function LegerKelasPage() {
       { header: 'NIS', key: 'nis', width: 10 },
       { header: 'Nama Lengkap', key: 'nama', width: 20 },
       { header: 'L/P', key: 'jk', width: 5 },
-      ...data.mapel.map((m: any) => ({
-        header: m.nama,
-        key: `mapel_${m.mapelId}`,
-      })),
+      ...data.mapel.map((m: any) => ({ header: m.nama, key: `mapel_${m.mapelId}` })),
       { header: 'Total', key: 'total', width: 10 },
       { header: 'Rank', key: 'rank', width: 5 },
     ];
-
     const rows = data.siswa.map((s: any, i: number) => {
       const row: any = {
-        no: String(i + 1),
-        nis: s.nis ?? '-',
-        nama: s.nama,
+        no: String(i + 1), nis: s.nis ?? '-', nama: s.nama,
         jk: s.jenisKelamin === 'Laki-Laki' ? 'L' : s.jenisKelamin === 'Perempuan' ? 'P' : '-',
-        total: String(s.totalNilai),
-        rank: String(s.ranking),
+        total: String(s.totalNilai), rank: String(s.ranking),
       };
-      for (const mv of s.mapel) {
-        row[`mapel_${mv.mapelId}`] = mv.nilai !== null ? String(mv.nilai) : '-';
-      }
+      for (const mv of s.mapel) row[`mapel_${mv.mapelId}`] = mv.nilai !== null ? String(mv.nilai) : '-';
       return row;
     });
-
-    await exportToPdf({
-      title: `LEGER NILAI KELAS ${data.kelasNama}`,
-      profil: profilData,
-      columns,
-      rows,
-    });
+    await exportToPdf({ title: `LEGER NILAI KELAS ${data.kelasNama}`, profil: profilData, columns, rows });
   };
 
+  // Excel export
   const handleExportExcel = async () => {
     if (!data) return;
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('Leger Kelas');
-
     const mapelHeaders = data.mapel.map((m: any) => m.nama);
     ws.addRow(['No', 'NIS', 'Nama Lengkap', 'L/P', ...mapelHeaders, 'Total', 'Rank']);
-    
     ws.getRow(1).font = { bold: true };
     ws.getRow(1).alignment = { horizontal: 'center' };
-
     data.siswa.forEach((s: any, idx: number) => {
-      const rowData = [
-        idx + 1,
-        s.nis ?? '-',
-        s.nama,
-        s.jenisKelamin === 'Laki-Laki' ? 'L' : s.jenisKelamin === 'Perempuan' ? 'P' : '-',
-      ];
+      const rowData = [idx + 1, s.nis ?? '-', s.nama,
+        s.jenisKelamin === 'Laki-Laki' ? 'L' : s.jenisKelamin === 'Perempuan' ? 'P' : '-'];
       data.mapel.forEach((m: any) => {
         const mv = s.mapel.find((x: any) => x.mapelId === m.mapelId);
         rowData.push(mv && mv.nilai !== null ? mv.nilai : '-');
       });
-      rowData.push(s.totalNilai);
-      rowData.push(s.ranking);
-
+      rowData.push(s.totalNilai, s.ranking);
       const row = ws.addRow(rowData);
-
       let colIdx = 5;
       data.mapel.forEach((m: any) => {
         const mv = s.mapel.find((x: any) => x.mapelId === m.mapelId);
         const cell = row.getCell(colIdx);
         if (mv && mv.nilai !== null) {
-          if (!mv.tuntas) {
-            cell.font = { color: { argb: 'FFFF0000' } };
-          }
-          if (mv.isOverride) {
-            cell.note = 'Nilai di-katrol (override)';
-          }
+          if (!mv.tuntas) cell.font = { color: { argb: 'FFFF0000' } };
+          if (mv.isOverride) cell.note = 'Nilai di-katrol (override)';
         }
         colIdx++;
       });
     });
-
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
@@ -166,56 +175,72 @@ export default function LegerKelasPage() {
     <div className="space-y-6 max-w-[1200px] mx-auto p-4 md:p-6 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-4">
-          {paramKelasId && (
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
+          {(paramKelasId || isGuruOnly) && (
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+            >
               <span className="material-symbols-outlined text-gray-500">arrow_back</span>
             </button>
           )}
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Leger Nilai Kelas {data?.kelasNama ?? ''}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Leger Nilai Kelas {data?.kelasNama ?? ''}
+            </h1>
             <p className="text-gray-500">Tahun Ajaran: {data?.tahunAjaranNama ?? ''}</p>
           </div>
         </div>
 
-        {!paramKelasId && kelasOptions && kelasOptions.length > 0 && (
+        {/* Guru tanpa :kelasId — tampilkan opsi kelas wali bila > 1 */}
+        {!paramKelasId && isGuruOnly && guruKelasOptions.length > 1 && (
           <div className="sm:ml-6 flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Pilih Kelas:</label>
+            <label className="text-sm font-medium text-gray-600">Kelas:</label>
             <select
               className="rounded-md border border-gray-300 px-3 py-1.5 text-sm bg-white"
               value={selectedKelasId ?? ''}
               onChange={e => setSelectedKelasId(Number(e.target.value))}
             >
-              {kelasOptions.map((k: any) => (
+              {guruKelasOptions.map((k) => (
                 <option key={k.id} value={k.id}>{k.nama}</option>
               ))}
             </select>
           </div>
         )}
 
+        {/* Kurikulum/admin/kepsek tanpa :kelasId — SearchSelect (bukan limit:50 borongan) */}
+        {!paramKelasId && !isGuruOnly && (
+          <div className="sm:ml-6 flex items-center gap-2 min-w-[240px]">
+            <label className="text-sm font-medium text-gray-600 shrink-0">Pilih Kelas:</label>
+            <SearchSelect
+              value={selectedKelasId ? String(selectedKelasId) : null}
+              onChange={(val) => {
+                setSelectedKelasId(val ? Number(val) : null);
+              }}
+              options={[]}
+              onSearch={handleKelasSearch}
+              placeholder="Cari kelas..."
+            />
+          </div>
+        )}
+
         {data && (
           <div className="ml-auto flex gap-2">
-            <Button
-              onClick={handleExportExcel}
-              variant="secondary"
-              icon="table_view"
-            >
-              Excel
-            </Button>
-            <Button
-              onClick={handleExportPdf}
-              variant="secondary"
-              icon="picture_as_pdf"
-            >
-              PDF
-            </Button>
+            <Button onClick={handleExportExcel} variant="secondary" icon="table_view">Excel</Button>
+            <Button onClick={handleExportPdf} variant="secondary" icon="picture_as_pdf">PDF</Button>
           </div>
         )}
       </div>
 
-      {isLoading ? (
+      {loadingKelasWali ? (
+        <div className="p-4 bg-white rounded-lg border text-center text-gray-500">Memuat kelas wali...</div>
+      ) : isLoading ? (
         <div className="p-4 bg-white rounded-lg border text-center text-gray-500">Memuat Leger...</div>
       ) : error ? (
         <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-100">{error}</div>
+      ) : !selectedKelasId && isGuruOnly && guruKelasOptions.length === 0 ? (
+        <div className="p-4 bg-amber-50 text-amber-700 rounded-lg border border-amber-200">
+          Anda tidak menjadi wali kelas di semester ini.
+        </div>
       ) : data ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -226,9 +251,7 @@ export default function LegerKelasPage() {
                 <th className="px-4 py-3 whitespace-nowrap">Nama Lengkap</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap">L/P</th>
                 {data.mapel.map((m: any) => (
-                  <th key={m.mapelId} className="px-4 py-3 text-center whitespace-nowrap">
-                    {m.nama}
-                  </th>
+                  <th key={m.mapelId} className="px-4 py-3 text-center whitespace-nowrap">{m.nama}</th>
                 ))}
                 <th className="px-4 py-3 text-center whitespace-nowrap">Total</th>
                 <th className="px-4 py-3 text-center whitespace-nowrap">Rank</th>
@@ -245,13 +268,11 @@ export default function LegerKelasPage() {
                   </td>
                   {data.mapel.map((m: any) => {
                     const mv = s.mapel.find((x: any) => x.mapelId === m.mapelId);
-                    const isRed = mv && mv.nilai !== null && !mv.tuntas;
-                    const isKatrol = mv && mv.isOverride;
                     return (
                       <td
                         key={m.mapelId}
-                        className={`px-4 py-3 text-center ${isRed ? 'text-red-600 font-bold' : ''} ${isKatrol ? 'bg-yellow-50' : ''}`}
-                        title={isKatrol ? 'Nilai Override (Di-katrol)' : ''}
+                        className={`px-4 py-3 text-center ${mv && mv.nilai !== null && !mv.tuntas ? 'text-red-600 font-bold' : ''} ${mv?.isOverride ? 'bg-yellow-50' : ''}`}
+                        title={mv?.isOverride ? 'Nilai Override (Di-katrol)' : ''}
                       >
                         {mv && mv.nilai !== null ? mv.nilai : '-'}
                       </td>
@@ -276,8 +297,11 @@ export default function LegerKelasPage() {
           </table>
         </div>
       ) : (
-        <div className="p-4 bg-white rounded-lg border text-center text-gray-500">Pilih kelas untuk melihat leger.</div>
+        <div className="p-4 bg-white rounded-lg border text-center text-gray-500">
+          {!isGuruOnly ? 'Cari dan pilih kelas untuk melihat leger.' : 'Memuat...'}
+        </div>
       )}
     </div>
   );
 }
+

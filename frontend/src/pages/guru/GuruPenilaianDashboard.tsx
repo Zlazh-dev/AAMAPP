@@ -61,7 +61,7 @@ export function GuruPenilaianDashboard() {
  <h3 className="font-bold text-aam-text text-base">{p.mapelNama}</h3>
  <p className="text-sm text-aam-text-muted mt-0.5">{p.kelasNama}</p>
  </div>
- <span className="text-2xl">📚</span>
+ <span className="material-symbols-outlined text-aam-green" style={{ fontSize: '1.5rem' }}>menu_book</span>
  </div>
  <div className="flex gap-2 mt-3 flex-wrap">
  <Badge variant="blue">{p.jumlahSiswa} siswa</Badge>

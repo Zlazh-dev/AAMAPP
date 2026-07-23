@@ -31,25 +31,17 @@ export function RaporListPage() {
  const [loading, setLoading] = useState(false);
  const [loadingKelas, setLoadingKelas] = useState(true);
 
- // Load kelas wali (wali kelas = guru whose waliKelas.id === kelas)
+ // Load kelas wali — selalu via endpoint guru-scoped (bukan adminGetKelas global).
+ // Prinsip: di area guru, daftar kelas diturunkan dari relasi guru login (wali kelas).
  useEffect(() => {
  setLoadingKelas(true);
- (api as any).getRaporKelasOptions?.()
- .then((res: any) => {
- const list = res?.data ?? res ?? [];
+ api.getKelasWali()
+ .then((res) => {
+ const list = res?.data ?? [];
  setKelasList(list);
  if (list.length > 0) setSelectedKelasId(list[0].id);
  })
- .catch(() => {
- // Fallback: try adminGetKelas
- api.adminGetKelas({ limit: 50 })
- .then((r: any) => {
- const list = r?.data ?? [];
- setKelasList(list);
- if (list.length > 0) setSelectedKelasId(list[0].id);
- })
- .catch(() => toast.show('error', 'Gagal memuat daftar kelas.'));
- })
+ .catch(() => toast.show('error', 'Gagal memuat daftar kelas.'))
  .finally(() => setLoadingKelas(false));
  }, []);
 
@@ -57,8 +49,8 @@ export function RaporListPage() {
  if (!selectedKelasId) return;
  setLoading(true);
  try {
- const res = await (api as any).getRaporKelas?.(selectedKelasId);
- setRows(res?.data ?? res ?? []);
+ const res = await api.getRaporKelas(selectedKelasId);
+ setRows(res?.data ?? []);
  } catch (err) {
  toast.show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar rapor.');
  } finally {

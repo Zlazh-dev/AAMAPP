@@ -395,19 +395,19 @@
     "semantic_hash": "ad97c899f0e13a4e5d8657260e1d0def"
   },
   "backend/src/kurikulum/kurikulum.controller.ts": {
-    "mtime": 1784549038.1118748,
-    "ast_hash": "f1bf01a4450328ef6ce967e2ba73cfc4",
-    "semantic_hash": "f1bf01a4450328ef6ce967e2ba73cfc4"
+    "mtime": 1784786266.3611054,
+    "ast_hash": "5bc36d7566b3b77363afdf97bb2f4e72",
+    "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.module.ts": {
-    "mtime": 1784054867.2317965,
-    "ast_hash": "5fa8305325d9788bcf6413086a3e1cff",
-    "semantic_hash": "5fa8305325d9788bcf6413086a3e1cff"
+    "mtime": 1784786017.5916526,
+    "ast_hash": "a53f89a735534f40d4a885860095c822",
+    "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.service.ts": {
-    "mtime": 1784549009.8089285,
-    "ast_hash": "b2f3a879f5158fcf7c88c546833cb40d",
-    "semantic_hash": "b2f3a879f5158fcf7c88c546833cb40d"
+    "mtime": 1784786252.6841667,
+    "ast_hash": "ffd559256e2549dfd292ee6fc7397a1a",
+    "semantic_hash": ""
   },
   "backend/src/kurikulum/libur.controller.ts": {
     "mtime": 1784485854.1477766,
@@ -615,9 +615,9 @@
     "semantic_hash": "537e82a0321315e35ef28c9f4a13b149"
   },
   "backend/src/rapor/rapor.controller.ts": {
-    "mtime": 1784485854.1548092,
-    "ast_hash": "57d2b29c26dba64455ca13c98ccec1bd",
-    "semantic_hash": "57d2b29c26dba64455ca13c98ccec1bd"
+    "mtime": 1784787099.2958312,
+    "ast_hash": "98c687057b90526fa5bfa9349fb6e126",
+    "semantic_hash": ""
   },
   "backend/src/rapor/rapor.entity.ts": {
     "mtime": 1784393474.0119128,
@@ -625,14 +625,14 @@
     "semantic_hash": "a292ffa11afe9926e01249f30952341f"
   },
   "backend/src/rapor/rapor.module.ts": {
-    "mtime": 1784401981.7565084,
-    "ast_hash": "67233d20fc1f74569393d39e94f3d81a",
-    "semantic_hash": "67233d20fc1f74569393d39e94f3d81a"
+    "mtime": 1784755506.9513245,
+    "ast_hash": "a5935ab3141c5ad5f712151dd59f892b",
+    "semantic_hash": ""
   },
   "backend/src/rapor/rapor.service.ts": {
-    "mtime": 1784401964.1058328,
-    "ast_hash": "c92e023047d4305e82abc0435645f575",
-    "semantic_hash": "c92e023047d4305e82abc0435645f575"
+    "mtime": 1784787137.310909,
+    "ast_hash": "f8f6cf374a96f5c9ca36e5aede3e0819",
+    "semantic_hash": ""
   },
   "backend/src/seed/seed.module.ts": {
     "mtime": 1784485854.155817,
@@ -1180,13 +1180,13 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784755280.972355,
-    "ast_hash": "57f73a79e4c8fee7dbb19bef7df7e565",
+    "mtime": 1784787166.3259106,
+    "ast_hash": "28bed68720abf77db9688480022f9044",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
-    "mtime": 1784752035.8389215,
-    "ast_hash": "7f9ba2d98c9914f14e2b29bddaeb861f",
+    "mtime": 1784786404.0864043,
+    "ast_hash": "778e98c3d93094f170d63f13bdab99aa",
     "semantic_hash": ""
   },
   "frontend/src/app/AppLayout.tsx": {
@@ -1430,9 +1430,9 @@
     "semantic_hash": "3df22a4ee2aac4a1b8534941cb9556ed"
   },
   "frontend/src/pages/admin/kelas/KelasListPage.tsx": {
-    "mtime": 1784626741.6403136,
-    "ast_hash": "f1b40257c60d2a7cd0c4a6ad4e5b255a",
-    "semantic_hash": "f1b40257c60d2a7cd0c4a6ad4e5b255a"
+    "mtime": 1784756523.7289684,
+    "ast_hash": "7918557f45fb137599b4405f59d77e0c",
+    "semantic_hash": ""
   },
   "frontend/src/pages/admin/laporan/LaporanPages.tsx": {
     "mtime": 1784632516.896476,
@@ -1550,8 +1550,8 @@
     "semantic_hash": "b0d1ece75071eb64ff462a40497cc2af"
   },
   "frontend/src/pages/guru/GuruEnrollWizardPage.tsx": {
-    "mtime": 1784736119.808185,
-    "ast_hash": "1c0350da3d66d4f8e7f0ed3b19d29325",
+    "mtime": 1784789445.8995001,
+    "ast_hash": "216cf8230372c3ee7ca7e8b190f0592b",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/GuruPelanggaranPage.tsx": {
@@ -1560,9 +1560,9 @@
     "semantic_hash": "3ec7047e8522b8e8d09a2bfdd4ac1b08"
   },
   "frontend/src/pages/guru/GuruPenilaianDashboard.tsx": {
-    "mtime": 1784626741.6908443,
-    "ast_hash": "363c812ce80284f7ae0cc5adcd21a435",
-    "semantic_hash": "363c812ce80284f7ae0cc5adcd21a435"
+    "mtime": 1784787327.8706672,
+    "ast_hash": "19cae5964ab38829bfd5455a599ab108",
+    "semantic_hash": ""
   },
   "frontend/src/pages/guru/GuruPresensiDashboard.tsx": {
     "mtime": 1784630420.605486,
@@ -1605,9 +1605,9 @@
     "semantic_hash": "39fe152c0b623c7cc55fd78bb0cdb41d"
   },
   "frontend/src/pages/guru/RaporListPage.tsx": {
-    "mtime": 1784626741.7362907,
-    "ast_hash": "284e41f2795d9775b70859a4049c06cd",
-    "semantic_hash": "284e41f2795d9775b70859a4049c06cd"
+    "mtime": 1784787198.9217389,
+    "ast_hash": "81ca8b01033188e297237f6f84bfaaed",
+    "semantic_hash": ""
   },
   "frontend/src/pages/guru/RekapNilaiPage.tsx": {
     "mtime": 1784630420.6095324,
@@ -1615,9 +1615,9 @@
     "semantic_hash": "54d74238b04914f7a58176896933ac38"
   },
   "frontend/src/pages/guru/RekapPresensiPage.tsx": {
-    "mtime": 1784555098.7761912,
-    "ast_hash": "fac418da7c0bf10f02d3c14ab3c597c5",
-    "semantic_hash": "fac418da7c0bf10f02d3c14ab3c597c5"
+    "mtime": 1784787236.4527159,
+    "ast_hash": "d7de0cebbf0667ca1686c7dabf9889c5",
+    "semantic_hash": ""
   },
   "frontend/src/pages/guru/RosterPage.tsx": {
     "mtime": 1784716999.9762795,
@@ -1625,8 +1625,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/ScanOverlay.tsx": {
-    "mtime": 1784736186.3041296,
-    "ast_hash": "9d78f2b7b3a5754cafe5bc0167961625",
+    "mtime": 1784789772.493072,
+    "ast_hash": "154146f13d344a429a45c2593db15dc9",
     "semantic_hash": ""
   },
   "frontend/src/pages/guru/TujuanPembelajaranPage.tsx": {
@@ -1710,9 +1710,9 @@
     "semantic_hash": "dcfcc76279b3f606825346eacfedf351"
   },
   "frontend/src/pages/kurikulum/KurikulumDashboardPage.tsx": {
-    "mtime": 1784626741.792218,
-    "ast_hash": "b4b19484664afd24ccd38c644b612acc",
-    "semantic_hash": "b4b19484664afd24ccd38c644b612acc"
+    "mtime": 1784786430.9570584,
+    "ast_hash": "9f21f44767d66116c97d6c0141464448",
+    "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/MapelFormPage.tsx": {
     "mtime": 1784518033.6660824,
@@ -2297,6 +2297,31 @@
   "frontend/e2e/gelombang2/rbac-fix.spec.ts": {
     "mtime": 1784752323.5292153,
     "ast_hash": "effd2555771fd4224bbe4ea4b5aabd44",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/liveness-state-machine.spec.ts": {
+    "mtime": 1784789950.984291,
+    "ast_hash": "ca0e9f5652fa99d1fe54e99b754bb1ff",
+    "semantic_hash": ""
+  },
+  "frontend/src/lib/livenessStateMachine.ts": {
+    "mtime": 1784789222.08617,
+    "ast_hash": "d00e3fd6e47386e0a89473fd31e1c727",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/kurikulum/MonitoringNilaiPage.tsx": {
+    "mtime": 1784786372.3599992,
+    "ast_hash": "f50dd67cadd052712e8e350501f2cbfe",
+    "semantic_hash": ""
+  },
+  "frontend/src/pages/shared/LegerKelasPage.tsx": {
+    "mtime": 1784787406.822174,
+    "ast_hash": "56c5d7e350b7aa17cd86cd2b79922e89",
+    "semantic_hash": ""
+  },
+  "test.sql": {
+    "mtime": 1784755737.0304053,
+    "ast_hash": "d6eb4b8fb8a269c0b141e2f4ef2bb562",
     "semantic_hash": ""
   }
 }

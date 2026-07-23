@@ -121,6 +121,30 @@ export class RaporService {
     }
   }
 
+  /**
+   * GET /api/rapor/kelas-wali
+   * Guru-scoped: mengembalikan hanya kelas yang di-wali-i guru login.
+   * Admin/kepsek/kurikulum: kembalikan semua kelas.
+   * Prinsip: area guru TIDAK BOLEH pakai adminGetKelas global.
+   */
+  async getKelasWali(user: { id: number; roles: string[] }) {
+    if (
+      user.roles.includes('admin') ||
+      user.roles.includes('kepsek') ||
+      user.roles.includes('kurikulum')
+    ) {
+      const semua = await this.kelasRepo.find({ order: { nama: 'ASC' } });
+      return { data: semua };
+    }
+    const guruId = await this.resolveGuruId(user.id);
+    if (!guruId) return { data: [] };
+    const kelas = await this.kelasRepo.find({
+      where: { waliGuruId: guruId },
+      order: { nama: 'ASC' },
+    });
+    return { data: kelas };
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // CORE: Assembly DERIVED per siswa (BATCH anti-N+1)
   // Menghitung nilai akhir, deskripsi otomatis, kehadiran S/I/A untuk

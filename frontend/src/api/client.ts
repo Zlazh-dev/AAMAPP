@@ -1770,8 +1770,15 @@ export const api = {
     request<{ data: any[] }>(`/guru/penilaian/${penugasanId}/rekap`),
 
   // ── F6b: Rapor ────────────────────────────────────────────────────────────
-  getRaporKelasOptions: () =>
-    request<{ data: any[] }>('/rapor/kelas-options'),
+
+  /**
+   * Guru-scoped: daftar kelas yang di-wali-i guru login.
+   * Admin/kepsek/kurikulum: semua kelas.
+   * PENGGANTI adminGetKelas global di area guru — prinsip: kelas di area guru
+   * selalu diturunkan dari relasi guru login (bukan daftar global admin).
+   */
+  getKelasWali: () =>
+    request<{ data: Array<{ id: number; nama: string; tingkat: number; waliGuruId: number | null }> }>('/rapor/kelas-wali'),
 
   getRaporKelas: (kelasId: number, tahunAjaranId?: number) => {
     const q = new URLSearchParams();

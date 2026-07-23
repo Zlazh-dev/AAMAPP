@@ -64,15 +64,15 @@ export function RekapPresensiPage() {
  const [loading, setLoading] = useState(false);
  const [forbidden, setForbidden] = useState(false);
 
- // Muat daftar kelas sekali (admin: semua kelas; guru: tetap semua kelas
+ // Muat daftar kelas sekali � guru: hanya kelas yang di-wali-i (guru-scoped).
  // ditampilkan agar UI konsisten — server menolak 403 bila bukan wali
- // kelas yang dipilih, sesuai kontrak F2-SPEC).
+ 
  useEffect(() => {
  (async () => {
  setLoadingKelas(true);
  try {
-  const res = await api.adminGetKelas({ limit: 100 }); // kelas count terbatas (±20), wajar dimuat untuk dropdown.
- setKelasOptions(res.data);
+  const res = await api.getKelasWali(); // guru-scoped: hanya kelas yang diwalikan
+ setKelasOptions(res.data as any);
  if (res.data.length > 0) setKelasId(String(res.data[0].id));
  } catch (err) {
  show('error', err instanceof ApiError && err.body?.message ? err.body.message : 'Gagal memuat daftar kelas');

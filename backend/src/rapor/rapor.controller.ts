@@ -27,6 +27,19 @@ export class RaporController {
   }
 
   /**
+   * GET /api/rapor/kelas-wali
+   * Daftar kelas yang di-wali-i oleh guru yang login (guru-scoped).
+   * Dipakai oleh RaporListPage, LegerKelasPage (pintu /guru/rapor/leger),
+   * RekapPresensiPage — TIDAK boleh memakai adminGetKelas global.
+   * Akses: guru (kurikulum/admin tidak perlu karena mereka pakai adminGetKelas).
+   */
+  @Get('kelas-wali')
+  @Roles('guru', 'admin', 'kepsek', 'kurikulum')
+  getKelasWali(@Req() req: Request) {
+    return this.svc.getKelasWali(this.user(req));
+  }
+
+  /**
    * GET /api/rapor/kelas/:kelasId?tahunAjaranId=
    * Daftar siswa kelas + status rapor. Akses: wali kelas, admin, kepsek.
    */
