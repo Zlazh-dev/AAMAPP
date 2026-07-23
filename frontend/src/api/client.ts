@@ -93,6 +93,12 @@ export interface Guru {
   punyaAkun: boolean;
   jumlahPaket: number;
   faceStatus: 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
+  /** F3b — path relatif snapshot wajah (null = enroll sebelum fitur foto / sudah dihapus) */
+  faceSnapshotUrl: string | null;
+  /** F3b — kapan terakhir enrollment wajah dilakukan */
+  faceUpdatedAt: string | null;
+  /** F3b — jumlah pose yang di-enroll (turunan dari faceEmbeddings.length) */
+  facePoseCount: number;
   waliKelas: Kelas[] | null;
   createdAt: string;
   updatedAt: string;
@@ -1201,7 +1207,7 @@ export const api = {
   guruWajahStatus: () =>
     request<{ enrolled: boolean; poses: number; faceUpdatedAt: string | null }>('/guru/wajah/status'),
 
-  guruPutWajah: (data: { embeddings: number[][] }) =>
+  guruPutWajah: (data: { embeddings: number[][]; snapshotBase64?: string }) =>
     request<{ ok: boolean; poses: number }>('/guru/wajah', {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -1224,6 +1230,18 @@ export const api = {
   adminDeleteWajah: (guruId: number) =>
     request<{ message: string }>(`/admin/wajah/${guruId}`, { method: 'DELETE' })
     .then((result) => { invalidateCache('/admin/wajah'); return result; }),
+
+  // --- F3b: Admin validasi wajah (terima/tolak) + snapshot ---
+  adminValidasiWajah: (guruId: number, aksi: 'terima' | 'tolak') =>
+    request<{ ok: boolean; guruId: number; faceStatus: string }>(
+      `/admin/guru/${guruId}/wajah/validasi`,
+      { method: 'PATCH', body: JSON.stringify({ aksi }) },
+    )
+    .then((result) => { invalidateCache('/admin/wajah'); return result; }),
+
+  /** F3b — URL endpoint admin-only untuk menampilkan snapshot. Bukan URL publik. */
+  adminGetFaceSnapshotUrl: (guruId: number) =>
+    `/api/admin/guru/${guruId}/wajah/snapshot`,
 
   // --- F3a: Admin presensi guru harian + manual ---
   adminGetPresensiGuruHarian: (params: { tanggal: string }) =>

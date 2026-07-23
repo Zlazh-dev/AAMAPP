@@ -10,11 +10,12 @@ import {
   Put,
   Query,
   Req,
+  Res,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { IsIn } from 'class-validator';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { PresensiGuruService } from './presensi-guru.service';
 import { ScanDto } from './dto/scan.dto';
 import { ManualDto } from './dto/manual.dto';
@@ -134,5 +135,28 @@ export class AdminWajahController {
     @Req() req: Request,
   ) {
     return this.svc.validasiWajah(guruId, dto.aksi, req);
+  }
+
+  /**
+   * F3b — GET /api/admin/guru/:id/wajah/snapshot
+   * Admin-only: stream file snapshot wajah (JPEG).
+   * TIDAK tersaji dari folder publik /uploads/ — hanya lewat endpoint ini.
+   * Guru & peran lain mendapat 403 (RolesGuard menolak).
+   */
+  @Get('guru/:id/wajah/snapshot')
+  @Roles('admin')
+  async getFaceSnapshot(
+    @Param('id', ParseIntPipe) guruId: number,
+    @Res() res: Response,
+  ) {
+    const { absolutePath, filename } =
+      await this.svc.getFaceSnapshotPathAsync(guruId);
+    res.setHeader('Content-Type', 'image/jpeg');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${filename}"`,
+    );
+    res.setHeader('Cache-Control', 'private, no-store');
+    return res.sendFile(absolutePath);
   }
 }

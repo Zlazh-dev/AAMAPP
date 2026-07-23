@@ -21,6 +21,14 @@ import { EnrollWajahDto } from './dto/enroll-wajah.dto';
 import { ScanDto } from './dto/scan.dto';
 import { ManualDto } from './dto/manual.dto';
 import { IzinService, deriveStatusHarian } from '../izin/izin.service';
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs';
+import { join } from 'path';
+import { randomBytes } from 'crypto';
+
+// F3b — direktori penyimpanan snapshot wajah.
+// DI LUAR folder publik /uploads/ — hanya diakses via endpoint admin.
+const FACE_SNAPSHOT_ROOT =
+  process.env.FACE_SNAPSHOT_ROOT || join(process.cwd(), 'face-snapshots');
 
 // ─────────────────────────────────────────────
 // Pure math helpers (no deps, pure Node)
@@ -179,7 +187,7 @@ export class PresensiGuruService {
    */
   async enrollDiri(req: Request, dto: EnrollWajahDto) {
     const guru = await this.guruDariReq(req);
-    return this._simpanEmbeddings(guru, dto.embeddings, req);
+    return this._simpanEmbeddings(guru, dto.embeddings, req, dto.snapshotBase64);
   }
 
   /**
@@ -188,9 +196,12 @@ export class PresensiGuruService {
   async hapusWajah(guruId: number, req: Request) {
     const guru = await this.guruRepo.findOne({ where: { id: guruId } });
     if (!guru) throw new NotFoundException('Guru tidak ditemukan');
+    // F3b: hapus snapshot lama dari disk (siklus hidup ketat)
+    this._hapusSnapshotFile(guru.faceSnapshotUrl);
     guru.faceEmbeddings = null;
     guru.faceUpdatedAt = null;
     guru.faceStatus = 'BELUM';
+    guru.faceSnapshotUrl = null;
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
     await this.audit.log({
@@ -209,10 +220,18 @@ export class PresensiGuruService {
     guru: Guru,
     embeddings: number[][],
     req: Request,
+    snapshotBase64?: string,
   ) {
     const { minPoses } = await this.wajahConfig();
     if (embeddings.length < minPoses) {
       throw new BadRequestException(`Minimal ${minPoses} pose wajah untuk enrollment`);
+    }
+    // F3b: simpan snapshot baru (jika ada), hapus snapshot lama
+    if (snapshotBase64) {
+      const snapshotPath = this._simpanSnapshot(guru.id, snapshotBase64);
+      // Hapus snapshot lama jika ada (enroll ulang)
+      this._hapusSnapshotFile(guru.faceSnapshotUrl);
+      guru.faceSnapshotUrl = snapshotPath;
     }
     guru.faceEmbeddings = embeddings;
     guru.faceUpdatedAt = new Date();
@@ -233,6 +252,54 @@ export class PresensiGuruService {
   }
 
   /**
+   * F3b — Simpan snapshot base64 JPEG ke FACE_SNAPSHOT_ROOT.
+   * Validasi magic bytes JPEG (FF D8 FF) — konsisten dgn uploads.controller.
+   * Return: path relatif (mis. "guru-5-a1b2c3d4.jpg").
+   */
+  private _simpanSnapshot(guruId: number, base64: string): string {
+    // Strip prefix "data:image/jpeg;base64," jika ada
+    const b64 = base64.replace(/^data:image\/\w+;base64,/, '');
+    let buf: Buffer;
+    try {
+      buf = Buffer.from(b64, 'base64');
+    } catch {
+      throw new BadRequestException('Snapshot base64 tidak valid');
+    }
+    if (buf.length < 100) {
+      throw new BadRequestException('Snapshot terlalu kecil — data tidak lengkap');
+    }
+    // Validasi magic bytes JPEG (FF D8 FF)
+    if (buf[0] !== 0xff || buf[1] !== 0xd8 || buf[2] !== 0xff) {
+      throw new BadRequestException('Snapshot harus JPEG (magic bytes FF D8 FF)');
+    }
+    if (!existsSync(FACE_SNAPSHOT_ROOT)) {
+      mkdirSync(FACE_SNAPSHOT_ROOT, { recursive: true });
+    }
+    const rand = randomBytes(4).toString('hex');
+    const filename = `guru-${guruId}-${Date.now()}-${rand}.jpg`;
+    const fullPath = join(FACE_SNAPSHOT_ROOT, filename);
+    writeFileSync(fullPath, buf);
+    return filename;
+  }
+
+  /**
+   * F3b — Hapus file snapshot dari disk (jika ada).
+   * Aman dipanggil dengan null/undefined — no-op.
+   */
+  private _hapusSnapshotFile(snapshotUrl: string | null | undefined) {
+    if (!snapshotUrl) return;
+    try {
+      const fullPath = join(FACE_SNAPSHOT_ROOT, snapshotUrl);
+      if (existsSync(fullPath)) {
+        unlinkSync(fullPath);
+      }
+    } catch (err) {
+      // Log tapi jangan gagalkan operasi utama
+      console.warn(`[presensi-guru] Gagal hapus snapshot ${snapshotUrl}:`, err);
+    }
+  }
+
+  /**
    * UX-POLISH D — Admin validasi wajah guru.
    * PATCH /api/admin/guru/:id/wajah/validasi { aksi: 'terima' | 'tolak' }
    */
@@ -249,8 +316,11 @@ export class PresensiGuruService {
     guru.faceStatus = aksi === 'terima' ? 'TERVALIDASI' : 'DITOLAK';
     // Saat DITOLAK: kosongkan embeddings agar guru wajib enroll ulang.
     if (aksi === 'tolak') {
+      // F3b: hapus snapshot dari disk (siklus hidup ketat — privasi biometrik)
+      this._hapusSnapshotFile(guru.faceSnapshotUrl);
       guru.faceEmbeddings = null;
       guru.faceUpdatedAt = null;
+      guru.faceSnapshotUrl = null;
     }
     await this.guruRepo.save(guru);
     const actorId = (req as any).user?.id ?? req.session?.userId ?? null;
@@ -264,6 +334,24 @@ export class PresensiGuruService {
       summary: `Admin ${aksi === 'terima' ? 'menerima' : 'menolak'} validasi wajah ${guru.nama}`,
     });
     return { ok: true, guruId, faceStatus: guru.faceStatus };
+  }
+
+  /**
+   * F3b — GET /api/admin/guru/:id/wajah/snapshot
+   * Admin-only: kembalikan path absolut file snapshot untuk streaming via res.sendFile.
+   * Throw NotFoundException jika guru tidak ada atau snapshot tidak ada.
+   */
+  async getFaceSnapshotPathAsync(guruId: number): Promise<{ absolutePath: string; filename: string }> {
+    const guru = await this.guruRepo.findOne({ where: { id: guruId } });
+    if (!guru) throw new NotFoundException('Guru tidak ditemukan');
+    if (!guru.faceSnapshotUrl) {
+      throw new NotFoundException('Guru belum memiliki snapshot wajah (enroll sebelum fitur foto)');
+    }
+    const absolutePath = join(FACE_SNAPSHOT_ROOT, guru.faceSnapshotUrl);
+    if (!existsSync(absolutePath)) {
+      throw new NotFoundException('File snapshot tidak ditemukan di disk');
+    }
+    return { absolutePath, filename: guru.faceSnapshotUrl };
   }
 
   // ────── Scan API (alur 6 langkah F3-SPEC) ──────

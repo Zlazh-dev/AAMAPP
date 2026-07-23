@@ -75,6 +75,8 @@ export function GuruEnrollWizardPage() {
   const poseStateRef = useRef<PoseState>(initialPoseState());
   /** performance.now() saat challenge pose saat ini pass (mulai jendela ambil) */
   const challengeStartRef = useRef(0);
+  /** F3b — snapshot frame pose Depan (base64 JPEG, ~320px q0.7). Dikirim saat enroll. */
+  const snapshotBase64Ref = useRef<string | null>(null);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animFrameRef.current);
@@ -184,6 +186,7 @@ export function GuruEnrollWizardPage() {
     challengePassedRef.current = false;
     poseStateRef.current = initialPoseState();
     challengeStartRef.current = 0;
+    snapshotBase64Ref.current = null;
     if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     setPhase('camera');
     setStatus(`Pose 1/${MIN_POSES}: ${POSE_LABELS[0]}`);
@@ -289,6 +292,10 @@ export function GuruEnrollWizardPage() {
               }
 
               if (det) {
+                // F3b: tangkap snapshot saat pose Depan (idx 0) berhasil — untuk kartu validasi admin
+                if (idx === 0) {
+                  snapshotBase64Ref.current = captureSnapshot();
+                }
                 // Capture berhasil → advance pose (reset challenge untuk pose berikutnya)
                 consecutiveGoodRef.current = 0;
                 challengePassedRef.current = false;
@@ -373,7 +380,10 @@ export function GuruEnrollWizardPage() {
     if (embeddings.length < MIN_POSES) return;
     setSaving(true);
     try {
-      await api.guruPutWajah({ embeddings });
+      await api.guruPutWajah({
+        embeddings,
+        snapshotBase64: snapshotBase64Ref.current ?? undefined,
+      });
       show('success', 'Data wajah berhasil didaftarkan. Menunggu validasi admin.');
       navigate('/guru/wajah');
     } catch (err: unknown) {
@@ -383,6 +393,23 @@ export function GuruEnrollWizardPage() {
     }
   };
 
+  /** F3b — Tangkap snapshot frame video → canvas → JPEG base64 (sisi panjang ±320px, q0.7). */
+  const captureSnapshot = useCallback((): string | null => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth || !video.videoHeight) return null;
+    const MAX = 320;
+    const scale = Math.min(MAX / video.videoWidth, MAX / video.videoHeight, 1);
+    const w = Math.round(video.videoWidth * scale);
+    const h = Math.round(video.videoHeight * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(video, 0, 0, w, h);
+    return canvas.toDataURL('image/jpeg', 0.7);
+  }, []);
+
   const handleRetry = () => {
     setEmbeddings([]);
     setShowManualBtn(false);
@@ -390,6 +417,7 @@ export function GuruEnrollWizardPage() {
     challengePassedRef.current = false;
     poseStateRef.current = initialPoseState();
     challengeStartRef.current = 0;
+    snapshotBase64Ref.current = null;
     if (challengeWindowRef.current) clearTimeout(challengeWindowRef.current);
     stopCamera();
     const cancelled = { v: false };

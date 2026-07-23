@@ -77,13 +77,16 @@ export class GuruService {
     if (!row) throw new NotFoundException('Guru tidak ditemukan');
     const taAktif = await this.ta.getActive();
     const taId = taAktif?.tahunAjaran?.id ?? null;
+    // F3b: expose faceSnapshotUrl + faceUpdatedAt + facePoseCount (bukan raw embeddings — privasi)
+    const { faceEmbeddings, ...safeRow } = row;
     return {
-      ...row,
+      ...safeRow,
       punyaAkun: !!row.userId,
       jumlahPaket:
         taId != null
           ? await this.kurikulum.countPenugasanGuruAktif(row.id, taId)
           : 0,
+      facePoseCount: Array.isArray(faceEmbeddings) ? faceEmbeddings.length : 0,
     };
   }
 

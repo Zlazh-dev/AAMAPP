@@ -70,6 +70,14 @@ export class Guru {
   @Column({ type: 'varchar', length: 25, default: 'BELUM' })
   faceStatus: 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
 
+  /**
+   * F3b — path relatif snapshot wajah (frame pose Depan saat enroll).
+   * Disimpan di FACE_SNAPSHOT_ROOT (di luar folder publik /uploads/).
+   * null = enroll sebelum fitur snapshot, atau sudah dihapus (Tolak/DELETE).
+   */
+  @Column({ type: 'varchar', nullable: true })
+  faceSnapshotUrl: string | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

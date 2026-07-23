@@ -76,7 +76,7 @@ export function GuruDetailPage() {
   const handleValidasiWajah = async (aksi: 'terima' | 'tolak') => {
     setValidating(true);
     try {
-      await (api as any).validasiWajahGuru?.(guruId, { aksi });
+      await api.adminValidasiWajah(guruId, aksi);
       show('success', aksi === 'terima' ? 'Wajah guru diterima.' : 'Wajah guru ditolak.');
       loadGuru();
     } catch (err: any) {
@@ -201,50 +201,99 @@ export function GuruDetailPage() {
           </dl>
         </Card>
 
-        {/* Wajah Validation Card ï¿½ UX-POLISH ï¿½D */}
+        {/* Wajah Validation Card — F3b: snapshot + metadata untuk validasi bermakna */}
         <div id="card-wajah-guru">
         <Card icon="face_retouching_natural" className="md:col-span-2">
           <h3 className="text-sm font-semibold text-aam-text mb-3">Pendaftaran Wajah</h3>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div id="badge-face-status"><Badge variant={FACE_STATUS_VARIANT[faceStatus]}>
-              {FACE_STATUS_LABEL[faceStatus]}
-            </Badge></div>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* F3b: snapshot wajah untuk perbandingan visual */}
+            <div className="shrink-0">
+              {guru.faceSnapshotUrl ? (
+                <img
+                  src={api.adminGetFaceSnapshotUrl(guruId)}
+                  alt={`Snapshot wajah ${guru.nama}`}
+                  className="w-32 h-32 object-cover rounded-lg border border-aam-border bg-aam-surface"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-lg border border-dashed border-aam-border bg-aam-surface flex items-center justify-center p-2 text-center">
+                  <span className="text-xs text-aam-text-muted">
+                    {faceStatus === 'BELUM'
+                      ? 'Belum enroll'
+                      : 'Enroll sebelum fitur foto — minta guru enroll ulang'}
+                  </span>
+                </div>
+              )}
+            </div>
 
-            {faceStatus === 'MENUNGGU_VALIDASI' && (
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => handleValidasiWajah('terima')}
-                  disabled={validating}
-                  id="btn-terima-wajah"
-                >
-                  {validating ? 'Memproses...' : 'Terima'}
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => handleValidasiWajah('tolak')}
-                  disabled={validating}
-                  id="btn-tolak-wajah"
-                >
-                  Tolak
-                </Button>
+            {/* Metadata + aksi validasi */}
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div id="badge-face-status"><Badge variant={FACE_STATUS_VARIANT[faceStatus]}>
+                  {FACE_STATUS_LABEL[faceStatus]}
+                </Badge></div>
               </div>
-            )}
 
-            {faceStatus === 'BELUM' && (
-              <p className="text-xs text-aam-text-muted">
-                Guru belum mendaftarkan wajah. Guru dapat mendaftar sendiri melalui menu Daftar Wajah.
-              </p>
-            )}
-            {faceStatus === 'TERVALIDASI' && (
-              <p className="text-xs text-aam-text-muted">
-                Wajah guru sudah tervalidasi dan dapat digunakan untuk presensi.
-              </p>
-            )}
-            {faceStatus === 'DITOLAK' && (
-              <p className="text-xs text-red-600">
-                Wajah ditolak. Guru perlu mendaftar ulang melalui menu Daftar Wajah.
-              </p>
-            )}
+              <dl className="text-sm space-y-1">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-aam-text-muted">Tanggal enroll</dt>
+                  <dd className="text-aam-text font-medium">
+                    {guru.faceUpdatedAt
+                      ? new Date(guru.faceUpdatedAt).toLocaleString('id-ID', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        })
+                      : '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-aam-text-muted">Jumlah pose</dt>
+                  <dd className="text-aam-text font-medium">
+                    {guru.facePoseCount > 0 ? `${guru.facePoseCount} pose` : '—'}
+                  </dd>
+                </div>
+              </dl>
+
+              {faceStatus === 'MENUNGGU_VALIDASI' && (
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    onClick={() => handleValidasiWajah('terima')}
+                    disabled={validating}
+                    id="btn-terima-wajah"
+                  >
+                    {validating ? 'Memproses...' : 'Terima'}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleValidasiWajah('tolak')}
+                    disabled={validating}
+                    id="btn-tolak-wajah"
+                  >
+                    Tolak
+                  </Button>
+                </div>
+              )}
+
+              {faceStatus === 'MENUNGGU_VALIDASI' && !guru.faceSnapshotUrl && (
+                <p className="text-xs text-amber-600">
+                  Enroll sebelum fitur foto — tidak ada snapshot untuk dibandingkan. Minta guru enroll ulang untuk validasi visual.
+                </p>
+              )}
+              {faceStatus === 'BELUM' && (
+                <p className="text-xs text-aam-text-muted">
+                  Guru belum mendaftarkan wajah. Guru dapat mendaftar sendiri melalui menu Daftar Wajah.
+                </p>
+              )}
+              {faceStatus === 'TERVALIDASI' && (
+                <p className="text-xs text-aam-text-muted">
+                  Wajah guru sudah tervalidasi dan dapat digunakan untuk presensi.
+                </p>
+              )}
+              {faceStatus === 'DITOLAK' && (
+                <p className="text-xs text-red-600">
+                  Wajah ditolak. Guru perlu mendaftar ulang melalui menu Daftar Wajah.
+                </p>
+              )}
+            </div>
           </div>
         </Card>
         </div>
