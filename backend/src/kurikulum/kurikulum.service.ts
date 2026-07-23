@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike, In } from 'typeorm';
 import { Mapel } from './mapel.entity';
@@ -25,6 +19,9 @@ import { Guru } from '../guru/guru.entity';
 import { Kelas } from '../kelas/kelas.entity';
 import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { PresensiSesi } from '../presensi/presensi-sesi.entity';
+import { Penilaian } from '../penilaian/penilaian.entity';
+import { Nilai } from '../penilaian/nilai.entity';
+import { Siswa } from '../siswa/siswa.entity';
 
 export interface MapelFilter {
   q?: string;
@@ -33,7 +30,7 @@ export interface MapelFilter {
 }
 
 /**
- * T12: Konversi 'HH:mm' → menit dari 00:00 untuk perbandingan interval.
+ * T12: Konversi 'HH:mm' â†’ menit dari 00:00 untuk perbandingan interval.
  */
 function hhmmToMin(s: string): number {
   const [h, m] = s.split(':').map((x) => parseInt(x, 10));
@@ -54,14 +51,20 @@ export class KurikulumService {
     @InjectRepository(Kelas) private readonly kelasRepo: Repository<Kelas>,
     @InjectRepository(TahunAjaran)
     private readonly taRepo: Repository<TahunAjaran>,
+    @InjectRepository(Penilaian)
+    private readonly penilaianRepo: Repository<Penilaian>,
+    @InjectRepository(Nilai)
+    private readonly nilaiRepo: Repository<Nilai>,
+    @InjectRepository(Siswa)
+    private readonly siswaRepo: Repository<Siswa>,
     private readonly audit: AuditService,
     private readonly taService: TahunAjaranService,
     private readonly pengaturanService: PengaturanService,
   ) {}
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // DASHBOARD (T15)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getDashboard() {
     const { tahunAjaran: taAktif } = await this.taService.getActive();
@@ -85,9 +88,9 @@ export class KurikulumService {
     };
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // MAPEL (Fase 7)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async listMapel(filter: MapelFilter) {
     const page = Math.max(1, filter.page ?? 1);
@@ -188,13 +191,13 @@ export class KurikulumService {
     return { ok: true };
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // PENUGASAN (T12 Butir 5)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * GET /api/kurikulum/penugasan?taId=&guruId=&kelasId=&mapelId=
-   * Jika taId tidak diisi → default TA aktif.
+   * Jika taId tidak diisi â†’ default TA aktif.
    */
   async listPenugasan(filter: {
     taId?: number;
@@ -242,7 +245,7 @@ export class KurikulumService {
 
   /**
    * POST /api/kurikulum/penugasan
-   * 1 input → N baris (1 per kelas). Semua baris share tahunAjaranId=TA aktif.
+   * 1 input â†’ N baris (1 per kelas). Semua baris share tahunAjaranId=TA aktif.
    * 409 bila mapel-kelas sudah ada di TA aktif.
    * T12-FIX: pesan duplikat menyebut NAMA MAPEL + NAMA PENGAMPU per kelas.
    */
@@ -329,7 +332,7 @@ export class KurikulumService {
 
   /**
    * PATCH /api/kurikulum/penugasan/:id
-   * Update hanya guruId (id paket TETAP — §14.10.2).
+   * Update hanya guruId (id paket TETAP â€” Â§14.10.2).
    * Jadwal / TP / Penilaian / Nilai TIDAK tersentuh (FK onUpdate idempotent).
    * T12-FIX: validasi guruId baru ada (404), audit bernama.
    */
@@ -385,7 +388,7 @@ export class KurikulumService {
   /**
    * DELETE /api/kurikulum/penugasan/:id
    * T12-FIX: 409 jika sudah dipakai di jadwal_kbm (BUKAN cascade hapus jadwal).
-   * Sesuai spec §14.10.2.
+   * Sesuai spec Â§14.10.2.
    */
   async removePenugasan(id: number, req: Request) {
     const row = await this.penugasanRepo.findOne({
@@ -394,7 +397,7 @@ export class KurikulumService {
     });
     if (!row) throw new NotFoundException('Penugasan tidak ditemukan');
 
-    // 409 jika jadwal masih ada — hapus jadwal dulu.
+    // 409 jika jadwal masih ada â€” hapus jadwal dulu.
     const usedJadwal = await this.jadwalRepo.count({
       where: { penugasanId: id },
     });
@@ -445,7 +448,7 @@ export class KurikulumService {
 
   /**
    * T15 0b: Batch count penugasan untuk multiple guru sekaligus (eliminasi N+1).
-   * Mengembalikan Map<guruId, count> — satu query GROUP BY, bukan satu COUNT per baris.
+   * Mengembalikan Map<guruId, count> â€” satu query GROUP BY, bukan satu COUNT per baris.
    */
   async countPenugasanGuruAktifBatch(
     guruIds: number[],
@@ -467,9 +470,9 @@ export class KurikulumService {
     return map;
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // JADWAL KBM (T12 Butir 5)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * GET /api/kurikulum/jadwal?taId=&kelasId=&guruId=
@@ -499,7 +502,7 @@ export class KurikulumService {
   }
 
   /**
-   * T12-FIX: mapping hari angka → label Indonesia untuk pesan & audit.
+   * T12-FIX: mapping hari angka â†’ label Indonesia untuk pesan & audit.
    */
   private hariLabel(hari: number): string {
     const map: Record<number, string> = {
@@ -515,7 +518,7 @@ export class KurikulumService {
 
   /**
    * POST /api/kurikulum/jadwal
-   * Aturan §14.10.2: tidak boleh ada overlap slot pada kelas+hari yang sama.
+   * Aturan Â§14.10.2: tidak boleh ada overlap slot pada kelas+hari yang sama.
    * T12-FIX: juga cek bentrok GURU lintas kelas (guru yang sama di kelas lain
    * pada hari & interval yang sama). Lingkup tahun ajaran penugasan.
    */
@@ -569,7 +572,7 @@ export class KurikulumService {
       resourceId: String(saved.id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Menambah jadwal ${namaMapel} ${namaKelas} ${hariName} ${dto.jamMulai}–${dto.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
+      summary: `Menambah jadwal ${namaMapel} ${namaKelas} ${hariName} ${dto.jamMulai}â€“${dto.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
       details: {
         penugasanId: dto.penugasanId,
         namaMapel,
@@ -662,7 +665,7 @@ export class KurikulumService {
       resourceId: String(saved.id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Memperbarui jadwal ${namaMapel} ${namaKelas} ${hariName} ${row.jamMulai}–${row.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
+      summary: `Memperbarui jadwal ${namaMapel} ${namaKelas} ${hariName} ${row.jamMulai}â€“${row.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
       details: { before, after: { ...dto, namaMapel, namaKelas, namaGuru, hariLabel: hariName, taLabel } },
     });
     return saved;
@@ -707,16 +710,16 @@ export class KurikulumService {
       resourceId: String(id),
       ip: req.ip,
       userAgent: req.headers['user-agent'] as string,
-      summary: `Menghapus jadwal ${namaMapel} ${namaKelas} ${hariName} ${row.jamMulai}–${row.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
+      summary: `Menghapus jadwal ${namaMapel} ${namaKelas} ${hariName} ${row.jamMulai}â€“${row.jamSelesai} (guru ${namaGuru}, ${taLabel})`,
     });
     return { ok: true };
   }
 
   /**
    * T12-FIX: Cek overlap pada:
-   *  (a) kelas+hari yang sama (TA yang sama) — pesan sebut kelas+mapel+jam.
+   *  (a) kelas+hari yang sama (TA yang sama) â€” pesan sebut kelas+mapel+jam.
    *  (b) GURU lintas kelas: guru yang sama pada hari yang sama dengan
-   *      interval beririsan di kelas LAIN (TA yang sama) — pesan sebut
+   *      interval beririsan di kelas LAIN (TA yang sama) â€” pesan sebut
    *      nama guru + kelas asal.
    * Pakai TA filter agar jadwal TA lama tak memicu konflik palsu.
    */
@@ -755,25 +758,25 @@ export class KurikulumService {
       const namaKelas = slot.penugasan?.kelas?.nama ?? `kelas#${slot.penugasan?.kelasId}`;
       const namaGuru = slot.penugasan?.guru?.nama ?? `guru#${slot.penugasan?.guruId}`;
 
-      // (a) kelas sama — bentrok kelas.
+      // (a) kelas sama â€” bentrok kelas.
       if (slot.penugasan?.kelasId === opts.kelasId) {
         throw new ConflictException(
-          `Kelas ${namaKelas} sudah ada KBM ${namaMapel} pada ${slot.jamMulai}–${slot.jamSelesai}`,
+          `Kelas ${namaKelas} sudah ada KBM ${namaMapel} pada ${slot.jamMulai}â€“${slot.jamSelesai}`,
         );
       }
 
-      // (b) guru sama di kelas lain — bentrok guru lintas kelas.
+      // (b) guru sama di kelas lain â€” bentrok guru lintas kelas.
       if (slot.penugasan?.guruId === opts.guruId) {
         throw new ConflictException(
-          `${namaGuru} sudah mengajar ${namaMapel} di kelas ${namaKelas} pada ${slot.jamMulai}–${slot.jamSelesai}`,
+          `${namaGuru} sudah mengajar ${namaMapel} di kelas ${namaKelas} pada ${slot.jamMulai}â€“${slot.jamSelesai}`,
         );
       }
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // KALENDER LIBUR (T12 Butir 5)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async listLibur() {
     return this.liburRepo.find({ order: { tanggal: 'ASC' } });
@@ -820,7 +823,7 @@ export class KurikulumService {
   }
 
   /**
-   * T15-FIX: POST /api/admin/libur/bulk — seleksi-multi lalu aksi.
+   * T15-FIX: POST /api/admin/libur/bulk â€” seleksi-multi lalu aksi.
    * aksi='tandai': buat entri untuk tanggal yang BELUM libur (skip yang sudah).
    * aksi='hapus': hapus entri untuk tanggal yang SUDAH libur (skip yang belum).
    * Satu audit ringkas untuk seluruh batch (bukan per tanggal).
@@ -851,7 +854,7 @@ export class KurikulumService {
         resourceId: null,
         ip: req.ip,
         userAgent: req.headers['user-agent'] as string,
-        summary: `Menandai ${saved.length} hari libur (${dilewati} dilewati — sudah ada)`,
+        summary: `Menandai ${saved.length} hari libur (${dilewati} dilewati â€” sudah ada)`,
         details: { tanggal: toCreate, keterangan: dto.keterangan },
       });
       return { dibuat: saved.length, dilewati };
@@ -868,20 +871,20 @@ export class KurikulumService {
         resourceId: null,
         ip: req.ip,
         userAgent: req.headers['user-agent'] as string,
-        summary: `Menghapus ${toDelete.length} penanda libur (${dilewati} dilewati — belum libur)`,
+        summary: `Menghapus ${toDelete.length} penanda libur (${dilewati} dilewati â€” belum libur)`,
         details: { tanggal: toDelete.map((t) => t.tanggal) },
       });
       return { dihapus: toDelete.length, dilewati };
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // IMPOR LIBUR NASIONAL (T15-FIX — KEPUTUSAN USER)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // IMPOR LIBUR NASIONAL (T15-FIX â€” KEPUTUSAN USER)
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * Cache in-process 24 jam per tahun agar tidak membebani provider pihak
-   * ketiga (KEPUTUSAN USER — deteksi otomatis §14.10.2).
+   * ketiga (KEPUTUSAN USER â€” deteksi otomatis Â§14.10.2).
    */
   private nasionalCache = new Map<
     number,
@@ -891,7 +894,7 @@ export class KurikulumService {
   /**
    * Ambil daftar libur nasional dari provider pihak ketiga untuk satu tahun.
    * Provider: api-harilibur.vercel.app (gratis, tanpa API key). Gagal jangkau
-   * → lempar error yang ditangkap caller (tidak memblokir alur manual).
+   * â†’ lempar error yang ditangkap caller (tidak memblokir alur manual).
    */
   private async fetchNasionalTahun(
     tahun: number,
@@ -933,7 +936,7 @@ export class KurikulumService {
       list = await this.fetchNasionalTahun(tahun);
     } catch {
       throw new ServiceUnavailableException(
-        'Sumber data tidak terjangkau — coba lagi atau isi manual.',
+        'Sumber data tidak terjangkau â€” coba lagi atau isi manual.',
       );
     }
     if (list.length === 0) return [];
@@ -949,8 +952,8 @@ export class KurikulumService {
   /**
    * GET /api/admin/libur/cek-nasional
    * Deteksi diam-diam: hitung berapa libur nasional (tahun berjalan + tahun
-   * berikutnya) yang BELUM ada di kalender. Gagal cek → {baru: 0} (diam,
-   * tanpa error — jangan mengganggu alur admin).
+   * berikutnya) yang BELUM ada di kalender. Gagal cek â†’ {baru: 0} (diam,
+   * tanpa error â€” jangan mengganggu alur admin).
    */
   async cekNasional() {
     const now = new Date();
@@ -969,14 +972,14 @@ export class KurikulumService {
       const baru = gabungan.filter((l) => !existingSet.has(l.tanggal)).length;
       return { baru };
     } catch {
-      // Gagal cek = diam (tanpa banner/error) — provider mungkin down.
+      // Gagal cek = diam (tanpa banner/error) â€” provider mungkin down.
       return { baru: 0 };
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // KKM (T12 Butir 5)
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   /**
    * GET /api/kurikulum/pengaturan/kkm
@@ -998,9 +1001,9 @@ export class KurikulumService {
     return saved;
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // UTIL
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   private async getActiveTaIdOrThrow(): Promise<number> {
     const { tahunAjaran } = await this.taService.getActive();
@@ -1010,5 +1013,138 @@ export class KurikulumService {
       );
     }
     return tahunAjaran.id;
+  }
+  // ─────────────────────────────────────────────────────────────
+  // MONITORING PROGRES INPUT NILAI (A3)
+  // ─────────────────────────────────────────────────────────────
+
+  async monitoringNilai(tahunAjaranId?: number) {
+    const taId = tahunAjaranId ?? await this.getActiveTaIdOrThrow();
+
+    const penugasanList = await this.penugasanRepo.find({
+      where: { tahunAjaranId: taId },
+      relations: ['guru', 'mapel', 'kelas'],
+      order: { guruId: 'ASC', kelasId: 'ASC', mapelId: 'ASC' },
+    });
+
+    if (penugasanList.length === 0) {
+      return {
+        tahunAjaranId: taId,
+        data: [],
+        ringkasan: { total: 0, selesai: 0, proses: 0, pending: 0, kosong: 0 },
+      };
+    }
+
+    const penugasanIds = penugasanList.map((p) => p.id);
+
+    const kelasIds = [...new Set(penugasanList.map((p) => p.kelasId))];
+    const siswaCountRows = await this.siswaRepo
+      .createQueryBuilder('s')
+      .select('s.kelasId', 'kelasId')
+      .addSelect('COUNT(*)', 'jumlah')
+      .where('s.kelasId IN (:...ids)', { ids: kelasIds })
+      .andWhere("s.status = 'aktif'")
+      .groupBy('s.kelasId')
+      .getRawMany();
+    const siswaMap = new Map<number, number>(
+      siswaCountRows.map((r) => [Number(r.kelasId), Number(r.jumlah)]),
+    );
+
+    const sumatifCountRows = await this.penilaianRepo
+      .createQueryBuilder('pn')
+      .select('pn.penugasanId', 'penugasanId')
+      .addSelect('COUNT(*)', 'jumlah')
+      .where('pn.penugasanId IN (:...ids)', { ids: penugasanIds })
+      .andWhere("pn.jenis = 'Sumatif'")
+      .groupBy('pn.penugasanId')
+      .getRawMany();
+    const sumatifCountMap = new Map<number, number>(
+      sumatifCountRows.map((r) => [Number(r.penugasanId), Number(r.jumlah)]),
+    );
+
+    // nilai kosong (NULL) TIDAK masuk pembagi formula rapor - monitoring ini
+    // menampilkan angka bolong secara eksplisit agar kurikulum bisa menagih guru.
+    const nilaiCountRows = await this.nilaiRepo
+      .createQueryBuilder('n')
+      .innerJoin('penilaian', 'pn', 'pn.id = n."penilaianId"')
+      .select('pn."penugasanId"', 'penugasanId')
+      .addSelect('COUNT(*)', 'jumlah')
+      .where('pn."penugasanId" IN (:...ids)', { ids: penugasanIds })
+      .andWhere("pn.jenis = 'Sumatif'")
+      .andWhere('n.nilai IS NOT NULL')
+      .groupBy('pn."penugasanId"')
+      .getRawMany();
+    const nilaiCountMap = new Map<number, number>(
+      nilaiCountRows.map((r) => [Number(r.penugasanId), Number(r.jumlah)]),
+    );
+
+    type StatusNilai = 'Kosong' | 'Pending' | 'Proses' | 'Selesai';
+
+    const guruMap = new Map<number, {
+      guruId: number; guruNama: string;
+      paket: Array<{
+        penugasanId: number; mapelNama: string; kelasNama: string;
+        jumlahSiswa: number; targetNilai: number; realisasiNilai: number;
+        persen: number; status: StatusNilai;
+      }>;
+    }>();
+
+    const ringkasan = { total: 0, selesai: 0, proses: 0, pending: 0, kosong: 0 };
+
+    for (const p of penugasanList) {
+      const jumlahSiswa = siswaMap.get(p.kelasId) ?? 0;
+      const jumlahSumatif = sumatifCountMap.get(p.id) ?? 0;
+      const target = jumlahSumatif * jumlahSiswa;
+      const realisasi = nilaiCountMap.get(p.id) ?? 0;
+      const persen = target === 0 ? 0 : Math.min(100, Math.round(realisasi / target * 100));
+
+      let status: StatusNilai;
+      if (target === 0) status = 'Kosong';
+      else if (persen === 0) status = 'Pending';
+      else if (persen < 100) status = 'Proses';
+      else status = 'Selesai';
+
+      ringkasan.total++;
+      if (status === 'Kosong') ringkasan.kosong++;
+      else if (status === 'Pending') ringkasan.pending++;
+      else if (status === 'Proses') ringkasan.proses++;
+      else ringkasan.selesai++;
+
+      const guruId = p.guruId;
+      const guruNama = (p as any).guru?.nama ?? `guru#${guruId}`;
+      if (!guruMap.has(guruId)) guruMap.set(guruId, { guruId, guruNama, paket: [] });
+      guruMap.get(guruId)!.paket.push({
+        penugasanId: p.id,
+        mapelNama: (p as any).mapel?.nama ?? `mapel#${p.mapelId}`,
+        kelasNama: (p as any).kelas?.nama ?? `kelas#${p.kelasId}`,
+        jumlahSiswa, targetNilai: target, realisasiNilai: realisasi, persen, status,
+      });
+    }
+
+    const data = Array.from(guruMap.values()).map((g) => {
+      const totalTarget = g.paket.reduce((s, x) => s + x.targetNilai, 0);
+      const totalRealisasi = g.paket.reduce((s, x) => s + x.realisasiNilai, 0);
+      const guruPersen = totalTarget === 0
+        ? 0 : Math.min(100, Math.round(totalRealisasi / totalTarget * 100));
+
+      let guruStatus: StatusNilai;
+      if (totalTarget === 0) guruStatus = 'Kosong';
+      else if (guruPersen === 0) guruStatus = 'Pending';
+      else if (guruPersen < 100) guruStatus = 'Proses';
+      else guruStatus = 'Selesai';
+
+      const belumSelesai = g.paket.filter((x) => x.status !== 'Selesai');
+      const tagihanWa = belumSelesai.length === 0 ? null
+        : `*[Tagihan Nilai]* Yth. ${g.guruNama},\n` +
+          `Mohon segera lengkapi input nilai Sumatif berikut:\n` +
+          belumSelesai.map((x) =>
+            `\u2022 ${x.mapelNama} ${x.kelasNama}: ${x.realisasiNilai}/${x.targetNilai} nilai (${x.persen}% - ${x.status})`,
+          ).join('\n') +
+          `\nSumber: AAMAPP - Monitoring Nilai`;
+
+      return { guruId: g.guruId, guruNama: g.guruNama, totalTarget, totalRealisasi, guruPersen, guruStatus, tagihanWa, paket: g.paket };
+    });
+
+    return { tahunAjaranId: taId, data, ringkasan };
   }
 }

@@ -100,12 +100,24 @@ export class RaporService {
     kelasId: number,
     user: { id: number; roles: string[] },
   ): Promise<void> {
-    if (user.roles.includes('admin') || user.roles.includes('kepsek')) return;
+    // admin, kepsek, kurikulum diizinkan akses semua kelas
+    if (
+      user.roles.includes('admin') ||
+      user.roles.includes('kepsek') ||
+      user.roles.includes('kurikulum')
+    ) return;
+
     const kelas = await this.kelasRepo.findOne({ where: { id: kelasId }, select: ['waliGuruId'] });
+    // Kelas tidak ditemukan → 404 (resource genuinely tidak ada, bukan masalah otorisasi)
     if (!kelas) throw new NotFoundException('Kelas tidak ditemukan');
+
     const guruId = await this.resolveGuruId(user.id);
     if (!guruId || kelas.waliGuruId !== guruId) {
-      throw new ForbiddenException('Hanya wali kelas yang dapat mengakses rapor kelas ini');
+      // 403 dengan pesan jelas — konvensi app (sama dengan penolakan geofence presensi).
+      // TIDAK pakai 404 karena route ini terdaftar dan kelas ada; menyembunyikan
+      // keberadaan resource dari guru yang login tidak menambah keamanan berarti
+      // dan membingungkan debugging lapangan.
+      throw new ForbiddenException('Anda bukan wali kelas ini dan tidak memiliki akses ke rapor kelas ini');
     }
   }
 

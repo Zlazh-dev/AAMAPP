@@ -188,4 +188,20 @@ export class KurikulumController {
   updateKkm(@Body() body: UpdateKkmDto, @Req() req: Request) {
     return this.svc.updateKkm(body, req);
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // MONITORING PROGRES INPUT NILAI (A3)
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * GET /api/kurikulum/monitoring-nilai?tahunAjaranId=
+   * Agregat progres nilai per guru-mapel-kelas.
+   * Akses: kurikulum, admin, kepsek.
+   */
+  @Get('monitoring-nilai')
+  @Roles('kurikulum', 'admin', 'kepsek')
+  monitoringNilai(@Query('tahunAjaranId') taIdStr?: string) {
+    const taId = taIdStr ? parseInt(taIdStr, 10) : undefined;
+    return this.svc.monitoringNilai(taId);
+  }
 }

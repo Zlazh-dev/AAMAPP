@@ -52,6 +52,7 @@ const PenugasanPage = React.lazy(() => import('../pages/kurikulum/PenugasanPage'
 const PenugasanFormPage = React.lazy(() => import('../pages/kurikulum/PenugasanFormPage').then(m => ({ default: m.PenugasanFormPage })));
 const WaliKelasPage = React.lazy(() => import('../pages/kurikulum/WaliKelasPage').then(m => ({ default: m.WaliKelasPage })));
 const JadwalKbmPage = React.lazy(() => import('../pages/kurikulum/JadwalKbmPage').then(m => ({ default: m.JadwalKbmPage })));
+const MonitoringNilaiPage = React.lazy(() => import('../pages/kurikulum/MonitoringNilaiPage').then(m => ({ default: m.MonitoringNilaiPage })));
 
 // Presensi
 const RosterPage = React.lazy(() => import('../pages/guru/RosterPage').then(m => ({ default: m.RosterPage })));
@@ -234,6 +235,7 @@ const routes: RouteObject[] = [
           // Kurikulum: Leger Kelas
           { path: '/kurikulum/leger', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
           { path: '/kurikulum/leger/:kelasId', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><LegerKelasPage /></Lazy></RequireRole> },
+          { path: '/kurikulum/monitoring-nilai', element: <RequireRole roles={['kurikulum','admin','kepsek']}><Lazy><MonitoringNilaiPage /></Lazy></RequireRole> },
 
           // Kurikulum: Kokurikuler
           { path: '/kurikulum/kokurikuler', element: <RequireRole roles={['kurikulum','admin']}><Lazy><KokurikulerKegiatanPage /></Lazy></RequireRole> },

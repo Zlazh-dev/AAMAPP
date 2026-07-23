@@ -16,6 +16,9 @@ import { TahunAjaran } from '../tahun-ajaran/tahun-ajaran.entity';
 import { Pengaturan } from '../pengaturan/pengaturan.entity';
 import { TahunAjaranModule } from '../tahun-ajaran/tahun-ajaran.module';
 import { PengaturanModule } from '../pengaturan/pengaturan.module';
+import { Penilaian } from '../penilaian/penilaian.entity';
+import { Nilai } from '../penilaian/nilai.entity';
+import { Siswa } from '../siswa/siswa.entity';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { PengaturanModule } from '../pengaturan/pengaturan.module';
       Kelas,
       TahunAjaran,
       Pengaturan,
+      Penilaian,
+      Nilai,
+      Siswa,
     ]),
     AuditModule,
     TahunAjaranModule,

@@ -1169,6 +1169,34 @@ export const api = {
   getKurikulumDashboard: () =>
     request<{ mapelCount: number; penugasanCount: number; jadwalCount: number; taAktif: TahunAjaran | null }>(`/kurikulum/dashboard`),
 
+  // --- A3: Monitoring Progres Input Nilai ---
+  getMonitoringNilai: (tahunAjaranId?: number) => {
+    const q = tahunAjaranId ? `?tahunAjaranId=${tahunAjaranId}` : '';
+    return request<{
+      tahunAjaranId: number;
+      ringkasan: { total: number; selesai: number; proses: number; pending: number; kosong: number };
+      data: Array<{
+        guruId: number;
+        guruNama: string;
+        totalTarget: number;
+        totalRealisasi: number;
+        guruPersen: number;
+        guruStatus: 'Kosong' | 'Pending' | 'Proses' | 'Selesai';
+        tagihanWa: string | null;
+        paket: Array<{
+          penugasanId: number;
+          mapelNama: string;
+          kelasNama: string;
+          jumlahSiswa: number;
+          targetNilai: number;
+          realisasiNilai: number;
+          persen: number;
+          status: 'Kosong' | 'Pending' | 'Proses' | 'Selesai';
+        }>;
+      }>;
+    }>(`/kurikulum/monitoring-nilai${q}`);
+  },
+
   // --- F3a: Guru wajah (enrollment mandiri) ---
   guruWajahStatus: () =>
     request<{ enrolled: boolean; poses: number; faceUpdatedAt: string | null }>('/guru/wajah/status'),

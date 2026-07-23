@@ -1,7 +1,13 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api , ApiError } from '../../api/client';
 import { PageContainer } from '../../components/PageContainer';
 import { Card } from '../../components/Card';
+import { SubPageLinks } from '../../components/SubPageLinks';
+
+const KURIKULUM_SUB_LINKS = [
+  { key: 'monitoring-nilai', label: 'Monitoring Input Nilai', path: '/kurikulum/monitoring-nilai', icon: 'track_changes', description: 'Progres input nilai per guru-mapel-kelas' },
+  { key: 'leger', label: 'Leger Kelas', path: '/kurikulum/leger', icon: 'table_view', description: 'Matriks nilai semua siswa per kelas' },
+];
 
 /**
  * /kurikulum — Dashboard Kurikulum (T15, §14.10.3 bullet terakhir).
@@ -69,6 +75,11 @@ export function KurikulumDashboardPage() {
             </div>
           </Card>
         ))}
+      </div>
+
+      {/* Sub halaman dashboard kurikulum */}
+      <div className="mt-6">
+        <SubPageLinks links={KURIKULUM_SUB_LINKS} />
       </div>
     </PageContainer>
   );
