@@ -180,7 +180,7 @@ export function JadwalKbmPage() {
 
   // JADWAL-RAPIKAN A: desktop → matriks langsung, mobile → tampilan per-hari
   if (isDesktop) {
-    return <JadwalMatriksPage />;
+    return <JadwalMatriksPage embedded />;
   }
 
   // No TA active ? panel arahan

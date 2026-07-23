@@ -59,7 +59,7 @@ function colorForGuru(guruId: number) {
  * - Floating toolbar: dropdown SearchSelect penugasan → Assign / Hapus
  * - Semua-atau-batal; konflik 409 tampil sebagai list di toast + inline
  */
-export function JadwalMatriksPage() {
+export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -319,13 +319,17 @@ export function JadwalMatriksPage() {
   /* ── render ───────────────────────────────────────────────────── */
   return (
     <PageContainer>
-      <div className="mb-6">
-        <BackLink to="/kurikulum/jadwal" label="← Jadwal KBM" />
-        <h1 className="text-xl font-bold text-aam-text mt-2">Matriks Jadwal KBM</h1>
-        <p className="text-sm text-aam-text-muted mt-1">
-          Klik atau geser untuk memilih sel — lalu assign penugasan atau hapus
-        </p>
-      </div>
+      {/* JADWAL-MATRIX-RENDER: saat embedded di JadwalKbmPage, jangan render BackLink+judul
+          (induk sudah punya header sendiri). BackLink lama menunjuk dirinya sendiri = bug. */}
+      {!embedded && (
+        <div className="mb-6">
+          <BackLink to="/kurikulum/jadwal" label="← Jadwal KBM" />
+          <h1 className="text-xl font-bold text-aam-text mt-2">Matriks Jadwal KBM</h1>
+          <p className="text-sm text-aam-text-muted mt-1">
+            Klik atau geser untuk memilih sel — lalu assign penugasan atau hapus
+          </p>
+        </div>
+      )}
 
       {/* Tab hari */}
       <div className="flex gap-1 mb-4 flex-wrap">
@@ -439,7 +443,7 @@ export function JadwalMatriksPage() {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-aam-border shadow-sm select-none">
           <table
-            className="min-w-full border-collapse"
+            className="table-fixed min-w-full border-collapse"
             style={{ userSelect: 'none' }}
           >
             <thead>
@@ -450,7 +454,7 @@ export function JadwalMatriksPage() {
                 {data.kelas.map((k) => (
                   <th
                     key={k.id}
-                    className="border-b border-r border-aam-border px-3 py-2.5 text-xs font-semibold text-aam-text text-center whitespace-nowrap min-w-[130px]"
+                    className="border-b border-r border-aam-border px-1 py-2 text-xs font-semibold text-aam-text text-center w-[44px] min-w-[44px] max-w-[44px]"
                   >
                     {k.nama}
                   </th>
@@ -648,21 +652,21 @@ function MatriksCell({ cellKey, entry, isSelected, onMouseDown, onMouseEnter }: 
     <td
       onMouseDown={(e) => onMouseDown(cellKey, e)}
       onMouseEnter={() => onMouseEnter(cellKey)}
-      className={`border-b border-r border-aam-border px-1.5 py-1 text-center align-middle cursor-pointer transition-colors ${
+      className={`border-b border-r border-aam-border px-0.5 py-1 text-center align-middle cursor-pointer transition-colors w-[44px] min-w-[44px] max-w-[44px] ${
         isSelected
           ? 'ring-2 ring-inset ring-aam-green bg-aam-green/10'
           : 'hover:bg-aam-green/5'
       }`}
+      title={entry ? `${entry.kode ?? '?'} — ${entry.guruNama} (${entry.mapelNama})` : undefined}
     >
       {entry ? (
         <div
-          className={`rounded px-1.5 py-1 border text-left ${guruColor} ${isSelected ? 'opacity-90' : ''}`}
+          className={`rounded px-0.5 py-0.5 border text-center ${guruColor} ${isSelected ? 'opacity-90' : ''}`}
         >
-          <div className="text-[11px] font-bold leading-tight">{entry.kode ?? '?'}</div>
-          <div className="text-[10px] leading-tight truncate max-w-[110px]">{entry.mapelNama}</div>
+          <span className="text-[11px] font-bold leading-tight block truncate">{entry.kode ?? '?'}</span>
         </div>
       ) : (
-        <div className={`h-8 rounded ${isSelected ? 'bg-aam-green/20' : 'bg-transparent'}`} />
+        <div className="h-6 rounded" />
       )}
     </td>
   );

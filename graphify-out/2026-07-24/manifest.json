@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.service.ts": {
-    "mtime": 1784826399.6463926,
-    "ast_hash": "408edb7e65d26767181d171aa356c263",
+    "mtime": 1784830325.5666444,
+    "ast_hash": "7ceb09fd3ff126294a68d5434d8dee30",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/libur.controller.ts": {
@@ -2355,8 +2355,8 @@
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/jadwal-matriks.spec.ts": {
-    "mtime": 1784829510.546689,
-    "ast_hash": "0c240cdc4307774dde14406b3f5730ab",
+    "mtime": 1784830971.862018,
+    "ast_hash": "a5f230b583a586ea8a060e730ad28077",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/jam-pelajaran.entity.ts": {
