@@ -11,6 +11,39 @@ import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { PageMenu } from '../../../components/PageMenu';
 import { PageContainer } from '../../../components/PageContainer';
 
+/**
+ * Snapshot wajah admin-only. Endpoint auth via Bearer header, jadi <img src=url>
+ * kena 401 — harus di-fetch ber-token lalu jadi objectURL (di-revoke saat unmount).
+ */
+function FaceSnapshot({ guruId, nama }: { guruId: number; nama: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [err, setErr] = useState(false);
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    let alive = true;
+    api.adminFetchFaceSnapshot(guruId)
+      .then((u) => { if (alive) { objectUrl = u; setUrl(u); } else { URL.revokeObjectURL(u); } })
+      .catch(() => { if (alive) setErr(true); });
+    return () => { alive = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [guruId]);
+
+  if (err) {
+    return (
+      <div className="w-32 h-32 rounded-lg border border-dashed border-aam-border flex items-center justify-center p-2 text-center">
+        <span className="text-xs text-aam-text-muted">Gagal memuat foto</span>
+      </div>
+    );
+  }
+  if (!url) return <div className="w-32 h-32 rounded-lg border border-aam-border bg-aam-page animate-pulse" />;
+  return (
+    <img
+      src={url}
+      alt={`Snapshot wajah ${nama}`}
+      className="w-32 h-32 object-cover rounded-lg border border-aam-border"
+    />
+  );
+}
+
 type FaceStatus = 'BELUM' | 'MENUNGGU_VALIDASI' | 'TERVALIDASI' | 'DITOLAK';
 
 const FACE_STATUS_LABEL: Record<FaceStatus, string> = {
@@ -209,11 +242,7 @@ export function GuruDetailPage() {
             {/* F3b: snapshot wajah untuk perbandingan visual */}
             <div className="shrink-0">
               {guru.faceSnapshotUrl ? (
-                <img
-                  src={api.adminGetFaceSnapshotUrl(guruId)}
-                  alt={`Snapshot wajah ${guru.nama}`}
-                  className="w-32 h-32 object-cover rounded-lg border border-aam-border bg-aam-surface"
-                />
+                <FaceSnapshot guruId={guruId} nama={guru.nama} />
               ) : (
                 <div className="w-32 h-32 rounded-lg border border-dashed border-aam-border bg-aam-surface flex items-center justify-center p-2 text-center">
                   <span className="text-xs text-aam-text-muted">

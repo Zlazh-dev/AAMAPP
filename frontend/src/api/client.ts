@@ -1243,6 +1243,19 @@ export const api = {
   adminGetFaceSnapshotUrl: (guruId: number) =>
     `/api/admin/guru/${guruId}/wajah/snapshot`,
 
+  /**
+   * F3b — ambil snapshot sebagai objectURL. WAJIB dipakai (bukan <img src=url>):
+   * endpoint auth via Bearer header, dan <img> tidak bisa membawa header → 401.
+   * Pemanggil wajib revokeObjectURL saat unmount.
+   */
+  adminFetchFaceSnapshot: async (guruId: number): Promise<string> => {
+    const res = await fetch(`/api/admin/guru/${guruId}/wajah/snapshot`, {
+      headers: { Authorization: `Bearer ${getToken() ?? ''}` },
+    });
+    if (!res.ok) throw new ApiError(res.status, { message: 'Gagal memuat snapshot' });
+    return URL.createObjectURL(await res.blob());
+  },
+
   // --- F3a: Admin presensi guru harian + manual ---
   adminGetPresensiGuruHarian: (params: { tanggal: string }) =>
     request<{
