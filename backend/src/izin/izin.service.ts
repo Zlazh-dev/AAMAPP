@@ -61,6 +61,11 @@ export function deriveStatusHarian(
   tanggal: string,
   ctx: DeriveContext,
 ): StatusHarian {
+  // 0. Minggu = libur struktural (getDay()===0) — berlaku tahun apa pun,
+  //    tidak bergantung baris kalender_libur. TU-PENGATURAN Bagian A.
+  const d = new Date(tanggal + 'T00:00:00');
+  if (d.getDay() === 0) return 'LIBUR';
+
   // 1. Libur nasional/kalender
   if (ctx.liburSet.has(tanggal)) return 'LIBUR';
 

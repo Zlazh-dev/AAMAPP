@@ -250,7 +250,6 @@
   "248": "class-validator",
   "249": "@types/react",
   "250": "jadwal-matrix-render.spec.ts",
-  "254": "AdminSessionsController",
-  "256": "wib.util.ts",
-  "258": "ScanDto"
+  "251": "tu-pengaturan.spec.ts",
+  "254": "AdminSessionsController"
 }

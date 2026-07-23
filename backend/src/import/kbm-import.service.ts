@@ -443,6 +443,10 @@ export class KbmImportService {
         // Cell is a holiday code (LU, LHB, etc.) if it's NOT just a number
         if (valStr && !valStr.match(/^\d+$/) && valStr.length <= 10) {
           const tanggal = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          // TU-PENGATURAN A: jangan simpan Minggu sebagai baris libur —
+          // derivasi struktural sudah menangani (getDay()===0 → LIBUR).
+          const dayOfWeek = new Date(tanggal + 'T00:00:00').getDay();
+          if (dayOfWeek === 0) continue; // Skip Sunday
           rows.push({ tanggal, keterangan: valStr });
         }
       }

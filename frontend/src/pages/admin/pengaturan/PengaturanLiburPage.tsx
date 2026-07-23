@@ -422,6 +422,9 @@ export function PengaturanLiburPage({ embedded = false }: { embedded?: boolean }
             if (!day) return <div key={i} className="aspect-square" />;
             const dateStr = formatDate(year, month, day);
             const libur = liburMap.get(dateStr);
+            // TU-PENGATURAN A: Minggu (getDay()===0) selalu merah — derivasi, bukan data DB.
+            const isSunday = new Date(year, month, day).getDay() === 0;
+            const isLibur = !!libur || isSunday;
             const isToday = dateStr === todayStr;
             const isSelected = selected.has(dateStr);
             return (
@@ -432,16 +435,16 @@ export function PengaturanLiburPage({ embedded = false }: { embedded?: boolean }
                 className={[
                   'aspect-square rounded-md text-sm transition-colors relative',
                   'flex flex-col items-center justify-center',
-                  libur
+                  isLibur
                     ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100'
                     : 'hover:bg-gray-100 text-aam-text',
-                  isToday && !libur ? 'ring-1 ring-aam-green/40' : '',
+                  isToday && !isLibur ? 'ring-1 ring-aam-green/40' : '',
                   isSelected ? 'ring-2 ring-aam-green bg-aam-green/10' : '',
                 ].join(' ')}
-                title={libur?.keterangan}
+                title={libur?.keterangan ?? (isSunday ? 'Minggu' : undefined)}
               >
                 <span className="font-medium">{day}</span>
-                {libur && <span className="material-symbols-outlined text-red-500" style={{ fontSize: '0.75rem' }}>event_busy</span>}
+                {isLibur && <span className="material-symbols-outlined text-red-500" style={{ fontSize: '0.75rem' }}>event_busy</span>}
               </button>
             );
           })}
