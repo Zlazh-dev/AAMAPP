@@ -1188,7 +1188,13 @@ export const api = {
     return request<{
       hari: number;
       taId: number;
-      jamSlots: Array<{ id: number; urutan: number; jamMulai: string; jamSelesai: string }>;
+      jamSlots: Array<{
+        id: number | null;
+        urutan: number;
+        jamMulai: string;
+        jamSelesai: string;
+        isOrphan?: boolean;
+      }>;
       kelas: Array<{ id: number; nama: string }>;
       sel: Record<string, {
         kode: string | null;

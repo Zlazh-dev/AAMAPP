@@ -785,12 +785,14 @@ export class KurikulumService {
    * GET /api/kurikulum/jadwal/matriks?hari=N[&taId=]
    * Satu request per hari. Kembalikan:
    *   { hari, taId, jamSlots[], kelas[], sel: { "<kelasId>:<jamMulai>": {...} } }
+   *
+   * JADWAL-KONFLIK Bug 1: jamSlots = gabungan JP terdaftar + jam jadwal yg tidak punya JP.
+   * Baris asing (tanpa JP) ditandai isOrphan:true agar terlihat & bisa dibereskan.
    */
   async listJadwalMatriks(filter: { hari: number; taId?: number }) {
     const taId = filter.taId ?? (await this.getActiveTaIdOrThrow());
 
     // JADWAL-KELAS-BERSIH: hanya kelas ber-pola nyata (7A-9J) yang punya penugasan di TA aktif.
-    // Sampah uji (mis. KR-1784445663719) tak pernah bocor ke kolom matriks.
     const kelasIds = await this.penugasanRepo
       .createQueryBuilder('p')
       .select('DISTINCT p.kelasId', 'kelasId')
@@ -816,17 +818,6 @@ export class KurikulumService {
       .andWhere('j.hari = :hari', { hari: filter.hari })
       .orderBy('j.jamMulai', 'ASC')
       .getMany();
-
-    const jamSet = new Set<string>();
-    for (const r of rows) {
-      jamSet.add(`${r.jamMulai}|${r.jamSelesai}`);
-    }
-    const jamSlots = Array.from(jamSet)
-      .sort()
-      .map((s) => {
-        const [jamMulai, jamSelesai] = s.split('|');
-        return { jamMulai, jamSelesai };
-      });
 
     const sel: Record<
       string,
@@ -854,21 +845,55 @@ export class KurikulumService {
       };
     }
 
-    // Ambil JP dari jam_pelajaran (urutan tetap dari entitas)
+    // Ambil JP terdaftar
     const jpList = await this.jpRepo.find({
       where: { tahunAjaranId: taId, hari: filter.hari },
       order: { urutan: 'ASC' },
     });
 
+    // Kumpulkan jam jadwal yang TIDAK punya JP ("hantu") → baris asing
+    const jpJamSet = new Set(
+      jpList.map((jp) => `${jp.jamMulai}|${jp.jamSelesai}`),
+    );
+    const orphanJamSet = new Map<string, { jamMulai: string; jamSelesai: string }>();
+    for (const r of rows) {
+      const key = `${r.jamMulai}|${r.jamSelesai}`;
+      if (!jpJamSet.has(key)) {
+        orphanJamSet.set(key, { jamMulai: r.jamMulai, jamSelesai: r.jamSelesai });
+      }
+    }
+
+    // jamSlots = JP berurutan + baris asing (urutan setelah JP, sort by jamMulai)
+    const jamSlots: Array<{
+      id: number | null;
+      urutan: number;
+      jamMulai: string;
+      jamSelesai: string;
+      isOrphan?: boolean;
+    }> = jpList.map((jp) => ({
+      id: jp.id,
+      urutan: jp.urutan,
+      jamMulai: jp.jamMulai,
+      jamSelesai: jp.jamSelesai,
+    }));
+
+    // Sisipkan baris asing di posisi terurut (by jamMulai)
+    for (const orphan of Array.from(orphanJamSet.values()).sort((a, b) =>
+      a.jamMulai.localeCompare(b.jamMulai),
+    )) {
+      jamSlots.push({
+        id: null,
+        urutan: 0,
+        jamMulai: orphan.jamMulai,
+        jamSelesai: orphan.jamSelesai,
+        isOrphan: true,
+      });
+    }
+
     return {
       hari: filter.hari,
       taId,
-      jamSlots: jpList.map((jp) => ({
-        id: jp.id,
-        urutan: jp.urutan,
-        jamMulai: jp.jamMulai,
-        jamSelesai: jp.jamSelesai,
-      })),
+      jamSlots,
       kelas: kelasList.map((k) => ({ id: k.id, nama: k.nama })),
       sel,
     };
@@ -1061,6 +1086,7 @@ export class KurikulumService {
       });
       const penugasanMap = new Map(penugasanList.map((p) => [p.id, p]));
 
+      // Validasi dasar per slot
       for (const slot of dto.slots) {
         const pn = penugasanMap.get(slot.penugasanId);
         if (!pn) throw new NotFoundException(`Penugasan #${slot.penugasanId} tidak ditemukan`);
@@ -1070,6 +1096,24 @@ export class KurikulumService {
         if (hhmmToMin(slot.jamSelesai) <= hhmmToMin(slot.jamMulai)) {
           throw new BadRequestException(
             `Slot kelas ${pn.kelas?.nama} ${slot.jamMulai}: jamSelesai harus setelah jamMulai`,
+          );
+        }
+      }
+
+      // JADWAL-KONFLIK Bug 1b: validasi setiap slot harus cocok persis dengan JP terdaftar.
+      // Tolak assign ke jam yang tidak ada di jam_pelajaran.
+      const jpForHari = await em.find(JamPelajaran, {
+        where: { tahunAjaranId: taId, hari: dto.hari },
+      });
+      const jpPairs = new Set(
+        jpForHari.map((jp) => `${jp.jamMulai}|${jp.jamSelesai}`),
+      );
+      for (const slot of dto.slots) {
+        const pn = penugasanMap.get(slot.penugasanId)!;
+        if (!jpPairs.has(`${slot.jamMulai}|${slot.jamSelesai}`)) {
+          throw new BadRequestException(
+            `Jam ${slot.jamMulai}–${slot.jamSelesai} tidak terdaftar sebagai JP hari ini. ` +
+            `Tambah JP terlebih dahulu atau pilih jam yang sesuai struktur JP.`,
           );
         }
       }
@@ -1085,6 +1129,8 @@ export class KurikulumService {
         .andWhere('j.hari = :hari', { hari: dto.hari })
         .getMany();
 
+      // JADWAL-KONFLIK Bug 2: dedupe pesan konflik (kunci: kelasId+jam+mapel)
+      const conflictSet = new Set<string>();
       const conflicts: string[] = [];
       const toSave: Array<{ penugasanId: number; jamMulai: string; jamSelesai: string }> = [];
 
@@ -1092,6 +1138,8 @@ export class KurikulumService {
         const pn = penugasanMap.get(slot.penugasanId)!;
         const newStart = hhmmToMin(slot.jamMulai);
         const newEnd = hhmmToMin(slot.jamSelesai);
+        // Label sel yang ditolak: "kelas NamaSel JamMulai–JamSelesai"
+        const selLabel = `${pn.kelas?.nama ?? `kelas#${pn.kelasId}`} ${slot.jamMulai}–${slot.jamSelesai}`;
 
         let conflict: string | null = null;
         for (const ex of existingAll) {
@@ -1102,21 +1150,24 @@ export class KurikulumService {
           const exKelasId = ex.penugasan?.kelasId;
           const exGuruId = ex.penugasan?.guruId;
           const exKelasNama = ex.penugasan?.kelas?.nama ?? `kelas#${exKelasId}`;
-          const exGuruKode = ex.penugasan?.guru?.kode ?? ex.penugasan?.guru?.nama ?? `guru#${exGuruId}`;
 
           if (exKelasId === pn.kelasId) {
-            conflict = `Kelas ${pn.kelas?.nama}: sudah ada jadwal ${ex.penugasan?.mapel?.nama ?? ''} pada ${ex.jamMulai}–${ex.jamSelesai}`;
+            conflict = `${selLabel} → bentrok: sudah ada ${ex.penugasan?.mapel?.nama ?? 'jadwal'} pada ${ex.jamMulai}–${ex.jamSelesai}`;
             break;
           }
           if (exGuruId === pn.guruId) {
             const guruKode = pn.guru?.kode ?? pn.guru?.nama ?? `guru#${pn.guruId}`;
-            conflict = `${guruKode} sudah mengajar di ${exKelasNama} pada ${ex.jamMulai}–${ex.jamSelesai} — konflik kelas ${pn.kelas?.nama}`;
+            conflict = `${selLabel} → ${guruKode} sudah mengajar di ${exKelasNama} pada ${ex.jamMulai}–${ex.jamSelesai}`;
             break;
           }
         }
 
         if (conflict) {
-          conflicts.push(conflict);
+          // Dedupe: pesan identik tidak ditambah dua kali
+          if (!conflictSet.has(conflict)) {
+            conflictSet.add(conflict);
+            conflicts.push(conflict);
+          }
         } else {
           // Tambah ke existingAll agar konflik lintas-slot terdeteksi
           existingAll.push({

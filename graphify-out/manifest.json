@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "backend/src/kurikulum/kurikulum.service.ts": {
-    "mtime": 1784830325.5666444,
-    "ast_hash": "7ceb09fd3ff126294a68d5434d8dee30",
+    "mtime": 1784885159.939281,
+    "ast_hash": "efaa07cab260c113d1c23aa375450cf0",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/libur.controller.ts": {
@@ -1180,8 +1180,8 @@
     "semantic_hash": "373e0bb37dde4b203dee920697627646"
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1784823145.3112218,
-    "ast_hash": "b6b558beab3807f54676960671c91899",
+    "mtime": 1784885340.3216906,
+    "ast_hash": "43ec8be65af556c92b3fbbbdf6200ef9",
     "semantic_hash": ""
   },
   "frontend/src/app/App.tsx": {
@@ -2345,8 +2345,8 @@
     "semantic_hash": ""
   },
   "frontend/src/pages/kurikulum/JadwalMatriksPage.tsx": {
-    "mtime": 1784835374.2838423,
-    "ast_hash": "145b90b4f723c484edd1953cc90fdcd9",
+    "mtime": 1784885317.1621737,
+    "ast_hash": "5ff6aa82737f21e44631fa9ba1507f10",
     "semantic_hash": ""
   },
   "briefs/JADWAL-MATRIX-SPEC.md": {
@@ -2355,8 +2355,8 @@
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/jadwal-matriks.spec.ts": {
-    "mtime": 1784830971.862018,
-    "ast_hash": "a5f230b583a586ea8a060e730ad28077",
+    "mtime": 1784904613.785759,
+    "ast_hash": "01ee557c666034eecb517bd6d2411c21",
     "semantic_hash": ""
   },
   "backend/src/kurikulum/jam-pelajaran.entity.ts": {
@@ -2375,8 +2375,8 @@
     "semantic_hash": ""
   },
   "backend/src/migrations/check_jp.sql": {
-    "mtime": 1784825224.0405302,
-    "ast_hash": "3e63c098a72daf77999a5a8dd80ec633",
+    "mtime": 1784886250.105242,
+    "ast_hash": "e2acf9595e45e1efd02f2224e0ef24b9",
     "semantic_hash": ""
   },
   "frontend/e2e/gelombang2/jadwal-matrix-render.spec.ts": {
@@ -2402,6 +2402,16 @@
   "scripts/bersihkan-minggu-libur.sql": {
     "mtime": 1784841516.183761,
     "ast_hash": "871fa19bd4a53c9b788c87ee69fb2430",
+    "semantic_hash": ""
+  },
+  "scripts/bersihkan-jadwal-hantu.sql": {
+    "mtime": 1784885180.2833786,
+    "ast_hash": "19f77c7875f0bf75aa18d6c8c863e0e8",
+    "semantic_hash": ""
+  },
+  "frontend/e2e/gelombang2/jadwal-konflik.spec.ts": {
+    "mtime": 1784885995.7051578,
+    "ast_hash": "7d3db3a6b3dbd1ec1e641f5c86593cfc",
     "semantic_hash": ""
   }
 }

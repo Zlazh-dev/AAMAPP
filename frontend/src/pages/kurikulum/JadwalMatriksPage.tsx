@@ -22,7 +22,13 @@ type SelEntry = {
 type MatriksData = {
   hari: number;
   taId: number;
-  jamSlots: Array<{ id: number; urutan: number; jamMulai: string; jamSelesai: string }>;
+  jamSlots: Array<{
+    id: number | null;
+    urutan: number;
+    jamMulai: string;
+    jamSelesai: string;
+    isOrphan?: boolean;  // baris jadwal di luar JP terdaftar
+  }>;
   kelas: Array<{ id: number; nama: string }>;
   sel: Record<string, SelEntry>;
 };
@@ -203,9 +209,11 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
     } catch (e: unknown) {
       if (e instanceof ApiError && e.status === 409) {
         const body = e.body as { conflicts?: string[] };
-        const cs = body?.conflicts ?? [];
-        setConflicts(cs);
-        toast.show('error', `Konflik jadwal — ${cs.length} slot ditolak`);
+        const raw = body?.conflicts ?? [];
+        // Dedupe sebagai fallback (backend sudah dedupe, ini lapisan ganda)
+        const deduped = Array.from(new Set(raw));
+        setConflicts(deduped);
+        toast.show('error', `Konflik jadwal — ${deduped.length} slot ditolak`);
       } else {
         toast.show('error', 'Gagal menyimpan jadwal.');
       }
@@ -248,6 +256,7 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
 
   /* ── JP modal handlers ────────────────────────────────────────── */
   function openEditJp(jp: MatriksData['jamSlots'][0]) {
+    if (!jp.id) return; // baris asing (isOrphan) tidak punya JP — tidak bisa diedit
     setEditJp(jp);
     setEditJpMulai(jp.jamMulai);
     setEditJpSelesai(jp.jamSelesai);
@@ -255,11 +264,11 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
   }
 
   async function handleSaveJp() {
-    if (!editJp) return;
+    if (!editJp || !editJp.id) return; // guard: baris asing tidak punya id
     setJpSaving(true);
     setJpError(null);
     try {
-      await api.updateJamPelajaran(editJp.id, { jamMulai: editJpMulai, jamSelesai: editJpSelesai });
+      await api.updateJamPelajaran(editJp.id!, { jamMulai: editJpMulai, jamSelesai: editJpSelesai });
       toast.show('success', `JP ${editJp.urutan} diperbarui. Semua jadwal hari ini ikut bergeser.`);
       setEditJp(null);
       await load(hari);
@@ -272,8 +281,8 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
   }
 
   function openAddJp() {
-    // Prefill: mulai = selesai JP terakhir; durasi = durasi JP terakhir
-    const slots = data?.jamSlots ?? [];
+    // Prefill: mulai = selesai JP terakhir (skip baris asing); durasi = durasi JP terakhir
+    const slots = (data?.jamSlots ?? []).filter((s) => !s.isOrphan);
     if (slots.length > 0) {
       const last = slots[slots.length - 1];
       const lastDurMin =
@@ -422,8 +431,8 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
                 ⚠ Konflik ({conflicts.length}):
               </p>
               <ul className="space-y-0.5">
-                {conflicts.map((c, i) => (
-                  <li key={i} className="text-xs text-red-600">• {c}</li>
+                {conflicts.map((c) => (
+                  <li key={c} className="text-xs text-red-600">• {c}</li>
                 ))}
               </ul>
             </div>
@@ -475,27 +484,53 @@ export function JadwalMatriksPage({ embedded = false }: { embedded?: boolean }) 
                 </tr>
               )}
 
-              {/* Baris per jam slot dari jam_pelajaran */}
+              {/* Baris per jam slot dari jam_pelajaran + baris asing */}
               {data.jamSlots.map((slot, rowIdx) => (
                 <tr
                   key={slot.jamMulai}
-                  className={rowIdx % 2 === 0 ? 'bg-white' : 'bg-aam-page/50'}
+                  className={slot.isOrphan
+                    ? 'bg-amber-50 border-l-2 border-amber-400'
+                    : rowIdx % 2 === 0 ? 'bg-white' : 'bg-aam-page/50'
+                  }
                 >
-                  {/* Kolom jam — klik untuk edit JP */}
-                  <td
-                    className="border-b border-r border-aam-border px-3 py-2 text-xs text-aam-text-muted whitespace-nowrap sticky left-0 bg-inherit z-10 cursor-pointer hover:bg-aam-green/5 group"
-                    onClick={() => openEditJp(slot)}
-                    title="Klik untuk edit jam JP"
-                  >
-                    <span className="font-medium">{slot.urutan}.</span>{' '}
-                    {slot.jamMulai}–{slot.jamSelesai}
-                    <span className="ml-1 opacity-0 group-hover:opacity-60 text-[9px]">✏</span>
-                  </td>
+                  {/* Kolom jam */}
+                  {slot.isOrphan ? (
+                    <td
+                      className="border-b border-r border-aam-border px-3 py-2 text-xs whitespace-nowrap sticky left-0 bg-amber-50 z-10"
+                      title="Jadwal ini di luar struktur JP — hapus atau migrasikan ke JP yang sesuai"
+                    >
+                      <span className="text-amber-700 font-semibold">⚠</span>{' '}
+                      <span className="text-amber-800 font-medium">{slot.jamMulai}–{slot.jamSelesai}</span>{' '}
+                      <span className="text-amber-500 text-[10px]">(di luar JP)</span>
+                    </td>
+                  ) : (
+                    <td
+                      className="border-b border-r border-aam-border px-3 py-2 text-xs text-aam-text-muted whitespace-nowrap sticky left-0 bg-inherit z-10 cursor-pointer hover:bg-aam-green/5 group"
+                      onClick={() => openEditJp(slot)}
+                      title="Klik untuk edit jam JP"
+                    >
+                      <span className="font-medium">{slot.urutan}.</span>{' '}
+                      {slot.jamMulai}–{slot.jamSelesai}
+                      <span className="ml-1 opacity-0 group-hover:opacity-60 text-[9px]">✏</span>
+                    </td>
+                  )}
                   {data.kelas.map((k) => {
                     const key = cellKey(k.id, slot.jamMulai);
                     const entry = data.sel[key];
                     const isSelected = selected.has(key);
-                    return (
+                    // Sel di baris asing tidak bisa di-select (sudah ada jadwal hantu)
+                    return slot.isOrphan ? (
+                      <td
+                        key={k.id}
+                        className="border-b border-r border-aam-border text-center bg-amber-50 py-2"
+                      >
+                        {entry && (
+                          <span className="inline-block text-[10px] text-amber-700 bg-amber-100 rounded px-1 py-0.5 truncate max-w-[40px]">
+                            {entry.mapelNama.slice(0, 4)}
+                          </span>
+                        )}
+                      </td>
+                    ) : (
                       <MatriksCell
                         key={k.id}
                         cellKey={key}
